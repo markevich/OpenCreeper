@@ -515,7 +515,7 @@ class Game {
 
     // 2nd pass - draw textures
     for (int i = 0; i < 10; i++) {
-      CanvasPattern pattern = engine.canvas["level$i"].context.createPattern(engine.images["level$i"], 'repeat');
+      CanvasPattern pattern = engine.canvas["level$i"].context.createPatternFromImage(engine.images["level$i"], 'repeat');
       engine.canvas["level$i"].context.globalCompositeOperation = 'source-in';
       engine.canvas["level$i"].context.fillStyle = pattern;
       engine.canvas["level$i"].context.fillRect(0, 0, engine.canvas["level$i"].element.width, engine.canvas["level$i"].element.height);
@@ -674,7 +674,7 @@ class Game {
             tempContext[t].drawImageScaledFromSource(engine.images["mask"], index * (tileSize + 6) + 3, (tileSize + 6) + 3, tileSize, tileSize, 0, 0, tileSize, tileSize);
   
             // redraw pattern
-            var pattern = tempContext[t].createPattern(engine.images["level$t"], 'repeat');
+            var pattern = tempContext[t].createPatternFromImage(engine.images["level$t"], 'repeat');
   
             tempContext[t].globalCompositeOperation = 'source-in';
             tempContext[t].fillStyle = pattern;
