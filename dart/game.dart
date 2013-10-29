@@ -725,7 +725,7 @@ class Game {
     
     for (int i = 0; i < buildings.length; i++) {
       // must not be the same building
-      if (!(buildings[i].position.x == node.position.x && buildings[i].position.y == node.position.y)) {
+      if (!(buildings[i].position == node.position)) {
         // must be idle
         if (buildings[i].status == "IDLE") {
           // it must either be the target or be built
@@ -749,17 +749,15 @@ class Game {
   }
 
   /**
-   * Used for A*, checks if a node [neighbour] is already in a given [route].
+   * Used for A*, checks if a [node] is already in a given [route].
    */
-  bool inRoute(Building neighbour, List route) {
-    bool found = false;
+  bool inRoute(Building node, List route) {
     for (int i = 0; i < route.length; i++) {
-      if (neighbour.position.x == route[i].position.x && neighbour.position.y == route[i].position.y) {
-        found = true;
-        break;
+      if (node.position == route[i].position) {
+        return true;
       }
     }
-    return found;
+    return false;
   }
 
   /**
@@ -890,14 +888,14 @@ class Game {
   }
 
   /**
-   * Creates a new requested packet with its target [building]
+   * Creates a new requested packet with its [target]
    * and [type] and queues it.
    */
-  void queuePacket(Building building, String type) {
+  void queuePacket(Building target, String type) {
     String img = "packet_" + type;
     Vector center = base.getCenter();
     Packet packet = new Packet(center, img, type);
-    packet.target = building;
+    packet.target = target;
     packet.currentTarget = base;
     findRoute(packet);
     if (packet.currentTarget != null) {
@@ -1055,17 +1053,17 @@ class Game {
   }
   
   /**
-   * Updates the collector property of each tile when a
-   * collector [building] is added or removed which is defined by the [action].
+   * Updates the collector property of each tile when a [collector]
+   * is added or removed which is defined by the [action].
    */
-  void updateCollection(Building building, String action) {
-    int height = game.world.tiles[building.position.x][building.position.y].height;
-    Vector centerBuilding = building.getCenter();
+  void updateCollection(Building collector, String action) {
+    int height = game.world.tiles[collector.position.x][collector.position.y].height;
+    Vector centerBuilding = collector.getCenter();
 
     for (int i = -5; i < 7; i++) {
       for (int j = -5; j < 7; j++) {
 
-        Vector positionCurrent = new Vector(building.position.x + i, building.position.y + j);
+        Vector positionCurrent = new Vector(collector.position.x + i, collector.position.y + j);
 
         if (withinWorld(positionCurrent.x, positionCurrent.y)) {
           Vector positionCurrentCenter = new Vector(positionCurrent.x * tileSize + (tileSize / 2), positionCurrent.y * tileSize + (tileSize / 2));
@@ -1074,11 +1072,10 @@ class Game {
           if (action == "add") {
             if (pow(positionCurrentCenter.x - centerBuilding.x, 2) + pow(positionCurrentCenter.y - centerBuilding.y, 2) < pow(tileSize * 6, 2)) {
               if (tileHeight == height) {
-                world.tiles[positionCurrent.x][positionCurrent.y].collector = building;
+                world.tiles[positionCurrent.x][positionCurrent.y].collector = collector;
               }
             }
           } else if (action == "remove") {
-
             if (pow(positionCurrentCenter.x - centerBuilding.x, 2) + pow(positionCurrentCenter.y - centerBuilding.y, 2) < pow(tileSize * 6, 2)) {
               if (tileHeight == height) {
                 world.tiles[positionCurrent.x][positionCurrent.y].collector = null;
@@ -1086,7 +1083,7 @@ class Game {
             }
 
             for (int k = 0; k < buildings.length; k++) {
-              if (buildings[k] != building && buildings[k].imageID == "collector") {
+              if (buildings[k] != collector && buildings[k].imageID == "collector") {
                 int heightK = game.world.tiles[buildings[k].position.x][buildings[k].position.y].height;
                 Vector centerBuildingK = buildings[k].getCenter();
                 if (pow(positionCurrentCenter.x - centerBuildingK.x, 2) + pow(positionCurrentCenter.y - centerBuildingK.y, 2) < pow(tileSize * 6, 2)) {
@@ -1110,7 +1107,7 @@ class Game {
    * Updates the packet queue of the base.
    * 
    * If the base has energy the first packet is removed from
-   * the queue and sent to its target.
+   * the queue and sent to its target (FIFO).
    */
   void updatePacketQueue() {
     for (int i = packetQueue.length - 1; i >= 0; i--) {
