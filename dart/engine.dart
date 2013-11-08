@@ -159,7 +159,7 @@ class Engine {
       Vector screenCenter = new Vector(
           (halfWidth / (game.tileSize * game.zoom)).floor() + game.scroll.x,
           (halfHeight / (game.tileSize * game.zoom)).floor() + game.scroll.y);
-      num distance = Helper.distance(screenCenter, position);
+      num distance = position.distanceTo(screenCenter);
       volume = (game.zoom / pow(distance / 20, 2)).clamp(0, 1);
     }
 
@@ -241,5 +241,18 @@ class Engine {
         r2_right < r1_left ||
         r2_top > r1_bottom ||
         r2_bottom < r1_top);
+  }
+  
+  int randomInt(num from, num to, [num seed]) {
+    var random = new Random(seed);
+    return (random.nextInt(to - from + 1) + from);
+  }
+  
+  num rad2deg(num angle) {
+    return angle * 57.29577951308232;
+  }
+  
+  num deg2rad(num angle) {
+    return angle * .017453292519943295;
   }
 }

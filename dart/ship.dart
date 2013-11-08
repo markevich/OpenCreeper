@@ -16,14 +16,14 @@ class Ship {
   }
 
   bool updateHoverState() {
-    Vector realPosition = Helper.real2screen(position);
+    Vector realPosition = position.real2screen();
     hovered = (engine.mouse.x > realPosition.x && engine.mouse.x < realPosition.x + 47 && engine.mouse.y > realPosition.y && engine.mouse.y < realPosition.y + 47);
     return hovered;
   }
 
   void turnToTarget() {
     Vector delta = new Vector(targetPosition.x - position.x, targetPosition.y - position.y);
-    double angleToTarget = Helper.rad2deg(atan2(delta.y, delta.x));
+    double angleToTarget = engine.rad2deg(atan2(delta.y, delta.x));
 
     num turnRate = 1.5;
     num absoluteDelta = (angleToTarget - angle).abs();
@@ -49,8 +49,8 @@ class Ship {
   }
 
   void calculateVector() {
-    num x = cos(Helper.deg2rad(angle));
-    num y = sin(Helper.deg2rad(angle));
+    num x = cos(engine.deg2rad(angle));
+    num y = sin(engine.deg2rad(angle));
 
     speed.x = x * Ship.baseSpeed * game.speed;
     speed.y = y * Ship.baseSpeed * game.speed;
@@ -184,7 +184,7 @@ class Ship {
   void draw() {
     CanvasRenderingContext2D context = engine.canvas["buffer"].context;
     
-    Vector realPosition = Helper.real2screen(position);
+    Vector realPosition = position.real2screen();
 
     if (hovered) {
       context
@@ -204,7 +204,7 @@ class Ship {
         ..stroke();
 
       if (status == "ATTACKING" || status == "IDLE") {
-        Vector cursorPosition = Helper.real2screen(targetPosition);
+        Vector cursorPosition = targetPosition.real2screen();
         context
           ..save()
           ..globalAlpha = .5
@@ -218,7 +218,7 @@ class Ship {
       context
         ..save()
         ..translate(realPosition.x + 24 * game.zoom, realPosition.y + 24 * game.zoom)
-        ..rotate(Helper.deg2rad(angle))
+        ..rotate(engine.deg2rad(angle))
         ..drawImageScaled(engine.images[imageID], -24 * game.zoom * scale, -24 * game.zoom * scale, 48 * game.zoom * scale, 48 * game.zoom * scale)
         ..restore();
 

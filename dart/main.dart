@@ -1,5 +1,5 @@
 /*!
- * Open Creeper v1.3.0
+ * Open Creeper v1.3.1
  * http://alexanderzeillinger.github.com/OpenCreeper/
  *
  * Copyright 2012, Alexander Zeillinger
@@ -16,7 +16,6 @@ part 'classes.dart';
 part 'game.dart';
 part 'engine.dart';
 part 'heightmap.dart';
-part 'helper.dart';
 part 'uisymbol.dart';
 part 'building.dart';
 part 'packet.dart';

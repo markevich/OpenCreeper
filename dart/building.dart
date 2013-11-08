@@ -17,7 +17,7 @@ class Building {
   }
 
   bool updateHoverState() {
-    Vector realPosition = Helper.tiled2screen(position);
+    Vector realPosition = position.tiled2screen();
     hovered = (engine.mouse.x > realPosition.x &&
               engine.mouse.x < realPosition.x + game.tileSize * size * game.zoom - 1 &&
               engine.mouse.y > realPosition.y &&
@@ -69,7 +69,7 @@ class Building {
       Vector targetPosition = new Vector(moveTargetPosition.x * game.tileSize, moveTargetPosition.y * game.tileSize);
       Vector ownPosition = new Vector(position.x * game.tileSize, position.y * game.tileSize);
       Vector delta = new Vector(targetPosition.x - ownPosition.x, targetPosition.y - ownPosition.y);
-      num distance = Helper.distance(targetPosition, ownPosition);
+      num distance = ownPosition.distanceTo(targetPosition);
 
       speed.x = (delta.x / distance) * Building.baseSpeed * game.speed / game.tileSize;
       speed.y = (delta.y / distance) * Building.baseSpeed * game.speed / game.tileSize;
@@ -342,12 +342,12 @@ class Building {
             }
 
             if (targets.length > 0) {
-              Helper.shuffle(targets);
+              targets.shuffle();
 
               var dx = targets[0].x * game.tileSize + game.tileSize / 2 - center.x;
               var dy = targets[0].y * game.tileSize + game.tileSize / 2 - center.y;
 
-              targetAngle = Helper.rad2deg(atan2(dy, dx)).floor();
+              targetAngle = engine.rad2deg(atan2(dy, dx)).floor();
               weaponTargetPosition = new Vector(targets[0].x, targets[0].y);
               rotating = true;
             }
@@ -430,7 +430,7 @@ class Building {
                   game.spores[i].health -= 2;
                   if (game.spores[i].health <= 0) {
                     game.spores[i].remove = true;
-                    engine.playSound("explosion", Helper.real2tiled(game.spores[i].position));
+                    engine.playSound("explosion", game.spores[i].position.real2tiled());
                     game.explosions.add(new Explosion(sporeCenter));
                   }
                 }
@@ -444,7 +444,7 @@ class Building {
     CanvasRenderingContext2D context = engine.canvas["buffer"].context;
     
     if (hovered || selected) {
-      Vector realPosition = Helper.tiled2screen(position);
+      Vector realPosition = position.tiled2screen();
 
       context
         ..lineWidth = 2 * game.zoom
@@ -457,8 +457,8 @@ class Building {
     CanvasRenderingContext2D context = engine.canvas["buffer"].context;
     
     if (status != "IDLE") {
-      Vector center = Helper.real2screen(getCenter());
-      Vector target = Helper.tiled2screen(moveTargetPosition);
+      Vector center = getCenter().real2screen();
+      Vector target = moveTargetPosition.tiled2screen();
 
       // draw box
       context
@@ -481,11 +481,11 @@ class Building {
       engine.canvas["main"].element.style.cursor = "none";
       
       Vector positionScrolled = game.getHoveredTilePosition();
-      Vector drawPosition = Helper.tiled2screen(positionScrolled);
+      Vector drawPosition = positionScrolled.tiled2screen();
       Vector positionScrolledCenter = new Vector(positionScrolled.x * game.tileSize + (game.tileSize / 2) * size, positionScrolled.y * game.tileSize + (game.tileSize / 2) * size);
-      Vector drawPositionCenter = Helper.real2screen(positionScrolledCenter);
+      Vector drawPositionCenter = positionScrolledCenter.real2screen();
 
-      Vector center = Helper.real2screen(getCenter());
+      Vector center = getCenter().real2screen();
 
       game.drawRangeBoxes(positionScrolled, imageID, weaponRadius, size);
 
@@ -509,8 +509,8 @@ class Building {
   void draw() {
     CanvasRenderingContext2D context = engine.canvas["buffer"].context;
     
-    Vector realPosition = Helper.tiled2screen(position);
-    Vector center = Helper.real2screen(getCenter());
+    Vector realPosition = position.tiled2screen();
+    Vector center = getCenter().real2screen();
 
     if (engine.isVisible(realPosition, new Vector(engine.images[imageID].width * game.zoom, engine.images[imageID].height * game.zoom))) {
       if (!built) {
@@ -526,7 +526,7 @@ class Building {
         if (imageID == "cannon") {
           context.save();
           context.translate(realPosition.x + 24 * game.zoom, realPosition.y + 24 * game.zoom);
-          context.rotate(Helper.deg2rad(angle));
+          context.rotate(engine.deg2rad(angle));
           context.drawImageScaled(engine.images["cannongun"], -24 * game.zoom * scale, -24 * game.zoom * scale, 48 * game.zoom * scale, 48 * game.zoom * scale);
           context.restore();
         }
@@ -564,7 +564,7 @@ class Building {
     // draw various stuff when operating
     if (operating) {
       if (imageID == "analyzer") {
-        Vector targetPosition = Helper.tiled2screen(weaponTargetPosition);
+        Vector targetPosition = weaponTargetPosition.tiled2screen();
         context.strokeStyle = '#00f';
         context.lineWidth = 4;
         context.beginPath();
@@ -580,7 +580,7 @@ class Building {
         context.stroke();
       }
       else if (imageID == "beam") {
-        Vector targetPosition = Helper.real2screen(weaponTargetPosition);
+        Vector targetPosition = weaponTargetPosition.real2screen();
         context.strokeStyle = '#f00';
         context.lineWidth = 4;
         context.beginPath();
@@ -599,7 +599,7 @@ class Building {
         context.drawImageScaled(engine.images["forcefield"], center.x - 168 * game.zoom, center.y - 168 * game.zoom, 336 * game.zoom, 336 * game.zoom);
       }
       else if (imageID == "terp") {
-        Vector targetPosition = Helper.tiled2screen(weaponTargetPosition);
+        Vector targetPosition = weaponTargetPosition.tiled2screen();
 
         context
           ..strokeStyle = '#f00'

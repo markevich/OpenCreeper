@@ -5,7 +5,7 @@ class World {
   Vector size;
   
   World(int seed) {
-    size = new Vector(Helper.randomInt(64, 127, seed), Helper.randomInt(64, 127, seed));
+    size = new Vector(engine.randomInt(64, 127, seed), engine.randomInt(64, 127, seed));
   }
 }
 
@@ -31,7 +31,7 @@ class Emitter {
   }
   
   void draw() {
-    Vector realPosition = Helper.tiled2screen(position);
+    Vector realPosition = position.tiled2screen();
     if (engine.isVisible(realPosition, new Vector(48 * game.zoom, 48 * game.zoom))) {
       engine.canvas["buffer"].context.drawImageScaled(engine.images[imageID], realPosition.x, realPosition.y, 48 * game.zoom, 48 * game.zoom);
     }
@@ -53,7 +53,7 @@ class Sporetower {
   }
 
   void reset() {
-    sporeCounter = Helper.randomInt(7500, 12500);
+    sporeCounter = engine.randomInt(7500, 12500);
   }
 
   Vector getCenter() {
@@ -71,14 +71,14 @@ class Sporetower {
   void spawn() {
     Building target = null;
     do {
-      target = game.buildings[Helper.randomInt(0, game.buildings.length - 1)];
+      target = game.buildings[engine.randomInt(0, game.buildings.length - 1)];
     } while (!target.built);
     Spore spore = new Spore(getCenter(), target.getCenter());
     game.spores.add(spore);
   }
   
   void draw() {
-    Vector realPosition = Helper.tiled2screen(position);
+    Vector realPosition = position.tiled2screen();
     if (engine.isVisible(realPosition, new Vector(48 * game.zoom, 48 * game.zoom))) {
       engine.canvas["buffer"].context.drawImageScaled(engine.images[imageID], realPosition.x, realPosition.y, 48 * game.zoom, 48 * game.zoom);
     }
@@ -98,7 +98,7 @@ class Smoke {
   }
 
   void draw() {
-    Vector realPosition = Helper.real2screen(position);
+    Vector realPosition = position.real2screen();
     if (engine.isVisible(realPosition, new Vector(48 * game.zoom, 48 * game.zoom))) {
       engine.canvas["buffer"].context.drawImageScaledFromSource(engine.images[imageID], (frame % 8) * 128, (frame / 8).floor() * 128, 128, 128, realPosition.x - 24 * game.zoom, realPosition.y - 24 * game.zoom, 48 * game.zoom, 48 * game.zoom);
     }
@@ -119,7 +119,7 @@ class Explosion {
   }
 
   void draw() {
-    Vector realPosition = Helper.real2screen(position);
+    Vector realPosition = position.real2screen();
     if (engine.isVisible(realPosition, new Vector(64 * game.zoom, 64 * game.zoom))) {
       engine.canvas["buffer"].context.drawImageScaledFromSource(engine.images[imageID], (frame % 8) * 64, (frame / 8).floor() * 64, 64, 64, realPosition.x - 32 * game.zoom, realPosition.y - 32 * game.zoom, 64 * game.zoom, 64 * game.zoom);
     }
@@ -148,6 +148,31 @@ class Vector {
 
   Vector operator +(Vector other) => new Vector(x + other.x, y + other.y);
   bool operator ==(Vector other) => (x == other.x && y == other.y);
+  
+  num distanceTo(Vector other) {
+    return sqrt(pow(x - other.x, 2) + pow(y - other.y, 2));
+  }
+  
+  // converts tile coordinates to canvas coordinates
+  Vector tiled2screen() {
+    return new Vector(
+        engine.halfWidth + (x - game.scroll.x) * game.tileSize * game.zoom,
+        engine.halfHeight + (y - game.scroll.y) * game.tileSize * game.zoom);
+  }
+  
+  // converts full coordinates to canvas coordinates
+  Vector real2screen() {
+    return new Vector(
+        engine.halfWidth + (x - game.scroll.x * game.tileSize) * game.zoom,
+        engine.halfHeight + (y - game.scroll.y * game.tileSize) * game.zoom);
+  }
+  
+  // converts full coordinates to tile coordinates
+  Vector real2tiled() {
+    return new Vector(
+        x ~/ game.tileSize,
+        y ~/ game.tileSize);
+  }
 }
 
 class Vector3 {
@@ -168,6 +193,16 @@ class Route {
   bool remove = false;
   
   Route();
+  
+  Route clone() {
+    Route route = new Route();
+    route.distanceTravelled = this.distanceTravelled;
+    route.distanceRemaining = this.distanceRemaining;
+    for (int i = 0; i < this.nodes.length; i++) {
+      route.nodes.add(this.nodes[i]);
+    }
+    return route;
+  }
 }
 
 /**

@@ -64,7 +64,7 @@ class Packet {
   void calculateVector() {
     Vector targetPosition = currentTarget.getCenter();
     Vector delta = new Vector(targetPosition.x - position.x, targetPosition.y - position.y);
-    num distance = Helper.distance(targetPosition, position);
+    num distance = position.distanceTo(targetPosition);
 
     speed.x = (delta.x / distance) * Packet.baseSpeed * game.speed * speedMultiplier;
     speed.y = (delta.y / distance) * Packet.baseSpeed * game.speed * speedMultiplier;
@@ -78,7 +78,7 @@ class Packet {
   void draw() {
     CanvasRenderingContext2D context = engine.canvas["buffer"].context;
     
-    Vector realPosition = Helper.real2screen(position);
+    Vector realPosition = position.real2screen();
     if (engine.isVisible(new Vector(realPosition.x - 8, realPosition.y - 8), new Vector(16 * game.zoom, 16 * game.zoom))) {
       context.drawImageScaled(engine.images[imageID], realPosition.x - 8 * game.zoom, realPosition.y - 8 * game.zoom, 16 * game.zoom, 16 * game.zoom);
     }
