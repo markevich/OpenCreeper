@@ -27,7 +27,7 @@ class Emitter {
   void spawn() {
     // only spawn creeper if not targeted by an analyzer
     if (building == null)
-      game.world.tiles[position.x + 1][position.y + 1].creep = strength;
+      game.world.tiles[position.x + 1][position.y + 1].creep += strength;
   }
   
   void draw() {
@@ -209,8 +209,9 @@ class Route {
  * Object to store canvas information
  */
 
+// TODO: rename to 'Renderer'
 class Canvas {
-  CanvasElement element;
+  CanvasElement element; // rename to 'view'
   CanvasRenderingContext2D context;
   int top, left, bottom, right;
 

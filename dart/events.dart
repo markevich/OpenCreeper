@@ -276,7 +276,9 @@ void onMouseUp(MouseEvent evt) {
           game.addBuilding(game.ghosts[i], game.symbols[game.activeSymbol].imageID);
         }
       }
-      if (soundSuccess)engine.playSound("click"); else
+      if (soundSuccess)
+        engine.playSound("click");
+      else
         engine.playSound("failure");
     }
   } else if (evt.which == 3) {
@@ -323,8 +325,8 @@ void doneResizing() {
   var height = window.innerHeight;
   engine.width = width;
   engine.height = height;
-  engine.halfWidth = (width / 2).floor();
-  engine.halfHeight = (height / 2).floor();
+  engine.halfWidth = width ~/ 2;
+  engine.halfHeight = height ~/ 2;
 
   engine.canvas["main"].updateRect(width, height);
   engine.canvas["levelfinal"].updateRect(width, height);

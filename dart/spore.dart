@@ -42,8 +42,8 @@ class Spore {
       remove = true;
       engine.playSound("explosion", targetPosition.real2tiled());
 
-      for (int i = (targetPosition.x / game.tileSize).floor() - 2; i < (targetPosition.x / game.tileSize).floor() + 2; i++) {
-        for (int j = (targetPosition.y / game.tileSize).floor() - 2; j < (targetPosition.y / game.tileSize).floor() + 2; j++) {
+      for (int i = (targetPosition.x ~/ game.tileSize) - 2; i < (targetPosition.x ~/ game.tileSize) + 2; i++) {
+        for (int j = (targetPosition.y ~/ game.tileSize) - 2; j < (targetPosition.y ~/ game.tileSize) + 2; j++) {
           if (game.withinWorld(i, j)) {
             num distance = pow((i * game.tileSize + game.tileSize / 2) - (targetPosition.x + game.tileSize), 2) + pow((j * game.tileSize + game.tileSize / 2) - (targetPosition.y + game.tileSize), 2);
             if (distance < pow(game.tileSize, 2)) {

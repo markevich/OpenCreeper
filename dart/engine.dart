@@ -12,7 +12,6 @@ class Engine {
   num FPS = 60, delta = 1000 / 60, fps_delta, fps_frames, fps_totalTime, fps_updateTime, fps_updateFrames, animationRequest;
   int width, height, halfWidth, halfHeight;
   var fps_lastTime;
-  List imageSrcs = [];
   Mouse mouse = new Mouse();
   Mouse mouseGUI = new Mouse();
   Map canvas, sounds, images;
@@ -69,20 +68,8 @@ class Engine {
     canvas["creeperbuffer"] = new Canvas(new CanvasElement(), width, height);
     canvas["creeper"] = new Canvas(new CanvasElement(), width, height);
     query('#canvasContainer').children.add(canvas["creeper"].element);
-
-    // load sounds
-    addSound("shot", "wav");
-    addSound("click", "wav");
-    addSound("explosion", "wav");
-    addSound("failure", "wav");
-    addSound("energy", "wav");
-    addSound("laser", "wav");
-
-    // load images
-    imageSrcs = ["analyzer", "numbers", "level0", "level1", "level2", "level3", "level4", "level5", "level6", "level7", "level8", "level9", "borders", "mask", "cannon",
-                 "cannongun", "base", "collector", "reactor", "storage", "terp", "packet_collection", "packet_energy", "packet_health", "relay", "emitter", "creeper",
-                 "mortar", "shell", "beam", "spore", "bomber", "bombership", "smoke", "explosion", "targetcursor", "sporetower", "forcefield", "shield", "projectile"];
-
+    
+    loadSounds();
   }
   
   void setupEventHandler() {
@@ -130,25 +117,33 @@ class Engine {
   Future loadImages() {
     var completer = new Completer();
     
+    // image names
+    List filenames = ["analyzer", "numbers", "level0", "level1", "level2", "level3", "level4", "level5", "level6", "level7", "level8", "level9", "borders", "mask", "cannon",
+                       "cannongun", "base", "collector", "reactor", "storage", "terp", "packet_collection", "packet_energy", "packet_health", "relay", "emitter", "creeper",
+                       "mortar", "shell", "beam", "spore", "bomber", "bombership", "smoke", "explosion", "targetcursor", "sporetower", "forcefield", "shield", "projectile"];    
     int loadedImages = 0;
-    int numImages = imageSrcs.length;
 
-    for (int i = 0; i < imageSrcs.length; i++) {
-      images[imageSrcs[i]] = new ImageElement(src: "images/" + imageSrcs[i] + ".png");
-      images[imageSrcs[i]].onLoad.listen((event) {
-        if (++loadedImages == numImages) {
+    filenames.forEach((filename) {
+      images[filename] = new ImageElement(src: "images/" + filename + ".png");
+      images[filename].onLoad.listen((event) {
+        if (++loadedImages == filenames.length) {
           completer.complete();
         }
       });
-    }
+    });
     return completer.future; 
   }
 
-  void addSound(String name, String type) {
-    sounds[name] = new List();
-    for (int i = 0; i < 5; i++) {
-      sounds[name].add(new AudioElement("sounds/" + name + "." + type));
-    }
+  void loadSounds() {
+    List filenames = ["shot.wav", "click.wav", "explosion.wav", "failure.wav", "energy.wav", "laser.wav"];
+    
+    filenames.forEach((filename) {
+      var name = filename.split(".")[0];
+      sounds[name] = new List();
+      for (int j = 0; j < 5; j++) {
+        sounds[name].add(new AudioElement("sounds/" + filename));
+      }
+    });
   }
 
   void playSound(String name, [Vector position]) {
@@ -156,9 +151,10 @@ class Engine {
 
     num volume = 1;
     if (position != null) {
-      Vector screenCenter = new Vector(
-          (halfWidth / (game.tileSize * game.zoom)).floor() + game.scroll.x,
-          (halfHeight / (game.tileSize * game.zoom)).floor() + game.scroll.y);
+      Vector screenCenter = new Vector(game.scroll.x, game.scroll.y);
+      /*Vector screenCenter = new Vector(
+          (halfWidth ~/ (game.tileSize * game.zoom)) + game.scroll.x,
+          (halfHeight ~/ (game.tileSize * game.zoom)) + game.scroll.y);*/
       num distance = position.distanceTo(screenCenter);
       volume = (game.zoom / pow(distance / 20, 2)).clamp(0, 1);
     }
@@ -227,20 +223,14 @@ class Engine {
    * is visible on the screen. Returns true or false.
    */
   bool isVisible(Vector position, Vector size) {
-    num r1_left = position.x;
-    num r1_top = position.y;
-    num r1_right = position.x + size.x;
-    num r1_bottom = position.y + size.y;
-
-    num r2_left = canvas["main"].left;
-    num r2_top = canvas["main"].top;
-    num r2_right = canvas["main"].right;
-    num r2_bottom = canvas["main"].bottom;
-
-    return !(r2_left > r1_right ||
-        r2_right < r1_left ||
-        r2_top > r1_bottom ||
-        r2_bottom < r1_top);
+    Rectangle object = new Rectangle(position.x, position.y, size.x, size.y);
+    
+    Rectangle view = new Rectangle(game.scroll.x * game.tileSize - engine.halfWidth * game.zoom,
+                                   game.scroll.y * game.tileSize - engine.halfHeight * game.zoom,
+                                   engine.width * game.zoom, 
+                                   engine.height * game.zoom);
+    
+    return view.intersects(object);
   }
   
   int randomInt(num from, num to, [num seed]) {
