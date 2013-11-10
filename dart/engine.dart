@@ -223,13 +223,8 @@ class Engine {
    * is visible on the screen. Returns true or false.
    */
   bool isVisible(Vector position, Vector size) {
-    Rectangle object = new Rectangle(position.x, position.y, size.x, size.y);
-    
-    Rectangle view = new Rectangle(game.scroll.x * game.tileSize - engine.halfWidth * game.zoom,
-                                   game.scroll.y * game.tileSize - engine.halfHeight * game.zoom,
-                                   engine.width * game.zoom, 
-                                   engine.height * game.zoom);
-    
+    Rectangle object = new Rectangle(position.x, position.y, size.x, size.y);    
+    Rectangle view = new Rectangle(0, 0, engine.width, engine.height);   
     return view.intersects(object);
   }
   

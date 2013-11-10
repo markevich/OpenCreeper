@@ -1,11 +1,3 @@
-/*!
- * Open Creeper v1.3.1
- * http://alexanderzeillinger.github.com/OpenCreeper/
- *
- * Copyright 2012, Alexander Zeillinger
- * Dual licensed under the MIT or GPL licenses.
- */
-
 library creeper;
 
 import 'dart:html';
