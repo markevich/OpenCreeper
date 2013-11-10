@@ -203,6 +203,18 @@ class Route {
     }
     return route;
   }
+  
+  /**
+   * Used for A*, checks if a [node] is in the list of nodes.
+   */
+  bool contains(Building node) {
+    for (int i = 0; i < nodes.length; i++) {
+      if (node.position == nodes[i].position) {
+        return true;
+      }
+    }
+    return false;
+  }
 }
 
 /**

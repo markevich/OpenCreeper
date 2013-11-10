@@ -37,18 +37,6 @@ class Game {
   }
 
   void init() {
-    buildings = [];
-    packets = [];
-    shells = [];
-    spores = [];
-    ships = [];
-    smokes = [];
-    explosions = [];
-    symbols = [];
-    emitters = [];
-    sporetowers = [];
-    packetQueue = [];
-    projectiles = [];
     reset();
     setupUI();
     
@@ -749,18 +737,6 @@ class Game {
   }
 
   /**
-   * Used for A*, checks if a [node] is already in a given [route].
-   */
-  bool inRoute(Building node, List route) {
-    for (int i = 0; i < route.length; i++) {
-      if (node.position == route[i].position) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /**
    * Main function of A*, finds a path to the target node for a given [packet].
    */
   void findRoute(Packet packet) {
@@ -801,7 +777,7 @@ class Game {
       for (int i = 0; i < neighbours.length; i++) {
 
         // if the neighbour is not already in the list..
-        if (!inRoute(neighbours[i], oldRoute.nodes)) {
+        if (!oldRoute.contains(neighbours[i])) {
 
           newRoutes++;
 
@@ -915,17 +891,15 @@ class Game {
           continue;
         if (building != null && building == buildings[i])
           continue;
-        int x1 = buildings[i].position.x * tileSize;
-        int x2 = buildings[i].position.x * tileSize + buildings[i].size * tileSize - 1;
-        int y1 = buildings[i].position.y * tileSize;
-        int y2 = buildings[i].position.y * tileSize + buildings[i].size * tileSize - 1;
-
-        int cx1 = position.x * tileSize;
-        int cx2 = position.x * tileSize + size * tileSize - 1;
-        int cy1 = position.y * tileSize;
-        int cy2 = position.y * tileSize + size * tileSize - 1;
-
-        if (((cx1 >= x1 && cx1 <= x2) || (cx2 >= x1 && cx2 <= x2)) && ((cy1 >= y1 && cy1 <= y2) || (cy2 >= y1 && cy2 <= y2))) {
+        Rectangle buildingRect = new Rectangle(buildings[i].position.x * tileSize,
+                                           buildings[i].position.y * tileSize,
+                                           buildings[i].size * tileSize - 1,
+                                           buildings[i].size * tileSize - 1);
+        Rectangle currentRect = new Rectangle(position.x * tileSize,
+                                              position.y * tileSize,
+                                              size * tileSize - 1,
+                                              size * tileSize - 1);       
+        if (currentRect.intersects(buildingRect)) {
           collision = true;
           break;
         }
@@ -1773,10 +1747,12 @@ class Game {
         context.drawImageScaled(engine.images["targetcursor"], position.x - tileSize * zoom, position.y - tileSize * zoom, 48 * zoom, 48 * zoom);
       }
 
+      // draw position info
       if (activeSymbol != -1) {
         drawPositionInfo();
       }
 
+      // draw terraform lines
       if (mode == "TERRAFORM") {
         Vector positionScrolled = getHoveredTilePosition();
         Vector drawPosition = positionScrolled.tiled2screen();
@@ -1804,9 +1780,6 @@ class Game {
         context.moveTo(drawPosition.x + tileSize * zoom, 0);
         context.lineTo(drawPosition.x + tileSize * zoom, engine.halfHeight * 2);
         context.stroke();
-
-        context.stroke();
-
       }
     }
 
