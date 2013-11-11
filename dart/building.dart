@@ -420,7 +420,7 @@ class Building {
 
               // find spore in range
               for (int i = 0; i < game.spores.length; i++) {
-                Vector sporeCenter = game.spores[i].getCenter();
+                Vector sporeCenter = game.spores[i].sprite.position;
                 var distance = pow(sporeCenter.x - center.x, 2) + pow(sporeCenter.y - center.y, 2);
 
                 if (distance <= pow(weaponRadius * game.tileSize, 2)) {
@@ -430,7 +430,7 @@ class Building {
                   game.spores[i].health -= 2;
                   if (game.spores[i].health <= 0) {
                     game.spores[i].remove = true;
-                    engine.playSound("explosion", game.spores[i].position.real2tiled());
+                    engine.playSound("explosion", game.spores[i].sprite.position.real2tiled());
                     game.explosions.add(new Explosion(sporeCenter));
                   }
                 }

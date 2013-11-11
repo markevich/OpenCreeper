@@ -1,43 +1,41 @@
 part of creeper;
 
 class Spore {
-  Vector position, targetPosition, speed = new Vector(0, 0);
-  String imageID;
+  Vector targetPosition, speed = new Vector(0, 0);
   bool remove = false;
   num health = 100;
-  int rotation = 0, trailCounter = 0;
+  int trailCounter = 0;
+  Sprite sprite;
   static final int baseSpeed = 1;
 
-  Spore(this.position, this.targetPosition) {
-    imageID = "spore";
+  Spore(position, this.targetPosition) {   
+    sprite = new Sprite(1, engine.images["spore"], position, 32, 32);
+    sprite.anchor = new Vector(0.5, 0.5);  
+    engine.canvas["buffer"].addSprite(sprite);      
     init();
   }
 
   void init() {
-    Vector delta = new Vector(targetPosition.x - position.x, targetPosition.y - position.y);
-    num distance = position.distanceTo(targetPosition);
+    Vector delta = new Vector(targetPosition.x - sprite.position.x, targetPosition.y - sprite.position.y);
+    num distance = sprite.position.distanceTo(targetPosition);
 
     speed.x = (delta.x / distance) * Spore.baseSpeed * game.speed;
     speed.y = (delta.y / distance) * Spore.baseSpeed * game.speed;
-  }
-
-  Vector getCenter() {
-    return new Vector(position.x - 16, position.y - 16);
   }
 
   void move() {
     trailCounter++;
     if (trailCounter == 10) {
       trailCounter = 0;
-      game.smokes.add(new Smoke(getCenter()));
+      game.smokes.add(new Smoke(new Vector(sprite.position.x, sprite.position.y - 16)));
     }
-    rotation += 10;
-    if (rotation > 359)
-      rotation -= 359;
+    sprite.rotation += 10;
+    if (sprite.rotation > 359)
+      sprite.rotation -= 359;
 
-    position += speed;
+    sprite.position += speed;
 
-    if (position.x > targetPosition.x - 2 && position.x < targetPosition.x + 2 && position.y > targetPosition.y - 2 && position.y < targetPosition.y + 2) {
+    if (sprite.position.x > targetPosition.x - 2 && sprite.position.x < targetPosition.x + 2 && sprite.position.y > targetPosition.y - 2 && sprite.position.y < targetPosition.y + 2) {
       // if the target is reached explode and remove
       remove = true;
       engine.playSound("explosion", targetPosition.real2tiled());
@@ -52,21 +50,6 @@ class Spore {
           }
         }
       }
-    }
-  }
-
-  void draw() {
-    CanvasRenderingContext2D context = engine.canvas["buffer"].context;
-    
-    Vector realPosition = position.real2screen();
-
-    if (engine.isVisible(realPosition, new Vector(32 * game.zoom, 32 * game.zoom))) {
-      context
-        ..save()
-        ..translate(realPosition.x, realPosition.y)
-        ..rotate(engine.deg2rad(rotation))
-        ..drawImageScaled(engine.images[imageID], -16 * game.zoom, -16 * game.zoom, 32 * game.zoom, 32 * game.zoom)
-        ..restore();
     }
   }
 }

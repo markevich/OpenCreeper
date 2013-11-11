@@ -86,22 +86,15 @@ class Sporetower {
 }
 
 class Smoke {
-  Vector position;
-  int frame;
-  String imageID;
+  Sprite sprite;
   static int counter;
 
   Smoke(Vector position) {
-    this.position = new Vector(position.x, position.y);
-    frame = 0;
-    imageID = "smoke";
-  }
-
-  void draw() {
-    Vector realPosition = position.real2screen();
-    if (engine.isVisible(realPosition, new Vector(48 * game.zoom, 48 * game.zoom))) {
-      engine.canvas["buffer"].context.drawImageScaledFromSource(engine.images[imageID], (frame % 8) * 128, (frame / 8).floor() * 128, 128, 128, realPosition.x - 24 * game.zoom, realPosition.y - 24 * game.zoom, 48 * game.zoom, 48 * game.zoom);
-    }
+    sprite = new Sprite(0, engine.images["smoke"], position, 128, 128);
+    sprite.animated = true;
+    sprite.anchor = new Vector(0.5, 0.5);  
+    sprite.scale = new Vector(0.5, 0.5);
+    engine.canvas["buffer"].addSprite(sprite);    
   }
 }
 
@@ -145,9 +138,14 @@ class Vector {
   num x, y;
 
   Vector(this.x, this.y);
+  Vector.empty() : this(0, 0);
 
   Vector operator +(Vector other) => new Vector(x + other.x, y + other.y);
   bool operator ==(Vector other) => (x == other.x && y == other.y);
+  
+  String toString() {
+    return "$x/$y";
+  }
   
   num distanceTo(Vector other) {
     return sqrt(pow(x - other.x, 2) + pow(y - other.y, 2));
@@ -221,28 +219,102 @@ class Route {
  * Object to store canvas information
  */
 
-// TODO: rename to 'Renderer'
-class Canvas {
-  CanvasElement element; // rename to 'view'
+class Renderer {
+  CanvasElement view;
   CanvasRenderingContext2D context;
   int top, left, bottom, right;
+  List<Sprite> sprites = new List<Sprite>();
 
-  Canvas(this.element, width, height) {
+  Renderer(this.view, width, height) {
     updateRect(width, height);
-    element.style.position = "absolute";
-    context = element.getContext('2d');
+    view.style.position = "absolute";
+    context = view.getContext('2d');
   }
 
   void clear() {
-    context.clearRect(0, 0, element.width, element.height);
+    context.clearRect(0, 0, view.width, view.height);
   }
   
   void updateRect(int width, int height) {
-    element.width = width;
-    element.height = height;
-    top = element.offset.top;
-    left = element.offset.left;
-    bottom = element.offset.top + element.offset.height;
-    right = element.offset.left + element.offset.width;
+    view.width = width;
+    view.height = height;
+    top = view.offset.top;
+    left = view.offset.left;
+    bottom = view.offset.top + view.offset.height;
+    right = view.offset.left + view.offset.width;
+  }
+  
+  void addSprite(Sprite sprite) {
+    sprites.add(sprite);
+    sprites.sort((Sprite a, Sprite b) {
+      return a.layer - b.layer;
+    });
+  }
+
+  void removeSprite(Sprite sprite) {
+    sprites.removeAt(sprites.indexOf(sprite));  
+  }
+  
+  void draw() {
+    for (var sprite in sprites) {
+      Vector realPosition = sprite.position.real2screen();
+  
+      if (engine.isVisible(realPosition, new Vector(sprite.size.x * game.zoom, sprite.size.y * game.zoom))) {
+        
+        if (sprite.rotation != 0) {     
+          context.save();
+          context.translate(realPosition.x, realPosition.y);
+          context.rotate(engine.deg2rad(sprite.rotation));             
+          if (sprite.animated)
+            context.drawImageScaledFromSource(sprite.image,
+                                              (sprite.frame % 8) * sprite.size.x,
+                                              (sprite.frame ~/ 8) * sprite.size.y,
+                                              sprite.size.x,
+                                              sprite.size.y,
+                                              -sprite.size.x * sprite.anchor.x * sprite.scale.x * game.zoom,
+                                              -sprite.size.y * sprite.anchor.y * sprite.scale.y * game.zoom,
+                                              sprite.size.x * sprite.scale.x * game.zoom,
+                                              sprite.size.y * sprite.scale.y * game.zoom);
+          else
+            context.drawImageScaled(sprite.image,
+                                    -sprite.size.x * sprite.anchor.x * game.zoom, 
+                                    -sprite.size.y * sprite.anchor.y * game.zoom, 
+                                    sprite.size.x * game.zoom, 
+                                    sprite.size.y * game.zoom);
+          context.restore();
+        } else {         
+          if (sprite.animated)
+            context.drawImageScaledFromSource(sprite.image,
+                                              (sprite.frame % 8) * sprite.size.x,
+                                              (sprite.frame ~/ 8) * sprite.size.y,
+                                              sprite.size.x,
+                                              sprite.size.y,
+                                              realPosition.x - sprite.size.x * sprite.anchor.x * sprite.scale.x * game.zoom,
+                                              realPosition.y - sprite.size.y * sprite.anchor.y * sprite.scale.y * game.zoom,
+                                              sprite.size.x * sprite.scale.x * game.zoom,
+                                              sprite.size.y * sprite.scale.y * game.zoom);
+          else
+            context.drawImageScaled(sprite.image,
+                                    realPosition.x - sprite.size.x * sprite.anchor.x * game.zoom,
+                                    realPosition.y - sprite.size.y * sprite.anchor.y * game.zoom,
+                                    sprite.size.x * game.zoom,
+                                    sprite.size.y * game.zoom);    
+          }
+        }
+    }
+  }
+}
+
+class Sprite {
+  int layer, frame = 0;
+  ImageElement image;
+  Vector anchor, scale, position, size;
+  num rotation = 0;
+  bool animated = false;
+
+  Sprite(this.layer, this.image, this.position, width, height) {
+    anchor = new Vector(0.0, 0.0);
+    scale = new Vector(1.0, 1.0);
+    size = new Vector(width, height);
   }
 }

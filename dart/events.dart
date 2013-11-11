@@ -26,7 +26,7 @@ void onKeyDown(KeyboardEvent evt) {
     if (evt.keyCode == game.symbols[i].keyCode) {
       game.activeSymbol = i;
       game.symbols[i].active = true;
-      engine.canvas["main"].element.style.cursor = "none";
+      engine.canvas["main"].view.style.cursor = "none";
     }
   }
  
@@ -68,7 +68,7 @@ void onKeyDown(KeyboardEvent evt) {
     for (int i = 0; i < game.ships.length; i++) {
       game.ships[i].selected = false;
     }
-    engine.canvas["main"].element.style.cursor = "url('images/Normal.cur') 2 2, pointer";
+    engine.canvas["main"].view.style.cursor = "url('images/Normal.cur') 2 2, pointer";
   }
 
   if (evt.keyCode == KeyCode.LEFT)
@@ -182,7 +182,7 @@ void onClickGUI(MouseEvent evt) {
   }
 
   if (game.activeSymbol != -1) {
-    engine.canvas["main"].element.style.cursor = "none";
+    engine.canvas["main"].view.style.cursor = "none";
   }
 }
 
@@ -232,7 +232,7 @@ void onMouseUp(MouseEvent evt) {
       if (game.buildings[i].built && game.buildings[i].selected && game.buildings[i].canMove) {
         // check if it can be placed
         if (game.canBePlaced(position, game.buildings[i].size, game.buildings[i])) {
-          engine.canvas["main"].element.style.cursor = "url('images/Normal.cur') 2 2, pointer";
+          engine.canvas["main"].view.style.cursor = "url('images/Normal.cur') 2 2, pointer";
           game.buildings[i].operating = false;
           game.buildings[i].weaponTargetPosition = null;
           game.buildings[i].status = "RISING";
@@ -335,8 +335,8 @@ void doneResizing() {
   engine.canvas["creeperbuffer"].updateRect(width, height);
   engine.canvas["creeper"].updateRect(width, height);
 
-  engine.canvas["gui"].top = engine.canvas["gui"].element.offsetTop;
-  engine.canvas["gui"].left = engine.canvas["gui"].element.offsetLeft;
+  engine.canvas["gui"].top = engine.canvas["gui"].view.offsetTop;
+  engine.canvas["gui"].left = engine.canvas["gui"].view.offsetLeft;
 
   if (game != null) {
     game.copyTerrain();

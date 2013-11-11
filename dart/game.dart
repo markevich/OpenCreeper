@@ -422,7 +422,7 @@ class Game {
     activeSymbol = -1;
     for (int i = 0; i < symbols.length; i++)
       symbols[i].active = false;
-    engine.canvas["main"].element.style.cursor = "url('images/Normal.cur') 2 2, pointer";
+    engine.canvas["main"].view.style.cursor = "url('images/Normal.cur') 2 2, pointer";
   }
 
   void setupUI() {
@@ -505,7 +505,7 @@ class Game {
       CanvasPattern pattern = engine.canvas["level$i"].context.createPatternFromImage(engine.images["level$i"], 'repeat');
       engine.canvas["level$i"].context.globalCompositeOperation = 'source-in';
       engine.canvas["level$i"].context.fillStyle = pattern;
-      engine.canvas["level$i"].context.fillRect(0, 0, engine.canvas["level$i"].element.width, engine.canvas["level$i"].element.height);
+      engine.canvas["level$i"].context.fillRect(0, 0, engine.canvas["level$i"].view.width, engine.canvas["level$i"].view.height);
       engine.canvas["level$i"].context.globalCompositeOperation = 'source-over';
     }
 
@@ -558,7 +558,7 @@ class Game {
 
     engine.canvas["levelbuffer"].clear();
     for (int k = 0; k < 10; k++) {
-      engine.canvas["levelbuffer"].context.drawImage(engine.canvas["level$k"].element, 0, 0);
+      engine.canvas["levelbuffer"].context.drawImage(engine.canvas["level$k"].view, 0, 0);
     }
     query('#loading').style.display = 'none';
   }
@@ -594,7 +594,7 @@ class Game {
       height = world.size.y * tileSize - top ;
     }
 
-    engine.canvas["levelfinal"].context.drawImageScaledFromSource(engine.canvas["levelbuffer"].element, left, top, width, height, delta.x, delta.y, engine.width - delta2.x, engine.height - delta2.y);
+    engine.canvas["levelfinal"].context.drawImageScaledFromSource(engine.canvas["levelbuffer"].view, left, top, width, height, delta.x, delta.y, engine.width - delta2.x, engine.height - delta2.y);
   }
 
   /**
@@ -1143,8 +1143,10 @@ class Game {
 
   void updateSpores() {
     for (int i = spores.length - 1; i >= 0; i--) {
-      if (spores[i].remove)
+      if (spores[i].remove) {
+        engine.canvas["buffer"].removeSprite(spores[i].sprite);
         spores.removeAt(i);
+      }
       else
         spores[i].move();
     }
@@ -1155,10 +1157,13 @@ class Game {
     if (Smoke.counter > 3) {
       Smoke.counter = 0;
       for (int i = smokes.length - 1; i >= 0; i--) {
-        if (smokes[i].frame == 36)
+        if (smokes[i].sprite.frame == 36) {
+          engine.canvas["buffer"].removeSprite(smokes[i].sprite);
           smokes.removeAt(i);
-        else
-          smokes[i].frame++;
+        }
+        else {
+          smokes[i].sprite.frame++;
+        }
       }
     }
   }
@@ -1436,7 +1441,7 @@ class Game {
     }
     
     engine.canvas["creeper"].clear();
-    engine.canvas["creeper"].context.drawImage(engine.canvas["creeperbuffer"].element, 0, 0);
+    engine.canvas["creeper"].context.drawImage(engine.canvas["creeperbuffer"].view, 0, 0);
   }
 
   /**
@@ -1719,19 +1724,16 @@ class Game {
     }
 
     // draw smokes
-    for (int i = 0; i < smokes.length; i++) {
+    /*for (int i = 0; i < smokes.length; i++) {
       smokes[i].draw();
-    }
+    }*/
 
     // draw explosions
     for (int i = 0; i < explosions.length; i++) {
       explosions[i].draw();
     }
-
-    // draw spores
-    for (int i = 0; i < spores.length; i++) {
-      spores[i].draw();
-    }
+    
+    engine.canvas["buffer"].draw();
 
     if (engine.mouse.active) {
 
@@ -1799,7 +1801,7 @@ class Game {
     
     drawCreeper();
 
-    engine.canvas["main"].context.drawImage(engine.canvas["buffer"].element, 0, 0);
+    engine.canvas["main"].context.drawImage(engine.canvas["buffer"].view, 0, 0);
 
     window.requestAnimationFrame(draw);
   }
