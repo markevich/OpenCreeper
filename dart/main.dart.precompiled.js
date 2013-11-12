@@ -429,6 +429,9 @@ JSNumber: {"": "num/Interceptor;",
     }
     throw H.wrapException(P.UnsupportedError$('' + receiver));
   },
+  floor$0: function(receiver) {
+    return this.toInt$0(Math.floor(receiver));
+  },
   roundToDouble$0: function(receiver) {
     if (receiver < 0)
       return -Math.round(-receiver);
@@ -2440,10 +2443,16 @@ onMouseMove: function(evt) {
 },
 
 onMouseMoveGUI: function(evt) {
-  var i, t1;
+  var i, t1, t2, t3;
   $.engine.updateMouseGUI$1(evt);
-  for (i = 0; t1 = $.game.symbols, i < t1.length; ++i)
-    t1[i].checkHovered$0();
+  for (i = 0; t1 = $.game.symbols, i < t1.length; ++i) {
+    t1 = t1[i];
+    t2 = t1.rectangle;
+    t3 = $.engine.mouseGUI;
+    t3 = new P.Point(t3.x, t3.y);
+    t3.$builtinTypeInfo = [null];
+    t1.hovered = t2.containsPoint$1(t2, t3);
+  }
 },
 
 onKeyDown: function(evt) {
@@ -2462,13 +2471,17 @@ onKeyDown: function(evt) {
         throw H.ioore(t4, i);
       t5.active = true;
       t2 = $.engine.canvas;
-      J.set$cursor$x(t2.$index(t2, "main").get$element().style, "none");
+      J.set$cursor$x(J.get$style$x(J.get$view$x(t2.$index(t2, "main"))), "none");
     }
   }
-  if (t1.get$keyCode(evt) === 112)
+  if (t1.get$keyCode(evt) === 112) {
     $.game.faster$0();
-  if (t1.get$keyCode(evt) === 113)
+    t1.preventDefault$0(evt);
+  }
+  if (t1.get$keyCode(evt) === 113) {
     $.game.slower$0();
+    t1.preventDefault$0(evt);
+  }
   if (t1.get$keyCode(evt) === 46)
     for (i = 0; t2 = $.game, t3 = t2.buildings, i < t3.length; ++i) {
       t3 = t3[i];
@@ -2493,7 +2506,7 @@ onKeyDown: function(evt) {
     for (t2 = t2.ships, i = 0; i < t2.length; ++i)
       t2[i].selected = false;
     t2 = $.engine.canvas;
-    J.set$cursor$x(t2.$index(t2, "main").get$element().style, "url('images/Normal.cur') 2 2, pointer");
+    J.set$cursor$x(J.get$style$x(J.get$view$x(t2.$index(t2, "main"))), "url('images/Normal.cur') 2 2, pointer");
   }
   if (t1.get$keyCode(evt) === 37)
     $.game.scrollingLeft = true;
@@ -2504,6 +2517,19 @@ onKeyDown: function(evt) {
   if (t1.get$keyCode(evt) === 40)
     $.game.scrollingDown = true;
   position = $.game.getHoveredTilePosition$0();
+  if (t1.get$keyCode(evt) === 86) {
+    t2 = $.game;
+    t3 = t2.explosions;
+    t4 = position.x;
+    t2 = t2.tileSize;
+    if (typeof t4 !== "number")
+      throw t4.$mul();
+    t5 = position.y;
+    if (typeof t5 !== "number")
+      throw t5.$mul();
+    t3.push(U.Explosion$(new U.Vector(t4 * t2, t5 * t2)));
+    $.engine.playSound$2("explosion", position);
+  }
   if (t1.get$keyCode(evt) === 78) {
     t2 = $.game.world.tiles;
     t3 = position.x;
@@ -2534,15 +2560,8 @@ onKeyDown: function(evt) {
       if (typeof t3 !== "number")
         throw t3.$sub();
       tilesToRedraw.push(new U.Vector(t4, t3 - 1));
-      t3 = position.x;
-      if (typeof t3 !== "number")
-        throw t3.$add();
-      tilesToRedraw.push(new U.Vector(t3 + 1, position.y));
-      t3 = position.x;
-      t4 = position.y;
-      if (typeof t4 !== "number")
-        throw t4.$add();
-      tilesToRedraw.push(new U.Vector(t3, t4 + 1));
+      tilesToRedraw.push(new U.Vector(J.$add$ns(position.x, 1), position.y));
+      tilesToRedraw.push(new U.Vector(position.x, J.$add$ns(position.y, 1)));
       $.game.redrawTiles$1(tilesToRedraw);
     }
   }
@@ -2573,15 +2592,8 @@ onKeyDown: function(evt) {
       if (typeof t2 !== "number")
         throw t2.$sub();
       tilesToRedraw.push(new U.Vector(t3, t2 - 1));
-      t2 = position.x;
-      if (typeof t2 !== "number")
-        throw t2.$add();
-      tilesToRedraw.push(new U.Vector(t2 + 1, position.y));
-      t2 = position.x;
-      t3 = position.y;
-      if (typeof t3 !== "number")
-        throw t3.$add();
-      tilesToRedraw.push(new U.Vector(t2, t3 + 1));
+      tilesToRedraw.push(new U.Vector(J.$add$ns(position.x, 1), position.y));
+      tilesToRedraw.push(new U.Vector(position.x, J.$add$ns(position.y, 1)));
       $.game.redrawTiles$1(tilesToRedraw);
     }
   }
@@ -2602,15 +2614,8 @@ onKeyDown: function(evt) {
     if (typeof t2 !== "number")
       throw t2.$sub();
     tilesToRedraw.push(new U.Vector(t3, t2 - 1));
-    t2 = position.x;
-    if (typeof t2 !== "number")
-      throw t2.$add();
-    tilesToRedraw.push(new U.Vector(t2 + 1, position.y));
-    t2 = position.x;
-    t3 = position.y;
-    if (typeof t3 !== "number")
-      throw t3.$add();
-    tilesToRedraw.push(new U.Vector(t2, t3 + 1));
+    tilesToRedraw.push(new U.Vector(J.$add$ns(position.x, 1), position.y));
+    tilesToRedraw.push(new U.Vector(position.x, J.$add$ns(position.y, 1)));
     $.game.redrawTiles$1(tilesToRedraw);
   }
   if ($.game.mode === "TERRAFORM") {
@@ -2672,7 +2677,7 @@ onClickGUI: function(evt) {
     t2[i].setActive$0();
   if (t1.activeSymbol !== -1) {
     t1 = $.engine.canvas;
-    J.set$cursor$x(t1.$index(t1, "main").get$element().style, "none");
+    J.set$cursor$x(J.get$style$x(J.get$view$x(t1.$index(t1, "main"))), "none");
   }
 },
 
@@ -2728,7 +2733,7 @@ onMouseUp: function(evt) {
           throw H.ioore(t3, i);
         if (t1.canBePlaced$3(position, t2, t3[i])) {
           t1 = $.engine.canvas;
-          J.set$cursor$x(t1.$index(t1, "main").get$element().style, "url('images/Normal.cur') 2 2, pointer");
+          J.set$cursor$x(J.get$style$x(J.get$view$x(t1.$index(t1, "main"))), "url('images/Normal.cur') 2 2, pointer");
           t1 = $.game.buildings;
           if (i >= t1.length)
             throw H.ioore(t1, i);
@@ -2802,7 +2807,8 @@ onMouseUp: function(evt) {
           t4 = t1.activeSymbol;
           if (t4 >>> 0 !== t4 || t4 >= t3.length)
             throw H.ioore(t3, t4);
-          t1.addBuilding$2(t2, t3[t4].imageID);
+          t4 = t3[t4].imageID;
+          t1.buildings.push(U.Building$(t2, t4));
           soundSuccess = true;
         }
       }
@@ -2876,11 +2882,11 @@ doneResizing: function() {
   t1 = $.engine.canvas;
   t1 = t1.$index(t1, "gui");
   t2 = $.engine.canvas;
-  J.set$top$x(t1, t2.$index(t2, "gui").get$element().offsetTop);
+  J.set$top$x(t1, J.get$offsetTop$x(J.get$view$x(t2.$index(t2, "gui"))));
   t2 = $.engine.canvas;
   t2 = t2.$index(t2, "gui");
   t1 = $.engine.canvas;
-  J.set$left$x(t2, t1.$index(t1, "gui").get$element().offsetLeft);
+  J.set$left$x(t2, J.get$offsetLeft$x(J.get$view$x(t1.$index(t1, "gui"))));
   t1 = $.game;
   if (t1 != null) {
     t1.copyTerrain$0();
@@ -2984,59 +2990,52 @@ Building: {"": "Object;position>,moveTargetPosition?,weaponTargetPosition?,speed
     }
   },
   calculateVector$0: function() {
-    var t1, t2, t3, t4, t5, t6, targetPosition, ownPosition, delta, distance;
-    t1 = this.moveTargetPosition;
-    t2 = t1.x;
-    t3 = this.position;
-    t4 = t3.x;
-    if (t2 == null ? t4 == null : t2 === t4) {
-      t5 = t1.y;
-      t6 = t3.y;
-      t6 = t5 == null ? t6 != null : t5 !== t6;
-      t5 = t6;
-    } else
-      t5 = true;
-    if (t5) {
-      t5 = $.game.tileSize;
+    var t1, t2, t3, targetPosition, ownPosition, t4, delta, distance, t5;
+    if (!J.$eq(this.moveTargetPosition.x, this.position.x) || !J.$eq(this.moveTargetPosition.y, this.position.y)) {
+      t1 = this.moveTargetPosition;
+      t2 = t1.x;
+      t3 = $.game.tileSize;
       if (typeof t2 !== "number")
         throw t2.$mul();
       t1 = t1.y;
       if (typeof t1 !== "number")
         throw t1.$mul();
-      targetPosition = new U.Vector(t2 * t5, t1 * t5);
-      if (typeof t4 !== "number")
-        throw t4.$mul();
-      t3 = t3.y;
+      targetPosition = new U.Vector(t2 * t3, t1 * t3);
+      t1 = this.position;
+      t2 = t1.x;
+      if (typeof t2 !== "number")
+        throw t2.$mul();
+      t1 = t1.y;
+      if (typeof t1 !== "number")
+        throw t1.$mul();
+      ownPosition = new U.Vector(t2 * t3, t1 * t3);
+      t3 = targetPosition.x;
+      t1 = ownPosition.x;
       if (typeof t3 !== "number")
-        throw t3.$mul();
-      ownPosition = new U.Vector(t4 * t5, t3 * t5);
-      t5 = targetPosition.x;
-      t3 = ownPosition.x;
-      if (typeof t5 !== "number")
-        throw t5.$sub();
-      if (typeof t3 !== "number")
-        throw H.iae(t3);
-      t4 = targetPosition.y;
-      t1 = ownPosition.y;
-      if (typeof t4 !== "number")
-        throw t4.$sub();
+        throw t3.$sub();
       if (typeof t1 !== "number")
         throw H.iae(t1);
-      delta = new U.Vector(t5 - t3, t4 - t1);
+      t2 = targetPosition.y;
+      t4 = ownPosition.y;
+      if (typeof t2 !== "number")
+        throw t2.$sub();
+      if (typeof t4 !== "number")
+        throw H.iae(t4);
+      delta = new U.Vector(t3 - t1, t2 - t4);
       distance = ownPosition.distanceTo$1(targetPosition);
-      t1 = this.speed;
-      t4 = delta.x;
-      if (typeof t4 !== "number")
-        throw t4.$div();
-      t3 = $.game;
-      t5 = t3.speed;
-      t2 = t3.tileSize;
-      t1.x = t4 / distance * 0.5 * t5 / t2;
-      t5 = this.speed;
-      t4 = delta.y;
-      if (typeof t4 !== "number")
-        throw t4.$div();
-      t5.y = t4 / distance * 0.5 * t3.speed / t2;
+      t4 = this.speed;
+      t2 = delta.x;
+      if (typeof t2 !== "number")
+        throw t2.$div();
+      t1 = $.game;
+      t3 = t1.speed;
+      t5 = t1.tileSize;
+      t4.x = t2 / distance * 0.5 * t3 / t5;
+      t3 = this.speed;
+      t2 = delta.y;
+      if (typeof t2 !== "number")
+        throw t2.$div();
+      t3.y = t2 / distance * 0.5 * t1.speed / t5;
       if (J.abs$0$n(this.speed.x) > J.abs$0$n(delta.x))
         this.speed.x = delta.x;
       if (J.abs$0$n(this.speed.y) > J.abs$0$n(delta.y))
@@ -3063,31 +3062,17 @@ Building: {"": "Object;position>,moveTargetPosition?,weaponTargetPosition?,speed
         for (j = 0; j < this.size; ++j) {
           t1 = $.game.world.tiles;
           t2 = this.position;
-          t3 = t2.x;
-          if (typeof t3 !== "number")
-            throw t3.$add();
-          t3 += i;
+          t3 = J.$add$ns(t2.x, i);
           if (t3 >>> 0 !== t3 || t3 >= t1.length)
             throw H.ioore(t1, t3);
-          t3 = t1[t3];
-          t2 = t2.y;
-          if (typeof t2 !== "number")
-            throw t2.$add();
-          if (J.$index$asx(t3, t2 + j).get$creep() > 0) {
+          if (J.$index$asx(t1[t3], J.$add$ns(t2.y, j)).get$creep() > 0) {
             t1 = this.health;
             t2 = $.game.world.tiles;
             t3 = this.position;
-            t4 = t3.x;
-            if (typeof t4 !== "number")
-              throw t4.$add();
-            t4 += i;
+            t4 = J.$add$ns(t3.x, i);
             if (t4 >>> 0 !== t4 || t4 >= t2.length)
               throw H.ioore(t2, t4);
-            t4 = t2[t4];
-            t3 = t3.y;
-            if (typeof t3 !== "number")
-              throw t3.$add();
-            this.health = t1 - J.$index$asx(t4, t3 + j).get$creep() / 10;
+            this.health = t1 - J.$index$asx(t2[t4], J.$add$ns(t3.y, j)).get$creep() / 10;
           }
         }
       if (this.health < 0)
@@ -3107,22 +3092,23 @@ Building: {"": "Object;position>,moveTargetPosition?,weaponTargetPosition?,speed
         t1 = this.position;
         t2 = t1.x;
         t3 = this.weaponRadius;
+        t2 = J.$add$ns(t2, t3);
         if (typeof t2 !== "number")
-          throw t2.$add();
-        if (!(i <= t2 + t3))
+          throw H.iae(t2);
+        if (!(i <= t2))
           break;
         t1 = t1.y;
         if (typeof t1 !== "number")
           throw t1.$sub();
         j = t1 - t3;
         while (true) {
-          t1 = this.position.y;
-          t2 = this.weaponRadius;
+          t1 = J.$add$ns(this.position.y, this.weaponRadius);
           if (typeof t1 !== "number")
-            throw t1.$add();
-          if (!(j <= t1 + t2))
+            throw H.iae(t1);
+          if (!(j <= t1))
             break;
-          if ($.game.withinWorld$2(i, j)) {
+          t1 = $.game.world;
+          if (t1.contains$1(t1, new U.Vector(i, j))) {
             t1 = $.game.tileSize;
             t2 = center.x;
             if (typeof t2 !== "number")
@@ -3194,14 +3180,9 @@ Building: {"": "Object;position>,moveTargetPosition?,weaponTargetPosition?,speed
       for (i = -5; i < 7; ++i)
         for (j = -5; j < 7; ++j) {
           t1 = this.position;
-          t2 = t1.x;
-          if (typeof t2 !== "number")
-            throw t2.$add();
-          t1 = t1.y;
-          if (typeof t1 !== "number")
-            throw t1.$add();
-          positionCurrent = new U.Vector(t2 + i, t1 + j);
-          if ($.game.withinWorld$2(positionCurrent.x, positionCurrent.y)) {
+          positionCurrent = new U.Vector(J.$add$ns(t1.x, i), J.$add$ns(t1.y, j));
+          t1 = $.game.world;
+          if (t1.contains$1(t1, positionCurrent)) {
             t1 = positionCurrent.x;
             t2 = $.game;
             t3 = t2.tileSize;
@@ -3269,23 +3250,15 @@ Building: {"": "Object;position>,moveTargetPosition?,weaponTargetPosition?,speed
     }
   },
   checkOperating$0: function() {
-    var center, i, t1, t2, t3, emitterCenter, t4, target, lowestTile, j, tileHeight, terraformElement, height, tilesToRedraw, targets, r, radius, t5, t6, t7, absoluteDelta, turnRate, projectile, highestCreep, shell, sporeCenter;
+    var center, i, t1, emitterCenter, t2, t3, t4, target, lowestTile, j, tileHeight, terraformElement, height, tilesToRedraw, targets, r, radius, t5, t6, t7, absoluteDelta, turnRate, projectile, highestCreep, shell, sporeCenter;
     this.operating = false;
     if (this.needsEnergy && this.active && this.status === "IDLE") {
       this.energyCounter = this.energyCounter + 1;
       center = this.getCenter$0();
       if (this.imageID === "analyzer" && this.energy > 0)
         if (this.weaponTargetPosition == null)
-          for (i = 0; t1 = $.game, t2 = t1.emitters, i < t2.length; ++i) {
-            t2 = t2[i].position;
-            t3 = t2.x;
-            t1 = t1.tileSize;
-            if (typeof t3 !== "number")
-              throw t3.$mul();
-            t2 = t2.y;
-            if (typeof t2 !== "number")
-              throw t2.$mul();
-            emitterCenter = new U.Vector(t3 * t1 + 24, t2 * t1 + 24);
+          for (i = 0; t1 = $.game.emitters, i < t1.length; ++i) {
+            emitterCenter = t1[i].sprite.position;
             t1 = emitterCenter.x;
             t2 = center.x;
             if (typeof t1 !== "number")
@@ -3307,11 +3280,11 @@ Building: {"": "Object;position>,moveTargetPosition?,weaponTargetPosition?,speed
               if (i >= t1.length)
                 throw H.ioore(t1, i);
               t2 = t1[i];
-              if (t2.building == null) {
-                t2.building = this;
+              if (t2.analyzer == null) {
+                t2.analyzer = this;
                 if (i >= t1.length)
                   throw H.ioore(t1, i);
-                this.weaponTargetPosition = t2.position;
+                this.weaponTargetPosition = t2.sprite.position;
                 break;
               }
             }
@@ -3337,22 +3310,23 @@ Building: {"": "Object;position>,moveTargetPosition?,weaponTargetPosition?,speed
             t1 = this.position;
             t2 = t1.x;
             t3 = this.weaponRadius;
+            t2 = J.$add$ns(t2, t3);
             if (typeof t2 !== "number")
-              throw t2.$add();
-            if (!(i <= t2 + t3))
+              throw H.iae(t2);
+            if (!(i <= t2))
               break;
             t1 = t1.y;
             if (typeof t1 !== "number")
               throw t1.$sub();
             j = t1 - t3;
             while (true) {
-              t1 = this.position.y;
-              t2 = this.weaponRadius;
+              t1 = J.$add$ns(this.position.y, this.weaponRadius);
               if (typeof t1 !== "number")
-                throw t1.$add();
-              if (!(j <= t1 + t2))
+                throw H.iae(t1);
+              if (!(j <= t1))
                 break;
-              if ($.game.withinWorld$2(i, j)) {
+              t1 = $.game.world;
+              if (t1.contains$1(t1, new U.Vector(i, j))) {
                 t1 = $.game.tileSize;
                 t2 = center.x;
                 if (typeof t2 !== "number")
@@ -3444,16 +3418,9 @@ Building: {"": "Object;position>,moveTargetPosition?,weaponTargetPosition?,speed
                 throw t2.$sub();
               tilesToRedraw.push(new U.Vector3(t1, t2 - 1, t3));
               t2 = this.weaponTargetPosition;
-              t1 = t2.x;
-              if (typeof t1 !== "number")
-                throw t1.$add();
-              tilesToRedraw.push(new U.Vector3(t1 + 1, t2.y, t3));
+              tilesToRedraw.push(new U.Vector3(J.$add$ns(t2.x, 1), t2.y, t3));
               t2 = this.weaponTargetPosition;
-              t1 = t2.x;
-              t2 = t2.y;
-              if (typeof t2 !== "number")
-                throw t2.$add();
-              tilesToRedraw.push(new U.Vector3(t1, t2 + 1, t3));
+              tilesToRedraw.push(new U.Vector3(t2.x, J.$add$ns(t2.y, 1), t3));
             } else {
               t1 = t3.world.tiles;
               t3 = t2.x;
@@ -3479,16 +3446,9 @@ Building: {"": "Object;position>,moveTargetPosition?,weaponTargetPosition?,speed
                 throw t1.$sub();
               tilesToRedraw.push(new U.Vector3(t2, t1 - 1, height));
               t1 = this.weaponTargetPosition;
-              t2 = t1.x;
-              if (typeof t2 !== "number")
-                throw t2.$add();
-              tilesToRedraw.push(new U.Vector3(t2 + 1, t1.y, height));
+              tilesToRedraw.push(new U.Vector3(J.$add$ns(t1.x, 1), t1.y, height));
               t1 = this.weaponTargetPosition;
-              t2 = t1.x;
-              t1 = t1.y;
-              if (typeof t1 !== "number")
-                throw t1.$add();
-              tilesToRedraw.push(new U.Vector3(t2, t1 + 1, height));
+              tilesToRedraw.push(new U.Vector3(t1.x, J.$add$ns(t1.y, 1), height));
             }
             $.game.redrawTiles$1(tilesToRedraw);
             t1 = $.game.world.tiles;
@@ -3540,22 +3500,23 @@ Building: {"": "Object;position>,moveTargetPosition?,weaponTargetPosition?,speed
               t1 = this.position;
               t2 = t1.x;
               t3 = this.weaponRadius;
+              t2 = J.$add$ns(t2, t3);
               if (typeof t2 !== "number")
-                throw t2.$add();
-              if (!(i <= t2 + t3))
+                throw H.iae(t2);
+              if (!(i <= t2))
                 break;
               t1 = t1.y;
               if (typeof t1 !== "number")
                 throw t1.$sub();
               j = t1 - t3;
               while (true) {
-                t1 = this.position.y;
-                t2 = this.weaponRadius;
+                t1 = J.$add$ns(this.position.y, this.weaponRadius);
                 if (typeof t1 !== "number")
-                  throw t1.$add();
-                if (!(j <= t1 + t2))
+                  throw H.iae(t1);
+                if (!(j <= t1))
                   break;
-                if ($.game.withinWorld$2(i, j)) {
+                t1 = $.game.world;
+                if (t1.contains$1(t1, new U.Vector(i, j))) {
                   t1 = $.game.world.tiles;
                   if (i >>> 0 !== i || i >= t1.length)
                     throw H.ioore(t1, i);
@@ -3690,22 +3651,23 @@ Building: {"": "Object;position>,moveTargetPosition?,weaponTargetPosition?,speed
           t1 = this.position;
           t2 = t1.x;
           t3 = this.weaponRadius;
+          t2 = J.$add$ns(t2, t3);
           if (typeof t2 !== "number")
-            throw t2.$add();
-          if (!(i <= t2 + t3))
+            throw H.iae(t2);
+          if (!(i <= t2))
             break;
           t1 = t1.y;
           if (typeof t1 !== "number")
             throw t1.$sub();
           j = t1 - t3;
           while (true) {
-            t1 = this.position.y;
-            t2 = this.weaponRadius;
+            t1 = J.$add$ns(this.position.y, this.weaponRadius);
             if (typeof t1 !== "number")
-              throw t1.$add();
-            if (!(j <= t1 + t2))
+              throw H.iae(t1);
+            if (!(j <= t1))
               break;
-            if ($.game.withinWorld$2(i, j)) {
+            t1 = $.game.world;
+            if (t1.contains$1(t1, new U.Vector(i, j))) {
               t1 = $.game.tileSize;
               t2 = center.x;
               if (typeof t2 !== "number")
@@ -3753,23 +3715,14 @@ Building: {"": "Object;position>,moveTargetPosition?,weaponTargetPosition?,speed
           t4 = target.y;
           if (typeof t4 !== "number")
             throw t4.$mul();
-          shell = new U.Shell(center, new U.Vector(t1 * t2 + t3, t4 * t2 + t3), new U.Vector(0, 0), null, false, 0, 0);
-          shell.imageID = "shell";
-          shell.init$0();
+          shell = U.Shell$(center, new U.Vector(t1 * t2 + t3, t4 * t2 + t3));
           $.game.shells.push(shell);
           this.energy = this.energy - 1;
         }
       } else if (t1 === "beam" && this.energy > 0 && this.energyCounter > 0) {
         this.energyCounter = 0;
         for (i = 0; t1 = $.game.spores, i < t1.length; ++i) {
-          t1 = t1[i].position;
-          t2 = t1.x;
-          if (typeof t2 !== "number")
-            throw t2.$sub();
-          t1 = t1.y;
-          if (typeof t1 !== "number")
-            throw t1.$sub();
-          sporeCenter = new U.Vector(t2 - 16, t1 - 16);
+          sporeCenter = t1[i].sprite.position;
           t1 = sporeCenter.x;
           t2 = center.x;
           if (typeof t1 !== "number")
@@ -3803,7 +3756,7 @@ Building: {"": "Object;position>,moveTargetPosition?,weaponTargetPosition?,speed
               t4 = $.engine;
               if (i >= t2.length)
                 throw H.ioore(t2, i);
-              t3 = t3.position;
+              t3 = t3.sprite.position;
               t2 = t3.x;
               t1 = t1.tileSize;
               if (typeof t2 !== "number")
@@ -3813,13 +3766,7 @@ Building: {"": "Object;position>,moveTargetPosition?,weaponTargetPosition?,speed
               if (typeof t3 !== "number")
                 throw t3.$tdiv();
               t4.playSound$2("explosion", new U.Vector(t2, C.JSNumber_methods.$tdiv(t3, t1)));
-              t1 = $.game.explosions;
-              t3 = new U.Explosion(null, null, null);
-              t3.position = new U.Vector(sporeCenter.x, sporeCenter.y);
-              t3.frame = 0;
-              t3.imageID = "explosion";
-              $.Explosion_counter = 0;
-              t1.push(t3);
+              $.game.explosions.push(U.Explosion$(sporeCenter));
             }
           }
         }
@@ -3878,12 +3825,7 @@ Building: {"": "Object;position>,moveTargetPosition?,weaponTargetPosition?,speed
       if (typeof t2 !== "number")
         throw H.iae(t2);
       t2 = t1 / 2 * t5 * t2;
-      if (typeof t4 !== "number")
-        throw t4.$add();
-      t5 = target.y;
-      if (typeof t5 !== "number")
-        throw t5.$add();
-      context.lineTo(t4 + t2, t5 + t2);
+      context.lineTo(J.$add$ns(t4, t2), J.$add$ns(target.y, t2));
       context.stroke();
     }
   },
@@ -3893,7 +3835,7 @@ Building: {"": "Object;position>,moveTargetPosition?,weaponTargetPosition?,speed
     context = t1.$index(t1, "buffer").get$context();
     if (this.built && this.selected && this.canMove) {
       t1 = $.engine.canvas;
-      J.set$cursor$x(t1.$index(t1, "main").get$element().style, "none");
+      J.set$cursor$x(J.get$style$x(J.get$view$x(t1.$index(t1, "main"))), "none");
       positionScrolled = $.game.getHoveredTilePosition$0();
       drawPosition = positionScrolled.tiled2screen$0();
       t1 = positionScrolled.x;
@@ -3930,7 +3872,7 @@ Building: {"": "Object;position>,moveTargetPosition?,weaponTargetPosition?,speed
     }
   },
   draw$0: function() {
-    var t1, context, realPosition, center, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, targetPosition;
+    var t1, context, realPosition, center, t2, t3, t4, t5, t6, t7, t8, t9, t10, targetPosition;
     t1 = $.engine.canvas;
     context = t1.$index(t1, "buffer").get$context();
     realPosition = this.position.tiled2screen$0();
@@ -3999,30 +3941,30 @@ Building: {"": "Object;position>,moveTargetPosition?,weaponTargetPosition?,speed
       } else {
         t2 = $.engine.images;
         t2 = t2.$index(t2, this.imageID);
-        t3 = realPosition.x;
-        t4 = this.size * 8;
+        t3 = this.size * 8;
+        t4 = J.$add$ns(realPosition.x, t3);
+        t5 = t3 * this.scale;
+        if (typeof t4 !== "number")
+          throw t4.$sub();
+        t3 = J.$add$ns(realPosition.y, t3);
         if (typeof t3 !== "number")
-          throw t3.$add();
-        t5 = t4 * this.scale;
-        t6 = realPosition.y;
+          throw t3.$sub();
+        t6 = $.engine.images;
+        t6 = J.get$width$x(t6.$index(t6, this.imageID));
+        t7 = $.game.zoom;
         if (typeof t6 !== "number")
-          throw t6.$add();
-        t7 = $.engine.images;
-        t7 = J.get$width$x(t7.$index(t7, this.imageID));
-        t8 = $.game.zoom;
+          throw t6.$mul();
         if (typeof t7 !== "number")
-          throw t7.$mul();
-        if (typeof t8 !== "number")
-          throw H.iae(t8);
-        t9 = this.scale;
-        t10 = $.engine.images;
-        t10 = J.get$height$x(t10.$index(t10, this.imageID));
-        t11 = $.game.zoom;
+          throw H.iae(t7);
+        t8 = this.scale;
+        t9 = $.engine.images;
+        t9 = J.get$height$x(t9.$index(t9, this.imageID));
+        t10 = $.game.zoom;
+        if (typeof t9 !== "number")
+          throw t9.$mul();
         if (typeof t10 !== "number")
-          throw t10.$mul();
-        if (typeof t11 !== "number")
-          throw H.iae(t11);
-        t1.drawImageScaled$5(context, t2, t3 + t4 - t5, t6 + t4 - t5, t7 * t8 * t9, t10 * t11 * this.scale);
+          throw H.iae(t10);
+        t1.drawImageScaled$5(context, t2, t4 - t5, t3 - t5, t6 * t7 * t8, t9 * t10 * this.scale);
         if (this.imageID === "cannon") {
           context.save();
           t1 = realPosition.x;
@@ -4030,46 +3972,35 @@ Building: {"": "Object;position>,moveTargetPosition?,weaponTargetPosition?,speed
           if (typeof t2 !== "number")
             throw H.iae(t2);
           t2 = 24 * t2;
-          if (typeof t1 !== "number")
-            throw t1.$add();
-          t3 = realPosition.y;
-          if (typeof t3 !== "number")
-            throw t3.$add();
-          context.translate(t1 + t2, t3 + t2);
+          context.translate(J.$add$ns(t1, t2), J.$add$ns(realPosition.y, t2));
           t2 = $.engine;
-          t3 = this.angle;
+          t1 = this.angle;
           t2.toString;
-          context.rotate(t3 * 0.017453292519943295);
-          t3 = $.engine.images;
-          t3 = t3.$index(t3, "cannongun");
+          context.rotate(t1 * 0.017453292519943295);
+          t1 = $.engine.images;
+          t1 = t1.$index(t1, "cannongun");
           t2 = $.game.zoom;
           if (typeof t2 !== "number")
             throw H.iae(t2);
-          t1 = this.scale;
-          t4 = -24 * t2 * t1;
-          t1 = 48 * t2 * t1;
-          context.drawImage(t3, t4, t4, t1, t1);
+          t3 = this.scale;
+          t4 = -24 * t2 * t3;
+          t3 = 48 * t2 * t3;
+          context.drawImage(t1, t4, t4, t3, t3);
           context.restore();
         }
       }
       if (this.needsEnergy) {
         J.set$fillStyle$x(context, "#f00");
-        t1 = realPosition.x;
-        if (typeof t1 !== "number")
-          throw t1.$add();
-        t2 = realPosition.y;
-        if (typeof t2 !== "number")
-          throw t2.$add();
+        t1 = J.$add$ns(realPosition.x, 2);
+        t2 = J.$add$ns(realPosition.y, 1);
         t3 = $.game.zoom;
         if (typeof t3 !== "number")
           throw H.iae(t3);
-        context.fillRect(t1 + 2, t2 + 1, 44 * t3 / this.maxEnergy * this.energy, 3);
+        context.fillRect(t1, t2, 44 * t3 / this.maxEnergy * this.energy, 3);
       }
       if (this.health < this.maxHealth) {
         J.set$fillStyle$x(context, "#0f0");
-        t1 = realPosition.x;
-        if (typeof t1 !== "number")
-          throw t1.$add();
+        t1 = J.$add$ns(realPosition.x, 2);
         t2 = realPosition.y;
         t3 = $.game;
         t4 = t3.tileSize;
@@ -4077,9 +4008,10 @@ Building: {"": "Object;position>,moveTargetPosition?,weaponTargetPosition?,speed
         if (typeof t3 !== "number")
           throw H.iae(t3);
         t3 = t4 * t3 * this.size;
+        t2 = J.$add$ns(t2, t3);
         if (typeof t2 !== "number")
-          throw t2.$add();
-        context.fillRect(t1 + 2, t2 + t3 - 3, (t3 - 8) / this.maxHealth * this.health, 3);
+          throw t2.$sub();
+        context.fillRect(t1, t2 - 3, (t3 - 8) / this.maxHealth * this.health, 3);
       }
       if (!this.active) {
         J.set$strokeStyle$x(context, "#F00");
@@ -4089,19 +4021,8 @@ Building: {"": "Object;position>,moveTargetPosition?,weaponTargetPosition?,speed
         context.closePath();
         context.stroke();
         context.beginPath();
-        t1 = realPosition.x;
-        t2 = realPosition.y;
-        t3 = $.game.tileSize;
-        t4 = this.size;
-        if (typeof t2 !== "number")
-          throw t2.$add();
-        context.moveTo(t1, t2 + t3 * t4);
-        t4 = realPosition.x;
-        t3 = $.game.tileSize;
-        t2 = this.size;
-        if (typeof t4 !== "number")
-          throw t4.$add();
-        context.lineTo(t4 + t3 * t2, realPosition.y);
+        context.moveTo(realPosition.x, J.$add$ns(realPosition.y, $.game.tileSize * this.size));
+        context.lineTo(J.$add$ns(realPosition.x, $.game.tileSize * this.size), realPosition.y);
         context.stroke();
       }
     }
@@ -4156,36 +4077,112 @@ Building: {"": "Object;position>,moveTargetPosition?,weaponTargetPosition?,speed
         context.lineWidth = 4;
         context.beginPath();
         context.moveTo(center.x, center.y);
-        t1 = targetPosition.x;
-        if (typeof t1 !== "number")
-          throw t1.$add();
-        t2 = targetPosition.y;
-        if (typeof t2 !== "number")
-          throw t2.$add();
-        context.lineTo(t1 + 8, t2 + 8);
+        context.lineTo(J.$add$ns(targetPosition.x, 8), J.$add$ns(targetPosition.y, 8));
         context.stroke();
         context.strokeStyle = "#fff";
         context.lineWidth = 2;
         context.beginPath();
         context.moveTo(center.x, center.y);
-        t2 = targetPosition.x;
-        if (typeof t2 !== "number")
-          throw t2.$add();
-        t1 = targetPosition.y;
-        if (typeof t1 !== "number")
-          throw t1.$add();
-        context.lineTo(t2 + 8, t1 + 8);
+        context.lineTo(J.$add$ns(targetPosition.x, 8), J.$add$ns(targetPosition.y, 8));
         context.stroke();
       }
     }
   },
+  Building$2: function(position, imageID) {
+    var t1;
+    this.health = 0;
+    this.size = 3;
+    this.energy = 0;
+    t1 = this.imageID;
+    if (t1 === "analyzer") {
+      this.maxHealth = 80;
+      this.maxEnergy = 20;
+      this.canMove = true;
+      this.needsEnergy = true;
+      this.weaponRadius = 10;
+    } else if (t1 === "terp") {
+      this.maxHealth = 60;
+      this.maxEnergy = 20;
+      this.canMove = true;
+      this.needsEnergy = true;
+      this.weaponRadius = 12;
+    } else if (t1 === "shield") {
+      this.maxHealth = 75;
+      this.maxEnergy = 20;
+      this.canMove = true;
+      this.needsEnergy = true;
+      this.weaponRadius = 9;
+    } else if (t1 === "bomber") {
+      this.maxHealth = 75;
+      this.maxEnergy = 15;
+      this.needsEnergy = true;
+    } else if (t1 === "storage")
+      this.maxHealth = 8;
+    else if (t1 === "reactor")
+      this.maxHealth = 50;
+    else if (t1 === "collector")
+      this.maxHealth = 5;
+    else if (t1 === "relay")
+      this.maxHealth = 10;
+    else if (t1 === "cannon") {
+      this.maxHealth = 5;
+      this.maxEnergy = 40;
+      this.weaponRadius = 8;
+      this.canMove = true;
+      this.needsEnergy = true;
+    } else if (t1 === "mortar") {
+      this.maxHealth = 4;
+      this.maxEnergy = 20;
+      this.weaponRadius = 12;
+      this.canMove = true;
+      this.needsEnergy = true;
+    } else if (t1 === "beam") {
+      this.maxHealth = 20;
+      this.maxEnergy = 10;
+      this.weaponRadius = 12;
+      this.canMove = true;
+      this.needsEnergy = true;
+    }
+  },
   static: {
 "": "Building_baseSpeed,Building_damageCounter",
-}
+Building$: function(position, imageID) {
+  var t1 = new U.Building(position, null, null, new U.Vector(0, 0), imageID, "IDLE", false, false, false, false, true, false, false, false, null, 0, null, 0, 0, 0, 1, 0, null, 0, null, 0, 0, 0, 0, null);
+  t1.Building$2(position, imageID);
+  return t1;
+}}
 
 },
 
 World: {"": "Object;tiles,size>",
+  contains$1: function(_, position) {
+    var t1, t2, t3;
+    t1 = position.x;
+    if (typeof t1 !== "number")
+      throw t1.$gt();
+    if (t1 > -1) {
+      t2 = this.size;
+      t3 = t2.x;
+      if (typeof t3 !== "number")
+        throw H.iae(t3);
+      if (t1 < t3) {
+        t1 = position.y;
+        if (typeof t1 !== "number")
+          throw t1.$gt();
+        if (t1 > -1) {
+          t2 = t2.y;
+          if (typeof t2 !== "number")
+            throw H.iae(t2);
+          t2 = t1 < t2;
+          t1 = t2;
+        } else
+          t1 = false;
+      } else
+        t1 = false;
+    } else
+      t1 = false;
+    return t1;
+  },
   World$1: function(seed) {
     this.size = new U.Vector($.engine.randomInt$3(64, 127, seed), $.engine.randomInt$3(64, 127, seed));
   },
@@ -4198,81 +4195,14 @@ World$: function(seed) {
 
 },
 
-Emitter: {"": "Object;position>,imageID<,strength,building",
-  getCenter$0: function() {
-    var t1, t2, t3;
-    t1 = this.position;
-    t2 = t1.x;
-    t3 = $.game.tileSize;
-    if (typeof t2 !== "number")
-      throw t2.$mul();
-    t1 = t1.y;
-    if (typeof t1 !== "number")
-      throw t1.$mul();
-    return new U.Vector(t2 * t3 + 24, t1 * t3 + 24);
-  },
-  spawn$0: function() {
-    var t1, t2, t3;
-    if (this.building == null) {
-      t1 = $.game.world.tiles;
-      t2 = this.position;
-      t3 = t2.x;
-      if (typeof t3 !== "number")
-        throw t3.$add();
-      ++t3;
-      if (t3 >>> 0 !== t3 || t3 >= t1.length)
-        throw H.ioore(t1, t3);
-      t3 = t1[t3];
-      t2 = t2.y;
-      if (typeof t2 !== "number")
-        throw t2.$add();
-      t2 = J.$index$asx(t3, t2 + 1);
-      t2.creep = t2.get$creep() + this.strength;
-    }
-  },
-  draw$0: function() {
-    var realPosition, t1, t2, t3, t4, t5;
-    realPosition = this.position.tiled2screen$0();
-    t1 = $.engine;
-    t2 = $.game.zoom;
-    if (typeof t2 !== "number")
-      throw H.iae(t2);
-    t2 = 48 * t2;
-    if (t1.isVisible$2(realPosition, new U.Vector(t2, t2))) {
-      t1 = $.engine.canvas;
-      t1 = t1.$index(t1, "buffer").get$context();
-      t2 = $.engine.images;
-      t2 = t2.$index(t2, this.imageID);
-      t3 = realPosition.x;
-      t4 = realPosition.y;
-      t5 = $.game.zoom;
-      if (typeof t5 !== "number")
-        throw H.iae(t5);
-      t5 = 48 * t5;
-      J.drawImageScaled$5$x(t1, t2, t3, t4, t5, t5);
-    }
-  },
-  static: {
+Emitter: {"": "Object;sprite,strength,analyzer", static: {
 "": "Emitter_counter",
 }
-
 },
 
-Sporetower: {"": "Object;position>,imageID<,sporeCounter",
-  getCenter$0: function() {
-    var t1, t2, t3;
-    t1 = this.position;
-    t2 = t1.x;
-    t3 = $.game.tileSize;
-    if (typeof t2 !== "number")
-      throw t2.$mul();
-    t1 = t1.y;
-    if (typeof t1 !== "number")
-      throw t1.$mul();
-    return new U.Vector(t2 * t3 + 24, t1 * t3 + 24);
-  },
+Sporetower: {"": "Object;sprite,sporeCounter",
   spawn$0: function() {
-    var t1, t2, t3, max, target, spore;
+    var t1, t2, t3, max, target;
     do {
       t1 = $.game.buildings;
       t2 = $.engine;
@@ -4286,122 +4216,59 @@ Sporetower: {"": "Object;position>,imageID<,sporeCounter",
         throw H.ioore(t1, t2);
       target = t1[t2];
     } while (!target.get$built());
-    spore = new U.Spore(this.getCenter$0(), target.getCenter$0(), new U.Vector(0, 0), null, false, 100, 0, 0);
-    spore.imageID = "spore";
-    spore.init$0();
-    $.game.spores.push(spore);
+    $.game.spores.push(U.Spore$(this.sprite.position, target.getCenter$0()));
   },
-  draw$0: function() {
-    var realPosition, t1, t2, t3, t4, t5;
-    realPosition = this.position.tiled2screen$0();
-    t1 = $.engine;
-    t2 = $.game.zoom;
-    if (typeof t2 !== "number")
-      throw H.iae(t2);
-    t2 = 48 * t2;
-    if (t1.isVisible$2(realPosition, new U.Vector(t2, t2))) {
-      t1 = $.engine.canvas;
-      t1 = t1.$index(t1, "buffer").get$context();
-      t2 = $.engine.images;
-      t2 = t2.$index(t2, this.imageID);
-      t3 = realPosition.x;
-      t4 = realPosition.y;
-      t5 = $.game.zoom;
-      if (typeof t5 !== "number")
-        throw H.iae(t5);
-      t5 = 48 * t5;
-      J.drawImageScaled$5$x(t1, t2, t3, t4, t5, t5);
-    }
-  }
+  Sporetower$1: function(position) {
+    var t1 = $.engine.images;
+    this.sprite = U.Sprite$(0, t1.$index(t1, "sporetower"), position, 48, 48);
+    this.sprite.anchor = new U.Vector(0.5, 0.5);
+    t1 = $.engine.canvas;
+    t1.$index(t1, "buffer").addSprite$1(this.sprite);
+    this.sporeCounter = $.engine.randomInt$2(7500, 12500);
+  },
+  static: {
+Sporetower$: function(position) {
+  var t1 = new U.Sporetower(null, 0);
+  t1.Sporetower$1(position);
+  return t1;
+}}
+
 },
 
-Smoke: {"": "Object;position>,frame,imageID<",
-  draw$0: function() {
-    var realPosition, t1, t2, t3, t4, t5, t6, t7, t8;
-    realPosition = this.position.real2screen$0();
-    t1 = $.engine;
-    t2 = $.game.zoom;
-    if (typeof t2 !== "number")
-      throw H.iae(t2);
-    t2 = 48 * t2;
-    if (t1.isVisible$2(realPosition, new U.Vector(t2, t2))) {
-      t1 = $.engine.canvas;
-      t1 = t1.$index(t1, "buffer").get$context();
-      t2 = $.engine.images;
-      t2 = t2.$index(t2, this.imageID);
-      t3 = this.frame;
-      t4 = C.JSInt_methods.$mod(t3, 8);
-      t3 = C.JSNumber_methods.toInt$0(Math.floor(t3 / 8));
-      t5 = realPosition.x;
-      t6 = $.game.zoom;
-      if (typeof t6 !== "number")
-        throw H.iae(t6);
-      t7 = 24 * t6;
-      if (typeof t5 !== "number")
-        throw t5.$sub();
-      t8 = realPosition.y;
-      if (typeof t8 !== "number")
-        throw t8.$sub();
-      t6 = 48 * t6;
-      J.drawImageScaledFromSource$9$x(t1, t2, t4 * 128, t3 * 128, 128, 128, t5 - t7, t8 - t7, t6, t6);
-    }
-  },
+Smoke: {"": "Object;sprite",
   Smoke$1: function(position) {
-    this.position = new U.Vector(position.x, position.y);
-    this.frame = 0;
-    this.imageID = "smoke";
+    var t1 = $.engine.images;
+    this.sprite = U.Sprite$(1, t1.$index(t1, "smoke"), position, 128, 128);
+    this.sprite.animated = true;
+    this.sprite.anchor = new U.Vector(0.5, 0.5);
+    this.sprite.scale = new U.Vector(0.5, 0.5);
+    t1 = $.engine.canvas;
+    t1.$index(t1, "buffer").addSprite$1(this.sprite);
   },
   static: {
 "": "Smoke_counter",
 Smoke$: function(position) {
-  var t1 = new U.Smoke(null, null, null);
+  var t1 = new U.Smoke(null);
   t1.Smoke$1(position);
   return t1;
 }}
 
 },
 
-Explosion: {"": "Object;position>,frame,imageID<",
-  draw$0: function() {
-    var realPosition, t1, t2, t3, t4, t5, t6, t7, t8;
-    realPosition = this.position.real2screen$0();
-    t1 = $.engine;
-    t2 = $.game.zoom;
-    if (typeof t2 !== "number")
-      throw H.iae(t2);
-    t2 = 64 * t2;
-    if (t1.isVisible$2(realPosition, new U.Vector(t2, t2))) {
-      t1 = $.engine.canvas;
-      t1 = t1.$index(t1, "buffer").get$context();
-      t2 = $.engine.images;
-      t2 = t2.$index(t2, this.imageID);
-      t3 = this.frame;
-      t4 = C.JSInt_methods.$mod(t3, 8);
-      t3 = C.JSNumber_methods.toInt$0(Math.floor(t3 / 8));
-      t5 = realPosition.x;
-      t6 = $.game.zoom;
-      if (typeof t6 !== "number")
-        throw H.iae(t6);
-      t7 = 32 * t6;
-      if (typeof t5 !== "number")
-        throw t5.$sub();
-      t8 = realPosition.y;
-      if (typeof t8 !== "number")
-        throw t8.$sub();
-      t6 = 64 * t6;
-      J.drawImageScaledFromSource$9$x(t1, t2, t4 * 64, t3 * 64, 64, 64, t5 - t7, t8 - t7, t6, t6);
-    }
-  },
+Explosion: {"": "Object;sprite",
   Explosion$1: function(position) {
-    this.position = new U.Vector(position.x, position.y);
-    this.frame = 0;
-    this.imageID = "explosion";
-    $.Explosion_counter = 0;
+    var t1 = $.engine.images;
+    this.sprite = U.Sprite$(3, t1.$index(t1, "explosion"), position, 64, 64);
+    this.sprite.animated = true;
+    this.sprite.rotation = $.engine.randomInt$2(0, 359);
+    this.sprite.anchor = new U.Vector(0.5, 0.5);
+    t1 = $.engine.canvas;
+    t1.$index(t1, "buffer").addSprite$1(this.sprite);
   },
   static: {
 "": "Explosion_counter",
 Explosion$: function(position) {
-  var t1 = new U.Explosion(null, null, null);
+  var t1 = new U.Explosion(null);
   t1.Explosion$1(position);
   return t1;
 }}
@@ -4428,37 +4295,18 @@ Tile$: function() {
 
 Vector: {"": "Object;x>,y>",
   $add: function(_, other) {
-    var t1, t2, t3, t4;
-    t1 = this.x;
-    t2 = J.getInterceptor$x(other);
-    t3 = t2.get$x(other);
-    if (typeof t1 !== "number")
-      throw t1.$add();
-    if (typeof t3 !== "number")
-      throw H.iae(t3);
-    t4 = this.y;
-    t2 = t2.get$y(other);
-    if (typeof t4 !== "number")
-      throw t4.$add();
-    if (typeof t2 !== "number")
-      throw H.iae(t2);
-    return new U.Vector(t1 + t3, t4 + t2);
+    var t1 = J.getInterceptor$x(other);
+    return new U.Vector(J.$add$ns(this.x, t1.get$x(other)), J.$add$ns(this.y, t1.get$y(other)));
   },
   $eq: function(_, other) {
-    var t1, t2, t3;
+    var t1;
     if (other == null)
       return false;
-    t1 = this.x;
-    t2 = J.getInterceptor$x(other);
-    t3 = t2.get$x(other);
-    if (t1 == null ? t3 == null : t1 === t3) {
-      t1 = this.y;
-      t2 = t2.get$y(other);
-      t2 = t1 == null ? t2 == null : t1 === t2;
-      t1 = t2;
-    } else
-      t1 = false;
-    return t1;
+    t1 = J.getInterceptor$x(other);
+    return J.$eq(this.x, t1.get$x(other)) && J.$eq(this.y, t1.get$y(other));
+  },
+  toString$0: function(_) {
+    return H.S(this.x) + "/" + H.S(this.y);
   },
   distanceTo$1: function(other) {
     var t1, t2, t3;
@@ -4552,24 +4400,14 @@ Vector: {"": "Object;x>,y>",
 
 Vector3: {"": "Object;x>,y>,z>",
   $add: function(_, other) {
-    var t1, t2, t3, t4, t5;
-    t1 = this.x;
-    t2 = J.getInterceptor$x(other);
-    t3 = t2.get$x(other);
+    var t1, t2, t3;
+    t1 = J.getInterceptor$x(other);
+    t2 = J.$add$ns(this.x, t1.get$x(other));
+    t3 = J.$add$ns(this.y, t1.get$y(other));
+    t1 = t1.get$z(other);
     if (typeof t1 !== "number")
-      throw t1.$add();
-    if (typeof t3 !== "number")
-      throw H.iae(t3);
-    t4 = this.y;
-    t5 = t2.get$y(other);
-    if (typeof t4 !== "number")
-      throw t4.$add();
-    if (typeof t5 !== "number")
-      throw H.iae(t5);
-    t2 = t2.get$z(other);
-    if (typeof t2 !== "number")
-      throw H.iae(t2);
-    return new U.Vector3(t1 + t3, t4 + t5, this.z + t2);
+      throw H.iae(t1);
+    return new U.Vector3(t2, t3, this.z + t1);
   }
 },
 
@@ -4601,16 +4439,16 @@ Route: {"": "Object;distanceTravelled<,distanceRemaining,nodes>,remove",
   }
 },
 
-Canvas: {"": "Object;element<,context<,top',left',bottom',right'",
+Renderer: {"": "Object;view>,context<,top',left',bottom',right',sprites",
   clear$0: function(_) {
     var t1, t2;
-    t1 = this.element;
+    t1 = this.view;
     t2 = J.getInterceptor$x(t1);
     J.clearRect$4$x(this.context, 0, 0, t2.get$width(t1), t2.get$height(t1));
   },
   updateRect$2: function(width, height) {
     var t1, t2, t3;
-    t1 = this.element;
+    t1 = this.view;
     t2 = J.getInterceptor$x(t1);
     t2.set$width(t1, width);
     t2.set$height(t1, height);
@@ -4622,38 +4460,210 @@ Canvas: {"": "Object;element<,context<,top',left',bottom',right'",
     this.left = t2.left;
     t2 = new P.Rectangle(t1.offsetLeft, t1.offsetTop, t1.offsetWidth, t1.offsetHeight);
     H.setRuntimeTypeInfo(t2, [null]);
-    t2 = t2.top;
     t3 = new P.Rectangle(t1.offsetLeft, t1.offsetTop, t1.offsetWidth, t1.offsetHeight);
     H.setRuntimeTypeInfo(t3, [null]);
-    t3 = t3.height;
-    if (typeof t2 !== "number")
-      throw t2.$add();
-    if (typeof t3 !== "number")
-      throw H.iae(t3);
-    this.bottom = t2 + t3;
+    this.bottom = J.$add$ns(t2.top, t3.height);
     t3 = new P.Rectangle(t1.offsetLeft, t1.offsetTop, t1.offsetWidth, t1.offsetHeight);
     H.setRuntimeTypeInfo(t3, [null]);
-    t3 = t3.left;
     t1 = new P.Rectangle(t1.offsetLeft, t1.offsetTop, t1.offsetWidth, t1.offsetHeight);
     H.setRuntimeTypeInfo(t1, [null]);
-    t1 = t1.width;
-    if (typeof t3 !== "number")
-      throw t3.$add();
-    if (typeof t1 !== "number")
-      throw H.iae(t1);
-    this.right = t3 + t1;
+    this.right = J.$add$ns(t3.left, t1.width);
   },
-  Canvas$3: function(element, width, height) {
+  addSprite$1: function(sprite) {
+    var t1 = this.sprites;
+    t1.push(sprite);
+    H.IterableMixinWorkaround_sortList(t1, new U.Renderer_addSprite_closure());
+  },
+  removeSprite$1: function(sprite) {
+    var t1 = this.sprites;
+    C.JSArray_methods.removeAt$1(t1, H.Arrays_indexOf(t1, sprite, 0, t1.length));
+  },
+  draw$0: function() {
+    var t1, sprite, realPosition, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14, t15;
+    for (t1 = this.sprites, t1 = new H.ListIterator(t1, t1.length, 0, null); t1.moveNext$0();) {
+      sprite = t1._dev$_current;
+      if (sprite.get$visible()) {
+        realPosition = sprite.position.real2screen$0();
+        t2 = $.engine;
+        t3 = sprite.size;
+        t4 = t3.x;
+        t5 = $.game.zoom;
+        if (typeof t4 !== "number")
+          throw t4.$mul();
+        if (typeof t5 !== "number")
+          throw H.iae(t5);
+        t3 = t3.y;
+        if (typeof t3 !== "number")
+          throw t3.$mul();
+        if (t2.isVisible$2(realPosition, new U.Vector(t4 * t5, t3 * t5))) {
+          t2 = sprite.alpha;
+          t3 = t2 !== 1;
+          if (t3)
+            J.set$globalAlpha$x(this.context, t2);
+          if (sprite.rotation !== 0) {
+            J.save$0$x(this.context);
+            J.translate$2$x(this.context, realPosition.x, realPosition.y);
+            t2 = this.context;
+            t4 = $.engine;
+            t5 = sprite.rotation;
+            t4.toString;
+            J.rotate$1$x(t2, t5 * 0.017453292519943295);
+            t2 = sprite.animated;
+            t4 = this.context;
+            t5 = sprite.image;
+            t6 = $.game;
+            t7 = sprite.anchor;
+            t8 = sprite.size;
+            if (t2) {
+              t2 = sprite.frame;
+              t9 = C.JSInt_methods.$mod(t2, 8);
+              t10 = t8.x;
+              if (typeof t10 !== "number")
+                throw H.iae(t10);
+              t2 = C.JSInt_methods.$tdiv(t2, 8);
+              t8 = t8.y;
+              if (typeof t8 !== "number")
+                throw H.iae(t8);
+              t11 = t7.x;
+              if (typeof t11 !== "number")
+                throw H.iae(t11);
+              t12 = sprite.scale;
+              t13 = t12.x;
+              if (typeof t13 !== "number")
+                throw H.iae(t13);
+              t6 = t6.zoom;
+              if (typeof t6 !== "number")
+                throw H.iae(t6);
+              t7 = t7.y;
+              if (typeof t7 !== "number")
+                throw H.iae(t7);
+              t12 = t12.y;
+              if (typeof t12 !== "number")
+                throw H.iae(t12);
+              J.drawImageScaledFromSource$9$x(t4, t5, t9 * t10, t2 * t8, t10, t8, -t10 * t11 * t13 * t6, -t8 * t7 * t12 * t6, t10 * t13 * t6, t8 * t12 * t6);
+            } else {
+              t2 = t8.x;
+              if (typeof t2 !== "number")
+                throw t2.$negate();
+              t9 = t7.x;
+              if (typeof t9 !== "number")
+                throw H.iae(t9);
+              t6 = t6.zoom;
+              if (typeof t6 !== "number")
+                throw H.iae(t6);
+              t8 = t8.y;
+              if (typeof t8 !== "number")
+                throw t8.$negate();
+              t7 = t7.y;
+              if (typeof t7 !== "number")
+                throw H.iae(t7);
+              J.drawImageScaled$5$x(t4, t5, -t2 * t9 * t6, -t8 * t7 * t6, t2 * t6, t8 * t6);
+            }
+            J.restore$0$x(this.context);
+          } else {
+            t2 = sprite.animated;
+            t4 = this.context;
+            t5 = realPosition.x;
+            t6 = sprite.image;
+            t7 = $.game;
+            t8 = sprite.size;
+            t9 = sprite.anchor;
+            t10 = realPosition.y;
+            if (t2) {
+              t2 = sprite.frame;
+              t11 = C.JSInt_methods.$mod(t2, 8);
+              t12 = t8.x;
+              if (typeof t12 !== "number")
+                throw H.iae(t12);
+              t2 = C.JSInt_methods.$tdiv(t2, 8);
+              t8 = t8.y;
+              if (typeof t8 !== "number")
+                throw H.iae(t8);
+              t13 = t9.x;
+              if (typeof t13 !== "number")
+                throw H.iae(t13);
+              t14 = sprite.scale;
+              t15 = t14.x;
+              if (typeof t15 !== "number")
+                throw H.iae(t15);
+              t7 = t7.zoom;
+              if (typeof t7 !== "number")
+                throw H.iae(t7);
+              if (typeof t5 !== "number")
+                throw t5.$sub();
+              t9 = t9.y;
+              if (typeof t9 !== "number")
+                throw H.iae(t9);
+              t14 = t14.y;
+              if (typeof t14 !== "number")
+                throw H.iae(t14);
+              if (typeof t10 !== "number")
+                throw t10.$sub();
+              J.drawImageScaledFromSource$9$x(t4, t6, t11 * t12, t2 * t8, t12, t8, t5 - t12 * t13 * t15 * t7, t10 - t8 * t9 * t14 * t7, t12 * t15 * t7, t8 * t14 * t7);
+            } else {
+              t2 = t8.x;
+              t11 = t9.x;
+              if (typeof t2 !== "number")
+                throw t2.$mul();
+              if (typeof t11 !== "number")
+                throw H.iae(t11);
+              t7 = t7.zoom;
+              if (typeof t7 !== "number")
+                throw H.iae(t7);
+              if (typeof t5 !== "number")
+                throw t5.$sub();
+              t8 = t8.y;
+              t9 = t9.y;
+              if (typeof t8 !== "number")
+                throw t8.$mul();
+              if (typeof t9 !== "number")
+                throw H.iae(t9);
+              if (typeof t10 !== "number")
+                throw t10.$sub();
+              J.drawImageScaled$5$x(t4, t6, t5 - t2 * t11 * t7, t10 - t8 * t9 * t7, t2 * t7, t8 * t7);
+            }
+          }
+          if (t3)
+            J.set$globalAlpha$x(this.context, 1);
+        }
+      }
+    }
+  },
+  Renderer$3: function(view, width, height) {
     var t1;
     this.updateRect$2(width, height);
-    t1 = this.element;
+    t1 = this.view;
     J.set$position$x(t1.style, "absolute");
     this.context = J.getContext$1$x(t1, "2d");
   },
   static: {
-Canvas$: function(element, width, height) {
-  var t1 = new U.Canvas(element, null, null, null, null, null);
-  t1.Canvas$3(element, width, height);
+Renderer$: function(view, width, height) {
+  var t1 = P.List_List(null, U.Sprite);
+  H.setRuntimeTypeInfo(t1, [U.Sprite]);
+  t1 = new U.Renderer(view, null, null, null, null, null, t1);
+  t1.Renderer$3(view, width, height);
+  return t1;
+}}
+
+},
+
+Renderer_addSprite_closure: {"": "Closure;",
+  call$2: function(a, b) {
+    return J.$sub$n(J.get$layer$x(a), J.get$layer$x(b));
+  },
+  $is_args2: true
+},
+
+Sprite: {"": "Object;layer>,frame,image,anchor,scale,position>,size>,rotation,alpha,animated,visible<",
+  Sprite$5: function(layer, image, position, width, height) {
+    this.anchor = new U.Vector(0, 0);
+    this.scale = new U.Vector(1, 1);
+    this.size = new U.Vector(width, height);
+  },
+  static: {
+Sprite$: function(layer, image, position, width, height) {
+  var t1 = new U.Sprite(layer, 0, image, null, null, position, null, 0, 1, false, true);
+  t1.Sprite$5(layer, image, position, width, height);
   return t1;
 }}
 
@@ -4663,7 +4673,7 @@ Mouse: {"": "Object;x>,y>,active,dragStart,dragEnd"},
 
 Engine: {"": "Object;FPS,delta,fps_delta,fps_frames,fps_totalTime,fps_updateTime,fps_updateFrames,animationRequest,width>,height*,halfWidth,halfHeight,fps_lastTime,mouse,mouseGUI,canvas,sounds,images,resizeTimer",
   init$0: function() {
-    var t1, t2, t3, i, e, t4;
+    var t1, t2, i, e, t3, t4;
     this.width = window.innerWidth;
     this.height = window.innerHeight;
     t1 = this.width;
@@ -4675,89 +4685,75 @@ Engine: {"": "Object;FPS,delta,fps_delta,fps_frames,fps_totalTime,fps_updateTime
       throw t1.$div();
     this.halfHeight = C.JSNumber_methods.toInt$0(Math.floor(t1 / 2));
     t1 = this.canvas;
-    t1.$indexSet(t1, "main", U.Canvas$(W.CanvasElement_CanvasElement(null, null), this.width, this.height));
+    t1.$indexSet(t1, "main", U.Renderer$(W.CanvasElement_CanvasElement(null, null), this.width, this.height));
     t1 = J.get$children$x(document.querySelector("#canvasContainer"));
     t2 = this.canvas;
-    t1.add$1(t1, t2.$index(t2, "main").get$element());
+    t1.add$1(t1, J.get$view$x(t2.$index(t2, "main")));
     t2 = this.canvas;
     t2 = t2.$index(t2, "main");
     t1 = this.canvas;
-    J.set$top$x(t2, t1.$index(t1, "main").get$element().offsetTop);
+    J.set$top$x(t2, J.get$offsetTop$x(J.get$view$x(t1.$index(t1, "main"))));
     t1 = this.canvas;
     t1 = t1.$index(t1, "main");
     t2 = this.canvas;
-    J.set$left$x(t1, t2.$index(t2, "main").get$element().offsetLeft);
+    J.set$left$x(t1, J.get$offsetLeft$x(J.get$view$x(t2.$index(t2, "main"))));
     t2 = this.canvas;
     t2 = t2.$index(t2, "main");
     t1 = this.canvas;
-    t1 = t1.$index(t1, "main").get$element();
-    t1 = new P.Rectangle(t1.offsetLeft, t1.offsetTop, t1.offsetWidth, t1.offsetHeight);
-    H.setRuntimeTypeInfo(t1, [null]);
-    t3 = t1.left;
-    t1 = t1.width;
-    if (typeof t3 !== "number")
-      throw t3.$add();
-    if (typeof t1 !== "number")
-      throw H.iae(t1);
-    J.set$right$x(t2, t3 + t1);
+    t1 = J.get$offset$x(J.get$view$x(t1.$index(t1, "main")));
+    J.set$right$x(t2, t1.get$right(t1));
     t1 = this.canvas;
     t1 = t1.$index(t1, "main");
-    t3 = this.canvas;
-    t3 = t3.$index(t3, "main").get$element();
-    t3 = new P.Rectangle(t3.offsetLeft, t3.offsetTop, t3.offsetWidth, t3.offsetHeight);
-    H.setRuntimeTypeInfo(t3, [null]);
-    t2 = t3.top;
-    t3 = t3.height;
-    if (typeof t2 !== "number")
-      throw t2.$add();
-    if (typeof t3 !== "number")
-      throw H.iae(t3);
-    J.set$bottom$x(t1, t2 + t3);
-    t3 = this.canvas;
-    J.set$zIndex$x(t3.$index(t3, "main").get$element().style, "1");
-    t3 = this.canvas;
-    t3.$indexSet(t3, "buffer", U.Canvas$(W.CanvasElement_CanvasElement(null, null), this.width, this.height));
-    t3 = this.canvas;
-    t3.$indexSet(t3, "gui", U.Canvas$(W.CanvasElement_CanvasElement(null, null), 780, 110));
-    t3 = J.get$children$x(document.querySelector("#gui"));
     t2 = this.canvas;
-    t3.add$1(t3, t2.$index(t2, "gui").get$element());
+    t2 = J.get$offset$x(J.get$view$x(t2.$index(t2, "main")));
+    J.set$bottom$x(t1, t2.get$bottom(t2));
+    t2 = this.canvas;
+    J.set$zIndex$x(J.get$style$x(J.get$view$x(t2.$index(t2, "main"))), "1");
+    t2 = this.canvas;
+    t2.$indexSet(t2, "buffer", U.Renderer$(W.CanvasElement_CanvasElement(null, null), this.width, this.height));
+    t2 = this.canvas;
+    t2.$indexSet(t2, "gui", U.Renderer$(W.CanvasElement_CanvasElement(null, null), 780, 110));
+    t2 = J.get$children$x(document.querySelector("#gui"));
+    t1 = this.canvas;
+    t2.add$1(t2, J.get$view$x(t1.$index(t1, "gui")));
+    t1 = this.canvas;
+    t1 = t1.$index(t1, "gui");
+    t2 = this.canvas;
+    J.set$top$x(t1, J.get$offsetTop$x(J.get$view$x(t2.$index(t2, "gui"))));
     t2 = this.canvas;
     t2 = t2.$index(t2, "gui");
-    t3 = this.canvas;
-    J.set$top$x(t2, t3.$index(t3, "gui").get$element().offsetTop);
-    t3 = this.canvas;
-    t3 = t3.$index(t3, "gui");
-    t2 = this.canvas;
-    J.set$left$x(t3, t2.$index(t2, "gui").get$element().offsetLeft);
+    t1 = this.canvas;
+    J.set$left$x(t2, J.get$offsetLeft$x(J.get$view$x(t1.$index(t1, "gui"))));
     for (i = 0; t1 = this.canvas, i < 10; ++i) {
       t2 = "level" + i;
       e = document.createElement("canvas", null);
-      t3 = new U.Canvas(e, null, null, null, null, null);
+      t3 = P.List_List(null, U.Sprite);
+      t3.$builtinTypeInfo = [U.Sprite];
+      t3 = new U.Renderer(e, null, null, null, null, null, t3);
       t3.updateRect$2(2048, 2048);
-      t4 = t3.element;
+      t4 = t3.view;
       J.set$position$x(t4.style, "absolute");
       t3.context = J.getContext$1$x(t4, "2d");
       t1.$indexSet(t1, t2, t3);
     }
-    t1.$indexSet(t1, "levelbuffer", U.Canvas$(W.CanvasElement_CanvasElement(null, null), 2048, 2048));
+    t1.$indexSet(t1, "levelbuffer", U.Renderer$(W.CanvasElement_CanvasElement(null, null), 2048, 2048));
     t1 = this.canvas;
-    t1.$indexSet(t1, "levelfinal", U.Canvas$(W.CanvasElement_CanvasElement(null, null), this.width, this.height));
+    t1.$indexSet(t1, "levelfinal", U.Renderer$(W.CanvasElement_CanvasElement(null, null), this.width, this.height));
     t1 = J.get$children$x(document.querySelector("#canvasContainer"));
     t2 = this.canvas;
-    t1.add$1(t1, t2.$index(t2, "levelfinal").get$element());
+    t1.add$1(t1, J.get$view$x(t2.$index(t2, "levelfinal")));
     t2 = this.canvas;
-    t2.$indexSet(t2, "collection", U.Canvas$(W.CanvasElement_CanvasElement(null, null), this.width, this.height));
+    t2.$indexSet(t2, "collection", U.Renderer$(W.CanvasElement_CanvasElement(null, null), this.width, this.height));
     t2 = J.get$children$x(document.querySelector("#canvasContainer"));
     t1 = this.canvas;
-    t2.add$1(t2, t1.$index(t1, "collection").get$element());
+    t2.add$1(t2, J.get$view$x(t1.$index(t1, "collection")));
     t1 = this.canvas;
-    t1.$indexSet(t1, "creeperbuffer", U.Canvas$(W.CanvasElement_CanvasElement(null, null), this.width, this.height));
+    t1.$indexSet(t1, "creeperbuffer", U.Renderer$(W.CanvasElement_CanvasElement(null, null), this.width, this.height));
     t1 = this.canvas;
-    t1.$indexSet(t1, "creeper", U.Canvas$(W.CanvasElement_CanvasElement(null, null), this.width, this.height));
+    t1.$indexSet(t1, "creeper", U.Renderer$(W.CanvasElement_CanvasElement(null, null), this.width, this.height));
     t1 = J.get$children$x(document.querySelector("#canvasContainer"));
     t2 = this.canvas;
-    t1.add$1(t1, t2.$index(t2, "creeper").get$element());
+    t1.add$1(t1, J.get$view$x(t2.$index(t2, "creeper")));
     this.loadSounds$0();
   },
   setupEventHandler$0: function() {
@@ -4787,56 +4783,56 @@ Engine: {"": "Object;FPS,delta,fps_delta,fps_frames,fps_totalTime,fps_updateTime
     H.setRuntimeTypeInfo(t1, [H.getRuntimeTypeArgument(t2, "_EventStream", 0)]);
     t1._tryResume$0();
     t1 = this.canvas;
-    mainCanvas = t1.$index(t1, "main").get$element();
+    mainCanvas = J.get$view$x(t1.$index(t1, "main"));
     t1 = this.canvas;
-    guiCanvas = t1.$index(t1, "gui").get$element();
-    mainCanvas.toString;
-    t1 = C.EventStreamProvider_mousemove.forElement$1(mainCanvas);
-    t2 = new W._EventStreamSubscription(0, t1._html$_target, t1._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure3()), t1._useCapture);
-    H.setRuntimeTypeInfo(t2, [H.getRuntimeTypeArgument(t1, "_EventStream", 0)]);
+    guiCanvas = J.get$view$x(t1.$index(t1, "gui"));
+    t1 = J.getInterceptor$x(mainCanvas);
+    t2 = t1.get$onMouseMove(mainCanvas);
+    t3 = new W._EventStreamSubscription(0, t2._html$_target, t2._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure3()), t2._useCapture);
+    H.setRuntimeTypeInfo(t3, [H.getRuntimeTypeArgument(t2, "_EventStream", 0)]);
+    t3._tryResume$0();
+    t3 = t1.get$onDoubleClick(mainCanvas);
+    t2 = new W._EventStreamSubscription(0, t3._html$_target, t3._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure4()), t3._useCapture);
+    H.setRuntimeTypeInfo(t2, [H.getRuntimeTypeArgument(t3, "_EventStream", 0)]);
     t2._tryResume$0();
-    t2 = C.EventStreamProvider_dblclick.forElement$1(mainCanvas);
-    t1 = new W._EventStreamSubscription(0, t2._html$_target, t2._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure4()), t2._useCapture);
-    H.setRuntimeTypeInfo(t1, [H.getRuntimeTypeArgument(t2, "_EventStream", 0)]);
-    t1._tryResume$0();
-    t1 = C.EventStreamProvider_mousedown.forElement$1(mainCanvas);
-    t2 = new W._EventStreamSubscription(0, t1._html$_target, t1._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure5()), t1._useCapture);
-    H.setRuntimeTypeInfo(t2, [H.getRuntimeTypeArgument(t1, "_EventStream", 0)]);
+    t2 = t1.get$onMouseDown(mainCanvas);
+    t3 = new W._EventStreamSubscription(0, t2._html$_target, t2._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure5()), t2._useCapture);
+    H.setRuntimeTypeInfo(t3, [H.getRuntimeTypeArgument(t2, "_EventStream", 0)]);
+    t3._tryResume$0();
+    t3 = t1.get$onMouseUp(mainCanvas);
+    t2 = new W._EventStreamSubscription(0, t3._html$_target, t3._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure6()), t3._useCapture);
+    H.setRuntimeTypeInfo(t2, [H.getRuntimeTypeArgument(t3, "_EventStream", 0)]);
     t2._tryResume$0();
-    t2 = C.EventStreamProvider_mouseup.forElement$1(mainCanvas);
-    t1 = new W._EventStreamSubscription(0, t2._html$_target, t2._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure6()), t2._useCapture);
-    H.setRuntimeTypeInfo(t1, [H.getRuntimeTypeArgument(t2, "_EventStream", 0)]);
-    t1._tryResume$0();
-    t1 = C._CustomEventStreamProvider__determineMouseWheelEventType.forElement$1(mainCanvas);
+    t1 = t1.get$onMouseWheel(mainCanvas);
     t2 = new W._EventStreamSubscription(0, t1._html$_target, t1._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure7()), t1._useCapture);
     H.setRuntimeTypeInfo(t2, [H.getRuntimeTypeArgument(t1, "_EventStream", 0)]);
     t2._tryResume$0();
-    guiCanvas.toString;
-    t2 = C.EventStreamProvider_mousemove.forElement$1(guiCanvas);
-    t1 = new W._EventStreamSubscription(0, t2._html$_target, t2._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure8()), t2._useCapture);
-    H.setRuntimeTypeInfo(t1, [H.getRuntimeTypeArgument(t2, "_EventStream", 0)]);
-    t1._tryResume$0();
-    t1 = C.EventStreamProvider_click.forElement$1(guiCanvas);
-    t2 = new W._EventStreamSubscription(0, t1._html$_target, t1._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure9()), t1._useCapture);
-    H.setRuntimeTypeInfo(t2, [H.getRuntimeTypeArgument(t1, "_EventStream", 0)]);
-    t2._tryResume$0();
-    t2 = document;
-    t1 = C.EventStreamProvider_keydown.forTarget$1(t2);
-    t3 = new W._EventStreamSubscription(0, t1._html$_target, t1._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure10()), t1._useCapture);
+    t2 = J.getInterceptor$x(guiCanvas);
+    t1 = t2.get$onMouseMove(guiCanvas);
+    t3 = new W._EventStreamSubscription(0, t1._html$_target, t1._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure8()), t1._useCapture);
     H.setRuntimeTypeInfo(t3, [H.getRuntimeTypeArgument(t1, "_EventStream", 0)]);
     t3._tryResume$0();
-    t2 = C.EventStreamProvider_keyup.forTarget$1(t2);
-    t3 = new W._EventStreamSubscription(0, t2._html$_target, t2._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure11()), t2._useCapture);
+    t2 = t2.get$onClick(guiCanvas);
+    t3 = new W._EventStreamSubscription(0, t2._html$_target, t2._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure9()), t2._useCapture);
     H.setRuntimeTypeInfo(t3, [H.getRuntimeTypeArgument(t2, "_EventStream", 0)]);
     t3._tryResume$0();
-    t3 = C.EventStreamProvider_contextmenu.forTarget$1(document);
-    t2 = new W._EventStreamSubscription(0, t3._html$_target, t3._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure12()), t3._useCapture);
-    H.setRuntimeTypeInfo(t2, [H.getRuntimeTypeArgument(t3, "_EventStream", 0)]);
-    t2._tryResume$0();
-    t2 = C.EventStreamProvider_resize.forTarget$1(window);
-    t3 = new W._EventStreamSubscription(0, t2._html$_target, t2._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure13()), t2._useCapture);
-    H.setRuntimeTypeInfo(t3, [H.getRuntimeTypeArgument(t2, "_EventStream", 0)]);
+    t3 = document;
+    t2 = C.EventStreamProvider_keydown.forTarget$1(t3);
+    t1 = new W._EventStreamSubscription(0, t2._html$_target, t2._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure10()), t2._useCapture);
+    H.setRuntimeTypeInfo(t1, [H.getRuntimeTypeArgument(t2, "_EventStream", 0)]);
+    t1._tryResume$0();
+    t3 = C.EventStreamProvider_keyup.forTarget$1(t3);
+    t1 = new W._EventStreamSubscription(0, t3._html$_target, t3._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure11()), t3._useCapture);
+    H.setRuntimeTypeInfo(t1, [H.getRuntimeTypeArgument(t3, "_EventStream", 0)]);
+    t1._tryResume$0();
+    t1 = C.EventStreamProvider_contextmenu.forTarget$1(document);
+    t3 = new W._EventStreamSubscription(0, t1._html$_target, t1._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure12()), t1._useCapture);
+    H.setRuntimeTypeInfo(t3, [H.getRuntimeTypeArgument(t1, "_EventStream", 0)]);
     t3._tryResume$0();
+    t3 = C.EventStreamProvider_resize.forTarget$1(window);
+    t1 = new W._EventStreamSubscription(0, t3._html$_target, t3._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure13()), t3._useCapture);
+    H.setRuntimeTypeInfo(t1, [H.getRuntimeTypeArgument(t3, "_EventStream", 0)]);
+    t1._tryResume$0();
   },
   loadImages$0: function() {
     var t1, t2, completer, filenames;
@@ -4890,7 +4886,7 @@ Engine: {"": "Object;FPS,delta,fps_delta,fps_frames,fps_totalTime,fps_updateTime
     t3 = t2.get$client(evt);
     t3 = t3.get$x(t3);
     t4 = this.canvas;
-    t4 = J.get$left$x(t4.$index(t4, "main").get$element().getBoundingClientRect());
+    t4 = J.get$left$x(J.getBoundingClientRect$0$x(J.get$view$x(t4.$index(t4, "main"))));
     if (typeof t3 !== "number")
       throw t3.$sub();
     if (typeof t4 !== "number")
@@ -4899,7 +4895,7 @@ Engine: {"": "Object;FPS,delta,fps_delta,fps_frames,fps_totalTime,fps_updateTime
     t2 = t2.get$client(evt);
     t2 = t2.get$y(t2);
     t4 = this.canvas;
-    t4 = J.get$left$x(t4.$index(t4, "main").get$element().getBoundingClientRect());
+    t4 = J.get$left$x(J.getBoundingClientRect$0$x(J.get$view$x(t4.$index(t4, "main"))));
     if (typeof t2 !== "number")
       throw t2.$sub();
     if (typeof t4 !== "number")
@@ -4918,7 +4914,7 @@ Engine: {"": "Object;FPS,delta,fps_delta,fps_frames,fps_totalTime,fps_updateTime
     t3 = t2.get$client(evt);
     t3 = t3.get$x(t3);
     t4 = this.canvas;
-    t4 = J.get$left$x(t4.$index(t4, "gui").get$element().getBoundingClientRect());
+    t4 = J.get$left$x(J.getBoundingClientRect$0$x(J.get$view$x(t4.$index(t4, "gui"))));
     if (typeof t3 !== "number")
       throw t3.$sub();
     if (typeof t4 !== "number")
@@ -4927,7 +4923,7 @@ Engine: {"": "Object;FPS,delta,fps_delta,fps_frames,fps_totalTime,fps_updateTime
     t2 = t2.get$client(evt);
     t2 = t2.get$y(t2);
     t4 = this.canvas;
-    t4 = J.get$top$x(t4.$index(t4, "gui").get$element().getBoundingClientRect());
+    t4 = J.get$top$x(J.getBoundingClientRect$0$x(J.get$view$x(t4.$index(t4, "gui"))));
     if (typeof t2 !== "number")
       throw t2.$sub();
     if (typeof t4 !== "number")
@@ -5181,60 +5177,32 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy,activeSymbol,terraformi
   get$updateTime: function() {
     return new H.BoundClosure$1(this, U.Game.prototype.updateTime$1, null, "updateTime$1");
   },
-  withinWorld$2: function(x, y) {
-    var t1, t2;
-    if (typeof x !== "number")
-      throw x.$gt();
-    if (x > -1) {
-      t1 = this.world.size;
-      t2 = t1.x;
-      if (typeof t2 !== "number")
-        throw H.iae(t2);
-      if (x < t2) {
-        if (typeof y !== "number")
-          throw y.$gt();
-        if (y > -1) {
-          t1 = t1.y;
-          if (typeof t1 !== "number")
-            throw H.iae(t1);
-          t1 = y < t1;
-        } else
-          t1 = false;
-      } else
-        t1 = false;
-    } else
-      t1 = false;
-    return t1;
-  },
   getHoveredTilePosition$0: function() {
-    var t1, t2, t3, t4, t5, t6, t7;
+    var t1, t2, t3, t4, t5, t6;
     t1 = $.engine;
-    t2 = t1.mouse.x;
-    t1 = t1.halfWidth;
-    if (typeof t1 !== "number")
-      throw H.iae(t1);
-    t3 = this.tileSize;
-    t4 = this.zoom;
+    t2 = t1.mouse;
+    t3 = t2.x;
+    t4 = t1.halfWidth;
     if (typeof t4 !== "number")
       throw H.iae(t4);
-    t4 = C.JSNumber_methods.toInt$0(Math.floor((t2 - t1) / (t3 * t4)));
-    t1 = this.scroll;
-    t2 = t1.x;
-    if (typeof t2 !== "number")
-      throw H.iae(t2);
-    t5 = $.engine;
-    t6 = t5.mouse.y;
-    t5 = t5.halfHeight;
+    t5 = this.zoom;
     if (typeof t5 !== "number")
       throw H.iae(t5);
-    t7 = this.zoom;
-    if (typeof t7 !== "number")
-      throw H.iae(t7);
-    t7 = C.JSNumber_methods.toInt$0(Math.floor((t6 - t5) / (t3 * t7)));
-    t1 = t1.y;
+    t5 = this.tileSize * t5;
+    t4 = C.JSNumber_methods.$tdiv(t3 - t4, t5);
+    t3 = this.scroll;
+    t6 = t3.x;
+    if (typeof t6 !== "number")
+      throw H.iae(t6);
+    t2 = t2.y;
+    t1 = t1.halfHeight;
     if (typeof t1 !== "number")
       throw H.iae(t1);
-    return new U.Vector(t4 + t2, t7 + t1);
+    t5 = C.JSNumber_methods.$tdiv(t2 - t1, t5);
+    t3 = t3.y;
+    if (typeof t3 !== "number")
+      throw H.iae(t3);
+    return new U.Vector(t4 + t6, t5 + t3);
   },
   pause$0: function(_) {
     var t1;
@@ -5391,18 +5359,9 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy,activeSymbol,terraformi
       throw t3.$sub();
     randomPosition = new U.Vector(t1, t2.randomInt$3(0, t3 - 9, this.seed + 1));
     t3 = this.scroll;
-    t2 = randomPosition.x;
-    if (typeof t2 !== "number")
-      throw t2.$add();
-    t3.x = t2 + 4;
-    t2 = randomPosition.y;
-    if (typeof t2 !== "number")
-      throw t2.$add();
-    t3.y = t2 + 4;
-    building = new U.Building(randomPosition, null, null, new U.Vector(0, 0), "base", "IDLE", false, false, false, false, true, false, false, false, null, 0, null, 0, 0, 0, 1, 0, null, 0, null, 0, 0, 0, 0, null);
-    building.health = 0;
-    building.size = 3;
-    building.energy = 0;
+    t3.x = J.$add$ns(randomPosition.x, 4);
+    t3.y = J.$add$ns(randomPosition.y, 4);
+    building = U.Building$(randomPosition, "base");
     building.health = 40;
     building.maxHealth = 40;
     building.built = true;
@@ -5410,19 +5369,12 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy,activeSymbol,terraformi
     building.canMove = true;
     this.buildings.push(building);
     this.base = building;
-    t2 = this.world.tiles;
-    t3 = building.position;
-    t1 = t3.x;
-    if (typeof t1 !== "number")
-      throw t1.$add();
-    t1 += 4;
-    if (t1 >>> 0 !== t1 || t1 >= t2.length)
-      throw H.ioore(t2, t1);
-    t1 = t2[t1];
-    t3 = t3.y;
-    if (typeof t3 !== "number")
-      throw t3.$add();
-    height = J.get$height$x(J.$index$asx(t1, t3 + 4));
+    t3 = this.world.tiles;
+    t2 = building.position;
+    t1 = J.$add$ns(t2.x, 4);
+    if (t1 >>> 0 !== t1 || t1 >= t3.length)
+      throw H.ioore(t3, t1);
+    height = J.get$height$x(J.$index$asx(t3[t1], J.$add$ns(t2.y, 4)));
     if (typeof height !== "number")
       throw height.$lt();
     if (height < 0)
@@ -5431,17 +5383,10 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy,activeSymbol,terraformi
       for (j = 0; j < 9; ++j) {
         t1 = this.world.tiles;
         t2 = building.position;
-        t3 = t2.x;
-        if (typeof t3 !== "number")
-          throw t3.$add();
-        t3 += i;
+        t3 = J.$add$ns(t2.x, i);
         if (t3 >>> 0 !== t3 || t3 >= t1.length)
           throw H.ioore(t1, t3);
-        t3 = t1[t3];
-        t2 = t2.y;
-        if (typeof t2 !== "number")
-          throw t2.$add();
-        J.set$height$x(J.$index$asx(t3, t2 + j), height);
+        J.set$height$x(J.$index$asx(t1[t3], J.$add$ns(t2.y, j)), height);
       }
     number = $.engine.randomInt$3(2, 3, this.seed);
     for (t1 = this.emitters, l = 0; t2 = $.engine, l < number; ++l) {
@@ -5467,41 +5412,62 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy,activeSymbol,terraformi
         H.throwExpression(new P.ArgumentError("negative max: " + H.S(max)));
       if (max > 4294967295)
         max = 4294967295;
-      emitter = new U.Emitter(new U.Vector(t2 + 0, (Math.random() * max >>> 0) + 0), null, 25, null);
-      emitter.imageID = "emitter";
-      t1.push(emitter);
-      t2 = this.world.tiles;
-      t3 = emitter.position;
-      t4 = t3.x;
-      if (typeof t4 !== "number")
-        throw t4.$add();
-      ++t4;
-      if (t4 >>> 0 !== t4 || t4 >= t2.length)
-        throw H.ioore(t2, t4);
-      t4 = t2[t4];
-      t3 = t3.y;
+      randomPosition = new U.Vector(t2 + 0, (Math.random() * max >>> 0) + 0);
+      t2 = randomPosition.x;
+      if (typeof t2 !== "number")
+        throw t2.$mul();
+      t3 = randomPosition.y;
       if (typeof t3 !== "number")
-        throw t3.$add();
-      height = J.get$height$x(J.$index$asx(t4, t3 + 1));
+        throw t3.$mul();
+      emitter = new U.Emitter(null, 25, null);
+      t4 = $.engine.images;
+      t3 = new U.Sprite(0, 0, t4.$index(t4, "emitter"), null, null, new U.Vector(t2 * 16 + 24, t3 * 16 + 24), null, 0, 1, false, true);
+      t3.anchor = new U.Vector(0, 0);
+      t3.scale = new U.Vector(1, 1);
+      t3.size = new U.Vector(48, 48);
+      emitter.sprite = t3;
+      emitter.sprite.anchor = new U.Vector(0.5, 0.5);
+      t3 = $.engine.canvas;
+      t3.$index(t3, "buffer").addSprite$1(emitter.sprite);
+      t1.push(emitter);
+      t3 = this.world;
+      t2 = emitter.sprite.position;
+      t4 = new U.Vector(1, 1);
+      t4 = new U.Vector(J.$add$ns(t2.x, t4.x), J.$add$ns(t2.y, t4.y));
+      t3 = t3.tiles;
+      t2 = t4.x;
+      if (typeof t2 !== "number")
+        throw t2.$tdiv();
+      t2 = C.JSNumber_methods.$tdiv(t2, 16);
+      if (t2 >>> 0 !== t2 || t2 >= t3.length)
+        throw H.ioore(t3, t2);
+      t2 = t3[t2];
+      t4 = t4.y;
+      if (typeof t4 !== "number")
+        throw t4.$tdiv();
+      height = J.get$height$x(J.$index$asx(t2, C.JSNumber_methods.$tdiv(t4, 16)));
       if (typeof height !== "number")
         throw height.$lt();
       if (height < 0)
         height = 0;
       for (i = 0; i < 3; ++i)
         for (j = 0; j < 3; ++j) {
-          t2 = this.world.tiles;
-          t3 = emitter.position;
-          t4 = t3.x;
-          if (typeof t4 !== "number")
-            throw t4.$add();
-          t4 += i;
-          if (t4 >>> 0 !== t4 || t4 >= t2.length)
-            throw H.ioore(t2, t4);
-          t4 = t2[t4];
-          t3 = t3.y;
+          t2 = this.world;
+          t3 = emitter.sprite.position;
+          t4 = new U.Vector(i, j);
+          t4 = new U.Vector(J.$add$ns(t3.x, t4.x), J.$add$ns(t3.y, t4.y));
+          t2 = t2.tiles;
+          t3 = t4.x;
           if (typeof t3 !== "number")
-            throw t3.$add();
-          J.set$height$x(J.$index$asx(t4, t3 + j), height);
+            throw t3.$tdiv();
+          t3 = C.JSNumber_methods.$tdiv(t3, 16);
+          if (t3 >>> 0 !== t3 || t3 >= t2.length)
+            throw H.ioore(t2, t3);
+          t3 = t2[t3];
+          t4 = t4.y;
+          if (typeof t4 !== "number")
+            throw t4.$tdiv();
+          J.set$height$x(J.$index$asx(t3, C.JSNumber_methods.$tdiv(t4, 16)), height);
         }
     }
     number = t2.randomInt$3(1, 2, this.seed + 1);
@@ -5529,103 +5495,55 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy,activeSymbol,terraformi
         H.throwExpression(new P.ArgumentError("negative max: " + H.S(max)));
       if (max > 4294967295)
         max = 4294967295;
-      sporetower = new U.Sporetower(new U.Vector(t2 + 0, (Math.random() * max >>> 0) + 0), null, 0);
-      sporetower.imageID = "sporetower";
-      $.engine.toString;
-      sporetower.sporeCounter = (Math.random() * 5001 >>> 0) + 7500;
-      t1.push(sporetower);
-      t2 = this.world.tiles;
-      t3 = sporetower.position;
-      t4 = t3.x;
-      if (typeof t4 !== "number")
-        throw t4.$add();
-      ++t4;
-      if (t4 >>> 0 !== t4 || t4 >= t2.length)
-        throw H.ioore(t2, t4);
-      t4 = t2[t4];
-      t3 = t3.y;
+      randomPosition = new U.Vector(t2 + 0, (Math.random() * max >>> 0) + 0);
+      t2 = randomPosition.x;
+      if (typeof t2 !== "number")
+        throw t2.$mul();
+      t3 = randomPosition.y;
       if (typeof t3 !== "number")
-        throw t3.$add();
-      height = J.get$height$x(J.$index$asx(t4, t3 + 1));
+        throw t3.$mul();
+      sporetower = U.Sporetower$(new U.Vector(t2 * 16 + 24, t3 * 16 + 24));
+      t1.push(sporetower);
+      t3 = this.world;
+      t2 = sporetower.sprite.position;
+      t4 = new U.Vector(1, 1);
+      t4 = new U.Vector(J.$add$ns(t2.x, t4.x), J.$add$ns(t2.y, t4.y));
+      t3 = t3.tiles;
+      t2 = t4.x;
+      if (typeof t2 !== "number")
+        throw t2.$tdiv();
+      t2 = C.JSNumber_methods.$tdiv(t2, 16);
+      if (t2 >>> 0 !== t2 || t2 >= t3.length)
+        throw H.ioore(t3, t2);
+      t2 = t3[t2];
+      t4 = t4.y;
+      if (typeof t4 !== "number")
+        throw t4.$tdiv();
+      height = J.get$height$x(J.$index$asx(t2, C.JSNumber_methods.$tdiv(t4, 16)));
       if (typeof height !== "number")
         throw height.$lt();
       if (height < 0)
         height = 0;
       for (i = 0; i < 3; ++i)
         for (j = 0; j < 3; ++j) {
-          t2 = this.world.tiles;
-          t3 = sporetower.position;
-          t4 = t3.x;
-          if (typeof t4 !== "number")
-            throw t4.$add();
-          t4 += i;
-          if (t4 >>> 0 !== t4 || t4 >= t2.length)
-            throw H.ioore(t2, t4);
-          t4 = t2[t4];
-          t3 = t3.y;
+          t2 = this.world;
+          t3 = sporetower.sprite.position;
+          t4 = new U.Vector(i, j);
+          t4 = new U.Vector(J.$add$ns(t3.x, t4.x), J.$add$ns(t3.y, t4.y));
+          t2 = t2.tiles;
+          t3 = t4.x;
           if (typeof t3 !== "number")
-            throw t3.$add();
-          J.set$height$x(J.$index$asx(t4, t3 + j), height);
+            throw t3.$tdiv();
+          t3 = C.JSNumber_methods.$tdiv(t3, 16);
+          if (t3 >>> 0 !== t3 || t3 >= t2.length)
+            throw H.ioore(t2, t3);
+          t3 = t2[t3];
+          t4 = t4.y;
+          if (typeof t4 !== "number")
+            throw t4.$tdiv();
+          J.set$height$x(J.$index$asx(t3, C.JSNumber_methods.$tdiv(t4, 16)), height);
         }
     }
-  },
-  addBuilding$2: function(position, type) {
-    var building, t1;
-    building = new U.Building(position, null, null, new U.Vector(0, 0), type, "IDLE", false, false, false, false, true, false, false, false, null, 0, null, 0, 0, 0, 1, 0, null, 0, null, 0, 0, 0, 0, null);
-    building.health = 0;
-    building.size = 3;
-    building.energy = 0;
-    t1 = building.imageID;
-    if (t1 === "analyzer") {
-      building.maxHealth = 80;
-      building.maxEnergy = 20;
-      building.canMove = true;
-      building.needsEnergy = true;
-      building.weaponRadius = 10;
-    } else if (t1 === "terp") {
-      building.maxHealth = 60;
-      building.maxEnergy = 20;
-      building.canMove = true;
-      building.needsEnergy = true;
-      building.weaponRadius = 12;
-    } else if (t1 === "shield") {
-      building.maxHealth = 75;
-      building.maxEnergy = 20;
-      building.canMove = true;
-      building.needsEnergy = true;
-      building.weaponRadius = 9;
-    } else if (t1 === "bomber") {
-      building.maxHealth = 75;
-      building.maxEnergy = 15;
-      building.needsEnergy = true;
-    } else if (t1 === "storage")
-      building.maxHealth = 8;
-    else if (t1 === "reactor")
-      building.maxHealth = 50;
-    else if (t1 === "collector")
-      building.maxHealth = 5;
-    else if (t1 === "relay")
-      building.maxHealth = 10;
-    else if (t1 === "cannon") {
-      building.maxHealth = 25;
-      building.maxEnergy = 40;
-      building.weaponRadius = 8;
-      building.canMove = true;
-      building.needsEnergy = true;
-    } else if (t1 === "mortar") {
-      building.maxHealth = 40;
-      building.maxEnergy = 20;
-      building.weaponRadius = 12;
-      building.canMove = true;
-      building.needsEnergy = true;
-    } else if (t1 === "beam") {
-      building.maxHealth = 20;
-      building.maxEnergy = 10;
-      building.weaponRadius = 12;
-      building.canMove = true;
-      building.needsEnergy = true;
-    }
-    this.buildings.push(building);
   },
   removeBuilding$1: function(building) {
     var t1, i, t2;
@@ -5699,21 +5617,77 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy,activeSymbol,terraformi
     for (t1 = this.symbols, i = 0; i < t1.length; ++i)
       t1[i].active = false;
     t1 = $.engine.canvas;
-    J.set$cursor$x(t1.$index(t1, "main").get$element().style, "url('images/Normal.cur') 2 2, pointer");
+    J.set$cursor$x(J.get$style$x(J.get$view$x(t1.$index(t1, "main"))), "url('images/Normal.cur') 2 2, pointer");
   },
   setupUI$0: function() {
-    var t1 = this.symbols;
-    t1.push(new U.UISymbol(new U.Vector(0, 0), "cannon", 80, 55, 3, 25, 8, 81, false, false));
-    t1.push(new U.UISymbol(new U.Vector(81, 0), "collector", 80, 55, 3, 5, 6, 87, false, false));
-    t1.push(new U.UISymbol(new U.Vector(162, 0), "reactor", 80, 55, 3, 50, 0, 69, false, false));
-    t1.push(new U.UISymbol(new U.Vector(243, 0), "storage", 80, 55, 3, 8, 0, 82, false, false));
-    t1.push(new U.UISymbol(new U.Vector(324, 0), "shield", 80, 55, 3, 75, 10, 84, false, false));
-    t1.push(new U.UISymbol(new U.Vector(405, 0), "analyzer", 80, 55, 3, 80, 10, 90, false, false));
-    t1.push(new U.UISymbol(new U.Vector(0, 56), "relay", 80, 55, 3, 10, 8, 65, false, false));
-    t1.push(new U.UISymbol(new U.Vector(81, 56), "mortar", 80, 55, 3, 40, 12, 83, false, false));
-    t1.push(new U.UISymbol(new U.Vector(162, 56), "beam", 80, 55, 3, 20, 12, 68, false, false));
-    t1.push(new U.UISymbol(new U.Vector(243, 56), "bomber", 80, 55, 3, 75, 0, 70, false, false));
-    t1.push(new U.UISymbol(new U.Vector(324, 56), "terp", 80, 55, 3, 60, 12, 71, false, false));
+    var t1, t2, t3;
+    t1 = this.symbols;
+    t2 = new U.Vector(0, 0);
+    t3 = new U.UISymbol(null, "cannon", 3, 25, 8, 81, false, false);
+    t2 = new P.Rectangle(t2.x, t2.y, 80, 55);
+    H.setRuntimeTypeInfo(t2, [null]);
+    t3.rectangle = t2;
+    t1.push(t3);
+    t3 = new U.Vector(81, 0);
+    t2 = new U.UISymbol(null, "collector", 3, 5, 6, 87, false, false);
+    t3 = new P.Rectangle(t3.x, t3.y, 80, 55);
+    H.setRuntimeTypeInfo(t3, [null]);
+    t2.rectangle = t3;
+    t1.push(t2);
+    t2 = new U.Vector(162, 0);
+    t3 = new U.UISymbol(null, "reactor", 3, 50, 0, 69, false, false);
+    t2 = new P.Rectangle(t2.x, t2.y, 80, 55);
+    H.setRuntimeTypeInfo(t2, [null]);
+    t3.rectangle = t2;
+    t1.push(t3);
+    t3 = new U.Vector(243, 0);
+    t2 = new U.UISymbol(null, "storage", 3, 8, 0, 82, false, false);
+    t3 = new P.Rectangle(t3.x, t3.y, 80, 55);
+    H.setRuntimeTypeInfo(t3, [null]);
+    t2.rectangle = t3;
+    t1.push(t2);
+    t2 = new U.Vector(324, 0);
+    t3 = new U.UISymbol(null, "shield", 3, 75, 10, 84, false, false);
+    t2 = new P.Rectangle(t2.x, t2.y, 80, 55);
+    H.setRuntimeTypeInfo(t2, [null]);
+    t3.rectangle = t2;
+    t1.push(t3);
+    t3 = new U.Vector(405, 0);
+    t2 = new U.UISymbol(null, "analyzer", 3, 80, 10, 90, false, false);
+    t3 = new P.Rectangle(t3.x, t3.y, 80, 55);
+    H.setRuntimeTypeInfo(t3, [null]);
+    t2.rectangle = t3;
+    t1.push(t2);
+    t2 = new U.Vector(0, 56);
+    t3 = new U.UISymbol(null, "relay", 3, 10, 8, 65, false, false);
+    t2 = new P.Rectangle(t2.x, t2.y, 80, 55);
+    H.setRuntimeTypeInfo(t2, [null]);
+    t3.rectangle = t2;
+    t1.push(t3);
+    t3 = new U.Vector(81, 56);
+    t2 = new U.UISymbol(null, "mortar", 3, 40, 12, 83, false, false);
+    t3 = new P.Rectangle(t3.x, t3.y, 80, 55);
+    H.setRuntimeTypeInfo(t3, [null]);
+    t2.rectangle = t3;
+    t1.push(t2);
+    t2 = new U.Vector(162, 56);
+    t3 = new U.UISymbol(null, "beam", 3, 20, 12, 68, false, false);
+    t2 = new P.Rectangle(t2.x, t2.y, 80, 55);
+    H.setRuntimeTypeInfo(t2, [null]);
+    t3.rectangle = t2;
+    t1.push(t3);
+    t3 = new U.Vector(243, 56);
+    t2 = new U.UISymbol(null, "bomber", 3, 75, 0, 70, false, false);
+    t3 = new P.Rectangle(t3.x, t3.y, 80, 55);
+    H.setRuntimeTypeInfo(t3, [null]);
+    t2.rectangle = t3;
+    t1.push(t2);
+    t2 = new U.Vector(324, 56);
+    t3 = new U.UISymbol(null, "terp", 3, 60, 12, 71, false, false);
+    t2 = new P.Rectangle(t2.x, t2.y, 80, 55);
+    H.setRuntimeTypeInfo(t2, [null]);
+    t3.rectangle = t2;
+    t1.push(t3);
   },
   drawTerrain$0: function() {
     var i, t1, t2, t3, t4, i0, t5, t6, j, t7, j0, t8, t9, indexAbove, k, t10, up, t11, down, left, right, index, pattern;
@@ -5841,9 +5815,9 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy,activeSymbol,terraformi
       t4 = $.engine.canvas;
       t4 = t4.$index(t4, "level" + i).get$context();
       t3 = $.engine.canvas;
-      t3 = J.get$width$x(t3.$index(t3, "level" + i).get$element());
+      t3 = J.get$width$x(J.get$view$x(t3.$index(t3, "level" + i)));
       t5 = $.engine.canvas;
-      J.fillRect$4$x(t4, 0, 0, t3, J.get$height$x(t5.$index(t5, "level" + i).get$element()));
+      J.fillRect$4$x(t4, 0, 0, t3, J.get$height$x(J.get$view$x(t5.$index(t5, "level" + i))));
       t5 = $.engine.canvas;
       J.set$globalCompositeOperation$x(t5.$index(t5, "level" + i).get$context(), "source-over");
     }
@@ -5950,7 +5924,7 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy,activeSymbol,terraformi
       t1 = $.engine.canvas;
       t1 = t1.$index(t1, "levelbuffer").get$context();
       t2 = $.engine.canvas;
-      J.drawImage$3$x(t1, t2.$index(t2, "level" + k).get$element(), 0, 0);
+      J.drawImage$3$x(t1, J.get$view$x(t2.$index(t2, "level" + k)), 0, 0);
     }
     J.set$display$x(document.querySelector("#loading").style, "none");
   },
@@ -6034,7 +6008,7 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy,activeSymbol,terraformi
     t1 = t4.canvas;
     t1 = t1.$index(t1, "levelfinal").get$context();
     t2 = $.engine.canvas;
-    t2 = t2.$index(t2, "levelbuffer").get$element();
+    t2 = J.get$view$x(t2.$index(t2, "levelbuffer"));
     t3 = delta.x;
     t4 = delta.y;
     t5 = $.engine;
@@ -6073,7 +6047,8 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy,activeSymbol,terraformi
       t5 = tiles[i];
       iS = t5.get$x(t5);
       jS = t5.get$y(t5);
-      if (this.withinWorld$2(iS, jS)) {
+      t5 = this.world;
+      if (t5.contains$1(t5, new U.Vector(iS, jS))) {
         for (index = -1, indexAbove = -1, t = 9; t > -1; --t) {
           t5 = this.world.tiles;
           if (iS >>> 0 !== iS || iS >= t5.length)
@@ -6535,25 +6510,24 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy,activeSymbol,terraformi
         i = position.x;
         collision = false;
         while (true) {
-          t1 = position.x;
-          if (typeof t1 !== "number")
-            throw t1.$add();
-          if (typeof size !== "number")
-            throw H.iae(size);
+          t1 = J.$add$ns(position.x, size);
           if (typeof i !== "number")
             throw i.$lt();
-          if (!(i < t1 + size))
+          if (typeof t1 !== "number")
+            throw H.iae(t1);
+          if (!(i < t1))
             break;
           j = position.y;
           while (true) {
-            t1 = position.y;
-            if (typeof t1 !== "number")
-              throw t1.$add();
+            t1 = J.$add$ns(position.y, size);
             if (typeof j !== "number")
               throw j.$lt();
-            if (!(j < t1 + size))
+            if (typeof t1 !== "number")
+              throw H.iae(t1);
+            if (!(j < t1))
               break;
-            if (this.withinWorld$2(i, j)) {
+            t1 = this.world;
+            if (t1.contains$1(t1, new U.Vector(i, j))) {
               t1 = $.game.world.tiles;
               if (i >>> 0 !== i || i >= t1.length)
                 throw H.ioore(t1, i);
@@ -6611,7 +6585,7 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy,activeSymbol,terraformi
     return !collision;
   },
   updateCreeper$0: function() {
-    var t1, t2, i, i0, j, t3, t4, t5, j0;
+    var t1, t2, i, t3, t4, t5, i0, j, j0;
     t1 = $.Emitter_counter;
     if (typeof t1 !== "number")
       throw t1.$add();
@@ -6621,8 +6595,28 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy,activeSymbol,terraformi
     if (typeof t1 !== "number")
       throw t1.$ge();
     if (t1 >= 25 / t2) {
-      for (t1 = this.emitters, i = 0; i < t1.length; ++i)
-        t1[i].spawn$0();
+      for (t1 = this.emitters, i = 0; i < t1.length; ++i) {
+        t2 = t1[i];
+        if (t2.analyzer == null) {
+          t3 = $.game.world;
+          t4 = t2.sprite.position;
+          t5 = new U.Vector(1, 1);
+          t5 = new U.Vector(J.$add$ns(t4.x, t5.x), J.$add$ns(t4.y, t5.y));
+          t3 = t3.tiles;
+          t4 = t5.x;
+          if (typeof t4 !== "number")
+            throw t4.$tdiv();
+          t4 = C.JSNumber_methods.$tdiv(t4, 16);
+          if (t4 >>> 0 !== t4 || t4 >= t3.length)
+            throw H.ioore(t3, t4);
+          t4 = t3[t4];
+          t5 = t5.y;
+          if (typeof t5 !== "number")
+            throw t5.$tdiv();
+          t5 = J.$index$asx(t4, C.JSNumber_methods.$tdiv(t5, 16));
+          t5.creep = t5.get$creep() + t2.strength;
+        }
+      }
       $.Emitter_counter = 0;
     }
     this.creeperCounter = this.creeperCounter + 1;
@@ -6790,7 +6784,7 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy,activeSymbol,terraformi
     J.set$innerHtml$x(document.querySelector("#speed"), "Zoom: " + H.S(J.toString$0(this.zoom)) + "x");
   },
   updateCollection$2: function(collector, action) {
-    var t1, t2, t3, height, centerBuilding, t4, t5, t6, i, j, t7, t8, positionCurrent, positionCurrentCenter, t9, tileHeight, k, heightK, centerBuildingK, t10;
+    var t1, t2, t3, height, centerBuilding, t4, t5, t6, i, j, t7, positionCurrent, t8, positionCurrentCenter, t9, tileHeight, k, heightK, centerBuildingK, t10;
     t1 = $.game.world.tiles;
     t2 = collector.position;
     t3 = t2.x;
@@ -6801,14 +6795,9 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy,activeSymbol,terraformi
     for (t1 = action === "remove", t2 = action === "add", t3 = this.tileSize, t4 = t3 / 2, t5 = this.buildings, t6 = t3 * 6, i = -5; i < 7; ++i)
       for (j = -5; j < 7; ++j) {
         t7 = collector.position;
-        t8 = t7.x;
-        if (typeof t8 !== "number")
-          throw t8.$add();
-        t7 = t7.y;
-        if (typeof t7 !== "number")
-          throw t7.$add();
-        positionCurrent = new U.Vector(t8 + i, t7 + j);
-        if (this.withinWorld$2(positionCurrent.x, positionCurrent.y)) {
+        positionCurrent = new U.Vector(J.$add$ns(t7.x, i), J.$add$ns(t7.y, j));
+        t7 = this.world;
+        if (t7.contains$1(t7, positionCurrent)) {
           t7 = positionCurrent.x;
           if (typeof t7 !== "number")
             throw t7.$mul();
@@ -6977,9 +6966,14 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy,activeSymbol,terraformi
       if (i >= t1.length)
         throw H.ioore(t1, i);
       t2 = t1[i];
-      if (t2.remove)
+      if (t2.remove) {
+        t2 = $.engine.canvas;
+        t2 = t2.$index(t2, "buffer");
+        if (i >= t1.length)
+          throw H.ioore(t1, i);
+        t2.removeSprite$1(t1[i].sprite);
         C.JSArray_methods.removeAt$1(t1, i);
-      else
+      } else
         t2.move$0();
     }
   },
@@ -7001,51 +6995,57 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy,activeSymbol,terraformi
       if (i >= t1.length)
         throw H.ioore(t1, i);
       t2 = t1[i];
-      if (t2.remove)
+      if (t2.remove) {
+        t2 = $.engine.canvas;
+        t2 = t2.$index(t2, "buffer");
+        if (i >= t1.length)
+          throw H.ioore(t1, i);
+        t2.removeSprite$1(t1[i].sprite);
         C.JSArray_methods.removeAt$1(t1, i);
-      else
+      } else
         t2.move$0();
     }
   },
   updateSmokes$0: function() {
     var t1, i, t2, t3;
-    t1 = $.Smoke_counter;
-    if (typeof t1 !== "number")
-      throw t1.$add();
-    $.Smoke_counter = t1 + 1;
-    t1 = $.Smoke_counter;
-    if (typeof t1 !== "number")
-      throw t1.$gt();
-    if (t1 > 3) {
+    $.Smoke_counter = $.Smoke_counter + 1;
+    if ($.Smoke_counter > 3) {
       $.Smoke_counter = 0;
       for (t1 = this.smokes, i = t1.length - 1; i >= 0; --i) {
         if (i >= t1.length)
           throw H.ioore(t1, i);
-        t2 = t1[i];
+        t2 = t1[i].sprite;
         t3 = t2.frame;
-        if (t3 === 36)
+        if (t3 === 36) {
+          t2 = $.engine.canvas;
+          t2 = t2.$index(t2, "buffer");
+          if (i >= t1.length)
+            throw H.ioore(t1, i);
+          t2.removeSprite$1(t1[i].sprite);
           C.JSArray_methods.removeAt$1(t1, i);
-        else
+        } else
           t2.frame = t3 + 1;
       }
     }
   },
   updateExplosions$0: function() {
     var t1, i, t2, t3;
-    t1 = $.Explosion_counter;
-    if (typeof t1 !== "number")
-      throw t1.$add();
-    $.Explosion_counter = t1 + 1;
+    $.Explosion_counter = $.Explosion_counter + 1;
     if ($.Explosion_counter === 1) {
       $.Explosion_counter = 0;
       for (t1 = this.explosions, i = t1.length - 1; i >= 0; --i) {
         if (i >= t1.length)
           throw H.ioore(t1, i);
-        t2 = t1[i];
+        t2 = t1[i].sprite;
         t3 = t2.frame;
-        if (t3 === 44)
+        if (t3 === 44) {
+          t2 = $.engine.canvas;
+          t2 = t2.$index(t2, "buffer");
+          if (i >= t1.length)
+            throw H.ioore(t1, i);
+          t2.removeSprite$1(t1[i].sprite);
           C.JSArray_methods.removeAt$1(t1, i);
-        else
+        } else
           t2.frame = t3 + 1;
       }
     }
@@ -7058,7 +7058,7 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy,activeSymbol,terraformi
   update$0: function() {
     var t1, t2, emittersChecked, i, t3;
     for (t1 = this.emitters, t2 = t1.length, emittersChecked = 0, i = 0; i < t2; ++i)
-      if (t1[i].building != null)
+      if (t1[i].analyzer != null)
         ++emittersChecked;
     if (emittersChecked === t2) {
       J.set$display$x(document.querySelector("#win").style, "block");
@@ -7082,8 +7082,8 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy,activeSymbol,terraformi
     if (!this.paused) {
       this.updatePacketQueue$0();
       this.updateSpores$0();
-      this.updateCreeper$0();
       this.updateShells$0();
+      this.updateCreeper$0();
       this.updateProjectiles$0();
       this.updateBuildings$0();
       this.updatePackets$0();
@@ -7133,7 +7133,7 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy,activeSymbol,terraformi
     }
   },
   drawRangeBoxes$4: function(position, type, rad, size) {
-    var t1, context, t2, t3, t4, t5, positionCenter, positionHeight, radius, i, t6, t7, t8, i0, j, t9, t10, positionCurrent, positionCurrentCenter, drawPositionCurrent, positionCurrentHeight, t11;
+    var t1, context, t2, t3, t4, t5, positionCenter, positionHeight, radius, i, t6, t7, t8, i0, j, positionCurrent, t9, t10, positionCurrentCenter, drawPositionCurrent, positionCurrentHeight, t11;
     t1 = $.engine.canvas;
     context = t1.$index(t1, "buffer").get$context();
     t1 = position.x;
@@ -7160,22 +7160,17 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy,activeSymbol,terraformi
       radius = rad * t2;
       for (i = -radius, t1 = type !== "mortar", t4 = type === "cannon", t5 = type === "collector", t6 = type !== "shield", t7 = type !== "beam", t8 = type === "terp", i0 = i; i0 < radius; ++i0)
         for (j = i; j < radius; ++j) {
-          t9 = position.x;
-          if (typeof t9 !== "number")
-            throw t9.$add();
-          t10 = position.y;
-          if (typeof t10 !== "number")
-            throw t10.$add();
-          positionCurrent = new U.Vector(t9 + i0, t10 + j);
-          t10 = positionCurrent.x;
-          if (typeof t10 !== "number")
-            throw t10.$mul();
-          t9 = positionCurrent.y;
+          positionCurrent = new U.Vector(J.$add$ns(position.x, i0), J.$add$ns(position.y, j));
+          t9 = positionCurrent.x;
           if (typeof t9 !== "number")
             throw t9.$mul();
-          positionCurrentCenter = new U.Vector(t10 * t2 + t3, t9 * t2 + t3);
+          t10 = positionCurrent.y;
+          if (typeof t10 !== "number")
+            throw t10.$mul();
+          positionCurrentCenter = new U.Vector(t9 * t2 + t3, t10 * t2 + t3);
           drawPositionCurrent = positionCurrent.tiled2screen$0();
-          if (this.withinWorld$2(positionCurrent.x, positionCurrent.y)) {
+          t9 = this.world;
+          if (t9.contains$1(t9, positionCurrent)) {
             t9 = $.game.world.tiles;
             t10 = positionCurrent.x;
             if (t10 >>> 0 !== t10 || t10 >= t9.length)
@@ -7258,7 +7253,8 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy,activeSymbol,terraformi
         if (typeof t6 !== "number")
           throw H.iae(t6);
         jS = j0 + t6;
-        if (this.withinWorld$2(iS, jS)) {
+        t6 = this.world;
+        if (t6.contains$1(t6, new U.Vector(iS, jS))) {
           t6 = this.world.tiles;
           if (iS >>> 0 !== iS || iS >= t6.length)
             throw H.ioore(t6, iS);
@@ -7358,7 +7354,8 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy,activeSymbol,terraformi
         if (typeof t4 !== "number")
           throw H.iae(t4);
         jS = j0 + t4;
-        if (this.withinWorld$2(iS, jS)) {
+        t4 = this.world;
+        if (t4.contains$1(t4, new U.Vector(iS, jS))) {
           t4 = this.world.tiles;
           if (iS >>> 0 !== iS || iS >= t4.length)
             throw H.ioore(t4, iS);
@@ -7625,7 +7622,7 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy,activeSymbol,terraformi
     t1 = $.engine.canvas;
     t1 = t1.$index(t1, "creeper").get$context();
     t2 = $.engine.canvas;
-    J.drawImage$3$x(t1, t2.$index(t2, "creeperbuffer").get$element(), 0, 0);
+    J.drawImage$3$x(t1, J.get$view$x(t2.$index(t2, "creeperbuffer")), 0, 0);
   },
   drawPositionInfo$0: function() {
     var t1, context, t2, end, t3, t4, t5, delta, distance, buildingDistance, times, i, newX, newY, position, allowedDistance, allowedDistance0, t6, j, t7, positionScrolled, drawPosition, t8, t9, t10, t11, positionScrolledCenter, center, drawCenter, allowedDistance1, lineToTarget, k;
@@ -7666,24 +7663,23 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy,activeSymbol,terraformi
         t3 = delta.x;
         if (typeof t3 !== "number")
           throw t3.$div();
-        if (typeof t1 !== "number")
-          throw t1.$add();
-        newX = C.JSNumber_methods.toInt$0(Math.floor(t1 + t3 / distance * i * buildingDistance));
+        newX = J.floor$0$n(J.$add$ns(t1, t3 / distance * i * buildingDistance));
         t3 = t2.y;
         t1 = delta.y;
         if (typeof t1 !== "number")
           throw t1.$div();
-        if (typeof t3 !== "number")
-          throw t3.$add();
-        newY = C.JSNumber_methods.toInt$0(Math.floor(t3 + t1 / distance * i * buildingDistance));
-        if (this.withinWorld$2(newX, newY))
+        newY = J.floor$0$n(J.$add$ns(t3, t1 / distance * i * buildingDistance));
+        t1 = this.world;
+        if (t1.contains$1(t1, new U.Vector(newX, newY)))
           this.ghosts.push(new U.Vector(newX, newY));
       }
-      if (this.withinWorld$2(end.x, end.y))
+      t1 = this.world;
+      if (t1.contains$1(t1, end))
         this.ghosts.push(end);
     } else if (t1.active) {
       position = this.getHoveredTilePosition$0();
-      if (this.withinWorld$2(position.x, position.y))
+      t1 = this.world;
+      if (t1.contains$1(t1, position))
         this.ghosts.push(position);
     }
     for (t1 = this.tileSize, t2 = t1 / 2, t3 = this.symbols, t4 = t2 * 3, allowedDistance = 10 * t1, allowedDistance0 = 20 * t1, t5 = this.buildings, t6 = J.getInterceptor$x(context), j = 0; t7 = this.ghosts, j < t7.length; ++j) {
@@ -7704,7 +7700,8 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy,activeSymbol,terraformi
         throw t11.$mul();
       positionScrolledCenter = new U.Vector(t7 * t1 + t10, t11 * t1 + t10);
       this.drawRangeBoxes$4(positionScrolled, t8.imageID, t8.radius, t9);
-      if (this.withinWorld$2(positionScrolled.x, positionScrolled.y)) {
+      t7 = this.world;
+      if (t7.contains$1(t7, positionScrolled)) {
         t6.save$0(context);
         context.globalAlpha = 0.5;
         t7 = $.engine.images;
@@ -7860,7 +7857,8 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy,activeSymbol,terraformi
     J.clear$0$ax(t1.$index(t1, "gui"));
     for (t1 = this.symbols, i = 0; i < t1.length; ++i)
       t1[i].draw$0();
-    if (this.withinWorld$2(position.x, position.y)) {
+    t1 = this.world;
+    if (t1.contains$1(t1, position)) {
       t1 = this.world.tiles;
       t2 = position.x;
       if (t2 >>> 0 !== t2 || t2 >= t1.length)
@@ -7937,7 +7935,8 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy,activeSymbol,terraformi
         if (typeof t5 !== "number")
           throw H.iae(t5);
         jS = j0 + t5;
-        if (this.withinWorld$2(iS, jS)) {
+        t5 = this.world;
+        if (t5.contains$1(t5, new U.Vector(iS, jS))) {
           t5 = this.world.tiles;
           if (iS >>> 0 !== iS || iS >= t5.length)
             throw H.ioore(t5, iS);
@@ -7963,10 +7962,6 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy,activeSymbol,terraformi
           }
         }
       }
-    for (t1 = this.emitters, i = 0; i < t1.length; ++i)
-      t1[i].draw$0();
-    for (t1 = this.sporetowers, i = 0; i < t1.length; ++i)
-      t1[i].draw$0();
     for (t1 = this.buildings, allowedDistance = 10 * t2, allowedDistance0 = 20 * t2, i = 0; i < t1.length; ++i) {
       centerI = t1[i].getCenter$0();
       drawCenterI = centerI.real2screen$0();
@@ -8032,18 +8027,12 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy,activeSymbol,terraformi
     }
     for (i = 0; i < t1.length; ++i)
       t1[i].drawMovementIndicators$0();
-    for (t4 = this.shells, i = 0; i < t4.length; ++i)
-      t4[i].draw$0();
     for (t4 = this.projectiles, i = 0; i < t4.length; ++i)
       t4[i].draw$0();
     for (i = 0; i < t1.length; ++i)
       t1[i].draw$0();
-    for (t4 = this.smokes, i = 0; i < t4.length; ++i)
-      t4[i].draw$0();
-    for (t4 = this.explosions, i = 0; i < t4.length; ++i)
-      t4[i].draw$0();
-    for (t4 = this.spores, i = 0; i < t4.length; ++i)
-      t4[i].draw$0();
+    t4 = $.engine.canvas;
+    t4.$index(t4, "buffer").draw$0();
     if ($.engine.mouse.active) {
       for (i = 0; i < t1.length; ++i)
         t1[i].drawRepositionInfo$0();
@@ -8089,17 +8078,13 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy,activeSymbol,terraformi
         t7 = this.zoom;
         if (typeof t7 !== "number")
           throw H.iae(t7);
-        if (typeof t8 !== "number")
-          throw t8.$add();
-        context.moveTo(0, t8 + t2 * t7);
+        context.moveTo(0, J.$add$ns(t8, t2 * t7));
         t7 = $.engine.width;
         t8 = drawPosition.y;
         t6 = this.zoom;
         if (typeof t6 !== "number")
           throw H.iae(t6);
-        if (typeof t8 !== "number")
-          throw t8.$add();
-        context.lineTo(t7, t8 + t2 * t6);
+        context.lineTo(t7, J.$add$ns(t8, t2 * t6));
         context.stroke();
         context.beginPath();
         context.moveTo(drawPosition.x, 0);
@@ -8114,19 +8099,16 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy,activeSymbol,terraformi
         t6 = this.zoom;
         if (typeof t6 !== "number")
           throw H.iae(t6);
-        if (typeof t8 !== "number")
-          throw t8.$add();
-        context.moveTo(t8 + t2 * t6, 0);
+        context.moveTo(J.$add$ns(t8, t2 * t6), 0);
         t6 = drawPosition.x;
         t8 = this.zoom;
         if (typeof t8 !== "number")
           throw H.iae(t8);
-        if (typeof t6 !== "number")
-          throw t6.$add();
-        t7 = $.engine.halfHeight;
-        if (typeof t7 !== "number")
-          throw t7.$mul();
-        context.lineTo(t6 + t2 * t8, t7 * 2);
+        t8 = J.$add$ns(t6, t2 * t8);
+        t2 = $.engine.halfHeight;
+        if (typeof t2 !== "number")
+          throw t2.$mul();
+        context.lineTo(t8, t2 * 2);
         context.stroke();
       }
     }
@@ -8140,7 +8122,7 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy,activeSymbol,terraformi
     t1 = $.engine.canvas;
     t1 = t1.$index(t1, "main").get$context();
     t2 = $.engine.canvas;
-    J.drawImage$3$x(t1, t2.$index(t2, "buffer").get$element(), 0, 0);
+    J.drawImage$3$x(t1, J.get$view$x(t2.$index(t2, "buffer")), 0, 0);
     t2 = window;
     t1 = this.get$draw();
     C.Window_methods._ensureRequestAnimationFrame$0(t2);
@@ -8748,6 +8730,23 @@ Projectile: {"": "Object;position>,targetPosition,speed,imageID<,remove,rotation
           throw H.ioore(t1, t2);
         J.$index$asx(t1[t2], tiledPosition.y).set$creep(0);
       }
+      t1 = $.game.world.tiles;
+      t2 = tiledPosition.x;
+      if (t2 >>> 0 !== t2 || t2 >= t1.length)
+        throw H.ioore(t1, t2);
+      t2 = J.$index$asx(t1[t2], tiledPosition.y);
+      t2.newcreep = t2.get$newcreep() - 1;
+      t1 = $.game.world.tiles;
+      t2 = tiledPosition.x;
+      if (t2 >>> 0 !== t2 || t2 >= t1.length)
+        throw H.ioore(t1, t2);
+      if (J.$index$asx(t1[t2], tiledPosition.y).get$newcreep() < 0) {
+        t1 = $.game.world.tiles;
+        t2 = tiledPosition.x;
+        if (t2 >>> 0 !== t2 || t2 >= t1.length)
+          throw H.ioore(t1, t2);
+        J.$index$asx(t1[t2], tiledPosition.y).set$newcreep(0);
+      }
     }
   },
   draw$0: function() {
@@ -8767,26 +8766,21 @@ Projectile: {"": "Object;position>,targetPosition,speed,imageID<,remove,rotation
       if (typeof t2 !== "number")
         throw H.iae(t2);
       t2 = 8 * t2;
-      if (typeof t1 !== "number")
-        throw t1.$add();
-      t3 = realPosition.y;
-      if (typeof t3 !== "number")
-        throw t3.$add();
-      context.translate(t1 + t2, t3 + t2);
+      context.translate(J.$add$ns(t1, t2), J.$add$ns(realPosition.y, t2));
       t2 = $.engine;
-      t3 = this.rotation;
+      t1 = this.rotation;
       t2.toString;
-      if (typeof t3 !== "number")
-        throw t3.$mul();
-      context.rotate(t3 * 0.017453292519943295);
-      t3 = $.engine.images;
-      t3 = t3.$index(t3, this.imageID);
+      if (typeof t1 !== "number")
+        throw t1.$mul();
+      context.rotate(t1 * 0.017453292519943295);
+      t1 = $.engine.images;
+      t1 = t1.$index(t1, this.imageID);
       t2 = $.game.zoom;
       if (typeof t2 !== "number")
         throw H.iae(t2);
-      t1 = 8 - 8 * t2;
+      t3 = 8 - 8 * t2;
       t2 = 16 * t2;
-      context.drawImage(t3, t1, t1, t2, t2);
+      context.drawImage(t1, t3, t3, t2, t2);
       context.restore();
     }
   },
@@ -8796,7 +8790,7 @@ Projectile: {"": "Object;position>,targetPosition,speed,imageID<,remove,rotation
 
 },
 
-Shell: {"": "Object;position>,targetPosition,speed,imageID<,remove,rotation,trailCounter",
+Shell: {"": "Object;targetPosition,speed,remove,trailCounter,sprite",
   remove$0: function($receiver) {
     return this.remove.call$0();
   },
@@ -8804,7 +8798,7 @@ Shell: {"": "Object;position>,targetPosition,speed,imageID<,remove,rotation,trai
     var t1, t2, t3, t4, t5, t6, delta, distance;
     t1 = this.targetPosition;
     t2 = t1.x;
-    t3 = this.position;
+    t3 = this.sprite.position;
     t4 = t3.x;
     if (typeof t2 !== "number")
       throw t2.$sub();
@@ -8830,31 +8824,29 @@ Shell: {"": "Object;position>,targetPosition,speed,imageID<,remove,rotation,trai
       throw t1.$div();
     t3.y = t1 / distance * 1 * t6.speed;
   },
-  getCenter$0: function() {
-    var t1, t2;
-    t1 = this.position;
-    t2 = t1.x;
-    if (typeof t2 !== "number")
-      throw t2.$sub();
-    t1 = t1.y;
-    if (typeof t1 !== "number")
-      throw t1.$sub();
-    return new U.Vector(t2 - 8, t1 - 8);
-  },
   move$0: function() {
     var t1, t2, t3, t4, i, j;
     this.trailCounter = this.trailCounter + 1;
     if (this.trailCounter === 10) {
       this.trailCounter = 0;
-      $.game.smokes.push(U.Smoke$(this.getCenter$0()));
+      t1 = $.game.smokes;
+      t2 = this.sprite.position;
+      t3 = t2.x;
+      t2 = t2.y;
+      if (typeof t2 !== "number")
+        throw t2.$sub();
+      t1.push(U.Smoke$(new U.Vector(t3, t2 - 16)));
     }
-    this.rotation = this.rotation + 20;
-    t1 = this.rotation;
-    if (t1 > 359)
-      this.rotation = t1 - 359;
-    t1 = this.position;
-    this.position = t1.$add(t1, this.speed);
-    t1 = this.position;
+    t1 = this.sprite;
+    t1.rotation = t1.rotation + 20;
+    t1 = this.sprite;
+    t2 = t1.rotation;
+    if (t2 > 359)
+      t1.rotation = t2 - 359;
+    t1 = this.sprite;
+    t2 = t1.position;
+    t1.position = t2.$add(t2, this.speed);
+    t1 = this.sprite.position;
     t2 = t1.x;
     t3 = this.targetPosition;
     t4 = t3.x;
@@ -8903,7 +8895,8 @@ Shell: {"": "Object;position>,targetPosition,speed,imageID<,remove,rotation,trai
             throw t1.$div();
           if (!(j < C.JSNumber_methods.toInt$0(Math.floor(t1 / t2)) + 5))
             break;
-          if ($.game.withinWorld$2(i, j)) {
+          t1 = $.game.world;
+          if (t1.contains$1(t1, new U.Vector(i, j))) {
             t1 = $.game.tileSize;
             t2 = t3.x;
             if (typeof t2 !== "number")
@@ -8930,6 +8923,20 @@ Shell: {"": "Object;position>,targetPosition,speed,imageID<,remove,rotation,trai
                   throw H.ioore(t1, i);
                 J.$index$asx(t1[i], j).set$creep(0);
               }
+              t1 = $.game.world.tiles;
+              if (i >= t1.length)
+                throw H.ioore(t1, i);
+              t1 = J.$index$asx(t1[i], j);
+              t1.newcreep = t1.get$newcreep() - 10;
+              t1 = $.game.world.tiles;
+              if (i >= t1.length)
+                throw H.ioore(t1, i);
+              if (J.$index$asx(t1[i], j).get$newcreep() < 0) {
+                t1 = $.game.world.tiles;
+                if (i >= t1.length)
+                  throw H.ioore(t1, i);
+                J.$index$asx(t1[i], j).set$newcreep(0);
+              }
             }
           }
           ++j;
@@ -8938,47 +8945,21 @@ Shell: {"": "Object;position>,targetPosition,speed,imageID<,remove,rotation,trai
       }
     }
   },
-  draw$0: function() {
-    var t1, context, realPosition, t2, t3;
+  Shell$2: function(position, targetPosition) {
+    var t1 = $.engine.images;
+    this.sprite = U.Sprite$(2, t1.$index(t1, "shell"), position, 16, 16);
+    this.sprite.anchor = new U.Vector(0.5, 0.5);
     t1 = $.engine.canvas;
-    context = t1.$index(t1, "buffer").get$context();
-    realPosition = this.position.real2screen$0();
-    t1 = $.engine;
-    t2 = $.game.zoom;
-    if (typeof t2 !== "number")
-      throw H.iae(t2);
-    t2 = 16 * t2;
-    if (t1.isVisible$2(realPosition, new U.Vector(t2, t2))) {
-      J.save$0$x(context);
-      t1 = realPosition.x;
-      t2 = $.game.zoom;
-      if (typeof t2 !== "number")
-        throw H.iae(t2);
-      t2 = 8 * t2;
-      if (typeof t1 !== "number")
-        throw t1.$add();
-      t3 = realPosition.y;
-      if (typeof t3 !== "number")
-        throw t3.$add();
-      context.translate(t1 + t2, t3 + t2);
-      t2 = $.engine;
-      t3 = this.rotation;
-      t2.toString;
-      context.rotate(t3 * 0.017453292519943295);
-      t3 = $.engine.images;
-      t3 = t3.$index(t3, this.imageID);
-      t2 = $.game.zoom;
-      if (typeof t2 !== "number")
-        throw H.iae(t2);
-      t1 = -8 * t2;
-      t2 = 16 * t2;
-      context.drawImage(t3, t1, t1, t2, t2);
-      context.restore();
-    }
+    t1.$index(t1, "buffer").addSprite$1(this.sprite);
+    this.init$0();
   },
   static: {
 "": "Shell_baseSpeed",
-}
+Shell$: function(position, targetPosition) {
+  var t1 = new U.Shell(targetPosition, new U.Vector(0, 0), false, 0, null);
+  t1.Shell$2(position, targetPosition);
+  return t1;
+}}
 
 },
 
@@ -8987,15 +8968,8 @@ Ship: {"": "Object;position>,speed,targetPosition,imageID<,type,status*,remove,h
     return this.remove.call$0();
   },
   getCenter$0: function() {
-    var t1, t2;
-    t1 = this.position;
-    t2 = t1.x;
-    if (typeof t2 !== "number")
-      throw t2.$add();
-    t1 = t1.y;
-    if (typeof t1 !== "number")
-      throw t1.$add();
-    return new U.Vector(t2 + 24, t1 + 24);
+    var t1 = this.position;
+    return new U.Vector(J.$add$ns(t1.x, 24), J.$add$ns(t1.y, 24));
   },
   updateHoverState$0: function() {
     var realPosition, t1, t2, t3;
@@ -9255,17 +9229,18 @@ Ship: {"": "Object;position>,speed,targetPosition,imageID<,type,status*,remove,h
                 throw t1.$div();
               if (!(j < C.JSNumber_methods.toInt$0(Math.floor(t1 / t2)) + 5))
                 break;
-              if ($.game.withinWorld$2(i, j)) {
+              t1 = $.game.world;
+              if (t1.contains$1(t1, new U.Vector(i, j))) {
                 t1 = $.game.tileSize;
-                t2 = t3.x;
+                t2 = J.$add$ns(t3.x, t1);
                 if (typeof t2 !== "number")
-                  throw t2.$add();
-                t1 = Math.pow(i * t1 + t1 / 2 - (t2 + t1), 2);
+                  throw H.iae(t2);
+                t1 = Math.pow(i * t1 + t1 / 2 - t2, 2);
                 t2 = $.game.tileSize;
-                t4 = t3.y;
+                t4 = J.$add$ns(t3.y, t2);
                 if (typeof t4 !== "number")
-                  throw t4.$add();
-                t2 = Math.pow(j * t2 + t2 / 2 - (t4 + t2), 2);
+                  throw H.iae(t4);
+                t2 = Math.pow(j * t2 + t2 / 2 - t4, 2);
                 t4 = $.game.tileSize;
                 if (t1 + t2 < Math.pow(t4 * 3, 2)) {
                   t1 = $.game.world.tiles;
@@ -9333,7 +9308,7 @@ Ship: {"": "Object;position>,speed,targetPosition,imageID<,type,status*,remove,h
     }
   },
   draw$0: function() {
-    var t1, context, realPosition, t2, t3, cursorPosition, t4, t5;
+    var t1, context, realPosition, t2, cursorPosition, t3, t4, t5;
     t1 = $.engine.canvas;
     context = t1.$index(t1, "buffer").get$context();
     realPosition = this.position.real2screen$0();
@@ -9345,12 +9320,7 @@ Ship: {"": "Object;position>,speed,targetPosition,imageID<,type,status*,remove,h
       if (typeof t2 !== "number")
         throw H.iae(t2);
       t2 = 24 * t2;
-      if (typeof t1 !== "number")
-        throw t1.$add();
-      t3 = realPosition.y;
-      if (typeof t3 !== "number")
-        throw t3.$add();
-      C.CanvasRenderingContext2D_methods.arc$6(context, t1 + t2, t3 + t2, t2 * this.scale, 0, 6.283185307179586, true);
+      C.CanvasRenderingContext2D_methods.arc$6(context, J.$add$ns(t1, t2), J.$add$ns(realPosition.y, t2), t2 * this.scale, 0, 6.283185307179586, true);
       context.closePath();
       context.stroke();
     }
@@ -9362,12 +9332,7 @@ Ship: {"": "Object;position>,speed,targetPosition,imageID<,type,status*,remove,h
       if (typeof t2 !== "number")
         throw H.iae(t2);
       t2 = 24 * t2;
-      if (typeof t1 !== "number")
-        throw t1.$add();
-      t3 = realPosition.y;
-      if (typeof t3 !== "number")
-        throw t3.$add();
-      C.CanvasRenderingContext2D_methods.arc$6(context, t1 + t2, t3 + t2, t2 * this.scale, 0, 6.283185307179586, true);
+      C.CanvasRenderingContext2D_methods.arc$6(context, J.$add$ns(t1, t2), J.$add$ns(realPosition.y, t2), t2 * this.scale, 0, 6.283185307179586, true);
       context.closePath();
       context.stroke();
       t1 = this.status;
@@ -9406,37 +9371,28 @@ Ship: {"": "Object;position>,speed,targetPosition,imageID<,type,status*,remove,h
       if (typeof t2 !== "number")
         throw H.iae(t2);
       t2 = 24 * t2;
-      if (typeof t1 !== "number")
-        throw t1.$add();
-      t3 = realPosition.y;
-      if (typeof t3 !== "number")
-        throw t3.$add();
-      context.translate(t1 + t2, t3 + t2);
+      context.translate(J.$add$ns(t1, t2), J.$add$ns(realPosition.y, t2));
       t2 = $.engine;
-      t3 = this.angle;
+      t1 = this.angle;
       t2.toString;
-      context.rotate(t3 * 0.017453292519943295);
-      t3 = $.engine.images;
-      t3 = t3.$index(t3, this.imageID);
+      context.rotate(t1 * 0.017453292519943295);
+      t1 = $.engine.images;
+      t1 = t1.$index(t1, this.imageID);
       t2 = $.game.zoom;
       if (typeof t2 !== "number")
         throw H.iae(t2);
-      t1 = this.scale;
-      t4 = -24 * t2 * t1;
-      t1 = 48 * t2 * t1;
-      context.drawImage(t3, t4, t4, t1, t1);
+      t3 = this.scale;
+      t4 = -24 * t2 * t3;
+      t3 = 48 * t2 * t3;
+      context.drawImage(t1, t4, t4, t3, t3);
       context.restore();
       context.fillStyle = "#f00";
-      t1 = realPosition.x;
+      t3 = J.$add$ns(realPosition.x, 2);
+      t4 = J.$add$ns(realPosition.y, 1);
+      t1 = $.game.zoom;
       if (typeof t1 !== "number")
-        throw t1.$add();
-      t4 = realPosition.y;
-      if (typeof t4 !== "number")
-        throw t4.$add();
-      t3 = $.game.zoom;
-      if (typeof t3 !== "number")
-        throw H.iae(t3);
-      context.fillRect(t1 + 2, t4 + 1, 44 * t3 / this.maxEnergy * this.energy, 3);
+        throw H.iae(t1);
+      context.fillRect(t3, t4, 44 * t1 / this.maxEnergy * this.energy, 3);
     }
   },
   static: {
@@ -9445,7 +9401,7 @@ Ship: {"": "Object;position>,speed,targetPosition,imageID<,type,status*,remove,h
 
 },
 
-Spore: {"": "Object;position>,targetPosition,speed,imageID<,remove,health,rotation,trailCounter",
+Spore: {"": "Object;targetPosition,speed,remove,health,trailCounter,sprite",
   remove$0: function($receiver) {
     return this.remove.call$0();
   },
@@ -9453,7 +9409,7 @@ Spore: {"": "Object;position>,targetPosition,speed,imageID<,remove,health,rotati
     var t1, t2, t3, t4, t5, t6, delta, distance;
     t1 = this.targetPosition;
     t2 = t1.x;
-    t3 = this.position;
+    t3 = this.sprite.position;
     t4 = t3.x;
     if (typeof t2 !== "number")
       throw t2.$sub();
@@ -9479,31 +9435,29 @@ Spore: {"": "Object;position>,targetPosition,speed,imageID<,remove,health,rotati
       throw t1.$div();
     t3.y = t1 / distance * 1 * t6.speed;
   },
-  getCenter$0: function() {
-    var t1, t2;
-    t1 = this.position;
-    t2 = t1.x;
-    if (typeof t2 !== "number")
-      throw t2.$sub();
-    t1 = t1.y;
-    if (typeof t1 !== "number")
-      throw t1.$sub();
-    return new U.Vector(t2 - 16, t1 - 16);
-  },
   move$0: function() {
     var t1, t2, t3, t4, i, j;
     this.trailCounter = this.trailCounter + 1;
     if (this.trailCounter === 10) {
       this.trailCounter = 0;
-      $.game.smokes.push(U.Smoke$(this.getCenter$0()));
+      t1 = $.game.smokes;
+      t2 = this.sprite.position;
+      t3 = t2.x;
+      t2 = t2.y;
+      if (typeof t2 !== "number")
+        throw t2.$sub();
+      t1.push(U.Smoke$(new U.Vector(t3, t2 - 16)));
     }
-    this.rotation = this.rotation + 10;
-    t1 = this.rotation;
-    if (t1 > 359)
-      this.rotation = t1 - 359;
-    t1 = this.position;
-    this.position = t1.$add(t1, this.speed);
-    t1 = this.position;
+    t1 = this.sprite;
+    t1.rotation = t1.rotation + 10;
+    t1 = this.sprite;
+    t2 = t1.rotation;
+    if (t2 > 359)
+      t1.rotation = t2 - 359;
+    t1 = this.sprite;
+    t2 = t1.position;
+    t1.position = t2.$add(t2, this.speed);
+    t1 = this.sprite.position;
     t2 = t1.x;
     t3 = this.targetPosition;
     t4 = t3.x;
@@ -9551,17 +9505,18 @@ Spore: {"": "Object;position>,targetPosition,speed,imageID<,remove,health,rotati
             throw t1.$tdiv();
           if (!(j < C.JSNumber_methods.$tdiv(t1, t4) + 2))
             break;
-          if (t2.withinWorld$2(i, j)) {
+          t1 = t2.world;
+          if (t1.contains$1(t1, new U.Vector(i, j))) {
             t1 = $.game.tileSize;
-            t2 = t3.x;
+            t2 = J.$add$ns(t3.x, t1);
             if (typeof t2 !== "number")
-              throw t2.$add();
-            t1 = Math.pow(i * t1 + t1 / 2 - (t2 + t1), 2);
+              throw H.iae(t2);
+            t1 = Math.pow(i * t1 + t1 / 2 - t2, 2);
             t2 = $.game.tileSize;
-            t4 = t3.y;
+            t4 = J.$add$ns(t3.y, t2);
             if (typeof t4 !== "number")
-              throw t4.$add();
-            t2 = Math.pow(j * t2 + t2 / 2 - (t4 + t2), 2);
+              throw H.iae(t4);
+            t2 = Math.pow(j * t2 + t2 / 2 - t4, 2);
             t4 = $.game.tileSize;
             if (t1 + t2 < Math.pow(t4, 2)) {
               t1 = $.game.world.tiles;
@@ -9577,87 +9532,44 @@ Spore: {"": "Object;position>,targetPosition,speed,imageID<,remove,health,rotati
       }
     }
   },
-  draw$0: function() {
-    var t1, context, realPosition, t2, t3;
+  Spore$2: function(position, targetPosition) {
+    var t1 = $.engine.images;
+    this.sprite = U.Sprite$(2, t1.$index(t1, "spore"), position, 32, 32);
+    this.sprite.anchor = new U.Vector(0.5, 0.5);
     t1 = $.engine.canvas;
-    context = t1.$index(t1, "buffer").get$context();
-    realPosition = this.position.real2screen$0();
-    t1 = $.engine;
-    t2 = $.game.zoom;
-    if (typeof t2 !== "number")
-      throw H.iae(t2);
-    t2 = 32 * t2;
-    if (t1.isVisible$2(realPosition, new U.Vector(t2, t2))) {
-      J.save$0$x(context);
-      context.translate(realPosition.x, realPosition.y);
-      t1 = $.engine;
-      t2 = this.rotation;
-      t1.toString;
-      context.rotate(t2 * 0.017453292519943295);
-      t2 = $.engine.images;
-      t2 = t2.$index(t2, this.imageID);
-      t1 = $.game.zoom;
-      if (typeof t1 !== "number")
-        throw H.iae(t1);
-      t3 = -16 * t1;
-      t1 = 32 * t1;
-      context.drawImage(t2, t3, t3, t1, t1);
-      context.restore();
-    }
+    t1.$index(t1, "buffer").addSprite$1(this.sprite);
+    this.init$0();
   },
   static: {
 "": "Spore_baseSpeed",
-}
+Spore$: function(position, targetPosition) {
+  var t1 = new U.Spore(targetPosition, new U.Vector(0, 0), false, 100, 0, null);
+  t1.Spore$2(position, targetPosition);
+  return t1;
+}}
 
 },
 
-UISymbol: {"": "Object;position>,imageID<,width>,height*,size>,packets,radius,keyCode>,active,hovered<",
-  checkHovered$0: function() {
-    var t1, t2, t3, t4;
-    t1 = $.engine.mouseGUI;
-    t2 = t1.x;
-    t3 = this.position;
-    t4 = t3.x;
-    if (typeof t4 !== "number")
-      throw H.iae(t4);
-    if (t2 > t4)
-      if (t2 < t4 + this.width) {
-        t1 = t1.y;
-        t3 = t3.y;
-        if (typeof t3 !== "number")
-          throw H.iae(t3);
-        if (t1 > t3) {
-          t2 = this.height;
-          if (typeof t2 !== "number")
-            throw H.iae(t2);
-          t2 = t1 < t3 + t2;
-          t1 = t2;
-        } else
-          t1 = false;
-      } else
-        t1 = false;
-    else
-      t1 = false;
-    this.hovered = t1;
-  },
+UISymbol: {"": "Object;rectangle,imageID<,size>,packets,radius,keyCode>,active,hovered<",
   setActive$0: function() {
     var t1, t2, t3;
     if (this.hovered) {
       t1 = $.game;
-      t2 = this.position.x;
-      if (typeof t2 !== "number")
-        throw t2.$div();
-      t2 = C.JSNumber_methods.toInt$0(Math.floor(t2 / 81));
-      t3 = this.position.y;
+      t2 = this.rectangle;
+      t3 = t2.left;
       if (typeof t3 !== "number")
-        throw t3.$div();
-      t1.activeSymbol = t2 + C.JSNumber_methods.toInt$0(Math.floor(t3 / 56)) * 6;
+        throw t3.$tdiv();
+      t3 = C.JSNumber_methods.$tdiv(t3, 81);
+      t2 = t2.top;
+      if (typeof t2 !== "number")
+        throw t2.$tdiv();
+      t1.activeSymbol = t3 + C.JSNumber_methods.$tdiv(t2, 56) * 6;
       this.active = true;
     } else
       this.active = false;
   },
   draw$0: function() {
-    var t1, context, t2, t3, t4;
+    var t1, context, t2, t3;
     t1 = $.engine.canvas;
     context = t1.$index(t1, "gui").get$context();
     if (this.active)
@@ -9669,82 +9581,44 @@ UISymbol: {"": "Object;position>,imageID<,width>,height*,size>,packets,radius,ke
       else
         t1.set$fillStyle(context, "#454");
     }
-    t1 = this.position;
-    t2 = t1.x;
-    if (typeof t2 !== "number")
-      throw t2.$add();
-    t1 = t1.y;
-    if (typeof t1 !== "number")
-      throw t1.$add();
-    J.getInterceptor$x(context).fillRect$4(context, t2 + 1, t1 + 1, this.width, this.height);
+    t1 = this.rectangle;
+    J.getInterceptor$x(context).fillRect$4(context, J.$add$ns(t1.left, 1), J.$add$ns(t1.top, 1), t1.width, t1.height);
     t1 = $.engine.images;
     t1 = t1.$index(t1, this.imageID);
-    t2 = this.position;
-    t3 = t2.x;
-    if (typeof t3 !== "number")
-      throw t3.$add();
-    t2 = t2.y;
-    if (typeof t2 !== "number")
-      throw t2.$add();
-    context.drawImage(t1, t3 + 24, t2 + 20, 32, 32);
+    t2 = this.rectangle;
+    context.drawImage(t1, J.$add$ns(t2.left, 24), J.$add$ns(t2.top, 20), 32, 32);
     if (this.imageID === "cannon") {
       t1 = $.engine.images;
       t1 = t1.$index(t1, "cannongun");
-      t2 = this.position;
-      t3 = t2.x;
-      if (typeof t3 !== "number")
-        throw t3.$add();
-      t2 = t2.y;
-      if (typeof t2 !== "number")
-        throw t2.$add();
-      context.drawImage(t1, t3 + 24, t2 + 20, 32, 32);
+      t2 = this.rectangle;
+      context.drawImage(t1, J.$add$ns(t2.left, 24), J.$add$ns(t2.top, 20), 32, 32);
     }
     if (this.imageID === "bomber") {
       t1 = $.engine.images;
       t1 = t1.$index(t1, "bombership");
-      t2 = this.position;
-      t3 = t2.x;
-      if (typeof t3 !== "number")
-        throw t3.$add();
-      t2 = t2.y;
-      if (typeof t2 !== "number")
-        throw t2.$add();
-      context.drawImage(t1, t3 + 24, t2 + 20, 32, 32);
+      t2 = this.rectangle;
+      context.drawImage(t1, J.$add$ns(t2.left, 24), J.$add$ns(t2.top, 20), 32, 32);
     }
     context.fillStyle = "#fff";
     context.font = "10px";
     context.textAlign = "center";
     t1 = C.JSString_methods.substring$2(this.imageID, 0, 1).toUpperCase() + C.JSString_methods.substring$1(this.imageID, 1);
-    t2 = this.position;
-    t3 = t2.x;
-    t4 = this.width;
+    t2 = this.rectangle;
+    t3 = t2.width;
     if (typeof t3 !== "number")
-      throw t3.$add();
-    t2 = t2.y;
-    if (typeof t2 !== "number")
-      throw t2.$add();
-    C.CanvasRenderingContext2D_methods.fillText$3(context, t1, t3 + t4 / 2, t2 + 15);
+      throw t3.$div();
+    C.CanvasRenderingContext2D_methods.fillText$3(context, t1, J.$add$ns(t2.left, t3 / 2), J.$add$ns(t2.top, 15));
     context.textAlign = "left";
     t2 = "(" + P.String_String$fromCharCode(this.keyCode) + ")";
-    t4 = this.position;
-    t3 = t4.x;
-    if (typeof t3 !== "number")
-      throw t3.$add();
-    t4 = t4.y;
-    if (typeof t4 !== "number")
-      throw t4.$add();
-    C.CanvasRenderingContext2D_methods.fillText$3(context, t2, t3 + 5, t4 + 50);
+    t3 = this.rectangle;
+    C.CanvasRenderingContext2D_methods.fillText$3(context, t2, J.$add$ns(t3.left, 5), J.$add$ns(t3.top, 50));
     context.textAlign = "right";
-    t4 = C.JSInt_methods.toString$0(this.packets);
-    t3 = this.position;
-    t2 = t3.x;
-    t1 = this.width;
-    if (typeof t2 !== "number")
-      throw t2.$add();
-    t3 = t3.y;
-    if (typeof t3 !== "number")
-      throw t3.$add();
-    C.CanvasRenderingContext2D_methods.fillText$3(context, t4, t2 + t1 - 5, t3 + 50);
+    t3 = C.JSInt_methods.toString$0(this.packets);
+    t2 = this.rectangle;
+    t1 = J.$add$ns(t2.left, t2.width);
+    if (typeof t1 !== "number")
+      throw t1.$sub();
+    C.CanvasRenderingContext2D_methods.fillText$3(context, t3, t1 - 5, J.$add$ns(t2.top, 50));
   }
 }},
 1],
@@ -9816,6 +9690,10 @@ IterableMixinWorkaround_toStringIterable: function(iterable, leftDelimiter, righ
     t1.pop();
   }
   return result.get$_contents();
+},
+
+IterableMixinWorkaround_sortList: function(list, compare) {
+  H.Sort__doSort(list, 0, list.length - 1, compare);
 },
 
 IterableMixinWorkaround_shuffleList: function(list, random) {
@@ -13507,6 +13385,26 @@ _JenkinsSmiHash_finish: function(hash) {
   return 536870911 & hash + ((16383 & hash) << 15 >>> 0);
 },
 
+_convertNativeToDart_Window: function(win) {
+  if (win == null)
+    return;
+  return W._DOMWindowCrossFrame__createSafe(win);
+},
+
+_convertNativeToDart_EventTarget: function(e) {
+  var $window, t1;
+  if (e == null)
+    return;
+  if ("setInterval" in e) {
+    $window = W._DOMWindowCrossFrame__createSafe(e);
+    t1 = J.getInterceptor($window);
+    if (typeof $window === "object" && $window !== null && !!t1.$isEventTarget)
+      return $window;
+    return;
+  } else
+    return e;
+},
+
 _wrapZone: function(callback) {
   var t1 = $.Zone__current;
   if (t1 === C.C__RootZone)
@@ -13562,6 +13460,9 @@ CanvasRenderingContext2D: {"": "CanvasRenderingContext;fillStyle},globalAlpha},g
   restore$0: function(receiver) {
     return receiver.restore();
   },
+  rotate$1: function(receiver, angle) {
+    return receiver.rotate(angle);
+  },
   save$0: function(receiver) {
     return receiver.save();
   },
@@ -13616,8 +13517,26 @@ CssStyleDeclaration: {"": "Interceptor_CssStyleDeclarationBase;length=",
 },
 
 Document: {"": "Node;",
+  get$onClick: function(receiver) {
+    return C.EventStreamProvider_click.forTarget$1(receiver);
+  },
+  get$onDoubleClick: function(receiver) {
+    return C.EventStreamProvider_dblclick.forTarget$1(receiver);
+  },
   get$onLoad: function(receiver) {
     return C.EventStreamProvider_load.forTarget$1(receiver);
+  },
+  get$onMouseDown: function(receiver) {
+    return C.EventStreamProvider_mousedown.forTarget$1(receiver);
+  },
+  get$onMouseMove: function(receiver) {
+    return C.EventStreamProvider_mousemove.forTarget$1(receiver);
+  },
+  get$onMouseUp: function(receiver) {
+    return C.EventStreamProvider_mouseup.forTarget$1(receiver);
+  },
+  get$onMouseWheel: function(receiver) {
+    return C._CustomEventStreamProvider__determineMouseWheelEventType.forTarget$1(receiver);
   },
   "%": "Document|HTMLDocument|SVGDocument"
 },
@@ -13629,7 +13548,7 @@ DomException: {"": "Interceptor;",
   "%": "DOMException"
 },
 
-Element: {"": "Node;",
+Element: {"": "Node;offsetLeft=,offsetTop=,style=",
   get$attributes: function(receiver) {
     return new W._ElementAttributeMap(receiver);
   },
@@ -13638,6 +13557,11 @@ Element: {"": "Node;",
   },
   get$client: function(receiver) {
     var t1 = new P.Rectangle(receiver.clientLeft, receiver.clientTop, receiver.clientWidth, receiver.clientHeight);
+    H.setRuntimeTypeInfo(t1, [null]);
+    return t1;
+  },
+  get$offset: function(receiver) {
+    var t1 = new P.Rectangle(receiver.offsetLeft, receiver.offsetTop, receiver.offsetWidth, receiver.offsetHeight);
     H.setRuntimeTypeInfo(t1, [null]);
     return t1;
   },
@@ -13707,8 +13631,29 @@ Element: {"": "Node;",
   setInnerHtml$1: function($receiver, html) {
     return this.setInnerHtml$3$treeSanitizer$validator($receiver, html, null, null);
   },
+  getBoundingClientRect$0: function(receiver) {
+    return receiver.getBoundingClientRect();
+  },
+  get$onClick: function(receiver) {
+    return C.EventStreamProvider_click.forElement$1(receiver);
+  },
+  get$onDoubleClick: function(receiver) {
+    return C.EventStreamProvider_dblclick.forElement$1(receiver);
+  },
   get$onLoad: function(receiver) {
     return C.EventStreamProvider_load.forElement$1(receiver);
+  },
+  get$onMouseDown: function(receiver) {
+    return C.EventStreamProvider_mousedown.forElement$1(receiver);
+  },
+  get$onMouseMove: function(receiver) {
+    return C.EventStreamProvider_mousemove.forElement$1(receiver);
+  },
+  get$onMouseUp: function(receiver) {
+    return C.EventStreamProvider_mouseup.forElement$1(receiver);
+  },
+  get$onMouseWheel: function(receiver) {
+    return C._CustomEventStreamProvider__determineMouseWheelEventType.forElement$1(receiver);
   },
   $isElement: true,
   "%": ";Element"
@@ -13732,6 +13677,7 @@ EventTarget: {"": "Interceptor;",
   removeEventListener$3: function(receiver, type, listener, useCapture) {
     return receiver.removeEventListener(type, H.convertDartClosureToJS(listener, 1), useCapture);
   },
+  $isEventTarget: true,
   "%": ";EventTarget"
 },
 
@@ -13773,7 +13719,7 @@ IFrameElement: {"": "HtmlElement;height%,name=,src},width%", "%": "HTMLIFrameEle
 
 ImageElement: {"": "HtmlElement;height%,src},width%", "%": "HTMLImageElement"},
 
-InputElement: {"": "HtmlElement;height%,name=,size=,src},value=,width%", $isElement: true, "%": "HTMLInputElement"},
+InputElement: {"": "HtmlElement;height%,name=,size=,src},value=,width%", $isElement: true, $isEventTarget: true, "%": "HTMLInputElement"},
 
 KeyboardEvent: {"": "UIEvent;",
   get$keyCode: function(receiver) {
@@ -13828,6 +13774,26 @@ MouseEvent: {"": "UIEvent;",
     var t1 = new P.Point(receiver.clientX, receiver.clientY);
     H.setRuntimeTypeInfo(t1, [null]);
     return t1;
+  },
+  get$offset: function(receiver) {
+    var t1, t2, target, point;
+    if (!!receiver.offsetX) {
+      t1 = new P.Point(receiver.offsetX, receiver.offsetY);
+      H.setRuntimeTypeInfo(t1, [null]);
+      return t1;
+    } else {
+      t1 = W._convertNativeToDart_EventTarget(receiver.target);
+      t2 = J.getInterceptor(t1);
+      if (typeof t1 !== "object" || t1 === null || !t2.$isElement)
+        throw H.wrapException(P.UnsupportedError$("offsetX is only supported on elements"));
+      target = W._convertNativeToDart_EventTarget(receiver.target);
+      t1 = new P.Point(receiver.clientX, receiver.clientY);
+      H.setRuntimeTypeInfo(t1, [null]);
+      point = t1.$sub(t1, J.get$topLeft$x(J.getBoundingClientRect$0$x(target)));
+      t1 = new P.Point(J.toInt$0$n(point.x), J.toInt$0$n(point.y));
+      H.setRuntimeTypeInfo(t1, [null]);
+      return t1;
+    }
   },
   "%": ";DragEvent|MSPointerEvent|MouseEvent|PointerEvent"
 },
@@ -13903,6 +13869,9 @@ ParamElement: {"": "HtmlElement;name=,value=", "%": "HTMLParamElement"},
 ProgressElement: {"": "HtmlElement;position=,value=", "%": "HTMLProgressElement"},
 
 Range: {"": "Interceptor;",
+  getBoundingClientRect$0: function(receiver) {
+    return receiver.getBoundingClientRect();
+  },
   toString$0: function(receiver) {
     return receiver.toString();
   },
@@ -13991,7 +13960,17 @@ TextAreaElement: {"": "HtmlElement;name=,value=", "%": "HTMLTextAreaElement"},
 
 TrackElement: {"": "HtmlElement;src}", "%": "HTMLTrackElement"},
 
-UIEvent: {"": "Event;which=", "%": "CompositionEvent|FocusEvent|SVGZoomEvent|TextEvent|TouchEvent;UIEvent"},
+UIEvent: {"": "Event;which=",
+  get$view: function(receiver) {
+    return W._convertNativeToDart_Window(receiver.view);
+  },
+  get$layer: function(receiver) {
+    var t1 = new P.Point(receiver.layerX, receiver.layerY);
+    H.setRuntimeTypeInfo(t1, [null]);
+    return t1;
+  },
+  "%": "CompositionEvent|FocusEvent|SVGZoomEvent|TextEvent|TouchEvent;UIEvent"
+},
 
 VideoElement: {"": "MediaElement;height%,width%", "%": "HTMLVideoElement"},
 
@@ -14051,9 +14030,28 @@ Window: {"": "EventTarget;status%",
   toString$0: function(receiver) {
     return receiver.toString();
   },
+  get$onClick: function(receiver) {
+    return C.EventStreamProvider_click.forTarget$1(receiver);
+  },
+  get$onDoubleClick: function(receiver) {
+    return C.EventStreamProvider_dblclick.forTarget$1(receiver);
+  },
   get$onLoad: function(receiver) {
     return C.EventStreamProvider_load.forTarget$1(receiver);
   },
+  get$onMouseDown: function(receiver) {
+    return C.EventStreamProvider_mousedown.forTarget$1(receiver);
+  },
+  get$onMouseMove: function(receiver) {
+    return C.EventStreamProvider_mousemove.forTarget$1(receiver);
+  },
+  get$onMouseUp: function(receiver) {
+    return C.EventStreamProvider_mouseup.forTarget$1(receiver);
+  },
+  get$onMouseWheel: function(receiver) {
+    return C._CustomEventStreamProvider__determineMouseWheelEventType.forTarget$1(receiver);
+  },
+  $isEventTarget: true,
   "%": "DOMWindow|Window"
 },
 
@@ -14097,6 +14095,11 @@ _ClientRect: {"": "Interceptor;height=,left=,top=,width=",
     t3 = J.get$hashCode$(receiver.width);
     t4 = J.get$hashCode$(receiver.height);
     return W._JenkinsSmiHash_finish(W._JenkinsSmiHash_combine(W._JenkinsSmiHash_combine(W._JenkinsSmiHash_combine(W._JenkinsSmiHash_combine(0, t1), t2), t3), t4));
+  },
+  get$topLeft: function(receiver) {
+    var t1 = new P.Point(receiver.left, receiver.top);
+    H.setRuntimeTypeInfo(t1, [null]);
+    return t1;
   },
   $isRectangle: true,
   $asRectangle: function() {
@@ -14654,6 +14657,15 @@ FixedSizeListIterator$: function(array) {
 
 },
 
+_DOMWindowCrossFrame: {"": "Object;_window", $isEventTarget: true, static: {
+_DOMWindowCrossFrame__createSafe: function(w) {
+  if (w === window)
+    return w;
+  else
+    return new W._DOMWindowCrossFrame(w);
+}}
+},
+
 _LocationWrapper: {"": "Object;_ptr",
   get$hostname: function(_) {
     return this._ptr.hostname;
@@ -14902,22 +14914,13 @@ Point: {"": "Object;x>,y>",
     return "Point(" + H.S(this.x) + ", " + H.S(this.y) + ")";
   },
   $eq: function(_, other) {
-    var t1, t2;
+    var t1;
     if (other == null)
       return false;
     t1 = J.getInterceptor(other);
     if (typeof other !== "object" || other === null || !t1.$isPoint)
       return false;
-    t1 = this.x;
-    t2 = other.x;
-    if (t1 == null ? t2 == null : t1 === t2) {
-      t1 = this.y;
-      t2 = other.y;
-      t2 = t1 == null ? t2 == null : t1 === t2;
-      t1 = t2;
-    } else
-      t1 = false;
-    return t1;
+    return J.$eq(this.x, other.x) && J.$eq(this.y, other.y);
   },
   get$hashCode: function(_) {
     var t1, t2;
@@ -14926,23 +14929,13 @@ Point: {"": "Object;x>,y>",
     return P._JenkinsSmiHash_finish0(P._JenkinsSmiHash_combine0(P._JenkinsSmiHash_combine0(0, t1), t2));
   },
   $add: function(_, other) {
-    var t1, t2, t3, t4;
-    t1 = this.x;
-    t2 = J.getInterceptor$x(other);
-    t3 = t2.get$x(other);
-    if (typeof t1 !== "number")
-      throw t1.$add();
-    if (typeof t3 !== "number")
-      throw H.iae(t3);
-    t4 = this.y;
-    t2 = t2.get$y(other);
-    if (typeof t4 !== "number")
-      throw t4.$add();
-    if (typeof t2 !== "number")
-      throw H.iae(t2);
-    t2 = new P.Point(t1 + t3, t4 + t2);
-    H.setRuntimeTypeInfo(t2, [H.getRuntimeTypeArgument(this, "Point", 0)]);
-    return t2;
+    var t1, t2;
+    t1 = J.getInterceptor$x(other);
+    t2 = J.$add$ns(this.x, t1.get$x(other));
+    t1 = J.$add$ns(this.y, t1.get$y(other));
+    t1 = new P.Point(t2, t1);
+    H.setRuntimeTypeInfo(t1, [H.getRuntimeTypeArgument(this, "Point", 0)]);
+    return t1;
   },
   $sub: function(_, other) {
     var t1, t2, t3, t4;
@@ -14966,30 +14959,23 @@ Point: {"": "Object;x>,y>",
 },
 
 _RectangleBase: {"": "Object;",
+  get$right: function(_) {
+    return J.$add$ns(this.get$left(this), this.width);
+  },
+  get$bottom: function(_) {
+    return J.$add$ns(this.get$top(this), this.height);
+  },
   toString$0: function(_) {
     return "Rectangle (" + H.S(this.get$left(this)) + ", " + H.S(this.top) + ") " + H.S(this.width) + " x " + H.S(this.height);
   },
   $eq: function(_, other) {
-    var t1, t2, t3;
+    var t1;
     if (other == null)
       return false;
     t1 = J.getInterceptor$x(other);
     if (typeof other !== "object" || other === null || !t1.$isRectangle)
       return false;
-    t2 = this.get$left(this);
-    t3 = t1.get$left(other);
-    if (t2 == null ? t3 == null : t2 === t3) {
-      t2 = this.top;
-      t3 = t1.get$top(other);
-      if (t2 == null ? t3 == null : t2 === t3) {
-        t2 = this.width;
-        t3 = t1.get$width(other);
-        t1 = (t2 == null ? t3 == null : t2 === t3) && J.$eq(this.height, t1.get$height(other));
-      } else
-        t1 = false;
-    } else
-      t1 = false;
-    return t1;
+    return J.$eq(this.get$left(this), t1.get$left(other)) && J.$eq(this.top, t1.get$top(other)) && J.$eq(this.width, t1.get$width(other)) && J.$eq(this.height, t1.get$height(other));
   },
   get$hashCode: function(_) {
     var t1, t2, t3, t4;
@@ -15003,34 +14989,31 @@ _RectangleBase: {"": "Object;",
     var t1, t2, t3;
     t1 = this.get$left(this);
     t2 = other.left;
-    t3 = other.width;
-    if (typeof t2 !== "number")
-      throw t2.$add();
-    if (typeof t3 !== "number")
-      throw H.iae(t3);
+    t3 = J.$add$ns(t2, other.width);
     if (typeof t1 !== "number")
       throw t1.$le();
-    if (t1 <= t2 + t3) {
-      t1 = this.left;
-      t3 = this.width;
+    if (typeof t3 !== "number")
+      throw H.iae(t3);
+    if (t1 <= t3) {
+      t1 = J.$add$ns(this.left, this.width);
+      if (typeof t2 !== "number")
+        throw t2.$le();
       if (typeof t1 !== "number")
-        throw t1.$add();
-      if (typeof t3 !== "number")
-        throw H.iae(t3);
-      if (t2 <= t1 + t3) {
+        throw H.iae(t1);
+      if (t2 <= t1) {
         t1 = this.top;
         t2 = other.top;
-        t3 = other.height;
-        if (typeof t2 !== "number")
-          throw t2.$add();
-        if (typeof t3 !== "number")
-          throw H.iae(t3);
+        t3 = J.$add$ns(t2, other.height);
         if (typeof t1 !== "number")
           throw t1.$le();
-        if (t1 <= t2 + t3) {
+        if (typeof t3 !== "number")
+          throw H.iae(t3);
+        if (t1 <= t3) {
           t3 = this.height;
           if (typeof t3 !== "number")
             throw H.iae(t3);
+          if (typeof t2 !== "number")
+            throw t2.$le();
           t3 = t2 <= t1 + t3;
           t1 = t3;
         } else
@@ -15039,6 +15022,45 @@ _RectangleBase: {"": "Object;",
         t1 = false;
     } else
       t1 = false;
+    return t1;
+  },
+  containsPoint$1: function(_, another) {
+    var t1, t2, t3;
+    t1 = another.x;
+    t2 = this.get$left(this);
+    if (typeof t1 !== "number")
+      throw t1.$ge();
+    if (typeof t2 !== "number")
+      throw H.iae(t2);
+    if (t1 >= t2) {
+      t2 = J.$add$ns(this.left, this.width);
+      if (typeof t2 !== "number")
+        throw H.iae(t2);
+      if (t1 <= t2) {
+        t1 = another.y;
+        t2 = this.top;
+        if (typeof t1 !== "number")
+          throw t1.$ge();
+        if (typeof t2 !== "number")
+          throw H.iae(t2);
+        if (t1 >= t2) {
+          t3 = this.height;
+          if (typeof t3 !== "number")
+            throw H.iae(t3);
+          t3 = t1 <= t2 + t3;
+          t1 = t3;
+        } else
+          t1 = false;
+      } else
+        t1 = false;
+    } else
+      t1 = false;
+    return t1;
+  },
+  get$topLeft: function(_) {
+    var t1 = this.get$left(this);
+    t1 = new P.Point(t1, this.top);
+    H.setRuntimeTypeInfo(t1, [H.getRuntimeTypeArgument(this, "_RectangleBase", 0)]);
     return t1;
   }
 },
@@ -15219,11 +15241,13 @@ U.Ship.$isObject = true;
 U.Projectile.$isObject = true;
 W.NodeValidator.$isObject = true;
 W.MouseEvent.$isObject = true;
+W.KeyboardEvent.$isObject = true;
 W.Event.$isObject = true;
 W.WheelEvent.$isObject = true;
-W.KeyboardEvent.$isObject = true;
 U.Route.$isRoute = true;
 U.Route.$isObject = true;
+U.Sprite.$isSprite = true;
+U.Sprite.$isObject = true;
 P.ReceivePort.$isStream = true;
 P.ReceivePort.$asStream = [null];
 P.ReceivePort.$isObject = true;
@@ -15504,8 +15528,8 @@ $.interceptorsForUncacheableTags = null;
 $.initNativeDispatchFlag = null;
 $.Building_damageCounter = 0;
 $.Emitter_counter = null;
-$.Smoke_counter = null;
-$.Explosion_counter = null;
+$.Smoke_counter = 0;
+$.Explosion_counter = 0;
 $.engine = null;
 $.game = null;
 $.Packet_baseSpeed = 3;
@@ -15608,6 +15632,9 @@ J.elementAt$1$ax = function(receiver, a0) {
 J.fillRect$4$x = function(receiver, a0, a1, a2, a3) {
   return J.getInterceptor$x(receiver).fillRect$4(receiver, a0, a1, a2, a3);
 };
+J.floor$0$n = function(receiver) {
+  return J.getInterceptor$n(receiver).floor$0(receiver);
+};
 J.forEach$1$ax = function(receiver, a0) {
   return J.getInterceptor$ax(receiver).forEach$1(receiver, a0);
 };
@@ -15641,6 +15668,9 @@ J.get$iterator$ax = function(receiver) {
 J.get$lastChild$x = function(receiver) {
   return J.getInterceptor$x(receiver).get$lastChild(receiver);
 };
+J.get$layer$x = function(receiver) {
+  return J.getInterceptor$x(receiver).get$layer(receiver);
+};
 J.get$left$x = function(receiver) {
   return J.getInterceptor$x(receiver).get$left(receiver);
 };
@@ -15652,6 +15682,15 @@ J.get$name$x = function(receiver) {
 };
 J.get$nodes$x = function(receiver) {
   return J.getInterceptor$x(receiver).get$nodes(receiver);
+};
+J.get$offset$x = function(receiver) {
+  return J.getInterceptor$x(receiver).get$offset(receiver);
+};
+J.get$offsetLeft$x = function(receiver) {
+  return J.getInterceptor$x(receiver).get$offsetLeft(receiver);
+};
+J.get$offsetTop$x = function(receiver) {
+  return J.getInterceptor$x(receiver).get$offsetTop(receiver);
 };
 J.get$onLoad$x = function(receiver) {
   return J.getInterceptor$x(receiver).get$onLoad(receiver);
@@ -15668,11 +15707,20 @@ J.get$size$x = function(receiver) {
 J.get$status$x = function(receiver) {
   return J.getInterceptor$x(receiver).get$status(receiver);
 };
+J.get$style$x = function(receiver) {
+  return J.getInterceptor$x(receiver).get$style(receiver);
+};
 J.get$top$x = function(receiver) {
   return J.getInterceptor$x(receiver).get$top(receiver);
 };
+J.get$topLeft$x = function(receiver) {
+  return J.getInterceptor$x(receiver).get$topLeft(receiver);
+};
 J.get$value$x = function(receiver) {
   return J.getInterceptor$x(receiver).get$value(receiver);
+};
+J.get$view$x = function(receiver) {
+  return J.getInterceptor$x(receiver).get$view(receiver);
 };
 J.get$which$x = function(receiver) {
   return J.getInterceptor$x(receiver).get$which(receiver);
@@ -15685,6 +15733,9 @@ J.get$x$x = function(receiver) {
 };
 J.get$y$x = function(receiver) {
   return J.getInterceptor$x(receiver).get$y(receiver);
+};
+J.getBoundingClientRect$0$x = function(receiver) {
+  return J.getInterceptor$x(receiver).getBoundingClientRect$0(receiver);
 };
 J.getContext$1$x = function(receiver, a0) {
   return J.getInterceptor$x(receiver).getContext$1(receiver, a0);
@@ -15706,6 +15757,9 @@ J.replaceWith$1$x = function(receiver, a0) {
 };
 J.restore$0$x = function(receiver) {
   return J.getInterceptor$x(receiver).restore$0(receiver);
+};
+J.rotate$1$x = function(receiver, a0) {
+  return J.getInterceptor$x(receiver).rotate$1(receiver, a0);
 };
 J.save$0$x = function(receiver) {
   return J.getInterceptor$x(receiver).save$0(receiver);
@@ -15784,6 +15838,9 @@ J.split$1$s = function(receiver, a0) {
 };
 J.strokeRect$4$x = function(receiver, a0, a1, a2, a3) {
   return J.getInterceptor$x(receiver).strokeRect$4(receiver, a0, a1, a2, a3);
+};
+J.toInt$0$n = function(receiver) {
+  return J.getInterceptor$n(receiver).toInt$0(receiver);
 };
 J.toList$0$ax = function(receiver) {
   return J.getInterceptor$ax(receiver).toList$0(receiver);
@@ -16627,6 +16684,15 @@ function dart_precompiled($collectedClasses) {
   if ($desc instanceof Array)
     $desc = $desc[1];
   Element.prototype = $desc;
+  Element.prototype.get$offsetLeft = function(receiver) {
+    return receiver.offsetLeft;
+  };
+  Element.prototype.get$offsetTop = function(receiver) {
+    return receiver.offsetTop;
+  };
+  Element.prototype.get$style = function(receiver) {
+    return receiver.style;
+  };
   function EmbedElement() {
   }
   EmbedElement.builtin$cls = "EmbedElement";
@@ -19991,11 +20057,10 @@ function dart_precompiled($collectedClasses) {
   World.prototype.get$size = function(receiver) {
     return this.size;
   };
-  function Emitter(position, imageID, strength, building) {
-    this.position = position;
-    this.imageID = imageID;
+  function Emitter(sprite, strength, analyzer) {
+    this.sprite = sprite;
     this.strength = strength;
-    this.building = building;
+    this.analyzer = analyzer;
   }
   Emitter.builtin$cls = "Emitter";
   if (!"name" in Emitter)
@@ -20004,15 +20069,8 @@ function dart_precompiled($collectedClasses) {
   if ($desc instanceof Array)
     $desc = $desc[1];
   Emitter.prototype = $desc;
-  Emitter.prototype.get$position = function(receiver) {
-    return this.position;
-  };
-  Emitter.prototype.get$imageID = function() {
-    return this.imageID;
-  };
-  function Sporetower(position, imageID, sporeCounter) {
-    this.position = position;
-    this.imageID = imageID;
+  function Sporetower(sprite, sporeCounter) {
+    this.sprite = sprite;
     this.sporeCounter = sporeCounter;
   }
   Sporetower.builtin$cls = "Sporetower";
@@ -20022,16 +20080,8 @@ function dart_precompiled($collectedClasses) {
   if ($desc instanceof Array)
     $desc = $desc[1];
   Sporetower.prototype = $desc;
-  Sporetower.prototype.get$position = function(receiver) {
-    return this.position;
-  };
-  Sporetower.prototype.get$imageID = function() {
-    return this.imageID;
-  };
-  function Smoke(position, frame, imageID) {
-    this.position = position;
-    this.frame = frame;
-    this.imageID = imageID;
+  function Smoke(sprite) {
+    this.sprite = sprite;
   }
   Smoke.builtin$cls = "Smoke";
   if (!"name" in Smoke)
@@ -20040,16 +20090,8 @@ function dart_precompiled($collectedClasses) {
   if ($desc instanceof Array)
     $desc = $desc[1];
   Smoke.prototype = $desc;
-  Smoke.prototype.get$position = function(receiver) {
-    return this.position;
-  };
-  Smoke.prototype.get$imageID = function() {
-    return this.imageID;
-  };
-  function Explosion(position, frame, imageID) {
-    this.position = position;
-    this.frame = frame;
-    this.imageID = imageID;
+  function Explosion(sprite) {
+    this.sprite = sprite;
   }
   Explosion.builtin$cls = "Explosion";
   if (!"name" in Explosion)
@@ -20058,12 +20100,6 @@ function dart_precompiled($collectedClasses) {
   if ($desc instanceof Array)
     $desc = $desc[1];
   Explosion.prototype = $desc;
-  Explosion.prototype.get$position = function(receiver) {
-    return this.position;
-  };
-  Explosion.prototype.get$imageID = function() {
-    return this.imageID;
-  };
   function Tile(creep, newcreep, collector, height, index, terraformTarget, terraformProgress) {
     this.creep = creep;
     this.newcreep = newcreep;
@@ -20179,38 +20215,80 @@ function dart_precompiled($collectedClasses) {
   Route.prototype.get$nodes = function(receiver) {
     return this.nodes;
   };
-  function Canvas(element, context, top, left, bottom, right) {
-    this.element = element;
+  function Renderer(view, context, top, left, bottom, right, sprites) {
+    this.view = view;
     this.context = context;
     this.top = top;
     this.left = left;
     this.bottom = bottom;
     this.right = right;
+    this.sprites = sprites;
   }
-  Canvas.builtin$cls = "Canvas";
-  if (!"name" in Canvas)
-    Canvas.name = "Canvas";
-  $desc = $collectedClasses.Canvas;
+  Renderer.builtin$cls = "Renderer";
+  if (!"name" in Renderer)
+    Renderer.name = "Renderer";
+  $desc = $collectedClasses.Renderer;
   if ($desc instanceof Array)
     $desc = $desc[1];
-  Canvas.prototype = $desc;
-  Canvas.prototype.get$element = function() {
-    return this.element;
+  Renderer.prototype = $desc;
+  Renderer.prototype.get$view = function(receiver) {
+    return this.view;
   };
-  Canvas.prototype.get$context = function() {
+  Renderer.prototype.get$context = function() {
     return this.context;
   };
-  Canvas.prototype.set$top = function(receiver, v) {
+  Renderer.prototype.set$top = function(receiver, v) {
     return this.top = v;
   };
-  Canvas.prototype.set$left = function(receiver, v) {
+  Renderer.prototype.set$left = function(receiver, v) {
     return this.left = v;
   };
-  Canvas.prototype.set$bottom = function(receiver, v) {
+  Renderer.prototype.set$bottom = function(receiver, v) {
     return this.bottom = v;
   };
-  Canvas.prototype.set$right = function(receiver, v) {
+  Renderer.prototype.set$right = function(receiver, v) {
     return this.right = v;
+  };
+  function Renderer_addSprite_closure() {
+  }
+  Renderer_addSprite_closure.builtin$cls = "Renderer_addSprite_closure";
+  if (!"name" in Renderer_addSprite_closure)
+    Renderer_addSprite_closure.name = "Renderer_addSprite_closure";
+  $desc = $collectedClasses.Renderer_addSprite_closure;
+  if ($desc instanceof Array)
+    $desc = $desc[1];
+  Renderer_addSprite_closure.prototype = $desc;
+  function Sprite(layer, frame, image, anchor, scale, position, size, rotation, alpha, animated, visible) {
+    this.layer = layer;
+    this.frame = frame;
+    this.image = image;
+    this.anchor = anchor;
+    this.scale = scale;
+    this.position = position;
+    this.size = size;
+    this.rotation = rotation;
+    this.alpha = alpha;
+    this.animated = animated;
+    this.visible = visible;
+  }
+  Sprite.builtin$cls = "Sprite";
+  if (!"name" in Sprite)
+    Sprite.name = "Sprite";
+  $desc = $collectedClasses.Sprite;
+  if ($desc instanceof Array)
+    $desc = $desc[1];
+  Sprite.prototype = $desc;
+  Sprite.prototype.get$layer = function(receiver) {
+    return this.layer;
+  };
+  Sprite.prototype.get$position = function(receiver) {
+    return this.position;
+  };
+  Sprite.prototype.get$size = function(receiver) {
+    return this.size;
+  };
+  Sprite.prototype.get$visible = function() {
+    return this.visible;
   };
   function Mouse(x, y, active, dragStart, dragEnd) {
     this.x = x;
@@ -20650,14 +20728,12 @@ function dart_precompiled($collectedClasses) {
   Projectile.prototype.get$imageID = function() {
     return this.imageID;
   };
-  function Shell(position, targetPosition, speed, imageID, remove, rotation, trailCounter) {
-    this.position = position;
+  function Shell(targetPosition, speed, remove, trailCounter, sprite) {
     this.targetPosition = targetPosition;
     this.speed = speed;
-    this.imageID = imageID;
     this.remove = remove;
-    this.rotation = rotation;
     this.trailCounter = trailCounter;
+    this.sprite = sprite;
   }
   Shell.builtin$cls = "Shell";
   if (!"name" in Shell)
@@ -20666,12 +20742,6 @@ function dart_precompiled($collectedClasses) {
   if ($desc instanceof Array)
     $desc = $desc[1];
   Shell.prototype = $desc;
-  Shell.prototype.get$position = function(receiver) {
-    return this.position;
-  };
-  Shell.prototype.get$imageID = function() {
-    return this.imageID;
-  };
   function Ship(position, speed, targetPosition, imageID, type, status, remove, hovered, selected, angle, scale, maxEnergy, energy, trailCounter, weaponCounter, flightCounter, home) {
     this.position = position;
     this.speed = speed;
@@ -20719,15 +20789,13 @@ function dart_precompiled($collectedClasses) {
   Ship.prototype.set$selected = function(receiver, v) {
     return this.selected = v;
   };
-  function Spore(position, targetPosition, speed, imageID, remove, health, rotation, trailCounter) {
-    this.position = position;
+  function Spore(targetPosition, speed, remove, health, trailCounter, sprite) {
     this.targetPosition = targetPosition;
     this.speed = speed;
-    this.imageID = imageID;
     this.remove = remove;
     this.health = health;
-    this.rotation = rotation;
     this.trailCounter = trailCounter;
+    this.sprite = sprite;
   }
   Spore.builtin$cls = "Spore";
   if (!"name" in Spore)
@@ -20736,17 +20804,9 @@ function dart_precompiled($collectedClasses) {
   if ($desc instanceof Array)
     $desc = $desc[1];
   Spore.prototype = $desc;
-  Spore.prototype.get$position = function(receiver) {
-    return this.position;
-  };
-  Spore.prototype.get$imageID = function() {
-    return this.imageID;
-  };
-  function UISymbol(position, imageID, width, height, size, packets, radius, keyCode, active, hovered) {
-    this.position = position;
+  function UISymbol(rectangle, imageID, size, packets, radius, keyCode, active, hovered) {
+    this.rectangle = rectangle;
     this.imageID = imageID;
-    this.width = width;
-    this.height = height;
     this.size = size;
     this.packets = packets;
     this.radius = radius;
@@ -20761,20 +20821,8 @@ function dart_precompiled($collectedClasses) {
   if ($desc instanceof Array)
     $desc = $desc[1];
   UISymbol.prototype = $desc;
-  UISymbol.prototype.get$position = function(receiver) {
-    return this.position;
-  };
   UISymbol.prototype.get$imageID = function() {
     return this.imageID;
-  };
-  UISymbol.prototype.get$width = function(receiver) {
-    return this.width;
-  };
-  UISymbol.prototype.get$height = function(receiver) {
-    return this.height;
-  };
-  UISymbol.prototype.set$height = function(receiver, v) {
-    return this.height = v;
   };
   UISymbol.prototype.get$size = function(receiver) {
     return this.size;
@@ -22426,6 +22474,16 @@ function dart_precompiled($collectedClasses) {
   if ($desc instanceof Array)
     $desc = $desc[1];
   FixedSizeListIterator.prototype = $desc;
+  function _DOMWindowCrossFrame(_window) {
+    this._window = _window;
+  }
+  _DOMWindowCrossFrame.builtin$cls = "_DOMWindowCrossFrame";
+  if (!"name" in _DOMWindowCrossFrame)
+    _DOMWindowCrossFrame.name = "_DOMWindowCrossFrame";
+  $desc = $collectedClasses._DOMWindowCrossFrame;
+  if ($desc instanceof Array)
+    $desc = $desc[1];
+  _DOMWindowCrossFrame.prototype = $desc;
   function _LocationWrapper(_ptr) {
     this._ptr = _ptr;
   }
@@ -22646,5 +22704,5 @@ function dart_precompiled($collectedClasses) {
   if ($desc instanceof Array)
     $desc = $desc[1];
   Closure$4.prototype = $desc;
-  return [HtmlElement, AnchorElement, AnimationEvent, AreaElement, AudioElement, AutocompleteErrorEvent, BRElement, BaseElement, BeforeLoadEvent, BeforeUnloadEvent, BodyElement, ButtonElement, CDataSection, CanvasElement, CanvasGradient, CanvasPattern, CanvasRenderingContext, CanvasRenderingContext2D, CharacterData, CloseEvent, Comment, CompositionEvent, ContentElement, CssFontFaceLoadEvent, CssStyleDeclaration, CustomEvent, DListElement, DataListElement, DetailsElement, DeviceMotionEvent, DeviceOrientationEvent, DialogElement, DivElement, Document, DocumentFragment, DocumentType, DomError, DomException, DomImplementation, Element, EmbedElement, ErrorEvent, Event, EventTarget, FieldSetElement, FileError, FocusEvent, FormElement, HRElement, HashChangeEvent, HeadElement, HeadingElement, HtmlCollection, HtmlDocument, HtmlFormControlsCollection, HtmlHtmlElement, HtmlOptionsCollection, IFrameElement, ImageElement, InputElement, KeyboardEvent, KeygenElement, LIElement, LabelElement, LegendElement, LinkElement, Location, MapElement, MediaElement, MediaError, MediaKeyError, MediaKeyEvent, MediaKeyMessageEvent, MediaKeyNeededEvent, MediaStream, MediaStreamEvent, MediaStreamTrackEvent, MenuElement, MessageEvent, MetaElement, MeterElement, MidiConnectionEvent, MidiInput, MidiMessageEvent, MidiOutput, MidiPort, ModElement, MouseEvent, Navigator, NavigatorUserMediaError, Node, NodeList, OListElement, ObjectElement, OptGroupElement, OptionElement, OutputElement, OverflowEvent, PageTransitionEvent, ParagraphElement, ParamElement, PopStateEvent, PositionError, PreElement, ProcessingInstruction, ProgressElement, ProgressEvent, QuoteElement, Range, ResourceProgressEvent, RtcDataChannelEvent, RtcDtmfToneChangeEvent, RtcIceCandidateEvent, ScriptElement0, SecurityPolicyViolationEvent, SelectElement, ShadowElement, ShadowRoot, SourceElement, SpanElement, SpeechInputEvent, SpeechRecognitionError, SpeechRecognitionEvent, SpeechSynthesisEvent, StorageEvent, StyleElement, TableCaptionElement, TableCellElement, TableColElement, TableElement, TableRowElement, TableSectionElement, TemplateElement, Text, TextAreaElement, TextEvent, TitleElement, TouchEvent, TrackElement, TrackEvent, TransitionEvent, UIEvent, UListElement, UnknownElement, VideoElement, WheelEvent, Window, _Attr, _ClientRect, _Entity, _HTMLAppletElement, _HTMLBaseFontElement, _HTMLDirectoryElement, _HTMLFontElement, _HTMLFrameElement, _HTMLFrameSetElement, _HTMLMarqueeElement, _MutationEvent, _NamedNodeMap, _Notation, _XMLHttpRequestProgressEvent, VersionChangeEvent, AElement, AltGlyphElement, AnimateElement, AnimateMotionElement, AnimateTransformElement, AnimatedEnumeration, AnimatedLength, AnimatedLengthList, AnimatedNumber, AnimatedNumberList, AnimatedString, AnimationElement, CircleElement, ClipPathElement, DefsElement, DescElement, EllipseElement, FEBlendElement, FEColorMatrixElement, FEComponentTransferElement, FECompositeElement, FEConvolveMatrixElement, FEDiffuseLightingElement, FEDisplacementMapElement, FEDistantLightElement, FEFloodElement, FEFuncAElement, FEFuncBElement, FEFuncGElement, FEFuncRElement, FEGaussianBlurElement, FEImageElement, FEMergeElement, FEMergeNodeElement, FEMorphologyElement, FEOffsetElement, FEPointLightElement, FESpecularLightingElement, FESpotLightElement, FETileElement, FETurbulenceElement, FilterElement, ForeignObjectElement, GElement, GraphicsElement, ImageElement0, LineElement, LinearGradientElement, MarkerElement, MaskElement, MetadataElement, PathElement, PatternElement, PolygonElement, PolylineElement, RadialGradientElement, RectElement, ScriptElement, SetElement, StopElement, StyleElement0, SvgDocument, SvgElement, SvgSvgElement, SwitchElement, SymbolElement, TSpanElement, TextContentElement, TextElement, TextPathElement, TextPositioningElement, TitleElement0, UseElement, ViewElement, ZoomEvent, _GradientElement, _SVGAltGlyphDefElement, _SVGAltGlyphItemElement, _SVGAnimateColorElement, _SVGComponentTransferFunctionElement, _SVGCursorElement, _SVGFEDropShadowElement, _SVGFontElement, _SVGFontFaceElement, _SVGFontFaceFormatElement, _SVGFontFaceNameElement, _SVGFontFaceSrcElement, _SVGFontFaceUriElement, _SVGGlyphElement, _SVGGlyphRefElement, _SVGHKernElement, _SVGMPathElement, _SVGMissingGlyphElement, _SVGVKernElement, AudioProcessingEvent, OfflineAudioCompletionEvent, ContextEvent, RenderingContext, SqlError, TypedData, Uint8List, JS_CONST, Interceptor, JSBool, JSNull, JavaScriptObject, PlainJavaScriptObject, UnknownJavaScriptObject, JSArray, JSMutableArray, JSFixedArray, JSExtendableArray, JSNumber, JSInt, JSDouble, JSString, startRootIsolate_closure, startRootIsolate_closure0, _Manager, _IsolateContext, _EventLoop, _EventLoop__runHelper_next, _IsolateEvent, _MainManagerStub, IsolateNatives__processWorkerMessage_closure, _BaseSendPort, _NativeJsSendPort, _NativeJsSendPort_send_closure, _NativeJsSendPort_send__closure, _WorkerSendPort, _WorkerSendPort_send_closure, ReceivePortImpl, BoundClosure$i0, _waitForPendingPorts_closure, _PendingSendPortFinder, _JsSerializer, _JsCopier, _JsDeserializer, _JsVisitedMap, _MessageTraverserVisitedMap, _MessageTraverser, BoundClosure$1, _Copier, _Copier_visitMap_closure, _Serializer, _Deserializer, TimerImpl, TimerImpl_internalCallback, TimerImpl_internalCallback0, TimerImpl$periodic_closure, TypeErrorDecoder, NullError, JsNoSuchMethodError, UnknownJsTypeError, unwrapException_saveStackTrace, _StackTrace, invokeClosure_closure, invokeClosure_closure0, invokeClosure_closure1, invokeClosure_closure2, invokeClosure_closure3, Closure, BoundClosure, initHooks_closure, initHooks_closure0, initHooks_closure1, Building, World, Emitter, Sporetower, Smoke, Explosion, Tile, Vector, Vector3, Route, Canvas, Mouse, Engine, Engine_setupEventHandler_closure, Engine_setupEventHandler_closure0, Engine_setupEventHandler_closure1, Engine_setupEventHandler_closure2, Engine_setupEventHandler_closure3, Engine_setupEventHandler_closure4, Engine_setupEventHandler_closure5, Engine_setupEventHandler_closure6, Engine_setupEventHandler_closure7, Engine_setupEventHandler_closure8, Engine_setupEventHandler_closure9, Engine_setupEventHandler_closure10, Engine_setupEventHandler_closure11, Engine_setupEventHandler_closure12, Engine_setupEventHandler_closure13, Engine_loadImages_closure, Engine_loadImages__closure, Engine_loadSounds_closure, Game, Game_init_closure, Game_run_closure, Game_findRoute_closure, HeightMap, HeightMap_reset_closure, HeightMap_diamond_square_closure, HeightMap_diamond_square_closure0, HeightMap_diamond_square_closure1, HeightMap_diamond_square_closure2, main_closure, Packet, Projectile, Shell, Ship, Spore, UISymbol, ListIterable, ListIterator, MappedIterable, EfficientLengthMappedIterable, MappedIterator, MappedListIterable, WhereIterable, WhereIterator, FixedLengthListMixin, _AsyncError, Future, Future_wait_handleError, Future_wait_closure, _Completer, _AsyncCompleter, _Future, BoundClosure$2, _Future__addListener_closure, _Future__chainFutures_closure, _Future__chainFutures_closure0, _Future__asyncComplete_closure, _Future__asyncCompleteError_closure, _Future__propagateToListeners_closure, _Future__propagateToListeners_closure0, _Future__propagateToListeners__closure, _Future__propagateToListeners__closure0, Stream, Stream_forEach_closure, Stream_forEach__closure, Stream_forEach__closure0, Stream_forEach_closure0, Stream_length_closure, Stream_length_closure0, StreamSubscription, _StreamController, _StreamController__subscribe_closure, _StreamController__recordCancel_complete, _SyncStreamControllerDispatch, _AsyncStreamControllerDispatch, _AsyncStreamController, _StreamController__AsyncStreamControllerDispatch, _SyncStreamController, _StreamController__SyncStreamControllerDispatch, _ControllerStream, _ControllerSubscription, BoundClosure$0, _EventSink, _BufferingStreamSubscription, _BufferingStreamSubscription__sendDone_sendDone, _StreamImpl, _DelayedEvent, _DelayedData, _DelayedDone, _PendingEvents, _PendingEvents_schedule_closure, _StreamImplEvents, _cancelAndError_closure, _cancelAndErrorClosure_closure, Timer, _BaseZone, _BaseZone_bindCallback_closure, _BaseZone_bindCallback_closure0, _BaseZone_bindUnaryCallback_closure, _BaseZone_bindUnaryCallback_closure0, _rootHandleUncaughtError_closure, _rootHandleUncaughtError__closure, _RootZone, _HashMap, _HashMap_values_closure, HashMapKeyIterable, HashMapKeyIterator, _LinkedHashMap, _LinkedHashMap_values_closure, LinkedHashMapCell, LinkedHashMapKeyIterable, LinkedHashMapKeyIterator, _HashSet, _IdentityHashSet, HashSetIterator, _LinkedHashSet, LinkedHashSetCell, LinkedHashSetIterator, _HashSetBase, IterableBase, ListBase, ListMixin, Maps_mapToString_closure, ListQueue, _ListQueueIterator, NoSuchMethodError_toString_closure, Comparable, Duration, Duration_toString_sixDigits, Duration_toString_twoDigits, Error, NullThrownError, ArgumentError, RangeError, UnsupportedError, UnimplementedError, StateError, ConcurrentModificationError, StackOverflowError, CyclicInitializationError, _ExceptionImplementation, FormatException, Expando, Function, Iterable, Iterator, Null, Object, StackTrace, Stopwatch, StringBuffer, Symbol, Console, BoundClosure$i1, Interceptor_CssStyleDeclarationBase, CssStyleDeclarationBase, _ChildrenElementList, Element_Element$html_closure, Interceptor_ListMixin, Interceptor_ListMixin_ImmutableListMixin, _ChildNodeListLazy, Interceptor_ListMixin0, Interceptor_ListMixin_ImmutableListMixin0, Interceptor_ListMixin1, Interceptor_ListMixin_ImmutableListMixin1, _AttributeMap, _ElementAttributeMap, EventStreamProvider, _EventStream, _ElementEventStreamImpl, _EventStreamSubscription, _CustomEventStreamProvider, _Html5NodeValidator, ImmutableListMixin, NodeValidatorBuilder, NodeValidatorBuilder_allowsElement_closure, NodeValidatorBuilder_allowsAttribute_closure, _SimpleNodeValidator, _TemplatingNodeValidator, _TemplatingNodeValidator_closure, _SvgNodeValidator, FixedSizeListIterator, _LocationWrapper, NodeValidator, _SameOriginUriPolicy, _ValidatingTreeSanitizer, _ValidatingTreeSanitizer_sanitizeTree_walk, ReceivePort, _Random, Point, _RectangleBase, Rectangle, TypedData_ListMixin, TypedData_ListMixin_FixedLengthListMixin, FilteredElementList, FilteredElementList__filtered_closure, FilteredElementList_removeRange_closure, Closure$2, Closure$1, Closure$0, Closure$7, Closure$20, Closure$4];
+  return [HtmlElement, AnchorElement, AnimationEvent, AreaElement, AudioElement, AutocompleteErrorEvent, BRElement, BaseElement, BeforeLoadEvent, BeforeUnloadEvent, BodyElement, ButtonElement, CDataSection, CanvasElement, CanvasGradient, CanvasPattern, CanvasRenderingContext, CanvasRenderingContext2D, CharacterData, CloseEvent, Comment, CompositionEvent, ContentElement, CssFontFaceLoadEvent, CssStyleDeclaration, CustomEvent, DListElement, DataListElement, DetailsElement, DeviceMotionEvent, DeviceOrientationEvent, DialogElement, DivElement, Document, DocumentFragment, DocumentType, DomError, DomException, DomImplementation, Element, EmbedElement, ErrorEvent, Event, EventTarget, FieldSetElement, FileError, FocusEvent, FormElement, HRElement, HashChangeEvent, HeadElement, HeadingElement, HtmlCollection, HtmlDocument, HtmlFormControlsCollection, HtmlHtmlElement, HtmlOptionsCollection, IFrameElement, ImageElement, InputElement, KeyboardEvent, KeygenElement, LIElement, LabelElement, LegendElement, LinkElement, Location, MapElement, MediaElement, MediaError, MediaKeyError, MediaKeyEvent, MediaKeyMessageEvent, MediaKeyNeededEvent, MediaStream, MediaStreamEvent, MediaStreamTrackEvent, MenuElement, MessageEvent, MetaElement, MeterElement, MidiConnectionEvent, MidiInput, MidiMessageEvent, MidiOutput, MidiPort, ModElement, MouseEvent, Navigator, NavigatorUserMediaError, Node, NodeList, OListElement, ObjectElement, OptGroupElement, OptionElement, OutputElement, OverflowEvent, PageTransitionEvent, ParagraphElement, ParamElement, PopStateEvent, PositionError, PreElement, ProcessingInstruction, ProgressElement, ProgressEvent, QuoteElement, Range, ResourceProgressEvent, RtcDataChannelEvent, RtcDtmfToneChangeEvent, RtcIceCandidateEvent, ScriptElement0, SecurityPolicyViolationEvent, SelectElement, ShadowElement, ShadowRoot, SourceElement, SpanElement, SpeechInputEvent, SpeechRecognitionError, SpeechRecognitionEvent, SpeechSynthesisEvent, StorageEvent, StyleElement, TableCaptionElement, TableCellElement, TableColElement, TableElement, TableRowElement, TableSectionElement, TemplateElement, Text, TextAreaElement, TextEvent, TitleElement, TouchEvent, TrackElement, TrackEvent, TransitionEvent, UIEvent, UListElement, UnknownElement, VideoElement, WheelEvent, Window, _Attr, _ClientRect, _Entity, _HTMLAppletElement, _HTMLBaseFontElement, _HTMLDirectoryElement, _HTMLFontElement, _HTMLFrameElement, _HTMLFrameSetElement, _HTMLMarqueeElement, _MutationEvent, _NamedNodeMap, _Notation, _XMLHttpRequestProgressEvent, VersionChangeEvent, AElement, AltGlyphElement, AnimateElement, AnimateMotionElement, AnimateTransformElement, AnimatedEnumeration, AnimatedLength, AnimatedLengthList, AnimatedNumber, AnimatedNumberList, AnimatedString, AnimationElement, CircleElement, ClipPathElement, DefsElement, DescElement, EllipseElement, FEBlendElement, FEColorMatrixElement, FEComponentTransferElement, FECompositeElement, FEConvolveMatrixElement, FEDiffuseLightingElement, FEDisplacementMapElement, FEDistantLightElement, FEFloodElement, FEFuncAElement, FEFuncBElement, FEFuncGElement, FEFuncRElement, FEGaussianBlurElement, FEImageElement, FEMergeElement, FEMergeNodeElement, FEMorphologyElement, FEOffsetElement, FEPointLightElement, FESpecularLightingElement, FESpotLightElement, FETileElement, FETurbulenceElement, FilterElement, ForeignObjectElement, GElement, GraphicsElement, ImageElement0, LineElement, LinearGradientElement, MarkerElement, MaskElement, MetadataElement, PathElement, PatternElement, PolygonElement, PolylineElement, RadialGradientElement, RectElement, ScriptElement, SetElement, StopElement, StyleElement0, SvgDocument, SvgElement, SvgSvgElement, SwitchElement, SymbolElement, TSpanElement, TextContentElement, TextElement, TextPathElement, TextPositioningElement, TitleElement0, UseElement, ViewElement, ZoomEvent, _GradientElement, _SVGAltGlyphDefElement, _SVGAltGlyphItemElement, _SVGAnimateColorElement, _SVGComponentTransferFunctionElement, _SVGCursorElement, _SVGFEDropShadowElement, _SVGFontElement, _SVGFontFaceElement, _SVGFontFaceFormatElement, _SVGFontFaceNameElement, _SVGFontFaceSrcElement, _SVGFontFaceUriElement, _SVGGlyphElement, _SVGGlyphRefElement, _SVGHKernElement, _SVGMPathElement, _SVGMissingGlyphElement, _SVGVKernElement, AudioProcessingEvent, OfflineAudioCompletionEvent, ContextEvent, RenderingContext, SqlError, TypedData, Uint8List, JS_CONST, Interceptor, JSBool, JSNull, JavaScriptObject, PlainJavaScriptObject, UnknownJavaScriptObject, JSArray, JSMutableArray, JSFixedArray, JSExtendableArray, JSNumber, JSInt, JSDouble, JSString, startRootIsolate_closure, startRootIsolate_closure0, _Manager, _IsolateContext, _EventLoop, _EventLoop__runHelper_next, _IsolateEvent, _MainManagerStub, IsolateNatives__processWorkerMessage_closure, _BaseSendPort, _NativeJsSendPort, _NativeJsSendPort_send_closure, _NativeJsSendPort_send__closure, _WorkerSendPort, _WorkerSendPort_send_closure, ReceivePortImpl, BoundClosure$i0, _waitForPendingPorts_closure, _PendingSendPortFinder, _JsSerializer, _JsCopier, _JsDeserializer, _JsVisitedMap, _MessageTraverserVisitedMap, _MessageTraverser, BoundClosure$1, _Copier, _Copier_visitMap_closure, _Serializer, _Deserializer, TimerImpl, TimerImpl_internalCallback, TimerImpl_internalCallback0, TimerImpl$periodic_closure, TypeErrorDecoder, NullError, JsNoSuchMethodError, UnknownJsTypeError, unwrapException_saveStackTrace, _StackTrace, invokeClosure_closure, invokeClosure_closure0, invokeClosure_closure1, invokeClosure_closure2, invokeClosure_closure3, Closure, BoundClosure, initHooks_closure, initHooks_closure0, initHooks_closure1, Building, World, Emitter, Sporetower, Smoke, Explosion, Tile, Vector, Vector3, Route, Renderer, Renderer_addSprite_closure, Sprite, Mouse, Engine, Engine_setupEventHandler_closure, Engine_setupEventHandler_closure0, Engine_setupEventHandler_closure1, Engine_setupEventHandler_closure2, Engine_setupEventHandler_closure3, Engine_setupEventHandler_closure4, Engine_setupEventHandler_closure5, Engine_setupEventHandler_closure6, Engine_setupEventHandler_closure7, Engine_setupEventHandler_closure8, Engine_setupEventHandler_closure9, Engine_setupEventHandler_closure10, Engine_setupEventHandler_closure11, Engine_setupEventHandler_closure12, Engine_setupEventHandler_closure13, Engine_loadImages_closure, Engine_loadImages__closure, Engine_loadSounds_closure, Game, Game_init_closure, Game_run_closure, Game_findRoute_closure, HeightMap, HeightMap_reset_closure, HeightMap_diamond_square_closure, HeightMap_diamond_square_closure0, HeightMap_diamond_square_closure1, HeightMap_diamond_square_closure2, main_closure, Packet, Projectile, Shell, Ship, Spore, UISymbol, ListIterable, ListIterator, MappedIterable, EfficientLengthMappedIterable, MappedIterator, MappedListIterable, WhereIterable, WhereIterator, FixedLengthListMixin, _AsyncError, Future, Future_wait_handleError, Future_wait_closure, _Completer, _AsyncCompleter, _Future, BoundClosure$2, _Future__addListener_closure, _Future__chainFutures_closure, _Future__chainFutures_closure0, _Future__asyncComplete_closure, _Future__asyncCompleteError_closure, _Future__propagateToListeners_closure, _Future__propagateToListeners_closure0, _Future__propagateToListeners__closure, _Future__propagateToListeners__closure0, Stream, Stream_forEach_closure, Stream_forEach__closure, Stream_forEach__closure0, Stream_forEach_closure0, Stream_length_closure, Stream_length_closure0, StreamSubscription, _StreamController, _StreamController__subscribe_closure, _StreamController__recordCancel_complete, _SyncStreamControllerDispatch, _AsyncStreamControllerDispatch, _AsyncStreamController, _StreamController__AsyncStreamControllerDispatch, _SyncStreamController, _StreamController__SyncStreamControllerDispatch, _ControllerStream, _ControllerSubscription, BoundClosure$0, _EventSink, _BufferingStreamSubscription, _BufferingStreamSubscription__sendDone_sendDone, _StreamImpl, _DelayedEvent, _DelayedData, _DelayedDone, _PendingEvents, _PendingEvents_schedule_closure, _StreamImplEvents, _cancelAndError_closure, _cancelAndErrorClosure_closure, Timer, _BaseZone, _BaseZone_bindCallback_closure, _BaseZone_bindCallback_closure0, _BaseZone_bindUnaryCallback_closure, _BaseZone_bindUnaryCallback_closure0, _rootHandleUncaughtError_closure, _rootHandleUncaughtError__closure, _RootZone, _HashMap, _HashMap_values_closure, HashMapKeyIterable, HashMapKeyIterator, _LinkedHashMap, _LinkedHashMap_values_closure, LinkedHashMapCell, LinkedHashMapKeyIterable, LinkedHashMapKeyIterator, _HashSet, _IdentityHashSet, HashSetIterator, _LinkedHashSet, LinkedHashSetCell, LinkedHashSetIterator, _HashSetBase, IterableBase, ListBase, ListMixin, Maps_mapToString_closure, ListQueue, _ListQueueIterator, NoSuchMethodError_toString_closure, Comparable, Duration, Duration_toString_sixDigits, Duration_toString_twoDigits, Error, NullThrownError, ArgumentError, RangeError, UnsupportedError, UnimplementedError, StateError, ConcurrentModificationError, StackOverflowError, CyclicInitializationError, _ExceptionImplementation, FormatException, Expando, Function, Iterable, Iterator, Null, Object, StackTrace, Stopwatch, StringBuffer, Symbol, Console, BoundClosure$i1, Interceptor_CssStyleDeclarationBase, CssStyleDeclarationBase, _ChildrenElementList, Element_Element$html_closure, Interceptor_ListMixin, Interceptor_ListMixin_ImmutableListMixin, _ChildNodeListLazy, Interceptor_ListMixin0, Interceptor_ListMixin_ImmutableListMixin0, Interceptor_ListMixin1, Interceptor_ListMixin_ImmutableListMixin1, _AttributeMap, _ElementAttributeMap, EventStreamProvider, _EventStream, _ElementEventStreamImpl, _EventStreamSubscription, _CustomEventStreamProvider, _Html5NodeValidator, ImmutableListMixin, NodeValidatorBuilder, NodeValidatorBuilder_allowsElement_closure, NodeValidatorBuilder_allowsAttribute_closure, _SimpleNodeValidator, _TemplatingNodeValidator, _TemplatingNodeValidator_closure, _SvgNodeValidator, FixedSizeListIterator, _DOMWindowCrossFrame, _LocationWrapper, NodeValidator, _SameOriginUriPolicy, _ValidatingTreeSanitizer, _ValidatingTreeSanitizer_sanitizeTree_walk, ReceivePort, _Random, Point, _RectangleBase, Rectangle, TypedData_ListMixin, TypedData_ListMixin_FixedLengthListMixin, FilteredElementList, FilteredElementList__filtered_closure, FilteredElementList_removeRange_closure, Closure$2, Closure$1, Closure$0, Closure$7, Closure$20, Closure$4];
 }
