@@ -264,50 +264,63 @@ class Renderer {
   
   void draw() {
     for (var sprite in sprites) {
-      Vector realPosition = sprite.position.real2screen();
-  
-      if (engine.isVisible(realPosition, new Vector(sprite.size.x * game.zoom, sprite.size.y * game.zoom))) {
-        
-        if (sprite.rotation != 0) {     
-          context.save();
-          context.translate(realPosition.x, realPosition.y);
-          context.rotate(engine.deg2rad(sprite.rotation));             
-          if (sprite.animated)
-            context.drawImageScaledFromSource(sprite.image,
-                                              (sprite.frame % 8) * sprite.size.x,
-                                              (sprite.frame ~/ 8) * sprite.size.y,
-                                              sprite.size.x,
-                                              sprite.size.y,
-                                              -sprite.size.x * sprite.anchor.x * sprite.scale.x * game.zoom,
-                                              -sprite.size.y * sprite.anchor.y * sprite.scale.y * game.zoom,
-                                              sprite.size.x * sprite.scale.x * game.zoom,
-                                              sprite.size.y * sprite.scale.y * game.zoom);
-          else
-            context.drawImageScaled(sprite.image,
-                                    -sprite.size.x * sprite.anchor.x * game.zoom, 
-                                    -sprite.size.y * sprite.anchor.y * game.zoom, 
-                                    sprite.size.x * game.zoom, 
-                                    sprite.size.y * game.zoom);
-          context.restore();
-        } else {         
-          if (sprite.animated)
-            context.drawImageScaledFromSource(sprite.image,
-                                              (sprite.frame % 8) * sprite.size.x,
-                                              (sprite.frame ~/ 8) * sprite.size.y,
-                                              sprite.size.x,
-                                              sprite.size.y,
-                                              realPosition.x - sprite.size.x * sprite.anchor.x * sprite.scale.x * game.zoom,
-                                              realPosition.y - sprite.size.y * sprite.anchor.y * sprite.scale.y * game.zoom,
-                                              sprite.size.x * sprite.scale.x * game.zoom,
-                                              sprite.size.y * sprite.scale.y * game.zoom);
-          else
-            context.drawImageScaled(sprite.image,
-                                    realPosition.x - sprite.size.x * sprite.anchor.x * game.zoom,
-                                    realPosition.y - sprite.size.y * sprite.anchor.y * game.zoom,
-                                    sprite.size.x * game.zoom,
-                                    sprite.size.y * game.zoom);    
+      if (sprite.visible) {
+        Vector realPosition = sprite.position.real2screen();
+    
+        if (engine.isVisible(realPosition, new Vector(sprite.size.x * game.zoom, sprite.size.y * game.zoom))) {
+          
+          if (sprite.rotation != 0) {     
+            context.save();
+            
+            if (sprite.alpha != 1.0)
+              context.globalAlpha = sprite.alpha;
+            
+            context.translate(realPosition.x, realPosition.y);
+            context.rotate(engine.deg2rad(sprite.rotation));             
+            if (sprite.animated)
+              context.drawImageScaledFromSource(sprite.image,
+                                                (sprite.frame % 8) * sprite.size.x,
+                                                (sprite.frame ~/ 8) * sprite.size.y,
+                                                sprite.size.x,
+                                                sprite.size.y,
+                                                -sprite.size.x * sprite.anchor.x * sprite.scale.x * game.zoom,
+                                                -sprite.size.y * sprite.anchor.y * sprite.scale.y * game.zoom,
+                                                sprite.size.x * sprite.scale.x * game.zoom,
+                                                sprite.size.y * sprite.scale.y * game.zoom);
+            else
+              context.drawImageScaled(sprite.image,
+                                      -sprite.size.x * sprite.anchor.x * game.zoom, 
+                                      -sprite.size.y * sprite.anchor.y * game.zoom, 
+                                      sprite.size.x * game.zoom, 
+                                      sprite.size.y * game.zoom);
+            context.restore();
+          } else {                  
+            if (sprite.alpha != 1.0) {
+              context.save();
+              context.globalAlpha = sprite.alpha;              
+            }          
+            if (sprite.animated)
+              context.drawImageScaledFromSource(sprite.image,
+                                                (sprite.frame % 8) * sprite.size.x,
+                                                (sprite.frame ~/ 8) * sprite.size.y,
+                                                sprite.size.x,
+                                                sprite.size.y,
+                                                realPosition.x - sprite.size.x * sprite.anchor.x * sprite.scale.x * game.zoom,
+                                                realPosition.y - sprite.size.y * sprite.anchor.y * sprite.scale.y * game.zoom,
+                                                sprite.size.x * sprite.scale.x * game.zoom,
+                                                sprite.size.y * sprite.scale.y * game.zoom);
+            else
+              context.drawImageScaled(sprite.image,
+                                      realPosition.x - sprite.size.x * sprite.anchor.x * game.zoom,
+                                      realPosition.y - sprite.size.y * sprite.anchor.y * game.zoom,
+                                      sprite.size.x * game.zoom,
+                                      sprite.size.y * game.zoom);   
+            if (sprite.alpha != 1.0) {
+              context.restore;              
+            } 
           }
         }
+      }
     }
   }
 }
@@ -316,8 +329,8 @@ class Sprite {
   int layer, frame = 0;
   ImageElement image;
   Vector anchor, scale, position, size;
-  num rotation = 0;
-  bool animated = false;
+  num rotation = 0, alpha = 1.0;
+  bool animated = false, visible = true;
 
   Sprite(this.layer, this.image, this.position, width, height) {
     anchor = new Vector(0.0, 0.0);

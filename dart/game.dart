@@ -102,8 +102,8 @@ class Game {
    */
   Vector getHoveredTilePosition() {
     return new Vector(
-        ((engine.mouse.x - engine.halfWidth) / (tileSize * zoom)).floor() + scroll.x,
-        ((engine.mouse.y - engine.halfHeight) / (tileSize * zoom)).floor() + scroll.y);
+        (engine.mouse.x - engine.halfWidth) ~/ (tileSize * zoom) + scroll.x,
+        (engine.mouse.y - engine.halfHeight) ~/ (tileSize * zoom) + scroll.y);
   }
 
   void pause() {

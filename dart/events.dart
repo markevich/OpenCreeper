@@ -33,11 +33,13 @@ void onKeyDown(KeyboardEvent evt) {
   // increase game speed
   if (evt.keyCode == KeyCode.F1) {
     game.faster();
+    evt.preventDefault();
   }
   
   // decrease game speed
   if (evt.keyCode == KeyCode.F2) {
     game.slower();
+    evt.preventDefault();
   }
 
   // delete building
