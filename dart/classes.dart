@@ -7,6 +7,13 @@ class World {
   World(int seed) {
     size = new Vector(engine.randomInt(64, 127, seed), engine.randomInt(64, 127, seed));
   }
+  
+  /**
+   * Checks if a given [position] in world coordinates is contained within the world
+   */
+  bool contains(Vector position) {
+    return (position.x > -1 && position.x < size.x && position.y > -1 && position.y < size.y);
+  }
 }
 
 class Emitter {

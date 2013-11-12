@@ -146,7 +146,7 @@ class Ship {
 
           for (int i = (targetPosition.x / game.tileSize).floor() - 3; i < (targetPosition.x / game.tileSize).floor() + 5; i++) {
             for (int j = (targetPosition.y / game.tileSize).floor() - 3; j < (targetPosition.y / game.tileSize).floor() + 5; j++) {
-              if (game.withinWorld(i, j)) {
+              if (game.world.contains(new Vector(i, j))) {
                 num distance = pow((i * game.tileSize + game.tileSize / 2) - (targetPosition.x + game.tileSize), 2) + pow((j * game.tileSize + game.tileSize / 2) - (targetPosition.y + game.tileSize), 2);
                 if (distance < pow(game.tileSize * 3, 2)) {
                   game.world.tiles[i][j].creep -= 5;

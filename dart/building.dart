@@ -109,7 +109,8 @@ class Building {
 
       for (int i = position.x - weaponRadius; i <= position.x + weaponRadius; i++) {
         for (int j = position.y - weaponRadius; j <= position.y + weaponRadius; j++) {
-          if (game.withinWorld(i, j)) {
+          //if (game.withinWorld(i, j)) {
+          if (game.world.contains(new Vector(i, j))) {  
             num distance = pow((i * game.tileSize + game.tileSize / 2) - center.x, 2) + pow((j * game.tileSize + game.tileSize / 2) - center.y, 2);
             if (distance < pow(game.tileSize * 10, 2)) {
               if (game.world.tiles[i][j].creep > 0) {
@@ -159,7 +160,7 @@ class Building {
         for (int j = -5; j < 7; j++) {
           Vector positionCurrent = new Vector(position.x + i, position.y + j);
 
-          if (game.withinWorld(positionCurrent.x, positionCurrent.y)) {
+          if (game.world.contains(positionCurrent)) {
             Vector positionCurrentCenter = new Vector(positionCurrent.x * game.tileSize + (game.tileSize / 2), positionCurrent.y * game.tileSize + (game.tileSize / 2));
             int tileHeight = game.world.tiles[positionCurrent.x][positionCurrent.y].height;
 
@@ -241,7 +242,7 @@ class Building {
           for (int i = position.x - weaponRadius; i <= position.x + weaponRadius; i++) {
             for (int j = position.y - weaponRadius; j <= position.y + weaponRadius; j++) {
 
-              if (game.withinWorld(i, j)) {
+              if (game.world.contains(new Vector(i, j))) {
                 var distance = pow((i * game.tileSize + game.tileSize / 2) - center.x, 2) + pow((j * game.tileSize + game.tileSize / 2) - center.y, 2);
                 var tileHeight = game.world.tiles[i][j].height;
 
@@ -325,7 +326,7 @@ class Building {
                 for (int j = position.y - weaponRadius; j <= position.y + weaponRadius; j++) {
 
                   // cannons can only shoot at tiles not higher than themselves
-                  if (game.withinWorld(i, j)) {
+                  if (game.world.contains(new Vector(i, j))) {
                     int tileHeight = game.world.tiles[i][j].height;
                     if (tileHeight <= height) {
                       var distance = pow((i * game.tileSize + game.tileSize / 2) - center.x, 2) + pow((j * game.tileSize + game.tileSize / 2) - center.y, 2);
@@ -397,7 +398,7 @@ class Building {
             var highestCreep = 0;
             for (int i = position.x - weaponRadius; i <= position.x + weaponRadius; i++) {
               for (int j = position.y - weaponRadius; j <= position.y + weaponRadius; j++) {
-                if (game.withinWorld(i, j)) {
+                if (game.world.contains(new Vector(i, j))) {
                   var distance = pow((i * game.tileSize + game.tileSize / 2) - center.x, 2) + pow((j * game.tileSize + game.tileSize / 2) - center.y, 2);
 
                   if (distance <= pow(weaponRadius * game.tileSize, 2) && game.world.tiles[i][j].creep > 0 && game.world.tiles[i][j].creep >= highestCreep) {

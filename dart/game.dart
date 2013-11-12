@@ -98,13 +98,6 @@ class Game {
   }
 
   /**
-   * Checks if the given position is within the world.
-   */
-  bool withinWorld(int x, int y) {
-    return (x > -1 && x < world.size.x && y > -1 && y < world.size.y);
-  }
-
-  /**
    *  Returns the position of the tile the mouse is hovering above
    */
   Vector getHoveredTilePosition() {
@@ -615,7 +608,7 @@ class Game {
       int iS = tiles[i].x;
       int jS = tiles[i].y;
 
-      if (withinWorld(iS, jS)) {
+      if (world.contains(new Vector(iS, jS))) {
         // recalculate index
         int index = -1;
         int indexAbove = -1;
@@ -908,7 +901,7 @@ class Game {
       if (!collision) {
         for (int i = position.x; i < position.x + size; i++) {
           for (int j = position.y; j < position.y + size; j++) {
-            if (withinWorld(i, j)) {
+            if (world.contains(new Vector(i, j))) {
               int tileHeight = game.world.tiles[i][j].height;
               if (tileHeight < 0) {
                 collision = true;
@@ -1032,7 +1025,7 @@ class Game {
 
         Vector positionCurrent = new Vector(collector.position.x + i, collector.position.y + j);
 
-        if (withinWorld(positionCurrent.x, positionCurrent.y)) {
+        if (world.contains(positionCurrent)) {
           Vector positionCurrentCenter = new Vector(positionCurrent.x * tileSize + (tileSize / 2), positionCurrent.y * tileSize + (tileSize / 2));
           int tileHeight = game.world.tiles[positionCurrent.x][positionCurrent.y].height;
 
@@ -1285,7 +1278,7 @@ class Game {
 
           Vector drawPositionCurrent = positionCurrent.tiled2screen();
 
-          if (withinWorld(positionCurrent.x, positionCurrent.y)) {
+          if (world.contains(positionCurrent)) {
             int positionCurrentHeight = game.world.tiles[positionCurrent.x][positionCurrent.y].height;
 
             if (pow(positionCurrentCenter.x - positionCenter.x, 2) + pow(positionCurrentCenter.y - positionCenter.y, 2) < pow(radius, 2)) {
@@ -1333,7 +1326,7 @@ class Game {
         int iS = i + scroll.x;
         int jS = j + scroll.y;
 
-        if (withinWorld(iS, jS)) {
+        if (world.contains(new Vector(iS, jS))) {
 
           //for (int k = 0 ; k < 10; k++) {
             if (world.tiles[iS][jS].collector != null) {
@@ -1377,7 +1370,7 @@ class Game {
         int iS = i + scroll.x;
         int jS = j + scroll.y;
 
-        if (withinWorld(iS, jS)) {
+        if (world.contains(new Vector(iS, jS))) {
           
           int height = world.tiles[iS][jS].height;
           
@@ -1474,18 +1467,18 @@ class Game {
         num newX = (start.x + (delta.x / distance) * i * buildingDistance).floor();
         num newY = (start.y + (delta.y / distance) * i * buildingDistance).floor();
 
-        if (withinWorld(newX, newY)) {
+        if (world.contains(new Vector(newX, newY))) {
           Vector ghost = new Vector(newX, newY);
           ghosts.add(ghost);
         }
       }
-      if (withinWorld(end.x, end.y)) {
+      if (world.contains(end)) {
         ghosts.add(end);
       }
     } else {
       if (engine.mouse.active) {
         Vector position = getHoveredTilePosition();
-        if (withinWorld(position.x, position.y)) {
+        if (world.contains(position)) {
           ghosts.add(position);
         }
       }
@@ -1498,7 +1491,7 @@ class Game {
 
       drawRangeBoxes(positionScrolled, symbols[activeSymbol].imageID, symbols[activeSymbol].radius, symbols[activeSymbol].size);
 
-      if (withinWorld(positionScrolled.x, positionScrolled.y)) {
+      if (world.contains(positionScrolled)) {
         context.save();
         context.globalAlpha = .5;
 
@@ -1597,7 +1590,7 @@ class Game {
       symbols[i].draw();
     }
 
-    if (withinWorld(position.x, position.y)) {
+    if (world.contains(position)) {
 
       num total = world.tiles[position.x][position.y].creep;
 
@@ -1647,7 +1640,7 @@ class Game {
         int iS = i + scroll.x;
         int jS = j + scroll.y;
 
-        if (withinWorld(iS, jS)) {
+        if (world.contains(new Vector(iS, jS))) {
           if (world.tiles[iS][jS].terraformTarget > -1) {
             context.drawImageScaledFromSource(engine.images["numbers"], world.tiles[iS][jS].terraformTarget * 16, 0, tileSize, tileSize, engine.halfWidth + i * tileSize * zoom, engine.halfHeight + j * tileSize * zoom, tileSize * zoom, tileSize * zoom);
           }
