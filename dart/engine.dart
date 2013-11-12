@@ -191,33 +191,6 @@ class Engine {
     //}
   }
 
-  void reset() {
-    // reset FPS variables
-    fps_lastTime = new DateTime.now();
-    fps_frames = 0;
-    fps_totalTime = 0;
-    fps_updateTime = 0;
-    fps_updateFrames = 0;
-  }
-
-  void update() { // FIXME
-    // update FPS
-    var now = new DateTime.now();
-    fps_delta = now.millisecond - fps_lastTime;
-    fps_lastTime = now;
-    fps_totalTime += fps_delta;
-    fps_frames++;
-    fps_updateTime += fps_delta;
-    fps_updateFrames++;
-
-    // update FPS display
-    if (fps_updateTime > 1000) {
-      //query("#fps").innerHtml = "FPS: " + (1000 * fps_frames / fps_totalTime).floor().toString() + " average, " + (1000 * fps_updateFrames / fps_updateTime).floor().toString() + " currently, " + (game.speed * FPS).toString() + " desired";
-      fps_updateTime -= 1000;
-      fps_updateFrames = 0;
-    }
-  }
-
   /**
    * Checks if an object with a given [position] and [size]
    * is visible on the screen. Returns true or false.

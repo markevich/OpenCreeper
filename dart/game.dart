@@ -128,7 +128,6 @@ class Game {
   }
   
   void updateAll() {
-    //engine.update();
     game.update();
   }
 
