@@ -9,7 +9,7 @@ class Spore {
   static final int baseSpeed = 1;
 
   Spore(position, this.targetPosition) {   
-    sprite = new Sprite(1, engine.images["spore"], position, 32, 32);
+    sprite = new Sprite(2, engine.images["spore"], position, 32, 32);
     sprite.anchor = new Vector(0.5, 0.5);  
     engine.canvas["buffer"].addSprite(sprite);      
     init();

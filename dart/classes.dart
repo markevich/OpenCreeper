@@ -14,57 +14,44 @@ class World {
   bool contains(Vector position) {
     return (position.x > -1 && position.x < size.x && position.y > -1 && position.y < size.y);
   }
+  
+  Tile getTile(Vector position) {
+    return tiles[position.x ~/ 16][position.y ~/ 16];
+  }  
 }
 
 class Emitter {
-  Vector position;
-  String imageID;
+  Sprite sprite;
   int strength;
-  Building building;
+  Building analyzer;
   static int counter;
 
-  Emitter(this.position, this.strength) {
-    imageID = "emitter";
-  }
-  
-  Vector getCenter() {
-    return new Vector(position.x * game.tileSize + 24, position.y * game.tileSize + 24);
+  Emitter(position, this.strength) {
+    sprite = new Sprite(0, engine.images["emitter"], position, 48, 48);
+    sprite.anchor = new Vector(0.5, 0.5);
+    engine.canvas["buffer"].addSprite(sprite); 
   }
 
   void spawn() {
     // only spawn creeper if not targeted by an analyzer
-    if (building == null)
-      game.world.tiles[position.x + 1][position.y + 1].creep += strength;
-  }
-  
-  void draw() {
-    Vector realPosition = position.tiled2screen();
-    if (engine.isVisible(realPosition, new Vector(48 * game.zoom, 48 * game.zoom))) {
-      engine.canvas["buffer"].context.drawImageScaled(engine.images[imageID], realPosition.x, realPosition.y, 48 * game.zoom, 48 * game.zoom);
-    }
+    if (analyzer == null)
+      game.world.getTile(sprite.position + new Vector(1, 1)).creep += strength; //game.world.tiles[sprite.position.x + 1][sprite.position.y + 1].creep += strength;
   }
 }
 
-/**
- * Sporetower
- */
-
 class Sporetower {
-  Vector position;
-  String imageID;
+  Sprite sprite;
   int sporeCounter = 0;
 
-  Sporetower(this.position) {
-    imageID = "sporetower";
+  Sporetower(position) {
+    sprite = new Sprite(0, engine.images["sporetower"], position, 48, 48);
+    sprite.anchor = new Vector(0.5, 0.5);  
+    engine.canvas["buffer"].addSprite(sprite);  
     reset();
   }
 
   void reset() {
     sporeCounter = engine.randomInt(7500, 12500);
-  }
-
-  Vector getCenter() {
-    return new Vector(position.x * game.tileSize + 24, position.y * game.tileSize + 24);
   }
 
   void update() {
@@ -80,24 +67,16 @@ class Sporetower {
     do {
       target = game.buildings[engine.randomInt(0, game.buildings.length - 1)];
     } while (!target.built);
-    Spore spore = new Spore(getCenter(), target.getCenter());
-    game.spores.add(spore);
-  }
-  
-  void draw() {
-    Vector realPosition = position.tiled2screen();
-    if (engine.isVisible(realPosition, new Vector(48 * game.zoom, 48 * game.zoom))) {
-      engine.canvas["buffer"].context.drawImageScaled(engine.images[imageID], realPosition.x, realPosition.y, 48 * game.zoom, 48 * game.zoom);
-    }
+    game.spores.add(new Spore(sprite.position, target.getCenter()));
   }
 }
 
 class Smoke {
   Sprite sprite;
-  static int counter;
+  static int counter = 0;
 
   Smoke(Vector position) {
-    sprite = new Sprite(0, engine.images["smoke"], position, 128, 128);
+    sprite = new Sprite(1, engine.images["smoke"], position, 128, 128);
     sprite.animated = true;
     sprite.anchor = new Vector(0.5, 0.5);  
     sprite.scale = new Vector(0.5, 0.5);
@@ -106,23 +85,15 @@ class Smoke {
 }
 
 class Explosion {
-  Vector position;
-  int frame;
-  String imageID;
-  static int counter;
+  Sprite sprite;
+  static int counter = 0;
 
   Explosion(Vector position) {
-    this.position = new Vector(position.x, position.y);
-    frame = 0;
-    imageID = "explosion";
-    counter = 0;
-  }
-
-  void draw() {
-    Vector realPosition = position.real2screen();
-    if (engine.isVisible(realPosition, new Vector(64 * game.zoom, 64 * game.zoom))) {
-      engine.canvas["buffer"].context.drawImageScaledFromSource(engine.images[imageID], (frame % 8) * 64, (frame / 8).floor() * 64, 64, 64, realPosition.x - 32 * game.zoom, realPosition.y - 32 * game.zoom, 64 * game.zoom, 64 * game.zoom);
-    }
+    sprite = new Sprite(3, engine.images["explosion"], position, 64, 64);
+    sprite.animated = true;
+    sprite.rotation = engine.randomInt(0, 359);
+    sprite.anchor = new Vector(0.5, 0.5);  
+    engine.canvas["buffer"].addSprite(sprite); 
   }
 }
 
@@ -223,7 +194,7 @@ class Route {
 }
 
 /**
- * Object to store canvas information
+ * Renderer class
  */
 
 class Renderer {
@@ -269,12 +240,11 @@ class Renderer {
     
         if (engine.isVisible(realPosition, new Vector(sprite.size.x * game.zoom, sprite.size.y * game.zoom))) {
           
+          if (sprite.alpha != 1.0)
+            context.globalAlpha = sprite.alpha;
+          
           if (sprite.rotation != 0) {     
-            context.save();
-            
-            if (sprite.alpha != 1.0)
-              context.globalAlpha = sprite.alpha;
-            
+            context.save();   
             context.translate(realPosition.x, realPosition.y);
             context.rotate(engine.deg2rad(sprite.rotation));             
             if (sprite.animated)
@@ -292,13 +262,9 @@ class Renderer {
                                       -sprite.size.x * sprite.anchor.x * game.zoom, 
                                       -sprite.size.y * sprite.anchor.y * game.zoom, 
                                       sprite.size.x * game.zoom, 
-                                      sprite.size.y * game.zoom);
+                                      sprite.size.y * game.zoom);          
             context.restore();
-          } else {                  
-            if (sprite.alpha != 1.0) {
-              context.save();
-              context.globalAlpha = sprite.alpha;              
-            }          
+          } else {                                                
             if (sprite.animated)
               context.drawImageScaledFromSource(sprite.image,
                                                 (sprite.frame % 8) * sprite.size.x,
@@ -314,11 +280,11 @@ class Renderer {
                                       realPosition.x - sprite.size.x * sprite.anchor.x * game.zoom,
                                       realPosition.y - sprite.size.y * sprite.anchor.y * game.zoom,
                                       sprite.size.x * game.zoom,
-                                      sprite.size.y * game.zoom);   
-            if (sprite.alpha != 1.0) {
-              context.restore;              
-            } 
+                                      sprite.size.y * game.zoom);             
           }
+          
+          if (sprite.alpha != 1.0)
+            context.globalAlpha = 1.0;
         }
       }
     }

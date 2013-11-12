@@ -14,8 +14,68 @@ class Building {
     health = 0;
     size = 3;
     energy = 0;
+    
+    if (this.imageID == "analyzer") {
+      maxHealth = 80;
+      maxEnergy = 20;
+      canMove = true;
+      needsEnergy = true;
+      weaponRadius = 10;
+    }
+    else if (this.imageID == "terp") {
+      maxHealth = 60;
+      maxEnergy = 20;
+      canMove = true;
+      needsEnergy = true;
+      weaponRadius = 12;
+    }
+    else if (this.imageID == "shield") {
+      maxHealth = 75;
+      maxEnergy = 20;
+      canMove = true;
+      needsEnergy = true;
+      weaponRadius = 9;
+    }
+    else if (this.imageID == "bomber") {
+      maxHealth = 75;
+      maxEnergy = 15;
+      needsEnergy = true;
+    }
+    else if (this.imageID == "storage") {
+      maxHealth = 8;
+    }
+    else if (this.imageID == "reactor") {
+      maxHealth = 50;
+    }
+    else if (this.imageID == "collector") {
+      maxHealth = 5;
+    }
+    else if (this.imageID == "relay") {
+      maxHealth = 10;
+    }
+    else if (this.imageID == "cannon") {
+      maxHealth = 5; // 25
+      maxEnergy = 40;
+      weaponRadius = 8;
+      canMove = true;
+      needsEnergy = true;
+    }
+    else if (this.imageID == "mortar") {
+      maxHealth = 4; //40
+      maxEnergy = 20;
+      weaponRadius = 12;
+      canMove = true;
+      needsEnergy = true;
+    }
+    else if (this.imageID == "beam") {
+      maxHealth = 20;
+      maxEnergy = 10;
+      weaponRadius = 12;
+      canMove = true;
+      needsEnergy = true;
+    }
   }
-
+  
   bool updateHoverState() {
     Vector realPosition = position.tiled2screen();
     hovered = (engine.mouse.x > realPosition.x &&
@@ -209,14 +269,14 @@ class Building {
         // find emitter
         if (weaponTargetPosition == null) {
           for (int i = 0; i < game.emitters.length; i++) {
-            Vector emitterCenter = game.emitters[i].getCenter();
+            Vector emitterCenter = game.emitters[i].sprite.position;
 
             num distance = pow(emitterCenter.x - center.x, 2) + pow(emitterCenter.y - center.y, 2);
 
             if (distance <= pow(weaponRadius * game.tileSize, 2)) {
-              if (game.emitters[i].building == null) {
-                game.emitters[i].building = this;
-                weaponTargetPosition = game.emitters[i].position;
+              if (game.emitters[i].analyzer == null) {
+                game.emitters[i].analyzer = this;
+                weaponTargetPosition = game.emitters[i].sprite.position;
                 break;
               }
             }
@@ -383,7 +443,7 @@ class Building {
               rotating = false;
               energy -= 1;
               operating = true;
-              Projectile projectile = new Projectile(center, new Vector(weaponTargetPosition.x * game.tileSize + game.tileSize / 2, weaponTargetPosition.y * game.tileSize + game.tileSize / 2), targetAngle);
+              Projectile projectile = new Projectile(center, new Vector(weaponTargetPosition.x * game.tileSize + game.tileSize / 2, weaponTargetPosition.y * game.tileSize + game.tileSize / 2), targetAngle); // FIXME: weaponTargetPosition might be NULL
               game.projectiles.add(projectile);
               engine.playSound("laser", position);
             }
@@ -479,7 +539,7 @@ class Building {
     CanvasRenderingContext2D context = engine.canvas["buffer"].context;
     
     if (built && selected && canMove) {
-      engine.canvas["main"].element.style.cursor = "none";
+      engine.canvas["main"].view.style.cursor = "none";
       
       Vector positionScrolled = game.getHoveredTilePosition();
       Vector drawPosition = positionScrolled.tiled2screen();

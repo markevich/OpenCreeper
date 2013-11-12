@@ -249,15 +249,15 @@ class Game {
           engine.randomInt(0, world.size.x - 3, seed + engine.randomInt(1, 1000, seed + l)),
           engine.randomInt(0, world.size.y - 3, seed + engine.randomInt(1, 1000, seed + 1 + l)));
   
-      Emitter emitter = new Emitter(randomPosition, 25);
+      Emitter emitter = new Emitter(new Vector(randomPosition.x * 16 + 24, randomPosition.y * 16 + 24), 25);
       emitters.add(emitter);
   
-      height = this.world.tiles[emitter.position.x + 1][emitter.position.y + 1].height;
+      height = world.getTile(emitter.sprite.position + new Vector(1, 1)).height; //this.world.tiles[emitter.sprite.position.x + 1][emitter.sprite.position.y + 1].height;
       if (height < 0)
         height = 0;
       for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
-          world.tiles[emitter.position.x + i][emitter.position.y + j].height = height;
+          world.getTile(emitter.sprite.position + new Vector(i, j)).height = height; //world.tiles[emitter.sprite.position.x + i][emitter.sprite.position.y + j].height = height;
         }
       }
     }
@@ -269,15 +269,15 @@ class Game {
           engine.randomInt(0, world.size.x - 3, seed + 3 + engine.randomInt(1, 1000, seed + 2 + l)),
           engine.randomInt(0, world.size.y - 3, seed + 3 + engine.randomInt(1, 1000, seed + 3 + l)));
   
-      Sporetower sporetower = new Sporetower(randomPosition);
+      Sporetower sporetower = new Sporetower(new Vector(randomPosition.x * 16 + 24, randomPosition.y * 16 + 24));
       sporetowers.add(sporetower);
   
-      height = this.world.tiles[sporetower.position.x + 1][sporetower.position.y + 1].height;
+      height = world.getTile(sporetower.sprite.position + new Vector(1,1)).height; //this.world.tiles[sporetower.position.x + 1][sporetower.position.y + 1].height;
       if (height < 0)
         height = 0;
       for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
-          world.tiles[sporetower.position.x + i][sporetower.position.y + j].height = height;
+          world.getTile(sporetower.sprite.position + new Vector(i, j)).height = height; //world.tiles[sporetower.position.x + i][sporetower.position.y + j].height = height;
         }
       }
     }
@@ -287,69 +287,7 @@ class Game {
    * Adds a building of a given [type] at the given [position].
    */
   void addBuilding(Vector position, String type) {
-    Building building = new Building(position, type);
-
-    if (building.imageID == "analyzer") {
-      building.maxHealth = 80;
-      building.maxEnergy = 20;
-      building.canMove = true;
-      building.needsEnergy = true;
-      building.weaponRadius = 10;
-    }
-    else if (building.imageID == "terp") {
-      building.maxHealth = 60;
-      building.maxEnergy = 20;
-      building.canMove = true;
-      building.needsEnergy = true;
-      building.weaponRadius = 12;
-    }
-    else if (building.imageID == "shield") {
-      building.maxHealth = 75;
-      building.maxEnergy = 20;
-      building.canMove = true;
-      building.needsEnergy = true;
-      building.weaponRadius = 9;
-    }
-    else if (building.imageID == "bomber") {
-      building.maxHealth = 75;
-      building.maxEnergy = 15;
-      building.needsEnergy = true;
-    }
-    else if (building.imageID == "storage") {
-      building.maxHealth = 8;
-    }
-    else if (building.imageID == "reactor") {
-      building.maxHealth = 50;
-    }
-    else if (building.imageID == "collector") {
-      building.maxHealth = 5;
-    }
-    else if (building.imageID == "relay") {
-      building.maxHealth = 10;
-    }
-    else if (building.imageID == "cannon") {
-      building.maxHealth = 25;
-      building.maxEnergy = 40;
-      building.weaponRadius = 8;
-      building.canMove = true;
-      building.needsEnergy = true;
-    }
-    else if (building.imageID == "mortar") {
-      building.maxHealth = 40;
-      building.maxEnergy = 20;
-      building.weaponRadius = 12;
-      building.canMove = true;
-      building.needsEnergy = true;
-    }
-    else if (building.imageID == "beam") {
-      building.maxHealth = 20;
-      building.maxEnergy = 10;
-      building.weaponRadius = 12;
-      building.canMove = true;
-      building.needsEnergy = true;
-    }
-
-    buildings.add(building);
+    buildings.add(new Building(position, type));
   }
 
   /**
@@ -1117,8 +1055,10 @@ class Game {
 
   void updateShells() {
     for (int i = shells.length - 1; i >= 0; i--) {
-      if (shells[i].remove)
+      if (shells[i].remove) {
+        engine.canvas["buffer"].removeSprite(shells[i].sprite);
         shells.removeAt(i);
+      }
       else
         shells[i].move();
     }
@@ -1165,10 +1105,12 @@ class Game {
     if (Explosion.counter == 1) {
       Explosion.counter = 0;
       for (int i = explosions.length - 1; i >= 0; i--) {
-        if (explosions[i].frame == 44)
+        if (explosions[i].sprite.frame == 44) {
+          engine.canvas["buffer"].removeSprite(explosions[i].sprite);
           explosions.removeAt(i);
+        }
         else
-          explosions[i].frame++;
+          explosions[i].sprite.frame++;
       }
     }
   }
@@ -1188,7 +1130,7 @@ class Game {
     // check for winning condition
     int emittersChecked = 0;
     for (int i = 0; i < emitters.length; i++) {
-      if (emitters[i].building != null)
+      if (emitters[i].analyzer != null)
         emittersChecked++;
     }
     if (emittersChecked == emitters.length) {
@@ -1211,8 +1153,8 @@ class Game {
     if (!paused) {
       updatePacketQueue();
       updateSpores();
-      updateCreeper();
       updateShells();
+      updateCreeper();      
       updateProjectiles();
       updateBuildings();
       updatePackets();
@@ -1647,16 +1589,6 @@ class Game {
       }
     }
 
-    // draw emitters
-    for (int i = 0; i < emitters.length; i++) {
-      emitters[i].draw();
-    }
-
-    // draw spore towers
-    for (int i = 0; i < sporetowers.length; i++) {
-      sporetowers[i].draw();
-    }
-
     // draw node connections
     for (int i = 0; i < buildings.length; i++) {
       Vector centerI = buildings[i].getCenter();
@@ -1700,10 +1632,15 @@ class Game {
       buildings[i].drawMovementIndicators();
     }
 
+    // draw spore towers
+    /*for (int i = 0; i < sporetowers.length; i++) {
+      sporetowers[i].draw();
+    }*/
+    
     // draw shells
-    for (int i = 0; i < shells.length; i++) {
+    /*for (int i = 0; i < shells.length; i++) {
       shells[i].draw();
-    }
+    }*/
     
     // draw projectiles
     for (int i = 0; i < projectiles.length; i++) {
@@ -1715,15 +1652,10 @@ class Game {
       buildings[i].draw();
     }
 
-    // draw smokes
-    /*for (int i = 0; i < smokes.length; i++) {
-      smokes[i].draw();
-    }*/
-
     // draw explosions
-    for (int i = 0; i < explosions.length; i++) {
+    /*for (int i = 0; i < explosions.length; i++) {
       explosions[i].draw();
-    }
+    }*/
     
     engine.canvas["buffer"].draw();
 

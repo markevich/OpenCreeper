@@ -29,7 +29,7 @@ void onKeyDown(KeyboardEvent evt) {
       engine.canvas["main"].view.style.cursor = "none";
     }
   }
- 
+  
   // increase game speed
   if (evt.keyCode == KeyCode.F1) {
     game.faster();
@@ -84,7 +84,13 @@ void onKeyDown(KeyboardEvent evt) {
 
   Vector position = game.getHoveredTilePosition();
 
-  // lower terrain
+  // DEBUG: add explosion
+  if (evt.keyCode == KeyCode.V) {
+    game.explosions.add(new Explosion(new Vector(position.x * game.tileSize, position.y * game.tileSize)));
+    engine.playSound("explosion", position);
+  }
+  
+  // DEBUG: lower terrain
   if (evt.keyCode == KeyCode.N) {
     if (game.world.tiles[position.x][position.y].height > -1) {
       game.world.tiles[position.x][position.y].height--;
@@ -99,7 +105,7 @@ void onKeyDown(KeyboardEvent evt) {
     }
   }
 
-  // raise terrain
+  // DEBUG: raise terrain
   if (evt.keyCode == KeyCode.M) {
     if (game.world.tiles[position.x][position.y].height < 9) {
       game.world.tiles[position.x][position.y].height++;

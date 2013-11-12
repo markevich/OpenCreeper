@@ -41,9 +41,12 @@ class Projectile {
       Vector tiledPosition = targetPosition.real2tiled();
       
       game.world.tiles[tiledPosition.x][tiledPosition.y].creep -= 1;
-      if (game.world.tiles[tiledPosition.x][tiledPosition.y].creep < 0) {
+      if (game.world.tiles[tiledPosition.x][tiledPosition.y].creep < 0)
         game.world.tiles[tiledPosition.x][tiledPosition.y].creep = 0;
-      }
+      game.world.tiles[tiledPosition.x][tiledPosition.y].newcreep -= 1;
+      if (game.world.tiles[tiledPosition.x][tiledPosition.y].newcreep < 0)
+        game.world.tiles[tiledPosition.x][tiledPosition.y].newcreep = 0;
+      
     }
   }
 
