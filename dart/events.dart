@@ -120,7 +120,7 @@ void onKeyDown(KeyboardEvent evt) {
     }
   }
 
-  // clear terrain
+  // DEBUG: clear terrain
   if (evt.keyCode == KeyCode.B) {
     game.world.tiles[position.x][position.y].height = -1;
     List tilesToRedraw = new List();
@@ -131,6 +131,26 @@ void onKeyDown(KeyboardEvent evt) {
       ..add(new Vector(position.x + 1, position.y))
       ..add(new Vector(position.x, position.y + 1));
     game.redrawTiles(tilesToRedraw);
+  }
+
+  // DEBUG: add creeper
+  if (evt.keyCode == KeyCode.X) {
+    if (game.world.tiles[position.x][position.y].height > -1) {
+      game.world.tiles[position.x][position.y].creep++;
+      game.world.tiles[position.x][position.y].newcreep++;
+    }
+  }
+
+  // DEBUG: remove creeper
+  if (evt.keyCode == KeyCode.C) {
+    if (game.world.tiles[position.x][position.y].creep > 0) {
+      game.world.tiles[position.x][position.y].creep--;
+      if (game.world.tiles[position.x][position.y].creep < 0)
+        game.world.tiles[position.x][position.y].creep = 0;
+      game.world.tiles[position.x][position.y].newcreep--;
+      if (game.world.tiles[position.x][position.y].newcreep < 0)
+        game.world.tiles[position.x][position.y].newcreep = 0;
+    }
   }
 
   // select height for terraforming
