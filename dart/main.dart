@@ -22,5 +22,5 @@ Game game;
 
 void main() {
   engine = new Engine();
-  engine.loadImages().then((results) => game = new Game());
+  engine.loadImages().then((results) => game = new Game.withSeed(4613));
 }

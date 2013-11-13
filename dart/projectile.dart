@@ -1,19 +1,21 @@
 part of creeper;
 
 class Projectile {
-  Vector position, targetPosition, speed = new Vector(0, 0);
-  String imageID;
+  Vector targetPosition, speed = new Vector(0, 0);
   bool remove = false;
-  num rotation;
+  Sprite sprite;
   static num baseSpeed = 5;
 
-  Projectile(this.position, this.targetPosition, this.rotation) {
-    imageID = "projectile";
+  Projectile(position, this.targetPosition, rotation) {
+    sprite = new Sprite(1, engine.images["projectile"], position, 16, 16);
+    sprite.anchor = new Vector(0.5, 0.5);
+    sprite.rotation = rotation;
+    engine.canvas["buffer"].addSprite(sprite);
   }
 
   void calculateVector() {
-    Vector delta = new Vector(targetPosition.x - position.x, targetPosition.y - position.y);
-    num distance = position.distanceTo(targetPosition);
+    Vector delta = new Vector(targetPosition.x - sprite.position.x, targetPosition.y - sprite.position.y);
+    num distance = sprite.position.distanceTo(targetPosition);
 
     speed.x = (delta.x / distance) * Projectile.baseSpeed * game.speed;
     speed.y = (delta.y / distance) * Projectile.baseSpeed * game.speed;
@@ -24,16 +26,12 @@ class Projectile {
       speed.y = delta.y;
   }
 
-  Vector getCenter() {
-    return new Vector(position.x - 8, position.y - 8);
-  }
-
   void move() {
     calculateVector();
-    
-    position += speed;
 
-    if (position.x > targetPosition.x - 2 && position.x < targetPosition.x + 2 && position.y > targetPosition.y - 2 && position.y < targetPosition.y + 2) {
+    sprite.position += speed;
+
+    if (sprite.position.x > targetPosition.x - 2 && sprite.position.x < targetPosition.x + 2 && sprite.position.y > targetPosition.y - 2 && sprite.position.y < targetPosition.y + 2) {
       // if the target is reached smoke and remove
       remove = true;
 
@@ -47,21 +45,6 @@ class Projectile {
       if (game.world.tiles[tiledPosition.x][tiledPosition.y].newcreep < 0)
         game.world.tiles[tiledPosition.x][tiledPosition.y].newcreep = 0;
       
-    }
-  }
-
-  void draw() {
-    CanvasRenderingContext2D context = engine.canvas["buffer"].context;
-    
-    Vector realPosition = position.real2screen();
-
-    if (engine.isVisible(realPosition, new Vector(16 * game.zoom, 16 * game.zoom))) {
-      context
-        ..save()
-        ..translate(realPosition.x + 8 * game.zoom, realPosition.y + 8 * game.zoom)
-        ..rotate(engine.deg2rad(rotation))
-        ..drawImageScaled(engine.images[imageID], 8 - 8 * game.zoom, 8 - 8 * game.zoom, 16 * game.zoom, 16 * game.zoom)
-        ..restore();
     }
   }
 }

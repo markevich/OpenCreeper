@@ -28,15 +28,18 @@ class Game {
 
   Game() {
     seed = engine.randomInt(0, 10000);
-    world = new World(seed);
     init();
-    drawTerrain();
-    copyTerrain();
-    engine.setupEventHandler();
-    run();
+  }
+
+  Game.withSeed(this.seed) {
+    init();
   }
 
   void init() {
+    query("#seed").innerHtml = "Seed: $seed";
+
+    world = new World(seed);
+
     reset();
     setupUI();
     
@@ -44,6 +47,11 @@ class Game {
     music.loop = true;
     music.volume = 0.25;
     music.onCanPlay.listen((event) => music.play());
+
+    drawTerrain();
+    copyTerrain();
+    engine.setupEventHandler();
+    run();
   }
 
   void reset() {
@@ -1066,8 +1074,10 @@ class Game {
   
   void updateProjectiles() {
     for (int i = projectiles.length - 1; i >= 0; i--) {
-      if (projectiles[i].remove)
+      if (projectiles[i].remove) {
+        engine.canvas["buffer"].removeSprite(projectiles[i].sprite);
         projectiles.removeAt(i);
+      }
       else
         projectiles[i].move();
     }
@@ -1631,32 +1641,12 @@ class Game {
     for (int i = 0; i < buildings.length; i++) {
       buildings[i].drawMovementIndicators();
     }
-
-    // draw spore towers
-    /*for (int i = 0; i < sporetowers.length; i++) {
-      sporetowers[i].draw();
-    }*/
-    
-    // draw shells
-    /*for (int i = 0; i < shells.length; i++) {
-      shells[i].draw();
-    }*/
-    
-    // draw projectiles
-    for (int i = 0; i < projectiles.length; i++) {
-      projectiles[i].draw();
-    }
     
     // draw buildings
     for (int i = 0; i < buildings.length; i++) {
       buildings[i].draw();
     }
 
-    // draw explosions
-    /*for (int i = 0; i < explosions.length; i++) {
-      explosions[i].draw();
-    }*/
-    
     engine.canvas["buffer"].draw();
 
     if (engine.mouse.active) {
