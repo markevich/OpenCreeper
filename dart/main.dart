@@ -4,7 +4,7 @@ import 'dart:html';
 import 'dart:math';
 import 'dart:async';
 
-part 'classes.dart';
+part 'world.dart';
 part 'game.dart';
 part 'engine.dart';
 part 'heightmap.dart';
@@ -16,6 +16,13 @@ part 'projectile.dart';
 part 'spore.dart';
 part 'ship.dart';
 part 'events.dart';
+part 'renderer.dart';
+part 'emitter.dart';
+part 'sporetower.dart';
+part 'smoke.dart';
+part 'explosion.dart';
+part 'vector.dart';
+part 'displayobject.dart';
 
 Engine engine;
 Game game;
