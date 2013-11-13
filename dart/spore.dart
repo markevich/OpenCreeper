@@ -11,7 +11,7 @@ class Spore {
   Spore(position, this.targetPosition) {   
     sprite = new Sprite(2, engine.images["spore"], position, 32, 32);
     sprite.anchor = new Vector(0.5, 0.5);  
-    engine.canvas["buffer"].addSprite(sprite);      
+    engine.canvas["buffer"].addDisplayObject(sprite);
     init();
   }
 

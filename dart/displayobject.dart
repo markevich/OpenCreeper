@@ -1,13 +1,44 @@
 part of creeper;
 
-class Sprite {
-  int layer, frame = 0;
+abstract class DisplayObject {
+  int layer = 0;
+  bool visible = true;
+}
+
+class Rect extends DisplayObject {
+  Rectangle rectangle;
+  int lineWidth;
+  String color;
+
+  Rect(this.rectangle, this.lineWidth, this.color);
+}
+
+class Circle extends DisplayObject {
+  Point position;
+  num radius;
+  int lineWidth;
+  String color;
+
+  Circle(this.position, this.radius, this.lineWidth, this.color);
+}
+
+class Line extends DisplayObject {
+  String color;
+  Point from, to;
+  int lineWidth;
+
+  Line(this.from, this.to, this.lineWidth, this.color);
+}
+
+class Sprite extends DisplayObject {
+  int frame = 0;
   ImageElement image;
   Vector anchor, scale, position, size;
   num rotation = 0, alpha = 1.0;
-  bool animated = false, visible = true;
+  bool animated = false;
 
-  Sprite(this.layer, this.image, this.position, width, height) {
+  Sprite(layer, this.image, this.position, width, height) {
+    super.layer = layer;
     anchor = new Vector(0.0, 0.0);
     scale = new Vector(1.0, 1.0);
     size = new Vector(width, height);

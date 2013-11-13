@@ -9,6 +9,6 @@ class Smoke {
     sprite.animated = true;
     sprite.anchor = new Vector(0.5, 0.5);
     sprite.scale = new Vector(0.5, 0.5);
-    engine.canvas["buffer"].addSprite(sprite);
+    engine.canvas["buffer"].addDisplayObject(sprite);
   }
 }

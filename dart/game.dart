@@ -1055,7 +1055,7 @@ class Game {
   void updatePackets() {
     for (int i = packets.length - 1; i >= 0; i--) {
       if (packets[i].remove) {
-        engine.canvas["buffer"].removeSprite(packets[i].sprite);
+        engine.canvas["buffer"].removeDisplayObject(packets[i].sprite);
         packets.removeAt(i);
       }
       else
@@ -1066,7 +1066,7 @@ class Game {
   void updateShells() {
     for (int i = shells.length - 1; i >= 0; i--) {
       if (shells[i].remove) {
-        engine.canvas["buffer"].removeSprite(shells[i].sprite);
+        engine.canvas["buffer"].removeDisplayObject(shells[i].sprite);
         shells.removeAt(i);
       }
       else
@@ -1077,7 +1077,7 @@ class Game {
   void updateProjectiles() {
     for (int i = projectiles.length - 1; i >= 0; i--) {
       if (projectiles[i].remove) {
-        engine.canvas["buffer"].removeSprite(projectiles[i].sprite);
+        engine.canvas["buffer"].removeDisplayObject(projectiles[i].sprite);
         projectiles.removeAt(i);
       }
       else
@@ -1088,7 +1088,7 @@ class Game {
   void updateSpores() {
     for (int i = spores.length - 1; i >= 0; i--) {
       if (spores[i].remove) {
-        engine.canvas["buffer"].removeSprite(spores[i].sprite);
+        engine.canvas["buffer"].removeDisplayObject(spores[i].sprite);
         spores.removeAt(i);
       }
       else
@@ -1102,7 +1102,7 @@ class Game {
       Smoke.counter = 0;
       for (int i = smokes.length - 1; i >= 0; i--) {
         if (smokes[i].sprite.frame == 36) {
-          engine.canvas["buffer"].removeSprite(smokes[i].sprite);
+          engine.canvas["buffer"].removeDisplayObject(smokes[i].sprite);
           smokes.removeAt(i);
         }
         else {
@@ -1118,7 +1118,7 @@ class Game {
       Explosion.counter = 0;
       for (int i = explosions.length - 1; i >= 0; i--) {
         if (explosions[i].sprite.frame == 44) {
-          engine.canvas["buffer"].removeSprite(explosions[i].sprite);
+          engine.canvas["buffer"].removeDisplayObject(explosions[i].sprite);
           explosions.removeAt(i);
         }
         else

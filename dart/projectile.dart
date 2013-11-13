@@ -10,7 +10,7 @@ class Projectile {
     sprite = new Sprite(1, engine.images["projectile"], position, 16, 16);
     sprite.anchor = new Vector(0.5, 0.5);
     sprite.rotation = rotation;
-    engine.canvas["buffer"].addSprite(sprite);
+    engine.canvas["buffer"].addDisplayObject(sprite);
   }
 
   void calculateVector() {

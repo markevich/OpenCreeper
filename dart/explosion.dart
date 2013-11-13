@@ -9,6 +9,6 @@ class Explosion {
     sprite.animated = true;
     sprite.rotation = engine.randomInt(0, 359);
     sprite.anchor = new Vector(0.5, 0.5);
-    engine.canvas["buffer"].addSprite(sprite);
+    engine.canvas["buffer"].addDisplayObject(sprite);
   }
 }

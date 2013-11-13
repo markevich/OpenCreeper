@@ -16,7 +16,7 @@ class Packet {
     if (type == "collection")
       sprite.scale = new Vector(1.5, 1.5);
 
-    engine.canvas["buffer"].addSprite(sprite);
+    engine.canvas["buffer"].addDisplayObject(sprite);
   }
 
   void move() {

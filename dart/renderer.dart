@@ -4,7 +4,7 @@ class Renderer {
   CanvasElement view;
   CanvasRenderingContext2D context;
   int top, left, bottom, right;
-  List<Sprite> sprites = new List<Sprite>();
+  List<DisplayObject> displayObjects = new List<DisplayObject>();
 
   Renderer(this.view, width, height) {
     updateRect(width, height);
@@ -25,69 +25,88 @@ class Renderer {
     right = view.offset.left + view.offset.width;
   }
 
-  void addSprite(Sprite sprite) {
-    sprites.add(sprite);
-    sprites.sort((Sprite a, Sprite b) {
+  void addDisplayObject(DisplayObject displayObject) {
+    displayObjects.add(displayObject);
+    displayObjects.sort((Sprite a, Sprite b) {
       return a.layer - b.layer;
     });
   }
 
-  void removeSprite(Sprite sprite) {
-    sprites.removeAt(sprites.indexOf(sprite));
+  void removeDisplayObject(DisplayObject displayObject) {
+    displayObjects.removeAt(displayObjects.indexOf(displayObject));
   }
 
   void draw() {
-    for (var sprite in sprites) {
-      if (sprite.visible) {
-        Vector realPosition = sprite.position.real2screen();
+    for (var displayObject in displayObjects) {
+      if (displayObject.visible) {
 
-        if (engine.isVisible(realPosition, new Vector(sprite.size.x * game.zoom, sprite.size.y * game.zoom))) {
+        // render sprite
+        if (displayObject is Sprite) {
+          Vector realPosition = displayObject.position.real2screen();
 
-          if (sprite.alpha != 1.0)
-            context.globalAlpha = sprite.alpha;
+          if (engine.isVisible(realPosition, new Vector(displayObject.size.x * game.zoom, displayObject.size.y * game.zoom))) {
 
-          if (sprite.rotation != 0) {
-            context.save();
-            context.translate(realPosition.x, realPosition.y);
-            context.rotate(engine.deg2rad(sprite.rotation));
-            if (sprite.animated)
-              context.drawImageScaledFromSource(sprite.image,
-              (sprite.frame % 8) * sprite.size.x,
-              (sprite.frame ~/ 8) * sprite.size.y,
-              sprite.size.x,
-              sprite.size.y,
-              -sprite.size.x * sprite.anchor.x * sprite.scale.x * game.zoom,
-              -sprite.size.y * sprite.anchor.y * sprite.scale.y * game.zoom,
-              sprite.size.x * sprite.scale.x * game.zoom,
-              sprite.size.y * sprite.scale.y * game.zoom);
-            else
-              context.drawImageScaled(sprite.image,
-              -sprite.size.x * sprite.anchor.x * sprite.scale.x * game.zoom,
-              -sprite.size.y * sprite.anchor.y * sprite.scale.y * game.zoom,
-              sprite.size.x * sprite.scale.x * game.zoom,
-              sprite.size.y * sprite.scale.y * game.zoom);
-            context.restore();
-          } else {
-            if (sprite.animated)
-              context.drawImageScaledFromSource(sprite.image,
-              (sprite.frame % 8) * sprite.size.x,
-              (sprite.frame ~/ 8) * sprite.size.y,
-              sprite.size.x,
-              sprite.size.y,
-              realPosition.x - sprite.size.x * sprite.anchor.x * sprite.scale.x * game.zoom,
-              realPosition.y - sprite.size.y * sprite.anchor.y * sprite.scale.y * game.zoom,
-              sprite.size.x * sprite.scale.x * game.zoom,
-              sprite.size.y * sprite.scale.y * game.zoom);
-            else
-              context.drawImageScaled(sprite.image,
-              realPosition.x - sprite.size.x * sprite.anchor.x * sprite.scale.x * game.zoom,
-              realPosition.y - sprite.size.y * sprite.anchor.y * sprite.scale.y * game.zoom,
-              sprite.size.x * sprite.scale.x * game.zoom,
-              sprite.size.y * sprite.scale.y * game.zoom);
+            if (displayObject.alpha != 1.0)
+              context.globalAlpha = displayObject.alpha;
+
+            if (displayObject.rotation != 0) {
+              context.save();
+              context.translate(realPosition.x, realPosition.y);
+              context.rotate(engine.deg2rad(displayObject.rotation));
+              if (displayObject.animated)
+                context.drawImageScaledFromSource(displayObject.image,
+                (displayObject.frame % 8) * displayObject.size.x,
+                (displayObject.frame ~/ 8) * displayObject.size.y,
+                displayObject.size.x,
+                displayObject.size.y,
+                -displayObject.size.x * displayObject.anchor.x * displayObject.scale.x * game.zoom,
+                -displayObject.size.y * displayObject.anchor.y * displayObject.scale.y * game.zoom,
+                displayObject.size.x * displayObject.scale.x * game.zoom,
+                displayObject.size.y * displayObject.scale.y * game.zoom);
+              else
+                context.drawImageScaled(displayObject.image,
+                -displayObject.size.x * displayObject.anchor.x * displayObject.scale.x * game.zoom,
+                -displayObject.size.y * displayObject.anchor.y * displayObject.scale.y * game.zoom,
+                displayObject.size.x * displayObject.scale.x * game.zoom,
+                displayObject.size.y * displayObject.scale.y * game.zoom);
+              context.restore();
+            } else {
+              if (displayObject.animated)
+                context.drawImageScaledFromSource(displayObject.image,
+                (displayObject.frame % 8) * displayObject.size.x,
+                (displayObject.frame ~/ 8) * displayObject.size.y,
+                displayObject.size.x,
+                displayObject.size.y,
+                realPosition.x - displayObject.size.x * displayObject.anchor.x * displayObject.scale.x * game.zoom,
+                realPosition.y - displayObject.size.y * displayObject.anchor.y * displayObject.scale.y * game.zoom,
+                displayObject.size.x * displayObject.scale.x * game.zoom,
+                displayObject.size.y * displayObject.scale.y * game.zoom);
+              else
+                context.drawImageScaled(displayObject.image,
+                realPosition.x - displayObject.size.x * displayObject.anchor.x * displayObject.scale.x * game.zoom,
+                realPosition.y - displayObject.size.y * displayObject.anchor.y * displayObject.scale.y * game.zoom,
+                displayObject.size.x * displayObject.scale.x * game.zoom,
+                displayObject.size.y * displayObject.scale.y * game.zoom);
+            }
+
+            if (displayObject.alpha != 1.0)
+              context.globalAlpha = 1.0;
           }
+        }
 
-          if (sprite.alpha != 1.0)
-            context.globalAlpha = 1.0;
+        // render rectangle
+        else if (displayObject is Rect) {
+
+        }
+
+        // render circle
+        else if (displayObject is Circle) {
+
+        }
+
+        // render line
+        else if (displayObject is Line) {
+
         }
       }
     }
