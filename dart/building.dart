@@ -245,9 +245,10 @@ class Building {
         Packet packet = new Packet(getCenter(), "packet_collection", "collection");
         packet.target = game.base;
         packet.currentTarget = this;
-        game.findRoute(packet);
-        if (packet.currentTarget != null)
+        if (packet.findRoute())
           game.packets.add(packet);
+        else
+          engine.canvas["buffer"].removeDisplayObject(packet.sprite);
       }
       if (imageID == "reactor") {
         game.currentEnergy += 1;

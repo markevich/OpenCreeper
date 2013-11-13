@@ -674,127 +674,6 @@ class Game {
   }
 
   /**
-   * Main function of A*, finds a path to the target node for a given [packet].
-   */
-  void findRoute(Packet packet) {
-    // A* using Branch and Bound with dynamic programming and underestimates, thanks to: http://ai-depot.com/Tutorial/PathFinding-Optimal.html
-
-    // this holds all routes
-    List<Route> routes = new List<Route>();
-
-    // create a new route and add the current node as first element
-    Route route = new Route();
-    route.nodes.add(packet.currentTarget);
-    routes.add(route);
-
-    /*
-      As long as there is any route AND
-      the last node of the route is not the end node try to get to the end node
-
-      If there is no route the packet will be removed
-     */
-    while (routes.length > 0) {
-
-      if (routes[0].nodes[routes[0].nodes.length - 1] == packet.target) {
-        //console.log("6) target node found");
-        break;
-      }
-
-      // remove the first route from the list of routes
-      Route oldRoute = routes.removeAt(0);
-
-      // get the last node of the route
-      Building lastNode = oldRoute.nodes[oldRoute.nodes.length - 1];
-
-      // find all neighbours of this node
-      List neighbours = getNeighbours(lastNode, packet.target);
-
-      int newRoutes = 0;
-      // extend the old route with each neighbour creating a new route each
-      for (int i = 0; i < neighbours.length; i++) {
-
-        // if the neighbour is not already in the list..
-        if (!oldRoute.contains(neighbours[i])) {
-
-          newRoutes++;
-
-          // create new route
-          Route newRoute = oldRoute.clone();
-
-          // add the new node to the new route
-          newRoute.nodes.add(neighbours[i]);
-
-          // increase distance travelled
-          Vector centerA = newRoute.nodes[newRoute.nodes.length - 1].getCenter();
-          Vector centerB = newRoute.nodes[newRoute.nodes.length - 2].getCenter();
-          newRoute.distanceTravelled += centerA.distanceTo(centerB);
-
-          // update underestimate of distance remaining
-          Vector centerC = packet.target.getCenter();
-          newRoute.distanceRemaining = centerA.distanceTo(centerC);
-
-          // finally push the new route to the list of routes
-          routes.add(newRoute);
-        }
-
-      }
-      
-      // find routes that end at the same node, remove those with the longer distance travelled
-      for (int i = 0; i < routes.length; i++) {
-        for (int j = 0; j < routes.length; j++) {
-          if (i != j) {
-            if (routes[i].nodes[routes[i].nodes.length - 1] == routes[j].nodes[routes[j].nodes.length - 1]) {
-              //console.log("5) found duplicate route to " + routes[i].nodes[routes[i].nodes.length - 1].type + ", removing longer");
-              if (routes[i].distanceTravelled < routes[j].distanceTravelled) {
-                routes[j].remove = true;
-              } else if (routes[i].distanceTravelled > routes[j].distanceTravelled) {
-                routes[i].remove = true;
-              }
-
-            }
-          }
-        }
-      }
-      for (int i = routes.length - 1; i >= 0; i--) {
-        if (routes[i].remove)
-          routes.removeAt(i);
-      }
-
-      // sort routes by total underestimate so that the possibly shortest route gets checked first
-      routes.sort((Route a, Route b) {
-        return (a.distanceTravelled + a.distanceRemaining) - (b.distanceTravelled + b.distanceRemaining);
-      });
-    }
-
-    // if a route is left set the second element as the next node for the packet
-    if (routes.length > 0) {
-      
-      // adjust speed if packet is travelling between relays
-      if (routes[0].nodes[1].imageID == "relay") {
-        packet.speedMultiplier = 2;
-      } else {
-        packet.speedMultiplier = 1;
-      }
-      
-      // reduce speed for collection
-      if (packet.type == "collection")
-        packet.speedMultiplier /= 4;
-
-      packet.currentTarget = routes[0].nodes[1];
-    } else {
-      packet.currentTarget = null;
-      if (packet.type == "energy") {
-        packet.target.energyRequests -= 4;
-        if (packet.target.energyRequests < 0)packet.target.energyRequests = 0;
-      } else if (packet.type == "health") {
-        packet.target.healthRequests--;
-        if (packet.target.healthRequests < 0)packet.target.healthRequests = 0;
-      }
-      packet.remove = true;
-    }
-  }
-
-  /**
    * Creates a new requested packet with its [target]
    * and [type] and queues it.
    */
@@ -804,11 +683,12 @@ class Game {
     Packet packet = new Packet(center, img, type);
     packet.target = target;
     packet.currentTarget = base;
-    findRoute(packet);
-    if (packet.currentTarget != null) {
+    if (packet.findRoute()) {
       if (packet.type == "health")packet.target.healthRequests++;
       if (packet.type == "energy")packet.target.energyRequests += 4;
       packetQueue.add(packet);
+    } else {
+      engine.canvas["buffer"].removeDisplayObject(packet.sprite);
     }
   }
 
