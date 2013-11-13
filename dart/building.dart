@@ -27,14 +27,14 @@ class Building {
       maxEnergy = 20;
       canMove = true;
       needsEnergy = true;
-      weaponRadius = 12;
+      weaponRadius = 14;
     }
     else if (this.imageID == "shield") {
       maxHealth = 75;
       maxEnergy = 20;
       canMove = true;
       needsEnergy = true;
-      weaponRadius = 9;
+      weaponRadius = 10;
     }
     else if (this.imageID == "bomber") {
       maxHealth = 75;
@@ -56,21 +56,21 @@ class Building {
     else if (this.imageID == "cannon") {
       maxHealth = 5; // 25
       maxEnergy = 40;
-      weaponRadius = 8;
+      weaponRadius = 10;
       canMove = true;
       needsEnergy = true;
     }
     else if (this.imageID == "mortar") {
       maxHealth = 4; //40
       maxEnergy = 20;
-      weaponRadius = 12;
+      weaponRadius = 14;
       canMove = true;
       needsEnergy = true;
     }
     else if (this.imageID == "beam") {
       maxHealth = 20;
       maxEnergy = 10;
-      weaponRadius = 12;
+      weaponRadius = 14;
       canMove = true;
       needsEnergy = true;
     }

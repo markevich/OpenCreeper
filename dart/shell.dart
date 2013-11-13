@@ -5,7 +5,7 @@ class Shell {
   bool remove = false;
   int trailCounter = 0;
   Sprite sprite;
-  static final int baseSpeed = 1;
+  static final num baseSpeed = 1.5;
 
   Shell(position, this.targetPosition) {
     sprite = new Sprite(2, engine.images["shell"], position, 16, 16);

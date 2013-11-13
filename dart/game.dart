@@ -365,7 +365,7 @@ class Game {
 
   void setupUI() {
     symbols
-      ..add(new UISymbol(new Vector(0, 0), "cannon", KeyCode.Q, 3, 25, 8))
+      ..add(new UISymbol(new Vector(0, 0), "cannon", KeyCode.Q, 3, 25, 10))
       ..add(new UISymbol(new Vector(81, 0), "collector", KeyCode.W, 3, 5, 6))
       ..add(new UISymbol(new Vector(2 * 81, 0), "reactor", KeyCode.E, 3, 50, 0))
       ..add(new UISymbol(new Vector(3 * 81, 0), "storage", KeyCode.R, 3, 8, 0))
@@ -373,10 +373,10 @@ class Game {
       ..add(new UISymbol(new Vector(5 * 81, 0), "analyzer", KeyCode.Z, 3, 80, 10))
 
       ..add(new UISymbol(new Vector(0, 56), "relay", KeyCode.A, 3, 10, 8))
-      ..add(new UISymbol(new Vector(81, 56), "mortar", KeyCode.S, 3, 40, 12))
-      ..add(new UISymbol(new Vector(2 * 81, 56), "beam", KeyCode.D, 3, 20, 12))
+      ..add(new UISymbol(new Vector(81, 56), "mortar", KeyCode.S, 3, 40, 14))
+      ..add(new UISymbol(new Vector(2 * 81, 56), "beam", KeyCode.D, 3, 20, 14))
       ..add(new UISymbol(new Vector(3 * 81, 56), "bomber", KeyCode.F, 3, 75, 0))
-      ..add(new UISymbol(new Vector(4 * 81, 56), "terp", KeyCode.G, 3, 60, 12));
+      ..add(new UISymbol(new Vector(4 * 81, 56), "terp", KeyCode.G, 3, 60, 14));
   }
 
   /**
