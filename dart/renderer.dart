@@ -62,10 +62,10 @@ class Renderer {
               sprite.size.y * sprite.scale.y * game.zoom);
             else
               context.drawImageScaled(sprite.image,
-              -sprite.size.x * sprite.anchor.x * game.zoom,
-              -sprite.size.y * sprite.anchor.y * game.zoom,
-              sprite.size.x * game.zoom,
-              sprite.size.y * game.zoom);
+              -sprite.size.x * sprite.anchor.x * sprite.scale.x * game.zoom,
+              -sprite.size.y * sprite.anchor.y * sprite.scale.y * game.zoom,
+              sprite.size.x * sprite.scale.x * game.zoom,
+              sprite.size.y * sprite.scale.y * game.zoom);
             context.restore();
           } else {
             if (sprite.animated)
@@ -80,10 +80,10 @@ class Renderer {
               sprite.size.y * sprite.scale.y * game.zoom);
             else
               context.drawImageScaled(sprite.image,
-              realPosition.x - sprite.size.x * sprite.anchor.x * game.zoom,
-              realPosition.y - sprite.size.y * sprite.anchor.y * game.zoom,
-              sprite.size.x * game.zoom,
-              sprite.size.y * game.zoom);
+              realPosition.x - sprite.size.x * sprite.anchor.x * sprite.scale.x * game.zoom,
+              realPosition.y - sprite.size.y * sprite.anchor.y * sprite.scale.y * game.zoom,
+              sprite.size.x * sprite.scale.x * game.zoom,
+              sprite.size.y * sprite.scale.y * game.zoom);
           }
 
           if (sprite.alpha != 1.0)

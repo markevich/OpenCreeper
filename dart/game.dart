@@ -1054,8 +1054,10 @@ class Game {
 
   void updatePackets() {
     for (int i = packets.length - 1; i >= 0; i--) {
-      if (packets[i].remove)
+      if (packets[i].remove) {
+        engine.canvas["buffer"].removeSprite(packets[i].sprite);
         packets.removeAt(i);
+      }
       else
         packets[i].move();
     }
@@ -1696,11 +1698,6 @@ class Game {
         context.lineTo(drawPosition.x + tileSize * zoom, engine.halfHeight * 2);
         context.stroke();
       }
-    }
-
-    // draw packets
-    for (int i = 0; i < packets.length; i++) {
-      packets[i].draw();
     }
 
     // draw ships

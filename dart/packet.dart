@@ -1,24 +1,33 @@
 part of creeper;
 
 class Packet {
-  Vector position, speed = new Vector(0, 0);
-  String imageID, type;
+  Vector speed = new Vector(0, 0);
+  String type;
   bool remove = false;
   num speedMultiplier = 1;
   Building target, currentTarget;
+  Sprite sprite;
   static num baseSpeed = 3;
 
-  Packet(this.position, this.imageID, this.type);
+  Packet(position, imageID, this.type) {
+    sprite = new Sprite(2, engine.images[imageID], position, 16, 16);
+    sprite.anchor = new Vector(0.5, 0.5);
+
+    if (type == "collection")
+      sprite.scale = new Vector(1.5, 1.5);
+
+    engine.canvas["buffer"].addSprite(sprite);
+  }
 
   void move() {
     calculateVector();
     
-    position += speed;
+    sprite.position += speed;
 
     Vector centerTarget = currentTarget.getCenter();
-    if (position.x > centerTarget.x - 1 && position.x < centerTarget.x + 1 && position.y > centerTarget.y - 1 && position.y < centerTarget.y + 1) {
-      position.x = centerTarget.x;
-      position.y = centerTarget.y;
+    if (sprite.position.x > centerTarget.x - 1 && sprite.position.x < centerTarget.x + 1 && sprite.position.y > centerTarget.y - 1 && sprite.position.y < centerTarget.y + 1) {
+      sprite.position = centerTarget;
+
       // if the final node was reached deliver and remove
       if (currentTarget == target) {
         remove = true;
@@ -52,7 +61,8 @@ class Packet {
             target.energy = target.maxEnergy;
         } else if (type == "collection") {
           game.currentEnergy += 1;
-          if (game.currentEnergy > game.maxEnergy)game.currentEnergy = game.maxEnergy;
+          if (game.currentEnergy > game.maxEnergy)
+            game.currentEnergy = game.maxEnergy;
           game.updateEnergyElement();
         }
       } else {
@@ -63,8 +73,8 @@ class Packet {
 
   void calculateVector() {
     Vector targetPosition = currentTarget.getCenter();
-    Vector delta = new Vector(targetPosition.x - position.x, targetPosition.y - position.y);
-    num distance = position.distanceTo(targetPosition);
+    Vector delta = new Vector(targetPosition.x - sprite.position.x, targetPosition.y - sprite.position.y);
+    num distance = sprite.position.distanceTo(targetPosition);
 
     speed.x = (delta.x / distance) * Packet.baseSpeed * game.speed * speedMultiplier;
     speed.y = (delta.y / distance) * Packet.baseSpeed * game.speed * speedMultiplier;
@@ -73,14 +83,5 @@ class Packet {
       speed.x = delta.x;
     if (speed.y.abs() > delta.y.abs())
       speed.y = delta.y;
-  }
-
-  void draw() {
-    CanvasRenderingContext2D context = engine.canvas["buffer"].context;
-    
-    Vector realPosition = position.real2screen();
-    if (engine.isVisible(new Vector(realPosition.x - 8, realPosition.y - 8), new Vector(16 * game.zoom, 16 * game.zoom))) {
-      context.drawImageScaled(engine.images[imageID], realPosition.x - 8 * game.zoom, realPosition.y - 8 * game.zoom, 16 * game.zoom, 16 * game.zoom);
-    }
   }
 }
