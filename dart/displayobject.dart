@@ -14,7 +14,7 @@ class Rect extends DisplayObject {
 }
 
 class Circle extends DisplayObject {
-  Point position;
+  Vector position;
   num radius;
   int lineWidth;
   String color;
@@ -24,7 +24,7 @@ class Circle extends DisplayObject {
 
 class Line extends DisplayObject {
   String color;
-  Point from, to;
+  Vector from, to;
   int lineWidth;
 
   Line(this.from, this.to, this.lineWidth, this.color);
