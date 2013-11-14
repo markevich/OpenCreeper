@@ -117,7 +117,7 @@ class Ship {
       trailCounter++;
       if (trailCounter == 10) {
         trailCounter = 0;
-        game.smokes.add(new Smoke(new Vector(sprite.position.x, sprite.position.y - 16)));
+        Smoke.add(new Smoke(new Vector(sprite.position.x, sprite.position.y - 16)));
       }
     }
 
@@ -166,7 +166,7 @@ class Ship {
       if (sprite.position.x > targetPosition.x - 2 && sprite.position.x < targetPosition.x + 2 && sprite.position.y > targetPosition.y - 2 && sprite.position.y < targetPosition.y + 2) {
         if (weaponCounter >= 10) {
           weaponCounter = 0;
-          game.explosions.add(new Explosion(targetPosition));
+          Explosion.add(new Explosion(targetPosition));
           energy -= 1;
 
           for (int i = (targetPosition.x / game.tileSize).floor() - 3; i < (targetPosition.x / game.tileSize).floor() + 5; i++) {

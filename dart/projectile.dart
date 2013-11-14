@@ -35,7 +35,7 @@ class Projectile {
       // if the target is reached smoke and remove
       remove = true;
 
-      game.smokes.add(new Smoke(targetPosition));
+      Smoke.add(new Smoke(targetPosition));
       Vector tiledPosition = targetPosition.real2tiled();
       
       game.world.tiles[tiledPosition.x][tiledPosition.y].creep -= 1;

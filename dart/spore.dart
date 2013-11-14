@@ -33,7 +33,7 @@ class Spore {
     trailCounter++;
     if (trailCounter == 10) {
       trailCounter = 0;
-      game.smokes.add(new Smoke(new Vector(sprite.position.x, sprite.position.y - 16)));
+      Smoke.add(new Smoke(new Vector(sprite.position.x, sprite.position.y - 16)));
     }
     sprite.rotation += 10;
     if (sprite.rotation > 359)

@@ -13,8 +13,6 @@ class Game {
   List<Sporetower> sporetowers = new List<Sporetower>();
   List<Emitter> emitters = new List<Emitter>();
   List<UISymbol> symbols = new List<UISymbol>();
-  List<Explosion> explosions = new List<Explosion>();
-  List<Smoke> smokes = new List<Smoke>();
   List<Spore> spores = new List<Spore>();
   List<Building> buildings = new List<Building>();
   List<Packet> packets = new List<Packet>();
@@ -68,8 +66,8 @@ class Game {
     shells.clear();
     spores.clear();
     ships.clear();
-    smokes.clear();
-    explosions.clear();
+    Smoke.clear();
+    Explosion.clear();
     emitters.clear();
     sporetowers.clear();
     packetQueue.clear();
@@ -305,7 +303,7 @@ class Game {
 
     // only explode building when it has been built
     if (building.built) {
-      explosions.add(new Explosion(building.getCenter()));
+      Explosion.add(new Explosion(building.getCenter()));
       engine.playSound("explosion", building.position);
     }
 
@@ -926,37 +924,6 @@ class Game {
     }
   }
 
-  void updateSmokes() {
-    Smoke.counter++;
-    if (Smoke.counter > 3) {
-      Smoke.counter = 0;
-      for (int i = smokes.length - 1; i >= 0; i--) {
-        if (smokes[i].sprite.frame == 36) {
-          engine.canvas["buffer"].removeDisplayObject(smokes[i].sprite);
-          smokes.removeAt(i);
-        }
-        else {
-          smokes[i].sprite.frame++;
-        }
-      }
-    }
-  }
-
-  void updateExplosions() {
-    Explosion.counter++;
-    if (Explosion.counter == 1) {
-      Explosion.counter = 0;
-      for (int i = explosions.length - 1; i >= 0; i--) {
-        if (explosions[i].sprite.frame == 44) {
-          engine.canvas["buffer"].removeDisplayObject(explosions[i].sprite);
-          explosions.removeAt(i);
-        }
-        else
-          explosions[i].sprite.frame++;
-      }
-    }
-  }
-
   void updateShips() {
     // move
     for (int i = 0; i < ships.length; i++) {
@@ -1000,8 +967,8 @@ class Game {
       updateProjectiles();
       updateBuildings();
       updatePackets();
-      updateSmokes();
-      updateExplosions();
+      Smoke.update();
+      Explosion.update();
       updateShips();
     }
 

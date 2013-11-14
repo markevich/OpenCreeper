@@ -87,7 +87,7 @@ void onKeyDown(KeyboardEvent evt) {
 
   // DEBUG: add explosion
   if (evt.keyCode == KeyCode.V) {
-    game.explosions.add(new Explosion(new Vector(position.x * game.tileSize, position.y * game.tileSize)));
+    Explosion.add(new Explosion(new Vector(position.x * game.tileSize, position.y * game.tileSize)));
     engine.playSound("explosion", position);
   }
   

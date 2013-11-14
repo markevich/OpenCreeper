@@ -544,7 +544,7 @@ class Building {
                   if (game.spores[i].health <= 0) {
                     game.spores[i].remove = true;
                     engine.playSound("explosion", game.spores[i].sprite.position.real2tiled());
-                    game.explosions.add(new Explosion(sporeCenter));
+                    Explosion.add(new Explosion(sporeCenter));
                   }
                 }
               }

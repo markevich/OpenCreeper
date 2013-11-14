@@ -32,7 +32,7 @@ class Shell {
     trailCounter++;
     if (trailCounter == 10) {
       trailCounter = 0;
-      game.smokes.add(new Smoke(new Vector(sprite.position.x, sprite.position.y - 16)));
+      Smoke.add(new Smoke(new Vector(sprite.position.x, sprite.position.y - 16)));
     }
 
     sprite.rotation += 20;
@@ -45,7 +45,7 @@ class Shell {
       // if the target is reached explode and remove
       remove = true;
 
-      game.explosions.add(new Explosion(targetPosition));
+      Explosion.add(new Explosion(targetPosition));
       engine.playSound("explosion", targetPosition.real2tiled());
 
       for (int i = (targetPosition.x / game.tileSize).floor() - 4; i < (targetPosition.x / game.tileSize).floor() + 5; i++) {
