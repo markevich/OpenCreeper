@@ -53,13 +53,13 @@ void onKeyDown(KeyboardEvent evt) {
   }
 
   // pause/resume
-  if (evt.keyCode == KeyCode.PAUSE) {
+  if (evt.keyCode == KeyCode.PAUSE || evt.keyCode == KeyCode.TAB) {
     if (game.paused)game.resume(); else
       game.pause();
   }
 
   // deselect all
-  if (evt.keyCode == KeyCode.ESC) {
+  if (evt.keyCode == KeyCode.ESC || evt.keyCode == KeyCode.SPACE) {
     game.activeSymbol = -1;
     for (int i = 0; i < game.symbols.length; i++) {
       game.symbols[i].active = false;
