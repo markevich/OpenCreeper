@@ -537,8 +537,9 @@ class Game {
 
   /**
    * Takes a list of [tiles] and redraws them.
+   * This is used when the terrain height of a tile has been changed by a Terp.
    */
-  void redrawTiles(List tiles) {
+  void redrawTerrain(List tiles) {
     List tempCanvas = [];
     List tempContext = [];
     for (int t = 0; t < 10; t++) {

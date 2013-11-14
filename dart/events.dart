@@ -101,7 +101,7 @@ void onKeyDown(KeyboardEvent evt) {
         ..add(new Vector(position.x, position.y - 1))
         ..add(new Vector(position.x + 1, position.y))
         ..add(new Vector(position.x, position.y + 1));
-      game.redrawTiles(tilesToRedraw);
+      game.redrawTerrain(tilesToRedraw);
     }
   }
 
@@ -116,7 +116,7 @@ void onKeyDown(KeyboardEvent evt) {
         ..add(new Vector(position.x, position.y - 1))
         ..add(new Vector(position.x + 1, position.y))
         ..add(new Vector(position.x, position.y + 1));
-      game.redrawTiles(tilesToRedraw);
+      game.redrawTerrain(tilesToRedraw);
     }
   }
 
@@ -130,7 +130,7 @@ void onKeyDown(KeyboardEvent evt) {
       ..add(new Vector(position.x, position.y - 1))
       ..add(new Vector(position.x + 1, position.y))
       ..add(new Vector(position.x, position.y + 1));
-    game.redrawTiles(tilesToRedraw);
+    game.redrawTerrain(tilesToRedraw);
   }
 
   // DEBUG: add creeper

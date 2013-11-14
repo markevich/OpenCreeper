@@ -350,7 +350,7 @@ class Building {
                 ..add(new Vector3(weaponTargetPosition.x, weaponTargetPosition.y + 1, height));
             }
 
-            game.redrawTiles(tilesToRedraw);
+            game.redrawTerrain(tilesToRedraw);
 
             height = game.world.tiles[weaponTargetPosition.x][weaponTargetPosition.y].height;
             if (height == terraformElement.terraformTarget) {
