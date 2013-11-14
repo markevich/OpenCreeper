@@ -96,17 +96,42 @@ class Renderer {
 
         // render rectangle
         else if (displayObject is Rect) {
+          Vector position = new Vector(displayObject.rectangle.x, displayObject.rectangle.y);
+          Vector realPosition = position.real2screen();
 
+          if (engine.isVisible(realPosition, new Vector(displayObject.rectangle.width * game.zoom, displayObject.rectangle.height * game.zoom))) {
+            context.lineWidth = displayObject.lineWidth;
+            context.fillStyle = displayObject.color;
+            context.fillRect(realPosition.x, realPosition.y, displayObject.rectangle.width * game.zoom, displayObject.rectangle.height * game.zoom);
+          }
         }
 
         // render circle
         else if (displayObject is Circle) {
+          Vector realPosition = displayObject.position.real2screen();
 
+          if (engine.isVisible(realPosition, new Vector(displayObject.radius * game.zoom, displayObject.radius * game.zoom))) {
+            context.lineWidth = displayObject.lineWidth;
+            context.fillStyle = displayObject.color;
+            context.beginPath();
+            context.arc(realPosition.x, realPosition.y, displayObject.radius * game.zoom, 0, PI * 2, true);
+            context.closePath();
+            context.stroke();
+          }
         }
 
         // render line
         else if (displayObject is Line) {
+          Vector realPositionFrom = displayObject.from.real2screen();
+          Vector realPositionTo = displayObject.to.real2screen();
 
+          context.lineWidth = displayObject.lineWidth;
+          context.strokeStyle = displayObject.color;
+
+          context.beginPath();
+          context.moveTo(realPositionFrom.x, realPositionFrom);
+          context.lineTo(realPositionTo.x, realPositionTo.y);
+          context.stroke();
         }
       }
     }
