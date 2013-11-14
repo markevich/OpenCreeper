@@ -40,7 +40,7 @@ class Packet {
             if (!target.built) {
               target.built = true;
               if (target.imageID == "collector") {
-                game.updateCollection(target, "add");
+                target.updateCollection("add");
                 engine.playSound("energy", target.position);
               }
               if (target.imageID == "storage")

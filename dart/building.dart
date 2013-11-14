@@ -259,6 +259,57 @@ class Building {
     }
   }
 
+/**
+   * Updates the collector property of each tile when a [collector]
+   * is added or removed which is defined by the [action].
+   */
+  void updateCollection(String action) {
+    int height = game.world.tiles[position.x][position.y].height;
+    Vector centerBuilding = getCenter();
+
+    for (int i = -5; i < 7; i++) {
+      for (int j = -5; j < 7; j++) {
+
+        Vector positionCurrent = new Vector(position.x + i, position.y + j);
+
+        if (game.world.contains(positionCurrent)) {
+          Vector positionCurrentCenter = new Vector(positionCurrent.x * game.tileSize + (game.tileSize / 2), positionCurrent.y * game.tileSize + (game.tileSize / 2));
+          int tileHeight = game.world.tiles[positionCurrent.x][positionCurrent.y].height;
+
+          if (action == "add") {
+            if (pow(positionCurrentCenter.x - centerBuilding.x, 2) + pow(positionCurrentCenter.y - centerBuilding.y, 2) < pow(game.tileSize * 6, 2)) {
+              if (tileHeight == height) {
+                game.world.tiles[positionCurrent.x][positionCurrent.y].collector = this;
+              }
+            }
+          } else if (action == "remove") {
+            if (pow(positionCurrentCenter.x - centerBuilding.x, 2) + pow(positionCurrentCenter.y - centerBuilding.y, 2) < pow(game.tileSize * 6, 2)) {
+              if (tileHeight == height) {
+                game.world.tiles[positionCurrent.x][positionCurrent.y].collector = null;
+              }
+            }
+
+            for (int k = 0; k < game.buildings.length; k++) {
+              if (game.buildings[k] != this && game.buildings[k].imageID == "collector") {
+                int heightK = game.world.tiles[game.buildings[k].position.x][game.buildings[k].position.y].height;
+                Vector centerBuildingK = game.buildings[k].getCenter();
+                if (pow(positionCurrentCenter.x - centerBuildingK.x, 2) + pow(positionCurrentCenter.y - centerBuildingK.y, 2) < pow(game.tileSize * 6, 2)) {
+                  if (tileHeight == heightK) {
+                    game.world.tiles[positionCurrent.x][positionCurrent.y].collector = game.buildings[k];
+                  }
+                }
+              }
+            }
+          }
+
+        }
+
+      }
+    }
+
+    game.drawCollection();
+  }
+
   void checkOperating() {
     operating = false;
     if (needsEnergy && active && status == "IDLE") {

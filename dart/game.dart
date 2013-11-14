@@ -316,7 +316,7 @@ class Game {
     }
     if (building.imageID == "collector") {
       if (building.built)
-        updateCollection(building, "remove");
+        building.updateCollection("remove");
     }
     if (building.imageID == "storage") {
       maxEnergy -= 10;
@@ -836,57 +836,6 @@ class Game {
 
   void updateZoomElement() {
     query("#speed").innerHtml = "Zoom: ${zoom.toString()}x";
-  }
-  
-  /**
-   * Updates the collector property of each tile when a [collector]
-   * is added or removed which is defined by the [action].
-   */
-  void updateCollection(Building collector, String action) {
-    int height = game.world.tiles[collector.position.x][collector.position.y].height;
-    Vector centerBuilding = collector.getCenter();
-
-    for (int i = -5; i < 7; i++) {
-      for (int j = -5; j < 7; j++) {
-
-        Vector positionCurrent = new Vector(collector.position.x + i, collector.position.y + j);
-
-        if (world.contains(positionCurrent)) {
-          Vector positionCurrentCenter = new Vector(positionCurrent.x * tileSize + (tileSize / 2), positionCurrent.y * tileSize + (tileSize / 2));
-          int tileHeight = game.world.tiles[positionCurrent.x][positionCurrent.y].height;
-
-          if (action == "add") {
-            if (pow(positionCurrentCenter.x - centerBuilding.x, 2) + pow(positionCurrentCenter.y - centerBuilding.y, 2) < pow(tileSize * 6, 2)) {
-              if (tileHeight == height) {
-                world.tiles[positionCurrent.x][positionCurrent.y].collector = collector;
-              }
-            }
-          } else if (action == "remove") {
-            if (pow(positionCurrentCenter.x - centerBuilding.x, 2) + pow(positionCurrentCenter.y - centerBuilding.y, 2) < pow(tileSize * 6, 2)) {
-              if (tileHeight == height) {
-                world.tiles[positionCurrent.x][positionCurrent.y].collector = null;
-              }
-            }
-
-            for (int k = 0; k < buildings.length; k++) {
-              if (buildings[k] != collector && buildings[k].imageID == "collector") {
-                int heightK = game.world.tiles[buildings[k].position.x][buildings[k].position.y].height;
-                Vector centerBuildingK = buildings[k].getCenter();
-                if (pow(positionCurrentCenter.x - centerBuildingK.x, 2) + pow(positionCurrentCenter.y - centerBuildingK.y, 2) < pow(tileSize * 6, 2)) {
-                  if (tileHeight == heightK) {
-                    world.tiles[positionCurrent.x][positionCurrent.y].collector = buildings[k];
-                  }
-                }
-              }
-            }
-          }
-
-        }
-
-      }
-    }
-
-    drawCollection();
   }
 
   /**
