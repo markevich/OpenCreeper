@@ -1283,7 +1283,7 @@ class Game {
 
       Vector start = engine.mouse.dragStart;
       Vector end = engine.mouse.dragEnd;
-      Vector delta = new Vector(end.x - start.x, end.y - start.y);
+      Vector delta = end - start;
       num distance = start.distanceTo(end);
       
       num buildingDistance = 3;

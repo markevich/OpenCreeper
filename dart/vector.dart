@@ -7,6 +7,7 @@ class Vector {
   Vector.empty() : this(0, 0);
 
   Vector operator +(Vector other) => new Vector(x + other.x, y + other.y);
+  Vector operator -(Vector other) => new Vector(x - other.x, y - other.y);
   bool operator ==(Vector other) => (x == other.x && y == other.y);
 
   String toString() {

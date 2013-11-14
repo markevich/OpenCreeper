@@ -128,7 +128,7 @@ class Building {
     if (moveTargetPosition.x != position.x || moveTargetPosition.y != position.y) {
       Vector targetPosition = new Vector(moveTargetPosition.x * game.tileSize, moveTargetPosition.y * game.tileSize);
       Vector ownPosition = new Vector(position.x * game.tileSize, position.y * game.tileSize);
-      Vector delta = new Vector(targetPosition.x - ownPosition.x, targetPosition.y - ownPosition.y);
+      Vector delta = targetPosition - ownPosition;
       num distance = ownPosition.distanceTo(targetPosition);
 
       speed.x = (delta.x / distance) * Building.baseSpeed * game.speed / game.tileSize;

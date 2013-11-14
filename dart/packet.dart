@@ -73,7 +73,7 @@ class Packet {
 
   void calculateVector() {
     Vector targetPosition = currentTarget.getCenter();
-    Vector delta = new Vector(targetPosition.x - sprite.position.x, targetPosition.y - sprite.position.y);
+    Vector delta = targetPosition - sprite.position;
     num distance = sprite.position.distanceTo(targetPosition);
 
     speed.x = (delta.x / distance) * Packet.baseSpeed * game.speed * speedMultiplier;

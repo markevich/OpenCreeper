@@ -22,7 +22,7 @@ class Ship {
   }
 
   void turnToTarget() {
-    Vector delta = new Vector(targetPosition.x - position.x, targetPosition.y - position.y);
+    Vector delta = targetPosition - position;
     double angleToTarget = engine.rad2deg(atan2(delta.y, delta.x));
 
     num turnRate = 1.5;
