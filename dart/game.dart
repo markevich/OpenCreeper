@@ -1542,7 +1542,7 @@ class Game {
       // draw attack symbol
       if (mode == "SHIP_SELECTED") {
         Vector position = getHoveredTilePosition().tiled2screen();
-        context.drawImageScaled(engine.images["targetcursor"], position.x - tileSize * zoom, position.y - tileSize * zoom, 48 * zoom, 48 * zoom);
+        context.drawImageScaled(engine.images["targetcursor"], position.x - 24 * zoom, position.y - 24 * zoom, 48 * zoom, 48 * zoom);
       }
 
       // draw position info
@@ -1581,15 +1581,17 @@ class Game {
       }
     }
 
-    // draw ships
-    for (int i = 0; i < ships.length; i++) {
-      ships[i].draw();
-    }
-
     // draw building hover/selection box
     for (int i = 0; i < buildings.length; i++) {
       buildings[i].drawBox();
     }
+
+    /*Vector tp = game.getHoveredTilePosition();
+    Vector tp2 = tp.tiled2screen();
+    engine.canvas["buffer"].context.strokeStyle = '#fff';
+    engine.canvas["buffer"].context.fillRect(tp2.x, tp2.y, 16, 16);
+    engine.canvas["buffer"].context.stroke();
+    query("#debug").innerHtml = "Coordinates: $tp";*/
     
     drawCreeper();
 

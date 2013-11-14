@@ -10,7 +10,9 @@ class Rect extends DisplayObject {
   int lineWidth;
   String color;
 
-  Rect(this.rectangle, this.lineWidth, this.color);
+  Rect(layer, this.rectangle, this.lineWidth, this.color) {
+    super.layer = layer;
+  }
 }
 
 class Circle extends DisplayObject {
@@ -18,8 +20,12 @@ class Circle extends DisplayObject {
   num radius;
   int lineWidth;
   String color;
+  num scale;
 
-  Circle(this.position, this.radius, this.lineWidth, this.color);
+  Circle(layer, this.position, this.radius, this.lineWidth, this.color) {
+    super.layer = layer;
+    scale = 1.0;
+  }
 }
 
 class Line extends DisplayObject {
@@ -27,7 +33,9 @@ class Line extends DisplayObject {
   Vector from, to;
   int lineWidth;
 
-  Line(this.from, this.to, this.lineWidth, this.color);
+  Line(layer, this.from, this.to, this.lineWidth, this.color) {
+    super.layer = layer;
+  }
 }
 
 class Sprite extends DisplayObject {

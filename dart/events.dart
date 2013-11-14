@@ -69,6 +69,7 @@ void onKeyDown(KeyboardEvent evt) {
     }
     for (int i = 0; i < game.ships.length; i++) {
       game.ships[i].selected = false;
+      game.ships[i].selectedCircle.visible = false;
     }
     engine.canvas["main"].view.style.cursor = "url('images/Normal.cur') 2 2, pointer";
   }
@@ -322,6 +323,7 @@ void onMouseUp(MouseEvent evt) {
     // unselect all currently selected ships
     for (int i = 0; i < game.ships.length; i++) {
       game.ships[i].selected = false;
+      game.ships[i].selectedCircle.visible = false;
     }
 
     query("#terraform").attributes['value'] = "Terraform Off";

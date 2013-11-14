@@ -11,18 +11,24 @@ class Shell {
     sprite = new Sprite(2, engine.images["shell"], position, 16, 16);
     sprite.anchor = new Vector(0.5, 0.5);  
     engine.canvas["buffer"].addDisplayObject(sprite);
-    init();
   }
 
-  void init() {
+  void calculateVector() {
     Vector delta = targetPosition - sprite.position;
     num distance = sprite.position.distanceTo(targetPosition);
 
     speed.x = (delta.x / distance) * Shell.baseSpeed * game.speed;
     speed.y = (delta.y / distance) * Shell.baseSpeed * game.speed;
+
+    if (speed.x.abs() > delta.x.abs())
+      speed.x = delta.x;
+    if (speed.y.abs() > delta.y.abs())
+      speed.y = delta.y;
   }
 
   void move() {
+    calculateVector();
+
     trailCounter++;
     if (trailCounter == 10) {
       trailCounter = 0;

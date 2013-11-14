@@ -1,56 +1,71 @@
 part of creeper;
 
 class Ship {
-  Vector position, speed = new Vector(0, 0), targetPosition = new Vector(0, 0);
-  String imageID, type, status = "IDLE"; // ATTACKING, RETURNING, RISING, FALLING
+  Vector speed = new Vector(0, 0), targetPosition = new Vector(0, 0);
+  String type, status = "IDLE"; // ATTACKING, RETURNING, RISING, FALLING
   bool remove = false, hovered = false, selected = false;
-  num angle = 0, scale = 1;
   int maxEnergy = 15, energy = 0, trailCounter = 0, weaponCounter = 0, flightCounter = 0;
   Building home;
+  Sprite sprite, targetSymbol;
+  Circle hoverCircle, selectedCircle;
   static final int baseSpeed = 1;
 
-  Ship(this.position, this.imageID, this.type, this.home);
+  Ship(position, imageID, this.type, this.home) {
+    sprite = new Sprite(4, engine.images[imageID], position, 48, 48);
+    sprite.anchor = new Vector(0.5, 0.5);
+    engine.canvas["buffer"].addDisplayObject(sprite);
 
-  Vector getCenter() {
-    return new Vector(position.x + 24, position.y + 24);
+    hoverCircle = new Circle(5, position, 24, 2, "#f00");
+    engine.canvas["buffer"].addDisplayObject(hoverCircle);
+
+    selectedCircle = new Circle(5, position, 24, 2, "#fff");
+    selectedCircle.visible = false;
+    engine.canvas["buffer"].addDisplayObject(selectedCircle);
+
+    targetSymbol = new Sprite(0, engine.images["targetcursor"], position, 48, 48);
+    targetSymbol.anchor = new Vector(0.5, 0.5);
+    targetSymbol.alpha = 0.5;
+    targetSymbol.visible = false;
+    engine.canvas["buffer"].addDisplayObject(targetSymbol);
   }
 
   bool updateHoverState() {
-    Vector realPosition = position.real2screen();
-    hovered = (engine.mouse.x > realPosition.x && engine.mouse.x < realPosition.x + 47 && engine.mouse.y > realPosition.y && engine.mouse.y < realPosition.y + 47);
+    Vector realPosition = sprite.position.real2screen();
+    hovered = (engine.mouse.x > realPosition.x - 24 && engine.mouse.x < realPosition.x + 24 && engine.mouse.y > realPosition.y - 24 && engine.mouse.y < realPosition.y + 24);
+    hoverCircle.visible = hovered;
     return hovered;
   }
 
   void turnToTarget() {
-    Vector delta = targetPosition - position;
+    Vector delta = targetPosition - sprite.position;
     double angleToTarget = engine.rad2deg(atan2(delta.y, delta.x));
 
     num turnRate = 1.5;
-    num absoluteDelta = (angleToTarget - angle).abs();
+    num absoluteDelta = (angleToTarget - sprite.rotation).abs();
 
     if (absoluteDelta < turnRate)
       turnRate = absoluteDelta;
 
     if (absoluteDelta <= 180)
-      if (angleToTarget < angle)
-        angle -= turnRate;
+      if (angleToTarget < sprite.rotation)
+        sprite.rotation -= turnRate;
       else
-        angle += turnRate;
+        sprite.rotation += turnRate;
     else
-      if (angleToTarget < angle)
-        angle += turnRate;
+      if (angleToTarget < sprite.rotation)
+        sprite.rotation += turnRate;
       else
-        angle -= turnRate;
+        sprite.rotation -= turnRate;
 
-    if (angle > 180)
-      angle -= 360;
-    if (angle < -180)
-      angle += 360;
+    if (sprite.rotation > 180)
+      sprite.rotation -= 360;
+    if (sprite.rotation < -180)
+      sprite.rotation += 360;
   }
 
   void calculateVector() {
-    num x = cos(engine.deg2rad(angle));
-    num y = sin(engine.deg2rad(angle));
+    num x = cos(engine.deg2rad(sprite.rotation));
+    num y = sin(engine.deg2rad(sprite.rotation));
 
     speed.x = x * Ship.baseSpeed * game.speed;
     speed.y = y * Ship.baseSpeed * game.speed;
@@ -58,8 +73,10 @@ class Ship {
   
   void control(Vector position) {
     // select ship
-    if (hovered)
+    if (hovered) {
       selected = true;
+      selectedCircle.visible = true;
+    }
     
     // control if selected
     if (selected) {
@@ -70,9 +87,9 @@ class Ship {
           // leave home
           energy = home.energy;
           home.energy = 0;
-          targetPosition.x = position.x * game.tileSize;
-          targetPosition.y = position.y * game.tileSize;
-          status = "RISING"; 
+          targetPosition = position * game.tileSize;
+          targetSymbol.position = targetPosition;
+          status = "RISING";
         }
       }
       
@@ -87,6 +104,7 @@ class Ship {
           // attack again
           targetPosition.x = (position.x - 1) * game.tileSize;
           targetPosition.y = (position.y - 1) * game.tileSize;
+          targetSymbol.position = targetPosition;
           status = "ATTACKING";
         }
       }
@@ -95,19 +113,20 @@ class Ship {
   }
 
   void move() {
-
     if (status == "ATTACKING" || status == "RETURNING") {
       trailCounter++;
       if (trailCounter == 10) {
         trailCounter = 0;
-        game.smokes.add(new Smoke(getCenter()));
+        game.smokes.add(new Smoke(new Vector(sprite.position.x, sprite.position.y - 16)));
       }
     }
 
     if (status == "RISING") {
       if (flightCounter < 25) {
         flightCounter++;
-        scale *= 1.01;
+        sprite.scale = sprite.scale * 1.01;
+        hoverCircle.scale *= 1.01;
+        selectedCircle.scale *= 1.01;
       }
       if (flightCounter == 25) {
         status = "ATTACKING";
@@ -117,16 +136,20 @@ class Ship {
     else if (status == "FALLING") {
       if (flightCounter > 0) {
         flightCounter--;
-        scale /= 1.01;
+        sprite.scale = sprite.scale / 1.01;
+        hoverCircle.scale /= 1.01;
+        selectedCircle.scale *= 1.01;
       }
       if (flightCounter == 0) {
         status = "IDLE";
-        position.x = home.position.x * game.tileSize;
-        position.y = home.position.y * game.tileSize;
+        sprite.position.x = home.position.x * game.tileSize + 24;
+        sprite.position.y = home.position.y * game.tileSize + 24;
         targetPosition.x = 0;
         targetPosition.y = 0;
         energy = 5;
-        scale = 1;
+        sprite.scale = new Vector(1.0, 1.0);
+        hoverCircle.scale = 1.0;
+        selectedCircle.scale = 1.0;
       }
     }
     
@@ -136,9 +159,11 @@ class Ship {
       turnToTarget();
       calculateVector();
 
-      position += speed;
+      sprite.position += speed;
+      hoverCircle.position += speed;
+      selectedCircle.position += speed;
 
-      if (position.x > targetPosition.x - 2 && position.x < targetPosition.x + 2 && position.y > targetPosition.y - 2 && position.y < targetPosition.y + 2) {
+      if (sprite.position.x > targetPosition.x - 2 && sprite.position.x < targetPosition.x + 2 && sprite.position.y > targetPosition.y - 2 && sprite.position.y < targetPosition.y + 2) {
         if (weaponCounter >= 10) {
           weaponCounter = 0;
           game.explosions.add(new Explosion(targetPosition));
@@ -161,8 +186,8 @@ class Ship {
           if (energy == 0) {
             // return to base
             status = "RETURNING";
-            targetPosition.x = home.position.x * game.tileSize;
-            targetPosition.y = home.position.y * game.tileSize;
+            targetPosition.x = home.position.x * game.tileSize + 24;
+            targetPosition.y = home.position.y * game.tileSize + 24;
           }
         }
       }
@@ -172,60 +197,15 @@ class Ship {
       turnToTarget();
       calculateVector();
 
-      position += speed;
+      sprite.position += speed;
+      hoverCircle.position += speed;
+      selectedCircle.position += speed;
 
-      if (position.x > targetPosition.x - 2 && position.x < targetPosition.x + 2 && position.y > targetPosition.y - 2 && position.y < targetPosition.y + 2) {
+      if (sprite.position.x > targetPosition.x - 2 && sprite.position.x < targetPosition.x + 2 && sprite.position.y > targetPosition.y - 2 && sprite.position.y < targetPosition.y + 2) {
         status = "FALLING";
       }
     }
-    
-  }
 
-  void draw() {
-    CanvasRenderingContext2D context = engine.canvas["buffer"].context;
-    
-    Vector realPosition = position.real2screen();
-
-    if (hovered) {
-      context
-        ..strokeStyle = "#f00"
-        ..beginPath()
-        ..arc(realPosition.x + 24 * game.zoom, realPosition.y + 24 * game.zoom, 24 * game.zoom * scale, 0, PI * 2, true)
-        ..closePath()
-        ..stroke();
-    }
-
-    if (selected) {
-      context
-        ..strokeStyle = "#fff"
-        ..beginPath()
-        ..arc(realPosition.x + 24 * game.zoom, realPosition.y + 24 * game.zoom, 24 * game.zoom * scale, 0, PI * 2, true)
-        ..closePath()
-        ..stroke();
-
-      if (status == "ATTACKING" || status == "IDLE") {
-        Vector cursorPosition = targetPosition.real2screen();
-        context
-          ..save()
-          ..globalAlpha = .5
-          ..drawImageScaled(engine.images["targetcursor"], cursorPosition.x - game.tileSize * game.zoom, cursorPosition.y - game.tileSize * game.zoom, 48 * game.zoom, 48 * game.zoom)
-          ..restore();
-      }
-    }
-
-    if (engine.isVisible(realPosition, new Vector(48 * game.zoom, 48 * game.zoom))) {
-      // draw ship
-      context
-        ..save()
-        ..translate(realPosition.x + 24 * game.zoom, realPosition.y + 24 * game.zoom)
-        ..rotate(engine.deg2rad(angle))
-        ..drawImageScaled(engine.images[imageID], -24 * game.zoom * scale, -24 * game.zoom * scale, 48 * game.zoom * scale, 48 * game.zoom * scale)
-        ..restore();
-
-      // draw energy bar
-      context
-        ..fillStyle = '#f00'
-        ..fillRect(realPosition.x + 2, realPosition.y + 1, (44 * game.zoom / maxEnergy) * energy, 3);
-    }
+    targetSymbol.visible = ((status == "ATTACKING" || status == "RISING") && selected);
   }
 }

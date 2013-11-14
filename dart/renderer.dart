@@ -96,7 +96,7 @@ class Renderer {
 
         // render rectangle
         else if (displayObject is Rect) {
-          Vector position = new Vector(displayObject.rectangle.x, displayObject.rectangle.y);
+          Vector position = new Vector(displayObject.rectangle.left, displayObject.rectangle.top);
           Vector realPosition = position.real2screen();
 
           if (engine.isVisible(realPosition, new Vector(displayObject.rectangle.width * game.zoom, displayObject.rectangle.height * game.zoom))) {
@@ -110,11 +110,11 @@ class Renderer {
         else if (displayObject is Circle) {
           Vector realPosition = displayObject.position.real2screen();
 
-          if (engine.isVisible(realPosition, new Vector(displayObject.radius * game.zoom, displayObject.radius * game.zoom))) {
+          if (engine.isVisible(realPosition, new Vector(displayObject.radius * displayObject.scale * game.zoom, displayObject.radius * displayObject.scale * game.zoom))) {
             context.lineWidth = displayObject.lineWidth;
-            context.fillStyle = displayObject.color;
+            context.strokeStyle = displayObject.color;
             context.beginPath();
-            context.arc(realPosition.x, realPosition.y, displayObject.radius * game.zoom, 0, PI * 2, true);
+            context.arc(realPosition.x, realPosition.y, displayObject.radius * displayObject.scale * game.zoom, 0, PI * 2, true);
             context.closePath();
             context.stroke();
           }
@@ -129,7 +129,7 @@ class Renderer {
           context.strokeStyle = displayObject.color;
 
           context.beginPath();
-          context.moveTo(realPositionFrom.x, realPositionFrom);
+          context.moveTo(realPositionFrom.x, realPositionFrom.y);
           context.lineTo(realPositionTo.x, realPositionTo.y);
           context.stroke();
         }

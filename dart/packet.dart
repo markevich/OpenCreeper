@@ -48,7 +48,7 @@ class Packet {
               if (target.imageID == "speed")
                 Packet.baseSpeed *= 1.01;
               if (target.imageID == "bomber") {
-                Ship ship = new Ship(new Vector(target.position.x * game.tileSize, target.position.y * game.tileSize), "bombership", "Bomber", target);
+                Ship ship = new Ship(new Vector(target.position.x * game.tileSize + 24, target.position.y * game.tileSize + 24), "bombership", "Bomber", target);
                 target.ship = ship;
                 game.ships.add(ship);
               }
