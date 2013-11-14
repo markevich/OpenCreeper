@@ -281,15 +281,15 @@ void onMouseUp(MouseEvent evt) {
       }
       if (buildingSelected != null) {
         if (buildingSelected.active) {
-          query('#deactivate').style.display = "block";
-          query('#activate').style.display = "none";
+          querySelector('#deactivate').style.display = "block";
+          querySelector('#activate').style.display = "none";
         } else {
-          query('#deactivate').style.display = "none";
-          query('#activate').style.display = "block";
+          querySelector('#deactivate').style.display = "none";
+          querySelector('#activate').style.display = "block";
         }
       } else {
-        query('#deactivate').style.display = "none";
-        query('#activate').style.display = "none";
+        querySelector('#deactivate').style.display = "none";
+        querySelector('#activate').style.display = "none";
       }
     }
 
@@ -316,8 +316,8 @@ void onMouseUp(MouseEvent evt) {
     // unselect all currently selected buildings
     for (int i = 0; i < game.buildings.length; i++) {
       game.buildings[i].selected = false;
-      query('#deactivate').style.display = "none";
-      query('#activate').style.display = "none";
+      querySelector('#deactivate').style.display = "none";
+      querySelector('#activate').style.display = "none";
     }
 
     // unselect all currently selected ships
@@ -326,7 +326,7 @@ void onMouseUp(MouseEvent evt) {
       game.ships[i].selectedCircle.visible = false;
     }
 
-    query("#terraform").attributes['value'] = "Terraform Off";
+    querySelector("#terraform").attributes['value'] = "Terraform Off";
     game.clearSymbols();
   }
 }

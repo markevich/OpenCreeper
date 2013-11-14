@@ -36,7 +36,7 @@ class Engine {
 
     // main
     canvas["main"] = new Renderer(new CanvasElement(), width, height);
-    query('#canvasContainer').children.add(canvas["main"].view);
+    querySelector('#canvasContainer').children.add(canvas["main"].view);
     canvas["main"].top = canvas["main"].view.offsetTop;
     canvas["main"].left = canvas["main"].view.offsetLeft;
     canvas["main"].right = canvas["main"].view.offset.right;
@@ -48,7 +48,7 @@ class Engine {
 
     // gui
     canvas["gui"] = new Renderer(new CanvasElement(), 780, 110);
-    query('#gui').children.add(canvas["gui"].view);
+    querySelector('#gui').children.add(canvas["gui"].view);
     canvas["gui"].top = canvas["gui"].view.offsetTop;
     canvas["gui"].left = canvas["gui"].view.offsetLeft;
 
@@ -58,29 +58,29 @@ class Engine {
 
     canvas["levelbuffer"] = new Renderer(new CanvasElement(), 128 * 16, 128 * 16);
     canvas["levelfinal"] = new Renderer(new CanvasElement(), width, height);
-    query('#canvasContainer').children.add(canvas["levelfinal"].view);
+    querySelector('#canvasContainer').children.add(canvas["levelfinal"].view);
 
     // collection
     canvas["collection"] = new Renderer(new CanvasElement(), width, height);
-    query('#canvasContainer').children.add(canvas["collection"].view);
+    querySelector('#canvasContainer').children.add(canvas["collection"].view);
 
     // creeper
     canvas["creeperbuffer"] = new Renderer(new CanvasElement(), width, height);
     canvas["creeper"] = new Renderer(new CanvasElement(), width, height);
-    query('#canvasContainer').children.add(canvas["creeper"].view);
+    querySelector('#canvasContainer').children.add(canvas["creeper"].view);
     
     loadSounds();
   }
   
   void setupEventHandler() {
-    query('#terraform').onClick.listen((event) => game.toggleTerraform());
+    querySelector('#terraform').onClick.listen((event) => game.toggleTerraform());
     //query('#slower').onClick.listen((event) => game.slower());
     //query('#faster').onClick.listen((event) => game.faster());
     //query('#pause').onClick.listen((event) => game.pause());
     //query('#resume').onClick.listen((event) => game.resume());
-    query('#restart').onClick.listen((event) => game.restart());
-    query('#deactivate').onClick.listen((event) => game.deactivateBuilding());
-    query('#activate').onClick.listen((event) => game.activateBuilding());
+    querySelector('#restart').onClick.listen((event) => game.restart());
+    querySelector('#deactivate').onClick.listen((event) => game.deactivateBuilding());
+    querySelector('#activate').onClick.listen((event) => game.activateBuilding());
 
     CanvasElement mainCanvas = canvas["main"].view;
     CanvasElement guiCanvas = canvas["gui"].view;

@@ -36,7 +36,7 @@ class Game {
   }
 
   void init() {
-    query("#seed").innerHtml = "Seed: $seed";
+    querySelector("#seed").innerHtml = "Seed: $seed";
 
     world = new World(seed);
 
@@ -59,8 +59,8 @@ class Game {
     stopwatch.start();
     var oneSecond = new Duration(seconds:1);
     new Timer.periodic(oneSecond, updateTime);
-    query('#lose').style.display = 'none';
-    query('#win').style.display = 'none';
+    querySelector('#lose').style.display = 'none';
+    querySelector('#win').style.display = 'none';
 
     mode = "DEFAULT";
     buildings.clear();
@@ -102,7 +102,7 @@ class Game {
     
     String minute = (m <= 9) ? '0$m' : '$m';
     String second = (s <= 9) ? '0$s' : '$s';
-    query('#time').innerHtml = 'Time: $minute:$second';
+    querySelector('#time').innerHtml = 'Time: $minute:$second';
   }
 
   /**
@@ -115,13 +115,13 @@ class Game {
   }
 
   void pause() {
-    query('#paused').style.display = 'block';
+    querySelector('#paused').style.display = 'block';
     paused = true;
     stopwatch.stop();
   }
 
   void resume() {
-    query('#paused').style.display = 'none';
+    querySelector('#paused').style.display = 'none';
     paused = false;
     stopwatch.start();
   }
@@ -150,10 +150,10 @@ class Game {
   void toggleTerraform() {
     if (mode == "TERRAFORM") {
       mode = "DEFAULT";
-      query("#terraform").attributes['value'] = "Terraform Off";
+      querySelector("#terraform").attributes['value'] = "Terraform Off";
     } else {
       mode = "TERRAFORM";
-      query("#terraform").attributes['value'] = "Terraform On";
+      querySelector("#terraform").attributes['value'] = "Terraform On";
     }
   }
 
@@ -310,7 +310,7 @@ class Game {
     }
 
     if (building.imageID == "base") {
-      query('#lose').style.display = "block";
+      querySelector('#lose').style.display = "block";
       stopwatch.stop();
       stop();
     }
@@ -498,7 +498,7 @@ class Game {
     for (int k = 0; k < 10; k++) {
       engine.canvas["levelbuffer"].context.drawImage(engine.canvas["level$k"].view, 0, 0);
     }
-    query('#loading').style.display = 'none';
+    querySelector('#loading').style.display = 'none';
   }
 
   /**
@@ -827,15 +827,15 @@ class Game {
   }
   
   void updateEnergyElement() {
-    query('#energy').innerHtml = "Energy: ${currentEnergy.toString()}/${maxEnergy.toString()}";
+    querySelector('#energy').innerHtml = "Energy: ${currentEnergy.toString()}/${maxEnergy.toString()}";
   }
 
   void updateSpeedElement() {
-    query("#speed").innerHtml = "Speed: ${speed.toString()}x";
+    querySelector("#speed").innerHtml = "Speed: ${speed.toString()}x";
   }
 
   void updateZoomElement() {
-    query("#speed").innerHtml = "Zoom: ${zoom.toString()}x";
+    querySelector("#speed").innerHtml = "Zoom: ${zoom.toString()}x";
   }
 
   /**
@@ -977,7 +977,7 @@ class Game {
     }
     if (emittersChecked == emitters.length) {
       // TODO: 10 seconds countdown
-      query('#win').style.display = "block";
+      querySelector('#win').style.display = "block";
       stopwatch.stop();
       stop();
     }  
