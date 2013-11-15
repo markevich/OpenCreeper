@@ -9,26 +9,13 @@ class Mouse {
 }
 
 class Engine {
-  num FPS = 60, delta = 1000 / 60, fps_delta, fps_frames, fps_totalTime, fps_updateTime, fps_updateFrames, animationRequest;
+  num animationRequest, TPS = 60; // TPS = ticks per second
   int width, height, halfWidth, halfHeight;
-  var fps_lastTime;
-  Mouse mouse = new Mouse();
-  Mouse mouseGUI = new Mouse();
-  Map canvas, sounds, images;
+  Mouse mouse = new Mouse(), mouseGUI = new Mouse();
+  Map canvas = new Map(), sounds = new Map(), images = new Map();
   Timer resizeTimer;
 
   Engine() {
-    canvas = new Map();
-    sounds = new Map();
-    images = new Map();
-    init();
-  }
-
-  /**
-   * Initializes the canvases and mouse, loads sounds and images.
-   */
-
-  void init() {
     width = window.innerWidth;
     height = window.innerHeight;
     halfWidth = (width / 2).floor();
@@ -79,8 +66,8 @@ class Engine {
     //query('#pause').onClick.listen((event) => game.pause());
     //query('#resume').onClick.listen((event) => game.resume());
     querySelector('#restart').onClick.listen((event) => game.restart());
-    querySelector('#deactivate').onClick.listen((event) => game.deactivateBuilding());
-    querySelector('#activate').onClick.listen((event) => game.activateBuilding());
+    querySelector('#deactivate').onClick.listen((event) => Building.deactivate());
+    querySelector('#activate').onClick.listen((event) => Building.activate());
 
     CanvasElement mainCanvas = canvas["main"].view;
     CanvasElement guiCanvas = canvas["gui"].view;
@@ -169,38 +156,20 @@ class Engine {
   }
 
   void updateMouse(MouseEvent evt) {
-    //if (evt.pageX > canvas["main"].left && evt.pageX < canvas["main"].right && evt.pageY > canvas["main"].top && evt.pageY < canvas["main"].bottom) {
-    mouse.x = (evt.client.x - canvas["main"].view.getBoundingClientRect().left).toInt(); //evt.pageX - canvas["main"].left;
-    mouse.y = (evt.client.y - canvas["main"].view.getBoundingClientRect().left).toInt(); //evt.pageY - canvas["main"].top;
+    mouse.x = (evt.client.x - canvas["main"].view.getBoundingClientRect().left).toInt();
+    mouse.y = (evt.client.y - canvas["main"].view.getBoundingClientRect().top).toInt();
     if (game != null) {
       Vector position = game.getHoveredTilePosition();
       mouse.dragEnd = new Vector(position.x, position.y);
     }
-
-    //$("#mouse").innerHtml = ("Mouse: " + mouse.x + "/" + mouse.y + " - " + position.x + "/" + position.y);
-    //}
+    //$("#mouse").innerHtml = "Mouse: " + mouse.toString() + " - " + position.toString());
   }
 
   void updateMouseGUI(MouseEvent evt) {
-    //if (evt.pageX > canvas["gui"].left && evt.pageX < canvas["gui"].right && evt.pageY > canvas["gui"].top && evt.pageY < canvas["gui"].bottom) {
     mouseGUI.x = (evt.client.x - canvas["gui"].view.getBoundingClientRect().left).toInt();
     mouseGUI.y = (evt.client.y - canvas["gui"].view.getBoundingClientRect().top).toInt();
-    
-    //query("#mouse").innerHtml = ("Mouse: " + mouseGUI.x.toString() + "/" + mouseGUI.y.toString());
-    
-    //}
   }
-
-  /**
-   * Checks if an object with a given [position] and [size]
-   * is visible on the screen. Returns true or false.
-   */
-  bool isVisible(Vector position, Vector size) {
-    Rectangle object = new Rectangle(position.x, position.y, size.x, size.y);    
-    Rectangle view = new Rectangle(0, 0, engine.width, engine.height);   
-    return view.intersects(object);
-  }
-  
+ 
   int randomInt(num from, num to, [num seed]) {
     var random = new Random(seed);
     return (random.nextInt(to - from + 1) + from);

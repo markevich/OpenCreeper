@@ -5,12 +5,32 @@ class Projectile {
   bool remove = false;
   Sprite sprite;
   static num baseSpeed = 5;
+  static List<Projectile> projectiles = new List<Projectile>();
 
   Projectile(position, this.targetPosition, rotation) {
     sprite = new Sprite(1, engine.images["projectile"], position, 16, 16);
     sprite.anchor = new Vector(0.5, 0.5);
     sprite.rotation = rotation;
     engine.canvas["buffer"].addDisplayObject(sprite);
+  }
+  
+  static void clear() {
+    projectiles.clear();
+  }
+  
+  static void add(Projectile projectile) {
+    projectiles.add(projectile);
+  }
+  
+  static void update() {
+    for (int i = projectiles.length - 1; i >= 0; i--) {
+      if (projectiles[i].remove) {
+        engine.canvas["buffer"].removeDisplayObject(projectiles[i].sprite);
+        projectiles.removeAt(i);
+      }
+      else
+        projectiles[i].move();
+    }
   }
 
   void calculateVector() {
@@ -44,6 +64,8 @@ class Projectile {
       game.world.tiles[tiledPosition.x][tiledPosition.y].newcreep -= 1;
       if (game.world.tiles[tiledPosition.x][tiledPosition.y].newcreep < 0)
         game.world.tiles[tiledPosition.x][tiledPosition.y].newcreep = 0;
+      
+      game.creeperDirty = true;
       
     }
   }

@@ -6,11 +6,31 @@ class Shell {
   int trailCounter = 0;
   Sprite sprite;
   static final num baseSpeed = 1.5;
+  static List<Shell> shells = new List<Shell>();
 
   Shell(position, this.targetPosition) {
     sprite = new Sprite(2, engine.images["shell"], position, 16, 16);
     sprite.anchor = new Vector(0.5, 0.5);  
     engine.canvas["buffer"].addDisplayObject(sprite);
+  }
+  
+  static void clear() {
+    shells.clear();
+  }
+  
+  static void add(Shell shell) {
+    shells.add(shell);
+  }
+  
+  static void update() {
+    for (int i = shells.length - 1; i >= 0; i--) {
+      if (shells[i].remove) {
+        engine.canvas["buffer"].removeDisplayObject(shells[i].sprite);
+        shells.removeAt(i);
+      }
+      else
+        shells[i].move();
+    }
   }
 
   void calculateVector() {
@@ -59,6 +79,7 @@ class Shell {
               game.world.tiles[i][j].newcreep -= 10;
               if (game.world.tiles[i][j].newcreep < 0)
                 game.world.tiles[i][j].newcreep = 0;
+              game.creeperDirty = true;
             }
           }
         }

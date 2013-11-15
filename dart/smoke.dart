@@ -15,6 +15,7 @@ class Smoke {
   
   static void clear() {
     smokes.clear();
+    counter = 0;
   }
   
   static void add(Smoke smoke) {

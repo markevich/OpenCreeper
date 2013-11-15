@@ -13,22 +13,12 @@ void onMouseMove(MouseEvent evt) {
 
 void onMouseMoveGUI(MouseEvent evt) {
   engine.updateMouseGUI(evt);
-
-  for (int i = 0; i < game.symbols.length; i++) {
-    game.symbols[i].checkHovered();
-  }
+  UISymbol.checkHovered();
 }
 
 void onKeyDown(KeyboardEvent evt) {
   // select uisymbol
-  for (int i = 0; i < game.symbols.length; i++) {
-    game.symbols[i].active = false;
-    if (evt.keyCode == game.symbols[i].keyCode) {
-      game.activeSymbol = i;
-      game.symbols[i].active = true;
-      engine.canvas["main"].view.style.cursor = "none";
-    }
-  }
+  UISymbol.select(evt);
   
   // increase game speed
   if (evt.keyCode == KeyCode.F1) {
@@ -44,33 +34,22 @@ void onKeyDown(KeyboardEvent evt) {
 
   // delete building
   if (evt.keyCode == KeyCode.DELETE) {
-    for (int i = 0; i < game.buildings.length; i++) {
-      if (game.buildings[i].selected) {
-        if (game.buildings[i].imageID != "base")
-          game.removeBuilding(game.buildings[i]);
-      }
-    }
+    Building.removeSelected();
   }
 
   // pause/resume
   if (evt.keyCode == KeyCode.PAUSE || evt.keyCode == KeyCode.TAB) {
-    if (game.paused)game.resume(); else
+    if (game.paused)
+      game.resume();
+    else
       game.pause();
   }
 
   // deselect all
   if (evt.keyCode == KeyCode.ESC || evt.keyCode == KeyCode.SPACE) {
-    game.activeSymbol = -1;
-    for (int i = 0; i < game.symbols.length; i++) {
-      game.symbols[i].active = false;
-    }
-    for (int i = 0; i < game.buildings.length; i++) {
-      game.buildings[i].selected = false;
-    }
-    for (int i = 0; i < game.ships.length; i++) {
-      game.ships[i].selected = false;
-      game.ships[i].selectedCircle.visible = false;
-    }
+    UISymbol.deselect();
+    Building.deselect();
+    Ship.deselect();
     engine.canvas["main"].view.style.cursor = "url('images/Normal.cur') 2 2, pointer";
   }
 
@@ -139,6 +118,7 @@ void onKeyDown(KeyboardEvent evt) {
     if (game.world.tiles[position.x][position.y].height > -1) {
       game.world.tiles[position.x][position.y].creep++;
       game.world.tiles[position.x][position.y].newcreep++;
+      game.creeperDirty = true;
     }
   }
 
@@ -151,6 +131,7 @@ void onKeyDown(KeyboardEvent evt) {
       game.world.tiles[position.x][position.y].newcreep--;
       if (game.world.tiles[position.x][position.y].newcreep < 0)
         game.world.tiles[position.x][position.y].newcreep = 0;
+      game.creeperDirty = true;
     }
   }
 
@@ -193,40 +174,18 @@ void onLeave(evt) {
 }
 
 void onLeaveGUI(evt) {
-  for (int i = 0; i < game.symbols.length; i++) {
-    game.symbols[i].hovered = false;
-  }
+  UISymbol.dehover();
 }
 
 void onClickGUI(MouseEvent evt) {
-  for (int i = 0; i < game.buildings.length; i++)
-    game.buildings[i].selected = false;
-
-  for (int i = 0; i < game.ships.length; i++)
-    game.ships[i].selected = false;
-
+  Building.deselect();
+  Ship.deselect();
+  UISymbol.setActive();
   engine.playSound("click");
-  for (int i = 0; i < game.symbols.length; i++) {
-    game.symbols[i].setActive();
-  }
-
-  if (game.activeSymbol != -1) {
-    engine.canvas["main"].view.style.cursor = "none";
-  }
 }
 
 void onDoubleClick(MouseEvent evt) {
-  bool selectShips = false;
-  // select a ship if hovered
-  for (int i = 0; i < game.ships.length; i++) {
-    if (game.ships[i].hovered) {
-      selectShips = true;
-      break;
-    }
-  }
-  if (selectShips)for (int i = 0; i < game.ships.length; i++) {
-    game.ships[i].selected = true;
-  }
+  Ship.select();
 }
 
 void onMouseDown(MouseEvent evt) {
@@ -251,58 +210,20 @@ void onMouseUp(MouseEvent evt) {
       game.world.tiles[position.x][position.y].terraformProgress = 0;
     }
 
-    // control ships
-    for (int i = 0; i < game.ships.length; i++) {
-      game.ships[i].control(position);
-    }
-
-    // reposition building
-    for (int i = 0; i < game.buildings.length; i++) {
-      if (game.buildings[i].built && game.buildings[i].selected && game.buildings[i].canMove) {
-        // check if it can be placed
-        if (game.canBePlaced(position, game.buildings[i].size, game.buildings[i])) {
-          engine.canvas["main"].view.style.cursor = "url('images/Normal.cur') 2 2, pointer";
-          game.buildings[i].operating = false;
-          game.buildings[i].weaponTargetPosition = null;
-          game.buildings[i].status = "RISING";
-          game.buildings[i].moveTargetPosition = position;
-        }
-      }
-    }
-
-    // select a building if hovered
-    if (game.mode == "DEFAULT") {
-      Building buildingSelected = null;
-      for (int i = 0; i < game.buildings.length; i++) {
-        game.buildings[i].selected = game.buildings[i].hovered;
-        if (game.buildings[i].selected) {
-          buildingSelected = game.buildings[i];
-        }
-      }
-      if (buildingSelected != null) {
-        if (buildingSelected.active) {
-          querySelector('#deactivate').style.display = "block";
-          querySelector('#activate').style.display = "none";
-        } else {
-          querySelector('#deactivate').style.display = "none";
-          querySelector('#activate').style.display = "block";
-        }
-      } else {
-        querySelector('#deactivate').style.display = "none";
-        querySelector('#activate').style.display = "none";
-      }
-    }
+    Ship.control(position);
+    Building.reposition(position);
+    Building.select();
 
     engine.mouse.dragStart = null;
 
     // when there is an active symbol place building
-    if (game.activeSymbol != -1) {
-      String type = game.symbols[game.activeSymbol].imageID.substring(0, 1).toUpperCase() + game.symbols[game.activeSymbol].imageID.substring(1);
+    if (UISymbol.activeSymbol != null) {
+      String type = UISymbol.activeSymbol.imageID.substring(0, 1).toUpperCase() + UISymbol.activeSymbol.imageID.substring(1);
       bool soundSuccess = false;
       for (int i = 0; i < game.ghosts.length; i++) {
-        if (game.canBePlaced(game.ghosts[i], game.symbols[game.activeSymbol].size, null)) {
+        if (game.canBePlaced(game.ghosts[i], UISymbol.activeSymbol.size, null)) {
           soundSuccess = true;
-          game.addBuilding(game.ghosts[i], game.symbols[game.activeSymbol].imageID);
+          Building.add(game.ghosts[i], UISymbol.activeSymbol.imageID);
         }
       }
       if (soundSuccess)
@@ -312,22 +233,10 @@ void onMouseUp(MouseEvent evt) {
     }
   } else if (evt.which == 3) {
     game.mode = "DEFAULT";
-
-    // unselect all currently selected buildings
-    for (int i = 0; i < game.buildings.length; i++) {
-      game.buildings[i].selected = false;
-      querySelector('#deactivate').style.display = "none";
-      querySelector('#activate').style.display = "none";
-    }
-
-    // unselect all currently selected ships
-    for (int i = 0; i < game.ships.length; i++) {
-      game.ships[i].selected = false;
-      game.ships[i].selectedCircle.visible = false;
-    }
-
+    Building.deselect();
+    Ship.deselect();
+    UISymbol.reset();
     querySelector("#terraform").attributes['value'] = "Terraform Off";
-    game.clearSymbols();
   }
 }
 

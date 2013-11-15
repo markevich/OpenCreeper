@@ -5,22 +5,73 @@ class UISymbol {
   String imageID;
   int size, packets, radius, keyCode;
   bool active = false, hovered = false;
+  static UISymbol activeSymbol = null;
+  static List<UISymbol> symbols = new List<UISymbol>();
 
   UISymbol(position, this.imageID, this.keyCode, this.size, this.packets, this.radius) {
     rectangle = new Rectangle(position.x, position.y, 80, 55);
   }
-
-  void checkHovered() {
-    hovered = rectangle.containsPoint(new Point(engine.mouseGUI.x, engine.mouseGUI.y));
+  
+  static void clear() {
+    symbols.clear();
+  }
+  
+  static void reset() {
+    activeSymbol = null;
+    UISymbol.deselect();
+    engine.canvas["main"].view.style.cursor = "url('images/Normal.cur') 2 2, pointer";
+  }
+  
+  static void add(UISymbol symbol) {
+    symbols.add(symbol);
+  }
+  
+  static void checkHovered() {
+    for (int i = 0; i < symbols.length; i++) {
+      symbols[i].hovered = symbols[i].rectangle.containsPoint(new Point(engine.mouseGUI.x, engine.mouseGUI.y));
+    }   
+  }
+  
+  // stupid name
+  static void dehover() {
+    for (int i = 0; i < symbols.length; i++) {
+      symbols[i].hovered = false;
+    }
+  }
+  
+  static void select(evt) {
+    for (int i = 0; i < symbols.length; i++) {
+      symbols[i].active = false;
+      if (evt.keyCode == symbols[i].keyCode) {
+        activeSymbol = symbols[i];
+        symbols[i].active = true;
+        engine.canvas["main"].view.style.cursor = "none";
+      }
+    }
+  }
+  
+  static void deselect() {
+    for (int i = 0; i < symbols.length; i++) {
+      symbols[i].active = false;
+    }
+    activeSymbol = null;
   }
 
-  void setActive() {
-    if (hovered) {
-      game.activeSymbol = (rectangle.left ~/ 81) + (rectangle.top ~/ 56) * 6;
-      active = true;
-    } else {
-      active = false;
+  static void setActive() {
+    for (int i = 0; i < symbols.length; i++) {
+      if (symbols[i].hovered) {
+        activeSymbol = symbols[i];
+        symbols[i].active = true;
+      } else {
+        symbols[i].active = false;
+      }
     }
+    
+
+    if (activeSymbol != null) {
+      engine.canvas["main"].view.style.cursor = "none";
+    }
+
   }
   
   void draw() {

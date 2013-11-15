@@ -8,6 +8,8 @@ class Packet {
   Building target, currentTarget;
   Sprite sprite;
   static num baseSpeed = 3;
+  static List<Packet> packets = new List<Packet>();
+  static List<Packet> queue = new List<Packet>();
 
   Packet(position, imageID, this.type) {
     sprite = new Sprite(2, engine.images[imageID], position, 16, 16);
@@ -17,6 +19,79 @@ class Packet {
       sprite.scale = new Vector(1.5, 1.5);
 
     engine.canvas["buffer"].addDisplayObject(sprite);
+  }
+  
+  static void clear() {
+    packets.clear();
+    queue.clear();
+  }
+  
+  static void add(Packet packet) {
+    packets.add(packet);
+  }
+  
+  static void addQueue(Packet packet) {
+    queue.add(packet);
+  }
+  
+  static void update() {
+    for (int i = packets.length - 1; i >= 0; i--) {
+      if (packets[i].remove) {
+        engine.canvas["buffer"].removeDisplayObject(packets[i].sprite);
+        packets.removeAt(i);
+      }
+      else
+        packets[i].move();
+    }
+    
+    /**
+     * Updates the packet queue of the base.
+     * 
+     * If the base has energy the first packet is removed from
+     * the queue and sent to its target (FIFO).
+     */
+    for (int i = queue.length - 1; i >= 0; i--) {
+      if (game.currentEnergy > 0) {
+        game.currentEnergy--;
+        game.updateEnergyElement();
+        Packet packet = queue.removeAt(0);
+        Packet.add(packet);
+      }
+    }
+  }
+  
+  static void removeWithTarget(building) {
+    for (int i = packets.length - 1; i >= 0; i--) {
+      if (packets[i].currentTarget == building || packets[i].target == building) {
+        packets.removeAt(i);
+      }
+    }
+    for (int i = queue.length - 1; i >= 0; i--) {
+      if (queue[i].currentTarget == building || queue[i].target == building) {
+        queue.removeAt(i);
+      }
+    }
+  }
+  
+  /**
+   * Creates a new requested packet with its [target]
+   * and [type] and queues it.
+   */
+  static void queuePacket(Building target, String type) {
+    String img = "packet_" + type;
+    Vector center = game.base.getCenter();
+    Packet packet = new Packet(center, img, type);
+    packet.target = target;
+    packet.currentTarget = game.base;
+    if (packet.findRoute()) {
+      if (packet.type == "health")
+        packet.target.healthRequests++;
+      if (packet.type == "energy")
+        packet.target.energyRequests += 4;
+      Packet.addQueue(packet);
+    } else {
+      engine.canvas["buffer"].removeDisplayObject(packet.sprite);
+    }
   }
 
   void move() {
@@ -50,7 +125,7 @@ class Packet {
               if (target.imageID == "bomber") {
                 Ship ship = new Ship(new Vector(target.position.x * game.tileSize + 24, target.position.y * game.tileSize + 24), "bombership", "Bomber", target);
                 target.ship = ship;
-                game.ships.add(ship);
+                Ship.add(ship);
               }
             }
           }

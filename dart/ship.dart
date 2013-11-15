@@ -9,6 +9,7 @@ class Ship {
   Sprite sprite, targetSymbol;
   Circle hoverCircle, selectedCircle;
   static final int baseSpeed = 1;
+  static List<Ship> ships = new List<Ship>();
 
   Ship(position, imageID, this.type, this.home) {
     sprite = new Sprite(4, engine.images[imageID], position, 48, 48);
@@ -28,12 +29,34 @@ class Ship {
     targetSymbol.visible = false;
     engine.canvas["buffer"].addDisplayObject(targetSymbol);
   }
-
-  bool updateHoverState() {
-    Vector realPosition = sprite.position.real2screen();
-    hovered = (engine.mouse.x > realPosition.x - 24 && engine.mouse.x < realPosition.x + 24 && engine.mouse.y > realPosition.y - 24 && engine.mouse.y < realPosition.y + 24);
-    hoverCircle.visible = hovered;
-    return hovered;
+  
+  static void clear() {
+    ships.clear();
+  }
+  
+  static void add(Ship ship) {
+    ships.add(ship);
+  }
+  
+  static void update() {
+    for (int i = 0; i < ships.length; i++) {
+      ships[i].move();
+    }
+  }
+  
+  static void deselect() {
+    for (int i = 0; i < ships.length; i++) {
+      ships[i].selected = false;
+      ships[i].selectedCircle.visible = false;
+    }
+  }
+  
+  static void updateHoverState() {
+    for (int i = 0; i < ships.length; i++) {
+      Vector realPosition = ships[i].sprite.position.real2screen();
+      ships[i].hovered = (engine.mouse.x > realPosition.x - 24 && engine.mouse.x < realPosition.x + 24 && engine.mouse.y > realPosition.y - 24 && engine.mouse.y < realPosition.y + 24);
+      ships[i].hoverCircle.visible = ships[i].hovered;
+    }
   }
 
   void turnToTarget() {
@@ -71,44 +94,56 @@ class Ship {
     speed.y = y * Ship.baseSpeed * game.speed;
   }
   
-  void control(Vector position) {
-    // select ship
-    if (hovered) {
-      selected = true;
-      selectedCircle.visible = true;
-    }
-    
-    // control if selected
-    if (selected) {
-      game.mode = "SHIP_SELECTED";
-
-      if (status == "IDLE") {
-        if (position.x - 1 != home.position.x && position.y - 1 != home.position.y) {         
-          // leave home
-          energy = home.energy;
-          home.energy = 0;
-          targetPosition = position * game.tileSize;
-          targetSymbol.position = targetPosition;
-          status = "RISING";
-        }
+  static void control(Vector position) {
+    for (int i = 0; i < ships.length; i++) {
+      
+      // select ship
+      if (ships[i].hovered) {
+        ships[i].selected = true;
+        ships[i].selectedCircle.visible = true;
       }
       
-      if (status == "ATTACKING" || status == "RETURNING") {      
-        if (position.x - 1 == home.position.x && position.y - 1 == home.position.y) {
-          // return home
-          targetPosition.x = (position.x - 1) * game.tileSize;
-          targetPosition.y = (position.y - 1) * game.tileSize;
-          status = "RETURNING";
+      // control if selected
+      if (ships[i].selected) {
+        game.mode = "SHIP_SELECTED";
+  
+        if (ships[i].status == "IDLE") {
+          if (position.x - 1 != ships[i].home.position.x && position.y - 1 != ships[i].home.position.y) {         
+            // leave home
+            ships[i].energy = ships[i].home.energy;
+            ships[i].home.energy = 0;
+            ships[i].targetPosition = position * game.tileSize;
+            ships[i].targetSymbol.position = ships[i].targetPosition;
+            ships[i].status = "RISING";
+          }
         }
-        else {
-          // attack again
-          targetPosition.x = (position.x - 1) * game.tileSize;
-          targetPosition.y = (position.y - 1) * game.tileSize;
-          targetSymbol.position = targetPosition;
-          status = "ATTACKING";
+        
+        if (ships[i].status == "ATTACKING" || ships[i].status == "RETURNING") {      
+          if (position.x - 1 == ships[i].home.position.x && position.y - 1 == ships[i].home.position.y) {
+            // return home
+            ships[i].targetPosition.x = (position.x - 1) * game.tileSize;
+            ships[i].targetPosition.y = (position.y - 1) * game.tileSize;
+            ships[i].status = "RETURNING";
+          }
+          else {
+            // attack again
+            ships[i].targetPosition.x = (position.x - 1) * game.tileSize;
+            ships[i].targetPosition.y = (position.y - 1) * game.tileSize;
+            ships[i].targetSymbol.position = ships[i].targetPosition;
+            ships[i].status = "ATTACKING";
+          }
         }
+  
       }
-
+    }
+  }
+  
+  static void select() {
+    // select a ship if hovered
+    for (int i = 0; i < ships.length; i++) {
+      if (ships[i].hovered) {
+        ships[i].selected = true;
+      }
     }
   }
 

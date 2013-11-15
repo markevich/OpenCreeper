@@ -9,6 +9,7 @@ class Building {
   Ship ship;
   static final double baseSpeed = .5;
   static int damageCounter = 0;
+  static List<Building> buildings = new List<Building>();
 
   Building(this.position, this.imageID) {
     health = 0;
@@ -76,16 +77,162 @@ class Building {
     }
   }
   
-  bool updateHoverState() {
-    Vector realPosition = position.tiled2screen();
-    hovered = (engine.mouse.x > realPosition.x &&
-              engine.mouse.x < realPosition.x + game.tileSize * size * game.zoom - 1 &&
-              engine.mouse.y > realPosition.y &&
-              engine.mouse.y < realPosition.y + game.tileSize * size * game.zoom - 1);
-
-    return hovered;
+  static void clear() {
+    buildings.clear();
+    damageCounter = 0;
   }
+    
+  /**
+   * Adds a building of a given [type] at the given [position].
+   */
+  static Building add(Vector position, String type) {
+    Building building = new Building(position, type);
+    buildings.add(building);
+    return building;
+  }
+  
+  /**
+   * Removes a [building].
+   */
+  static void remove(Building building) {
 
+    // only explode building when it has been built
+    if (building.built) {
+      Explosion.add(new Explosion(building.getCenter()));
+      engine.playSound("explosion", building.position);
+    }
+
+    if (building.imageID == "base") {
+      querySelector('#lose').style.display = "block";
+      game.stopwatch.stop();
+      game.stop();
+    }
+    if (building.imageID == "collector") {
+      if (building.built)
+        building.updateCollection("remove");
+    }
+    if (building.imageID == "storage") {
+      game.maxEnergy -= 10;
+      game.updateEnergyElement();
+    }
+    if (building.imageID == "speed") {
+      Packet.baseSpeed /= 1.01;
+    }
+
+    // find all packets with this building as target and remove them
+    Packet.removeWithTarget(building);
+
+    int index = buildings.indexOf(building);
+    buildings.removeAt(index);
+  }
+  
+  static void removeSelected() {
+    for (int i = 0; i < buildings.length; i++) {
+      if (buildings[i].selected) {
+        if (buildings[i].imageID != "base")
+          Building.remove(buildings[i]);
+      }
+    }
+  }
+  
+  static void select() {
+    if (game.mode == "DEFAULT") {
+      Building buildingSelected = null;
+      for (int i = 0; i < buildings.length; i++) {
+        buildings[i].selected = buildings[i].hovered;
+        if (buildings[i].selected) {
+          buildingSelected = buildings[i];
+        }
+      }
+      if (buildingSelected != null) {
+        if (buildingSelected.active) {
+          querySelector('#deactivate').style.display = "block";
+          querySelector('#activate').style.display = "none";
+        } else {
+          querySelector('#deactivate').style.display = "none";
+          querySelector('#activate').style.display = "block";
+        }
+      } else {
+        querySelector('#deactivate').style.display = "none";
+        querySelector('#activate').style.display = "none";
+      }
+    }
+  }
+  
+  static void deselect() {
+    for (int i = 0; i < buildings.length; i++) {
+      buildings[i].selected = false;
+    }
+    querySelector('#deactivate').style.display = "none";
+    querySelector('#activate').style.display = "none";
+  }
+  
+  static void updateHoverState() {
+    for (int i = 0; i < buildings.length; i++) {
+      Vector realPosition = buildings[i].position.tiled2screen();
+      buildings[i].hovered = (engine.mouse.x > realPosition.x &&
+          engine.mouse.x < realPosition.x + game.tileSize * buildings[i].size * game.zoom - 1 &&
+          engine.mouse.y > realPosition.y &&
+          engine.mouse.y < realPosition.y + game.tileSize * buildings[i].size * game.zoom - 1);
+    }
+  }
+  
+  static void update() {
+    for (int i = 0; i < buildings.length; i++) {
+      buildings[i].move();
+      buildings[i].checkOperating();
+      buildings[i].shield();
+      buildings[i].requestPacket();
+    }
+
+    // take damage
+    damageCounter++;
+    if (damageCounter > 10) {
+      damageCounter = 0;
+      for (int i = 0; i < buildings.length; i++) {
+        buildings[i].takeDamage();
+      }
+    }
+
+    // collect energy
+    game.collectCounter++;
+    if (game.collectCounter > (250 / game.speed)) {
+      game.collectCounter -= (250 / game.speed);
+      for (int i = 0; i < buildings.length; i++) {
+        buildings[i].collectEnergy();
+      }
+    }
+  }
+  
+  static void activate() {
+    for (int i = 0; i < buildings.length; i++) {
+      if (buildings[i].selected)
+        buildings[i].active = true;
+    }
+  }
+  
+  static void deactivate() {
+    for (int i = 0; i < buildings.length; i++) {
+      if (buildings[i].selected)
+        buildings[i].active = false;
+    }
+  }
+  
+  static void reposition(Vector position) { 
+    for (int i = 0; i < buildings.length; i++) {
+      if (buildings[i].built && buildings[i].selected && buildings[i].canMove) {
+        // check if it can be placed
+        if (game.canBePlaced(position, buildings[i].size, buildings[i])) {
+          engine.canvas["main"].view.style.cursor = "url('images/Normal.cur') 2 2, pointer";
+          buildings[i].operating = false;
+          buildings[i].weaponTargetPosition = null;
+          buildings[i].status = "RISING";
+          buildings[i].moveTargetPosition = position;
+        }
+      }
+    }
+  }
+  
   void move() {
     if (status == "RISING") {
       if (flightCounter < 25) {
@@ -158,7 +305,7 @@ class Building {
       }
 
       if (health < 0) {
-        game.removeBuilding(this);
+        Building.remove(this);
       }
     }
   }
@@ -178,6 +325,7 @@ class Building {
                 if (game.world.tiles[i][j].creep < 0) {
                   game.world.tiles[i][j].creep = 0;
                 }
+                game.creeperDirty = true;
               }
             }
           }
@@ -196,7 +344,7 @@ class Building {
           num healthAndRequestDelta = maxHealth - health - healthRequests;
           if (healthAndRequestDelta > 0) {
             requestCounter = 0;
-            game.queuePacket(this, "health");
+            Packet.queuePacket(this, "health");
           }
         }
         // request energy
@@ -204,7 +352,7 @@ class Building {
           num energyAndRequestDelta = maxEnergy - energy - energyRequests;
           if (energyAndRequestDelta > 0) {
             requestCounter = 0;
-            game.queuePacket(this, "energy");
+            Packet.queuePacket(this, "energy");
           }
         }
       }
@@ -246,7 +394,7 @@ class Building {
         packet.target = game.base;
         packet.currentTarget = this;
         if (packet.findRoute())
-          game.packets.add(packet);
+          Packet.add(packet);
         else
           engine.canvas["buffer"].removeDisplayObject(packet.sprite);
       }
@@ -289,13 +437,13 @@ class Building {
               }
             }
 
-            for (int k = 0; k < game.buildings.length; k++) {
-              if (game.buildings[k] != this && game.buildings[k].imageID == "collector") {
-                int heightK = game.world.tiles[game.buildings[k].position.x][game.buildings[k].position.y].height;
-                Vector centerBuildingK = game.buildings[k].getCenter();
+            for (int k = 0; k < Building.buildings.length; k++) {
+              if (Building.buildings[k] != this && Building.buildings[k].imageID == "collector") {
+                int heightK = game.world.tiles[Building.buildings[k].position.x][Building.buildings[k].position.y].height;
+                Vector centerBuildingK = Building.buildings[k].getCenter();
                 if (pow(positionCurrentCenter.x - centerBuildingK.x, 2) + pow(positionCurrentCenter.y - centerBuildingK.y, 2) < pow(game.tileSize * 6, 2)) {
                   if (tileHeight == heightK) {
-                    game.world.tiles[positionCurrent.x][positionCurrent.y].collector = game.buildings[k];
+                    game.world.tiles[positionCurrent.x][positionCurrent.y].collector = Building.buildings[k];
                   }
                 }
               }
@@ -318,8 +466,10 @@ class Building {
       Vector center = getCenter();
 
       if (imageID == "analyzer" && energy > 0) {
+        Emitter.find(this);
+        
         // find emitter
-        if (weaponTargetPosition == null) {
+        /*if (weaponTargetPosition == null) {
           for (int i = 0; i < game.emitters.length; i++) {
             Vector emitterCenter = game.emitters[i].sprite.position;
 
@@ -342,7 +492,7 @@ class Building {
           }
 
           operating = true;
-        }
+        }*/
       }
 
       if (imageID == "terp" && energy > 0) {
@@ -496,7 +646,7 @@ class Building {
               energy -= 1;
               operating = true;
               Projectile projectile = new Projectile(center, new Vector(weaponTargetPosition.x * game.tileSize + game.tileSize / 2, weaponTargetPosition.y * game.tileSize + game.tileSize / 2), targetAngle); // FIXME: weaponTargetPosition might be NULL
-              game.projectiles.add(projectile);
+              Projectile.add(projectile);
               engine.playSound("laser", position);
             }
           }
@@ -523,7 +673,7 @@ class Building {
             if (target != null) {
               engine.playSound("shot", position);
               Shell shell = new Shell(center, new Vector(target.x * game.tileSize + game.tileSize / 2, target.y * game.tileSize + game.tileSize / 2));
-              game.shells.add(shell);
+              Shell.add(shell);
               energy -= 1;
             }
           }
@@ -531,8 +681,9 @@ class Building {
           else if (imageID == "beam" && energy > 0 && energyCounter > 0) {
             energyCounter = 0;
 
+            Spore.damage(this);
               // find spore in range
-              for (int i = 0; i < game.spores.length; i++) {
+              /*for (int i = 0; i < game.spores.length; i++) {
                 Vector sporeCenter = game.spores[i].sprite.position;
                 var distance = pow(sporeCenter.x - center.x, 2) + pow(sporeCenter.y - center.y, 2);
 
@@ -547,188 +698,196 @@ class Building {
                     Explosion.add(new Explosion(sporeCenter));
                   }
                 }
-              }
+              }*/
             }
 
     }
   }
   
-  void drawBox() {
+  static void drawBox() {
     CanvasRenderingContext2D context = engine.canvas["buffer"].context;
     
-    if (hovered || selected) {
-      Vector realPosition = position.tiled2screen();
-
-      context
-        ..lineWidth = 2 * game.zoom
-        ..strokeStyle = "#000"
-        ..strokeRect(realPosition.x, realPosition.y, game.tileSize * size * game.zoom, game.tileSize * size * game.zoom);
+    for (int i = 0; i < buildings.length; i++) {
+      if (buildings[i].selected) {
+        Vector realPosition = buildings[i].position.tiled2screen();
+  
+        context
+          ..lineWidth = 2 * game.zoom
+          ..strokeStyle = "#000"
+          ..strokeRect(realPosition.x, realPosition.y, game.tileSize * buildings[i].size * game.zoom, game.tileSize * buildings[i].size * game.zoom);
+      }
     }
   }
 
-  void drawMovementIndicators() {
+  static void drawMovementIndicators() {
     CanvasRenderingContext2D context = engine.canvas["buffer"].context;
     
-    if (status != "IDLE") {
-      Vector center = getCenter().real2screen();
-      Vector target = moveTargetPosition.tiled2screen();
-
-      // draw box
-      context
-        ..strokeStyle = "rgba(0,255,0,0.5)"
-        ..strokeRect(target.x, target.y, size * game.tileSize * game.zoom, size * game.tileSize * game.zoom);
-      // draw line
-      context
-        ..strokeStyle = "rgba(255,255,255,0.5)"
-        ..beginPath()
-        ..moveTo(center.x, center.y)
-        ..lineTo(target.x + (game.tileSize / 2) * size * game.zoom, target.y + (game.tileSize / 2) * size * game.zoom)
-        ..stroke();
+    for (int i = 0; i < buildings.length; i++) {
+      if (buildings[i].status != "IDLE") {
+        Vector center = buildings[i].getCenter().real2screen();
+        Vector target = buildings[i].moveTargetPosition.tiled2screen();
+  
+        // draw box
+        context
+          ..strokeStyle = "rgba(0,255,0,0.5)"
+          ..strokeRect(target.x, target.y, buildings[i].size * game.tileSize * game.zoom, buildings[i].size * game.tileSize * game.zoom);
+        // draw line
+        context
+          ..strokeStyle = "rgba(255,255,255,0.5)"
+          ..beginPath()
+          ..moveTo(center.x, center.y)
+          ..lineTo(target.x + (game.tileSize / 2) * buildings[i].size * game.zoom, target.y + (game.tileSize / 2) * buildings[i].size * game.zoom)
+          ..stroke();
+      }
     }
   }
 
-  void drawRepositionInfo() {
+  static void drawRepositionInfo() {
     CanvasRenderingContext2D context = engine.canvas["buffer"].context;
     
-    if (built && selected && canMove) {
-      engine.canvas["main"].view.style.cursor = "none";
-      
-      Vector positionScrolled = game.getHoveredTilePosition();
-      Vector drawPosition = positionScrolled.tiled2screen();
-      Vector positionScrolledCenter = new Vector(positionScrolled.x * game.tileSize + (game.tileSize / 2) * size, positionScrolled.y * game.tileSize + (game.tileSize / 2) * size);
-      Vector drawPositionCenter = positionScrolledCenter.real2screen();
-
-      Vector center = getCenter().real2screen();
-
-      game.drawRangeBoxes(positionScrolled, imageID, weaponRadius, size);
-
-      if (game.canBePlaced(positionScrolled, size, this))
-        context.strokeStyle = "rgba(0,255,0,0.5)";
-      else
-        context.strokeStyle = "rgba(255,0,0,0.5)";
-
-      // draw rectangle
-      context.strokeRect(drawPosition.x, drawPosition.y, game.tileSize * size * game.zoom, game.tileSize * size * game.zoom);
-      // draw line
-      context
-        ..strokeStyle = "rgba(255,255,255,0.5)"
-        ..beginPath()
-        ..moveTo(center.x, center.y)
-        ..lineTo(drawPositionCenter.x, drawPositionCenter.y)
-        ..stroke();
+    for (int i = 0; i < buildings.length; i++) {
+      if (buildings[i].built && buildings[i].selected && buildings[i].canMove) {
+        engine.canvas["main"].view.style.cursor = "none";
+        
+        Vector positionScrolled = game.getHoveredTilePosition();
+        Vector drawPosition = positionScrolled.tiled2screen();
+        Vector positionScrolledCenter = new Vector(positionScrolled.x * game.tileSize + (game.tileSize / 2) * buildings[i].size, positionScrolled.y * game.tileSize + (game.tileSize / 2) * buildings[i].size);
+        Vector drawPositionCenter = positionScrolledCenter.real2screen();
+  
+        Vector center = buildings[i].getCenter().real2screen();
+  
+        game.drawRangeBoxes(positionScrolled, buildings[i].imageID, buildings[i].weaponRadius, buildings[i].size);
+  
+        if (game.canBePlaced(positionScrolled, buildings[i].size, buildings[i]))
+          context.strokeStyle = "rgba(0,255,0,0.5)";
+        else
+          context.strokeStyle = "rgba(255,0,0,0.5)";
+  
+        // draw rectangle
+        context.strokeRect(drawPosition.x, drawPosition.y, game.tileSize * buildings[i].size * game.zoom, game.tileSize * buildings[i].size * game.zoom);
+        // draw line
+        context
+          ..strokeStyle = "rgba(255,255,255,0.5)"
+          ..beginPath()
+          ..moveTo(center.x, center.y)
+          ..lineTo(drawPositionCenter.x, drawPositionCenter.y)
+          ..stroke();
+      }
     }
   }
 
-  void draw() {
+  static void draw() {
     CanvasRenderingContext2D context = engine.canvas["buffer"].context;
     
-    Vector realPosition = position.tiled2screen();
-    Vector center = getCenter().real2screen();
-
-    if (engine.isVisible(realPosition, new Vector(engine.images[imageID].width * game.zoom, engine.images[imageID].height * game.zoom))) {
-      if (!built) {
-        context.save();
-        context.globalAlpha = .5;
-        context.drawImageScaled(engine.images[imageID], realPosition.x, realPosition.y, engine.images[imageID].width * game.zoom, engine.images[imageID].height * game.zoom);
-        if (imageID == "cannon") {
-          context.drawImageScaled(engine.images["cannongun"], realPosition.x, realPosition.y, engine.images[imageID].width * game.zoom, engine.images[imageID].height * game.zoom);
-        }
-        context.restore();
-      } else {
-        context.drawImageScaled(engine.images[imageID], realPosition.x + size * 8 - size * 8 * scale, realPosition.y + size * 8 - size * 8 * scale, engine.images[imageID].width * game.zoom * scale, engine.images[imageID].height * game.zoom * scale);
-        if (imageID == "cannon") {
+    for (int i = 0; i < buildings.length; i++) {
+      Vector realPosition = buildings[i].position.tiled2screen();
+      Vector center = buildings[i].getCenter().real2screen();
+  
+      if (engine.canvas["buffer"].isVisible(realPosition, new Vector(engine.images[buildings[i].imageID].width * game.zoom, engine.images[buildings[i].imageID].height * game.zoom))) {
+        if (!buildings[i].built) {
           context.save();
-          context.translate(realPosition.x + 24 * game.zoom, realPosition.y + 24 * game.zoom);
-          context.rotate(engine.deg2rad(angle));
-          context.drawImageScaled(engine.images["cannongun"], -24 * game.zoom * scale, -24 * game.zoom * scale, 48 * game.zoom * scale, 48 * game.zoom * scale);
+          context.globalAlpha = .5;
+          context.drawImageScaled(engine.images[buildings[i].imageID], realPosition.x, realPosition.y, engine.images[buildings[i].imageID].width * game.zoom, engine.images[buildings[i].imageID].height * game.zoom);
+          if (buildings[i].imageID == "cannon") {
+            context.drawImageScaled(engine.images["cannongun"], realPosition.x, realPosition.y, engine.images[buildings[i].imageID].width * game.zoom, engine.images[buildings[i].imageID].height * game.zoom);
+          }
           context.restore();
+        } else {
+          context.drawImageScaled(engine.images[buildings[i].imageID], realPosition.x + buildings[i].size * 8 - buildings[i].size * 8 * buildings[i].scale, realPosition.y + buildings[i].size * 8 - buildings[i].size * 8 * buildings[i].scale, engine.images[buildings[i].imageID].width * game.zoom * buildings[i].scale, engine.images[buildings[i].imageID].height * game.zoom * buildings[i].scale);
+          if (buildings[i].imageID == "cannon") {
+            context.save();
+            context.translate(realPosition.x + 24 * game.zoom, realPosition.y + 24 * game.zoom);
+            context.rotate(engine.deg2rad(buildings[i].angle));
+            context.drawImageScaled(engine.images["cannongun"], -24 * game.zoom * buildings[i].scale, -24 * game.zoom * buildings[i].scale, 48 * game.zoom * buildings[i].scale, 48 * game.zoom * buildings[i].scale);
+            context.restore();
+          }
+        }
+  
+        // draw energy bar
+        if (buildings[i].needsEnergy) {
+          context.fillStyle = '#f00';
+          context.fillRect(realPosition.x + 2, realPosition.y + 1, (44 * game.zoom / buildings[i].maxEnergy) * buildings[i].energy, 3);
+        }
+  
+        // draw health bar (only if health is below maxHealth)
+        if (buildings[i].health < buildings[i].maxHealth) {
+          context.fillStyle = '#0f0';
+          context.fillRect(realPosition.x + 2, realPosition.y + game.tileSize * game.zoom * buildings[i].size - 3, ((game.tileSize * game.zoom * buildings[i].size - 8) / buildings[i].maxHealth) * buildings[i].health, 3);
+        }
+  
+        // draw inactive sign
+        if (!buildings[i].active) {
+          context.strokeStyle = "#F00";
+          context.lineWidth = 2;
+  
+          context.beginPath();
+          context.arc(center.x, center.y, (game.tileSize / 2) * buildings[i].size, 0, PI * 2, true);
+          context.closePath();
+          context.stroke();
+  
+          context.beginPath();
+          context.moveTo(realPosition.x, realPosition.y + game.tileSize * buildings[i].size);
+          context.lineTo(realPosition.x + game.tileSize * buildings[i].size, realPosition.y);
+          context.stroke();
         }
       }
-
-      // draw energy bar
-      if (needsEnergy) {
-        context.fillStyle = '#f00';
-        context.fillRect(realPosition.x + 2, realPosition.y + 1, (44 * game.zoom / maxEnergy) * energy, 3);
-      }
-
-      // draw health bar (only if health is below maxHealth)
-      if (health < maxHealth) {
-        context.fillStyle = '#0f0';
-        context.fillRect(realPosition.x + 2, realPosition.y + game.tileSize * game.zoom * size - 3, ((game.tileSize * game.zoom * size - 8) / maxHealth) * health, 3);
-      }
-
-      // draw inactive sign
-      if (!active) {
-        context.strokeStyle = "#F00";
-        context.lineWidth = 2;
-
-        context.beginPath();
-        context.arc(center.x, center.y, (game.tileSize / 2) * size, 0, PI * 2, true);
-        context.closePath();
-        context.stroke();
-
-        context.beginPath();
-        context.moveTo(realPosition.x, realPosition.y + game.tileSize * size);
-        context.lineTo(realPosition.x + game.tileSize * size, realPosition.y);
-        context.stroke();
-      }
-    }
-
-    // draw various stuff when operating
-    if (operating) {
-      if (imageID == "analyzer") {
-        Vector targetPosition = weaponTargetPosition.tiled2screen();
-        context.strokeStyle = '#00f';
-        context.lineWidth = 4;
-        context.beginPath();
-        context.moveTo(center.x, center.y);
-        context.lineTo(targetPosition.x, targetPosition.y);
-        context.stroke();
-
-        context.strokeStyle = '#fff';
-        context.lineWidth = 2;
-        context.beginPath();
-        context.moveTo(center.x, center.y);
-        context.lineTo(targetPosition.x, targetPosition.y);
-        context.stroke();
-      }
-      else if (imageID == "beam") {
-        Vector targetPosition = weaponTargetPosition.real2screen();
-        context.strokeStyle = '#f00';
-        context.lineWidth = 4;
-        context.beginPath();
-        context.moveTo(center.x, center.y);
-        context.lineTo(targetPosition.x, targetPosition.y);
-        context.stroke();
-
-        context.strokeStyle = '#fff';
-        context.lineWidth = 2;
-        context.beginPath();
-        context.moveTo(center.x, center.y);
-        context.lineTo(targetPosition.x, targetPosition.y);
-        context.stroke();
-      }
-      else if (imageID == "shield") {
-        context.drawImageScaled(engine.images["forcefield"], center.x - 168 * game.zoom, center.y - 168 * game.zoom, 336 * game.zoom, 336 * game.zoom);
-      }
-      else if (imageID == "terp") {
-        Vector targetPosition = weaponTargetPosition.tiled2screen();
-
-        context
-          ..strokeStyle = '#f00'
-          ..lineWidth = 4
-          ..beginPath()
-          ..moveTo(center.x, center.y)
-          ..lineTo(targetPosition.x + 8, targetPosition.y + 8)
-          ..stroke();
-
-        context
-          ..strokeStyle = '#fff'
-          ..lineWidth = 2
-          ..beginPath()
-          ..moveTo(center.x, center.y)
-          ..lineTo(targetPosition.x + 8, targetPosition.y + 8)
-          ..stroke();
+  
+      // draw various stuff when operating
+      if (buildings[i].operating) {
+        if (buildings[i].imageID == "analyzer") {
+          Vector targetPosition = buildings[i].weaponTargetPosition.tiled2screen();
+          context.strokeStyle = '#00f';
+          context.lineWidth = 4;
+          context.beginPath();
+          context.moveTo(center.x, center.y);
+          context.lineTo(targetPosition.x, targetPosition.y);
+          context.stroke();
+  
+          context.strokeStyle = '#fff';
+          context.lineWidth = 2;
+          context.beginPath();
+          context.moveTo(center.x, center.y);
+          context.lineTo(targetPosition.x, targetPosition.y);
+          context.stroke();
+        }
+        else if (buildings[i].imageID == "beam") {
+          Vector targetPosition = buildings[i].weaponTargetPosition.real2screen();
+          context.strokeStyle = '#f00';
+          context.lineWidth = 4;
+          context.beginPath();
+          context.moveTo(center.x, center.y);
+          context.lineTo(targetPosition.x, targetPosition.y);
+          context.stroke();
+  
+          context.strokeStyle = '#fff';
+          context.lineWidth = 2;
+          context.beginPath();
+          context.moveTo(center.x, center.y);
+          context.lineTo(targetPosition.x, targetPosition.y);
+          context.stroke();
+        }
+        else if (buildings[i].imageID == "shield") {
+          context.drawImageScaled(engine.images["forcefield"], center.x - 168 * game.zoom, center.y - 168 * game.zoom, 336 * game.zoom, 336 * game.zoom);
+        }
+        else if (buildings[i].imageID == "terp") {
+          Vector targetPosition = buildings[i].weaponTargetPosition.tiled2screen();
+  
+          context
+            ..strokeStyle = '#f00'
+            ..lineWidth = 4
+            ..beginPath()
+            ..moveTo(center.x, center.y)
+            ..lineTo(targetPosition.x + 8, targetPosition.y + 8)
+            ..stroke();
+  
+          context
+            ..strokeStyle = '#fff'
+            ..lineWidth = 2
+            ..beginPath()
+            ..moveTo(center.x, center.y)
+            ..lineTo(targetPosition.x + 8, targetPosition.y + 8)
+            ..stroke();
+        }
       }
     }
 

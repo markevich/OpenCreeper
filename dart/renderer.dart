@@ -35,6 +35,16 @@ class Renderer {
   void removeDisplayObject(DisplayObject displayObject) {
     displayObjects.removeAt(displayObjects.indexOf(displayObject));
   }
+  
+  /**
+   * Checks if an object with a given [position] and [size]
+   * is visible in the renderer view. Returns true or false.
+   */
+  bool isVisible(Vector position, Vector size) {
+    Rectangle object = new Rectangle(position.x, position.y, size.x, size.y);    
+    Rectangle myview = new Rectangle(0, 0, view.width, view.height);   
+    return myview.intersects(object);
+  }
 
   void draw() {
     for (var displayObject in displayObjects) {
@@ -44,7 +54,7 @@ class Renderer {
         if (displayObject is Sprite) {
           Vector realPosition = displayObject.position.real2screen();
 
-          if (engine.isVisible(realPosition, new Vector(displayObject.size.x * game.zoom, displayObject.size.y * game.zoom))) {
+          if (isVisible(realPosition, new Vector(displayObject.size.x * game.zoom, displayObject.size.y * game.zoom))) {
 
             if (displayObject.alpha != 1.0)
               context.globalAlpha = displayObject.alpha;
@@ -99,7 +109,7 @@ class Renderer {
           Vector position = new Vector(displayObject.rectangle.left, displayObject.rectangle.top);
           Vector realPosition = position.real2screen();
 
-          if (engine.isVisible(realPosition, new Vector(displayObject.rectangle.width * game.zoom, displayObject.rectangle.height * game.zoom))) {
+          if (isVisible(realPosition, new Vector(displayObject.rectangle.width * game.zoom, displayObject.rectangle.height * game.zoom))) {
             context.lineWidth = displayObject.lineWidth;
             context.fillStyle = displayObject.color;
             context.fillRect(realPosition.x, realPosition.y, displayObject.rectangle.width * game.zoom, displayObject.rectangle.height * game.zoom);
@@ -110,7 +120,7 @@ class Renderer {
         else if (displayObject is Circle) {
           Vector realPosition = displayObject.position.real2screen();
 
-          if (engine.isVisible(realPosition, new Vector(displayObject.radius * displayObject.scale * game.zoom, displayObject.radius * displayObject.scale * game.zoom))) {
+          if (isVisible(realPosition, new Vector(displayObject.radius * displayObject.scale * game.zoom, displayObject.radius * displayObject.scale * game.zoom))) {
             context.lineWidth = displayObject.lineWidth;
             context.strokeStyle = displayObject.color;
             context.beginPath();

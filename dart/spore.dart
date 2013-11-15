@@ -7,11 +7,53 @@ class Spore {
   int trailCounter = 0;
   Sprite sprite;
   static final int baseSpeed = 1;
+  static List<Spore> spores = new List<Spore>();
 
   Spore(position, this.targetPosition) {   
     sprite = new Sprite(2, engine.images["spore"], position, 32, 32);
     sprite.anchor = new Vector(0.5, 0.5);  
     engine.canvas["buffer"].addDisplayObject(sprite);
+  }
+  
+  static void clear() {
+    spores.clear();
+  }
+  
+  static void add(Spore spore) {
+    spores.add(spore);
+  }
+  
+  static void update() {
+    for (int i = spores.length - 1; i >= 0; i--) {
+      if (spores[i].remove) {
+        engine.canvas["buffer"].removeDisplayObject(spores[i].sprite);
+        spores.removeAt(i);
+      }
+      else
+        spores[i].move();
+    }
+  }
+  
+  static void damage(Building building) {
+    Vector center = building.getCenter();
+    
+    // find spore in range
+    for (int i = 0; i < spores.length; i++) {
+      Vector sporeCenter = spores[i].sprite.position;
+      var distance = pow(sporeCenter.x - center.x, 2) + pow(sporeCenter.y - center.y, 2);
+  
+      if (distance <= pow(building.weaponRadius * game.tileSize, 2)) {
+        building.weaponTargetPosition = sporeCenter;
+        building.energy -= .1;
+        building.operating = true;
+        spores[i].health -= 2;
+        if (spores[i].health <= 0) {
+          spores[i].remove = true;
+          engine.playSound("explosion", spores[i].sprite.position.real2tiled());
+          Explosion.add(new Explosion(sporeCenter));
+        }
+      }
+    }
   }
 
   void calculateVector() {
@@ -51,7 +93,8 @@ class Spore {
           if (game.world.contains(new Vector(i, j))) {
             num distance = pow((i * game.tileSize + game.tileSize / 2) - (targetPosition.x + game.tileSize), 2) + pow((j * game.tileSize + game.tileSize / 2) - (targetPosition.y + game.tileSize), 2);
             if (distance < pow(game.tileSize, 2)) {
-              game.world.tiles[i][j].creep += .05;
+              game.world.tiles[i][j].creep += .5;
+              game.creeperDirty = true;
             }
           }
         }

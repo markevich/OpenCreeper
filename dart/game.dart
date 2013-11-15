@@ -2,23 +2,13 @@ part of creeper;
 
 class Game {
   final int tileSize = 16;
-  int seed, currentEnergy = 0, maxEnergy = 0, activeSymbol = -1, terraformingHeight = 0;
+  int seed, currentEnergy = 0, maxEnergy = 0, terraformingHeight = 0;
   num creeperCounter = 0, collectCounter = 0;
   double speed = 1.0, zoom = 1.0;
   Timer running;
   String mode;
-  bool paused = false, scrollingUp = false, scrollingDown = false, scrollingLeft = false, scrollingRight = false;
+  bool paused = false, scrollingUp = false, scrollingDown = false, scrollingLeft = false, scrollingRight = false, creeperDirty = true;
   List<Vector> ghosts = new List<Vector>();
-  List<Packet> packetQueue = new List<Packet>();
-  List<Sporetower> sporetowers = new List<Sporetower>();
-  List<Emitter> emitters = new List<Emitter>();
-  List<UISymbol> symbols = new List<UISymbol>();
-  List<Spore> spores = new List<Spore>();
-  List<Building> buildings = new List<Building>();
-  List<Packet> packets = new List<Packet>();
-  List<Shell> shells = new List<Shell>();
-  List<Ship> ships = new List<Ship>();
-  List<Projectile> projectiles = new List<Projectile>();
   World world;
   Vector scroll = new Vector(0, 0);
   Building base;
@@ -60,35 +50,28 @@ class Game {
     querySelector('#lose').style.display = 'none';
     querySelector('#win').style.display = 'none';
 
-    mode = "DEFAULT";
-    buildings.clear();
-    packets.clear();
-    shells.clear();
-    spores.clear();
-    ships.clear();
+    Building.clear();
+    Packet.clear();
+    Shell.clear();
+    Spore.clear();
+    Ship.clear();
     Smoke.clear();
     Explosion.clear();
-    emitters.clear();
-    sporetowers.clear();
-    packetQueue.clear();
-    projectiles.clear();
+    Emitter.clear();
+    Sporetower.clear();
+    Projectile.clear();
+    UISymbol.reset();
 
+    mode = "DEFAULT";
     maxEnergy = 20;
     currentEnergy = 20;
-
     creeperCounter = 0;
     collectCounter = 0;
-    Emitter.counter = 0;
-    Building.damageCounter = 0;
-    Smoke.counter = 0;
-    Explosion.counter = 0;
-
     speed = 1.0;
-    activeSymbol = -1;
+    
     updateEnergyElement();
     updateSpeedElement();
     updateZoomElement();
-    clearSymbols();
     createWorld();
   }
   
@@ -129,7 +112,7 @@ class Game {
   }
 
   void run() {
-    running = new Timer.periodic(new Duration(milliseconds: (1000 / speed / engine.FPS).floor()), (Timer timer) => updateAll());
+    running = new Timer.periodic(new Duration(milliseconds: (1000 / speed / engine.TPS).floor()), (Timer timer) => updateAll());
     engine.animationRequest = window.requestAnimationFrame(draw);
   }
   
@@ -184,6 +167,7 @@ class Game {
       copyTerrain();
       drawCollection();
       updateZoomElement();
+      creeperDirty = true;
     }
   }
 
@@ -194,6 +178,7 @@ class Game {
       copyTerrain();
       drawCollection();
       updateZoomElement();
+      creeperDirty = true;
     }
   }
 
@@ -229,14 +214,15 @@ class Game {
     scroll.x = randomPosition.x + 4;
     scroll.y = randomPosition.y + 4;
 
-    Building building = new Building(randomPosition, "base");
+    //Building building = new Building(randomPosition, "base");
+    Building building = Building.add(randomPosition, "base");
     building.health = 40;
     building.maxHealth = 40;
     building.built = true;
     building.size = 9;
     building.canMove = true;
-    buildings.add(building);
-    base = building;
+    //Building.add(building);
+    base = building;   
 
     int height = this.world.tiles[building.position.x + 4][building.position.y + 4].height;
     if (height < 0)
@@ -256,7 +242,7 @@ class Game {
           engine.randomInt(0, world.size.y - 3, seed + engine.randomInt(1, 1000, seed + 1 + l)));
   
       Emitter emitter = new Emitter(new Vector(randomPosition.x * 16 + 24, randomPosition.y * 16 + 24), 25);
-      emitters.add(emitter);
+      Emitter.add(emitter);
   
       height = world.getTile(emitter.sprite.position + new Vector(1, 1)).height; //this.world.tiles[emitter.sprite.position.x + 1][emitter.sprite.position.y + 1].height;
       if (height < 0)
@@ -276,7 +262,7 @@ class Game {
           engine.randomInt(0, world.size.y - 3, seed + 3 + engine.randomInt(1, 1000, seed + 3 + l)));
   
       Sporetower sporetower = new Sporetower(new Vector(randomPosition.x * 16 + 24, randomPosition.y * 16 + 24));
-      sporetowers.add(sporetower);
+      Sporetower.add(sporetower);
   
       height = world.getTile(sporetower.sprite.position + new Vector(1,1)).height; //this.world.tiles[sporetower.position.x + 1][sporetower.position.y + 1].height;
       if (height < 0)
@@ -289,92 +275,18 @@ class Game {
     }
   }
 
-  /**
-   * Adds a building of a given [type] at the given [position].
-   */
-  void addBuilding(Vector position, String type) {
-    buildings.add(new Building(position, type));
-  }
-
-  /**
-   * Removes a [building].
-   */
-  void removeBuilding(Building building) {
-
-    // only explode building when it has been built
-    if (building.built) {
-      Explosion.add(new Explosion(building.getCenter()));
-      engine.playSound("explosion", building.position);
-    }
-
-    if (building.imageID == "base") {
-      querySelector('#lose').style.display = "block";
-      stopwatch.stop();
-      stop();
-    }
-    if (building.imageID == "collector") {
-      if (building.built)
-        building.updateCollection("remove");
-    }
-    if (building.imageID == "storage") {
-      maxEnergy -= 10;
-      updateEnergyElement();
-    }
-    if (building.imageID == "speed") {
-      Packet.baseSpeed /= 1.01;
-    }
-
-    // find all packets with this building as target and remove them
-    for (int i = packets.length - 1; i >= 0; i--) {
-      if (packets[i].currentTarget == building || packets[i].target == building) {
-        packets.removeAt(i);
-      }
-    }
-    for (int i = packetQueue.length - 1; i >= 0; i--) {
-      if (packetQueue[i].currentTarget == building || packetQueue[i].target == building) {
-        packetQueue.removeAt(i);
-      }
-    }
-
-    int index = buildings.indexOf(building);
-    buildings.removeAt(index);
-  }
-
-  void activateBuilding() {
-    for (int i = 0; i < buildings.length; i++) {
-      if (buildings[i].selected)
-        buildings[i].active = true;
-    }
-  }
-
-  void deactivateBuilding() {
-    for (int i = 0; i < buildings.length; i++) {
-      if (buildings[i].selected)
-        buildings[i].active = false;
-    }
-  }
-
-  void clearSymbols() {
-    activeSymbol = -1;
-    for (int i = 0; i < symbols.length; i++)
-      symbols[i].active = false;
-    engine.canvas["main"].view.style.cursor = "url('images/Normal.cur') 2 2, pointer";
-  }
-
   void setupUI() {
-    symbols
-      ..add(new UISymbol(new Vector(0, 0), "cannon", KeyCode.Q, 3, 25, 10))
-      ..add(new UISymbol(new Vector(81, 0), "collector", KeyCode.W, 3, 5, 6))
-      ..add(new UISymbol(new Vector(2 * 81, 0), "reactor", KeyCode.E, 3, 50, 0))
-      ..add(new UISymbol(new Vector(3 * 81, 0), "storage", KeyCode.R, 3, 8, 0))
-      ..add(new UISymbol(new Vector(4 * 81, 0), "shield", KeyCode.T, 3, 75, 10))
-      ..add(new UISymbol(new Vector(5 * 81, 0), "analyzer", KeyCode.Z, 3, 80, 10))
-
-      ..add(new UISymbol(new Vector(0, 56), "relay", KeyCode.A, 3, 10, 8))
-      ..add(new UISymbol(new Vector(81, 56), "mortar", KeyCode.S, 3, 40, 14))
-      ..add(new UISymbol(new Vector(2 * 81, 56), "beam", KeyCode.D, 3, 20, 14))
-      ..add(new UISymbol(new Vector(3 * 81, 56), "bomber", KeyCode.F, 3, 75, 0))
-      ..add(new UISymbol(new Vector(4 * 81, 56), "terp", KeyCode.G, 3, 60, 14));
+    UISymbol.add(new UISymbol(new Vector(0, 0), "cannon", KeyCode.Q, 3, 25, 10));
+    UISymbol.add(new UISymbol(new Vector(81, 0), "collector", KeyCode.W, 3, 5, 6));
+    UISymbol.add(new UISymbol(new Vector(2 * 81, 0), "reactor", KeyCode.E, 3, 50, 0));
+    UISymbol.add(new UISymbol(new Vector(3 * 81, 0), "storage", KeyCode.R, 3, 8, 0));
+    UISymbol.add(new UISymbol(new Vector(4 * 81, 0), "shield", KeyCode.T, 3, 75, 10));
+    UISymbol.add(new UISymbol(new Vector(5 * 81, 0), "analyzer", KeyCode.Z, 3, 80, 10));
+    UISymbol.add(new UISymbol(new Vector(0, 56), "relay", KeyCode.A, 3, 10, 8));
+    UISymbol.add(new UISymbol(new Vector(81, 56), "mortar", KeyCode.S, 3, 40, 14));
+    UISymbol.add(new UISymbol(new Vector(2 * 81, 56), "beam", KeyCode.D, 3, 20, 14));
+    UISymbol.add(new UISymbol(new Vector(3 * 81, 56), "bomber", KeyCode.F, 3, 75, 0));
+    UISymbol.add(new UISymbol(new Vector(4 * 81, 56), "terp", KeyCode.G, 3, 60, 14));
   }
 
   /**
@@ -647,48 +559,29 @@ class Game {
     List neighbours = new List();
     Vector centerI, centerNode;
     
-    for (int i = 0; i < buildings.length; i++) {
+    for (int i = 0; i < Building.buildings.length; i++) {
       // must not be the same building
-      if (!(buildings[i].position == node.position)) {
+      if (!(Building.buildings[i].position == node.position)) {
         // must be idle
-        if (buildings[i].status == "IDLE") {
+        if (Building.buildings[i].status == "IDLE") {
           // it must either be the target or be built
-          if (buildings[i] == target || buildings[i].built) {
-              centerI = buildings[i].getCenter();
+          if (Building.buildings[i] == target || Building.buildings[i].built) {
+              centerI = Building.buildings[i].getCenter();
               centerNode = node.getCenter();
               num distance = centerNode.distanceTo(centerI);
 
               int allowedDistance = 10 * tileSize;
-              if (node.imageID == "relay" && buildings[i].imageID == "relay") {
+              if (node.imageID == "relay" && Building.buildings[i].imageID == "relay") {
                 allowedDistance = 20 * tileSize;
               }
               if (distance <= allowedDistance) {
-                neighbours.add(buildings[i]);
+                neighbours.add(Building.buildings[i]);
               }
           }
         }
       }
     }
     return neighbours;
-  }
-
-  /**
-   * Creates a new requested packet with its [target]
-   * and [type] and queues it.
-   */
-  void queuePacket(Building target, String type) {
-    String img = "packet_" + type;
-    Vector center = base.getCenter();
-    Packet packet = new Packet(center, img, type);
-    packet.target = target;
-    packet.currentTarget = base;
-    if (packet.findRoute()) {
-      if (packet.type == "health")packet.target.healthRequests++;
-      if (packet.type == "energy")packet.target.energyRequests += 4;
-      packetQueue.add(packet);
-    } else {
-      engine.canvas["buffer"].removeDisplayObject(packet.sprite);
-    }
   }
 
   /**
@@ -701,16 +594,16 @@ class Game {
       int height = game.world.tiles[position.x][position.y].height;
 
       // 1. check for collision with another building
-      for (int i = 0; i < buildings.length; i++) {
+      for (int i = 0; i < Building.buildings.length; i++) {
         // don't check for collision with moving buildings
-        if (buildings[i].status != "IDLE")
+        if (Building.buildings[i].status != "IDLE")
           continue;
-        if (building != null && building == buildings[i])
+        if (building != null && building == Building.buildings[i])
           continue;
-        Rectangle buildingRect = new Rectangle(buildings[i].position.x * tileSize,
-                                           buildings[i].position.y * tileSize,
-                                           buildings[i].size * tileSize - 1,
-                                           buildings[i].size * tileSize - 1);
+        Rectangle buildingRect = new Rectangle(Building.buildings[i].position.x * tileSize,
+            Building.buildings[i].position.y * tileSize,
+            Building.buildings[i].size * tileSize - 1,
+            Building.buildings[i].size * tileSize - 1);
         Rectangle currentRect = new Rectangle(position.x * tileSize,
                                               position.y * tileSize,
                                               size * tileSize - 1,
@@ -751,16 +644,12 @@ class Game {
   }
   
   void updateCreeper() {
-    Emitter.counter++;
-    if (Emitter.counter >= (25 / speed)) {
-      for (int i = 0; i < emitters.length; i++)
-        emitters[i].spawn();
-      Emitter.counter = 0;
-    }
+    Emitter.update();
 
     creeperCounter++;
     if (creeperCounter > (25 / speed)) {
       creeperCounter -= (25 / speed);
+      creeperDirty = true;
 
       for (int i = 0; i < world.size.x; i++) {
         for (int j = 0; j < world.size.y; j++) {
@@ -837,139 +726,25 @@ class Game {
   }
 
   /**
-   * Updates the packet queue of the base.
-   * 
-   * If the base has energy the first packet is removed from
-   * the queue and sent to its target (FIFO).
-   */
-  void updatePacketQueue() {
-    for (int i = packetQueue.length - 1; i >= 0; i--) {
-      if (currentEnergy > 0) {
-        currentEnergy--;
-        updateEnergyElement();
-        Packet packet = packetQueue.removeAt(0);
-        packets.add(packet);
-      }
-    }
-  }
-
-  void updateBuildings() {
-    for (int i = 0; i < buildings.length; i++) {
-      buildings[i].move();
-      buildings[i].checkOperating();
-      buildings[i].shield();
-      buildings[i].requestPacket();
-    }
-
-    // take damage
-    Building.damageCounter++;
-    if (Building.damageCounter > 10) {
-      Building.damageCounter = 0;
-      for (int i = 0; i < buildings.length; i++) {
-        buildings[i].takeDamage();
-      }
-    }
-
-    // collect energy
-    collectCounter++;
-    if (collectCounter > (250 / speed)) {
-      collectCounter -= (250 / speed);
-      for (int i = 0; i < buildings.length; i++) {
-        buildings[i].collectEnergy();
-      }
-    }
-  }
-
-  void updatePackets() {
-    for (int i = packets.length - 1; i >= 0; i--) {
-      if (packets[i].remove) {
-        engine.canvas["buffer"].removeDisplayObject(packets[i].sprite);
-        packets.removeAt(i);
-      }
-      else
-        packets[i].move();
-    }
-  }
-
-  void updateShells() {
-    for (int i = shells.length - 1; i >= 0; i--) {
-      if (shells[i].remove) {
-        engine.canvas["buffer"].removeDisplayObject(shells[i].sprite);
-        shells.removeAt(i);
-      }
-      else
-        shells[i].move();
-    }
-  }
-  
-  void updateProjectiles() {
-    for (int i = projectiles.length - 1; i >= 0; i--) {
-      if (projectiles[i].remove) {
-        engine.canvas["buffer"].removeDisplayObject(projectiles[i].sprite);
-        projectiles.removeAt(i);
-      }
-      else
-        projectiles[i].move();
-    }
-  }
-
-  void updateSpores() {
-    for (int i = spores.length - 1; i >= 0; i--) {
-      if (spores[i].remove) {
-        engine.canvas["buffer"].removeDisplayObject(spores[i].sprite);
-        spores.removeAt(i);
-      }
-      else
-        spores[i].move();
-    }
-  }
-
-  void updateShips() {
-    // move
-    for (int i = 0; i < ships.length; i++) {
-      ships[i].move();
-    }
-  }
-
-  /**
    * Main update function which calls all other update functions.
    * Is called by a periodic timer.
    */ 
   void update() {
-    // check for winning condition
-    int emittersChecked = 0;
-    for (int i = 0; i < emitters.length; i++) {
-      if (emitters[i].analyzer != null)
-        emittersChecked++;
-    }
-    if (emittersChecked == emitters.length) {
-      // TODO: 10 seconds countdown
-      querySelector('#win').style.display = "block";
-      stopwatch.stop();
-      stop();
-    }  
-    
-    for (int i = 0; i < buildings.length; i++) {
-      buildings[i].updateHoverState();
-    }
-    for (int i = 0; i < ships.length; i++) {
-      ships[i].updateHoverState();
-    }
-    for (int i = 0; i < sporetowers.length; i++) {
-      sporetowers[i].update();
-    }
+    Emitter.checkWinningCondition();   
+    Building.updateHoverState();
+    Ship.updateHoverState();
 
     if (!paused) {
-      updatePacketQueue();
-      updateSpores();
-      updateShells();
+      Spore.update();
+      Shell.update();
       updateCreeper();      
-      updateProjectiles();
-      updateBuildings();
-      updatePackets();
+      Projectile.update();
+      Building.update();
+      Packet.update();
       Smoke.update();
       Explosion.update();
-      updateShips();
+      Ship.update();
+      Sporetower.update();
     }
 
     // scroll left
@@ -1000,6 +775,7 @@ class Game {
     if (scrollingLeft || scrollingRight || scrollingUp || scrollingDown) {
       copyTerrain();
       drawCollection();
+      creeperDirty = true;
     }
   }
 
@@ -1016,7 +792,7 @@ class Game {
     if (canBePlaced(position, size, null) && (type == "collector" || type == "cannon" || type == "mortar" || type == "shield" || type == "beam" || type == "terp")) {
 
       context.save();
-      context.globalAlpha = .25;
+      context.globalAlpha = .35;
 
       int radius = rad * tileSize;
 
@@ -1204,9 +980,9 @@ class Game {
       num distance = start.distanceTo(end);
       
       num buildingDistance = 3;
-      if (symbols[activeSymbol].imageID == "collector")
+      if (UISymbol.activeSymbol.imageID == "collector")
         buildingDistance = 9;
-      else if (symbols[activeSymbol].imageID == "relay")
+      else if (UISymbol.activeSymbol.imageID == "relay")
         buildingDistance = 18;
     
       num times = (distance / buildingDistance).floor() + 1;
@@ -1237,38 +1013,38 @@ class Game {
     for (int j = 0; j < ghosts.length; j++) {
       Vector positionScrolled = new Vector(ghosts[j].x, ghosts[j].y);
       Vector drawPosition = positionScrolled.tiled2screen();
-      Vector positionScrolledCenter = new Vector(positionScrolled.x * tileSize + (tileSize / 2) * symbols[activeSymbol].size, positionScrolled.y * tileSize + (tileSize / 2) * symbols[activeSymbol].size);
+      Vector positionScrolledCenter = new Vector(positionScrolled.x * tileSize + (tileSize / 2) * UISymbol.activeSymbol.size, positionScrolled.y * tileSize + (tileSize / 2) * UISymbol.activeSymbol.size);
 
-      drawRangeBoxes(positionScrolled, symbols[activeSymbol].imageID, symbols[activeSymbol].radius, symbols[activeSymbol].size);
+      drawRangeBoxes(positionScrolled, UISymbol.activeSymbol.imageID, UISymbol.activeSymbol.radius, UISymbol.activeSymbol.size);
 
       if (world.contains(positionScrolled)) {
         context.save();
         context.globalAlpha = .5;
 
         // draw building
-        context.drawImageScaled(engine.images[symbols[activeSymbol].imageID], drawPosition.x, drawPosition.y, symbols[activeSymbol].size * tileSize * zoom, symbols[activeSymbol].size * tileSize * zoom);
-        if (symbols[activeSymbol].imageID == "cannon")
+        context.drawImageScaled(engine.images[UISymbol.activeSymbol.imageID], drawPosition.x, drawPosition.y, UISymbol.activeSymbol.size * tileSize * zoom, UISymbol.activeSymbol.size * tileSize * zoom);
+        if (UISymbol.activeSymbol.imageID == "cannon")
           context.drawImageScaled(engine.images["cannongun"], drawPosition.x, drawPosition.y, 48 * zoom, 48 * zoom);
 
         // draw green or red box
         // make sure there isn't a building on this tile yet
-        if (canBePlaced(positionScrolled, symbols[activeSymbol].size, null)) {
+        if (canBePlaced(positionScrolled, UISymbol.activeSymbol.size, null)) {
           context.strokeStyle = "#0f0";
         } else {
           context.strokeStyle = "#f00";
         }
         context.lineWidth = 4 * zoom;
-        context.strokeRect(drawPosition.x, drawPosition.y, tileSize * symbols[activeSymbol].size * zoom, tileSize * symbols[activeSymbol].size * zoom);
+        context.strokeRect(drawPosition.x, drawPosition.y, tileSize * UISymbol.activeSymbol.size * zoom, tileSize * UISymbol.activeSymbol.size * zoom);
 
         context.restore();
 
         // draw lines to other buildings
-        for (int i = 0; i < buildings.length; i++) {
-          Vector center = buildings[i].getCenter();
+        for (int i = 0; i < Building.buildings.length; i++) {
+          Vector center = Building.buildings[i].getCenter();
           Vector drawCenter = center.real2screen();
 
           int allowedDistance = 10 * tileSize;
-          if (buildings[i].imageID == "relay" && symbols[activeSymbol].imageID == "relay") {
+          if (Building.buildings[i].imageID == "relay" && UISymbol.activeSymbol.imageID == "relay") {
             allowedDistance = 20 * tileSize;
           }
 
@@ -1276,15 +1052,15 @@ class Game {
             Vector lineToTarget = positionScrolledCenter.real2screen();
             context
               ..strokeStyle = '#000'
-              ..lineWidth = 2
+              ..lineWidth = 3 * game.zoom
               ..beginPath()
               ..moveTo(drawCenter.x, drawCenter.y)
               ..lineTo(lineToTarget.x, lineToTarget.y)
               ..stroke();
 
             context
-              ..strokeStyle = '#fff'
-              ..lineWidth = 1
+              ..strokeStyle = '#0f0'
+              ..lineWidth = 2 * game.zoom
               ..beginPath()
               ..moveTo(drawCenter.x, drawCenter.y)
               ..lineTo(lineToTarget.x, lineToTarget.y)
@@ -1298,7 +1074,7 @@ class Game {
             Vector drawCenter = center.real2screen();
 
             int allowedDistance = 10 * tileSize;
-            if (symbols[activeSymbol].imageID == "relay") {
+            if (UISymbol.activeSymbol.imageID == "relay") {
               allowedDistance = 20 * tileSize;
             }
 
@@ -1336,8 +1112,8 @@ class Game {
     Vector position = getHoveredTilePosition();
 
     engine.canvas["gui"].clear();
-    for (int i = 0; i < symbols.length; i++) {
-      symbols[i].draw();
+    for (int i = 0; i < UISymbol.symbols.length; i++) {
+      UISymbol.symbols[i].draw();
     }
 
     if (world.contains(position)) {
@@ -1399,17 +1175,17 @@ class Game {
     }
 
     // draw node connections
-    for (int i = 0; i < buildings.length; i++) {
-      Vector centerI = buildings[i].getCenter();
+    for (int i = 0; i < Building.buildings.length; i++) {
+      Vector centerI = Building.buildings[i].getCenter();
       Vector drawCenterI = centerI.real2screen();
-      for (int j = 0; j < buildings.length; j++) {
+      for (int j = 0; j < Building.buildings.length; j++) {
         if (i != j) {
-          if (buildings[i].status == "IDLE" && buildings[j].status == "IDLE") {
-            Vector centerJ = buildings[j].getCenter();
+          if (Building.buildings[i].status == "IDLE" && Building.buildings[j].status == "IDLE") {
+            Vector centerJ = Building.buildings[j].getCenter();
             Vector drawCenterJ = centerJ.real2screen();
 
             num allowedDistance = 10 * tileSize;
-            if (buildings[i].imageID == "relay" && buildings[j].imageID == "relay") {
+            if (Building.buildings[i].imageID == "relay" && Building.buildings[j].imageID == "relay") {
               allowedDistance = 20 * tileSize;
             }
 
@@ -1421,7 +1197,7 @@ class Game {
               context.lineTo(drawCenterJ.x, drawCenterJ.y);
               context.stroke();
               
-              if (!buildings[i].built || !buildings[j].built)
+              if (!Building.buildings[i].built || !Building.buildings[j].built)
                 context.strokeStyle = '#777';
               else
                 context.strokeStyle = '#fff';
@@ -1436,24 +1212,15 @@ class Game {
       }
     }
 
-    // draw movement indicators
-    for (int i = 0; i < buildings.length; i++) {
-      buildings[i].drawMovementIndicators();
-    }
-    
-    // draw buildings
-    for (int i = 0; i < buildings.length; i++) {
-      buildings[i].draw();
-    }
+    Building.drawMovementIndicators();
+    Building.draw();
 
     engine.canvas["buffer"].draw();
 
     if (engine.mouse.active) {
 
       // if a building is built and selected draw a green box and a line at mouse position as the reposition target
-      for (int i = 0; i < buildings.length; i++) {
-        buildings[i].drawRepositionInfo();
-      }
+      Building.drawRepositionInfo();
 
       // draw attack symbol
       if (mode == "SHIP_SELECTED") {
@@ -1462,7 +1229,7 @@ class Game {
       }
 
       // draw position info
-      if (activeSymbol != -1) {
+      if (UISymbol.activeSymbol != null) {
         drawPositionInfo();
       }
 
@@ -1498,9 +1265,7 @@ class Game {
     }
 
     // draw building hover/selection box
-    for (int i = 0; i < buildings.length; i++) {
-      buildings[i].drawBox();
-    }
+    Building.drawBox();
 
     /*Vector tp = game.getHoveredTilePosition();
     Vector tp2 = tp.tiled2screen();
@@ -1509,7 +1274,10 @@ class Game {
     engine.canvas["buffer"].context.stroke();
     query("#debug").innerHtml = "Coordinates: $tp";*/
     
-    drawCreeper();
+    if (creeperDirty) {
+      drawCreeper();
+      creeperDirty = false;
+    }
 
     engine.canvas["main"].context.drawImage(engine.canvas["buffer"].view, 0, 0);
 
