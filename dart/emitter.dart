@@ -30,7 +30,7 @@ class Emitter {
       for (int i = 0; i < emitters.length; i++) {
         // only spawn creeper if not targeted by an analyzer
         if (emitters[i].analyzer == null) {
-          game.world.getTile(emitters[i].sprite.position + new Vector(1, 1)).creep += emitters[i].strength; //game.world.tiles[sprite.position.x + 1][sprite.position.y + 1].creep += strength;
+          game.world.getTile(emitters[i].sprite.position).creep += emitters[i].strength; //game.world.tiles[sprite.position.x + 1][sprite.position.y + 1].creep += strength;
           game.creeperDirty = true;
         }
       }
@@ -38,7 +38,7 @@ class Emitter {
   }
   
   static void find(Building building) {
-    Vector center = building.getCenter();
+    Vector center = building.sprite.position;
     
     if (building.weaponTargetPosition == null) {
       for (int i = 0; i < emitters.length; i++) {

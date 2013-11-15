@@ -35,7 +35,7 @@ class Spore {
   }
   
   static void damage(Building building) {
-    Vector center = building.getCenter();
+    Vector center = building.sprite.position;
     
     // find spore in range
     for (int i = 0; i < spores.length; i++) {

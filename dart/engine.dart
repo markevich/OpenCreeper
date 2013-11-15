@@ -6,6 +6,10 @@ class Mouse {
   Vector dragStart, dragEnd;
   
   Mouse();
+  
+  String toString() {
+    return "$x/$y";
+  }
 }
 
 class Engine {

@@ -79,7 +79,7 @@ class Packet {
    */
   static void queuePacket(Building target, String type) {
     String img = "packet_" + type;
-    Vector center = game.base.getCenter();
+    Vector center = game.base.sprite.position;
     Packet packet = new Packet(center, img, type);
     packet.target = target;
     packet.currentTarget = game.base;
@@ -99,7 +99,7 @@ class Packet {
     
     sprite.position += speed;
 
-    Vector centerTarget = currentTarget.getCenter();
+    Vector centerTarget = currentTarget.sprite.position;
     if (sprite.position.x > centerTarget.x - 1 && sprite.position.x < centerTarget.x + 1 && sprite.position.y > centerTarget.y - 1 && sprite.position.y < centerTarget.y + 1) {
       sprite.position = centerTarget;
 
@@ -114,16 +114,19 @@ class Packet {
             target.health = target.maxHealth;
             if (!target.built) {
               target.built = true;
-              if (target.imageID == "collector") {
+              target.sprite.alpha = 1.0;
+              if (target.cannon != null)
+                target.cannon.alpha = 1.0;
+              if (target.type == "collector") {
                 target.updateCollection("add");
-                engine.playSound("energy", target.position);
+                engine.playSound("energy", target.sprite.position.real2tiled());
               }
-              if (target.imageID == "storage")
+              if (target.type == "storage")
                 game.maxEnergy += 20;
-              if (target.imageID == "speed")
+              if (target.type == "speed")
                 Packet.baseSpeed *= 1.01;
-              if (target.imageID == "bomber") {
-                Ship ship = new Ship(new Vector(target.position.x * game.tileSize + 24, target.position.y * game.tileSize + 24), "bombership", "Bomber", target);
+              if (target.type == "bomber") {
+                Ship ship = new Ship(new Vector(target.sprite.position.x + 24, target.sprite.position.y + 24), "bombership", "Bomber", target);
                 target.ship = ship;
                 Ship.add(ship);
               }
@@ -147,7 +150,7 @@ class Packet {
   }
 
   void calculateVector() {
-    Vector targetPosition = currentTarget.getCenter();
+    Vector targetPosition = currentTarget.sprite.position;
     Vector delta = targetPosition - sprite.position;
     num distance = sprite.position.distanceTo(targetPosition);
 
@@ -211,12 +214,12 @@ class Packet {
           newRoute.nodes.add(neighbours[i]);
 
           // increase distance travelled
-          Vector centerA = newRoute.nodes[newRoute.nodes.length - 1].getCenter();
-          Vector centerB = newRoute.nodes[newRoute.nodes.length - 2].getCenter();
+          Vector centerA = newRoute.nodes[newRoute.nodes.length - 1].sprite.position;
+          Vector centerB = newRoute.nodes[newRoute.nodes.length - 2].sprite.position;
           newRoute.distanceTravelled += centerA.distanceTo(centerB);
 
           // update underestimate of distance remaining
-          Vector centerC = target.getCenter();
+          Vector centerC = target.sprite.position;
           newRoute.distanceRemaining = centerA.distanceTo(centerC);
 
           // finally push the new route to the list of routes
@@ -255,7 +258,7 @@ class Packet {
     if (routes.length > 0) {
 
       // adjust speed if packet is travelling between relays
-      if (routes[0].nodes[1].imageID == "relay") {
+      if (routes[0].nodes[1].type == "relay") {
         speedMultiplier = 2;
       } else {
         speedMultiplier = 1;

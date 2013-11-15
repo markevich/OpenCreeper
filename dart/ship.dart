@@ -95,6 +95,9 @@ class Ship {
   }
   
   static void control(Vector position) {
+    position = position * game.tileSize;
+    position += new Vector(24, 24);
+    
     for (int i = 0; i < ships.length; i++) {
       
       // select ship
@@ -108,27 +111,25 @@ class Ship {
         game.mode = "SHIP_SELECTED";
   
         if (ships[i].status == "IDLE") {
-          if (position.x - 1 != ships[i].home.position.x && position.y - 1 != ships[i].home.position.y) {         
+          if (position != ships[i].home.sprite.position) {         
             // leave home
             ships[i].energy = ships[i].home.energy;
             ships[i].home.energy = 0;
-            ships[i].targetPosition = position * game.tileSize;
+            ships[i].targetPosition = position;
             ships[i].targetSymbol.position = ships[i].targetPosition;
             ships[i].status = "RISING";
           }
         }
         
         if (ships[i].status == "ATTACKING" || ships[i].status == "RETURNING") {      
-          if (position.x - 1 == ships[i].home.position.x && position.y - 1 == ships[i].home.position.y) {
+          if (position == ships[i].home.sprite.position) {
             // return home
-            ships[i].targetPosition.x = (position.x - 1) * game.tileSize;
-            ships[i].targetPosition.y = (position.y - 1) * game.tileSize;
+            ships[i].targetPosition = position;
             ships[i].status = "RETURNING";
           }
           else {
             // attack again
-            ships[i].targetPosition.x = (position.x - 1) * game.tileSize;
-            ships[i].targetPosition.y = (position.y - 1) * game.tileSize;
+            ships[i].targetPosition = position;
             ships[i].targetSymbol.position = ships[i].targetPosition;
             ships[i].status = "ATTACKING";
           }
@@ -177,8 +178,6 @@ class Ship {
       }
       if (flightCounter == 0) {
         status = "IDLE";
-        sprite.position.x = home.position.x * game.tileSize + 24;
-        sprite.position.y = home.position.y * game.tileSize + 24;
         targetPosition.x = 0;
         targetPosition.y = 0;
         energy = 5;
@@ -221,8 +220,7 @@ class Ship {
           if (energy == 0) {
             // return to base
             status = "RETURNING";
-            targetPosition.x = home.position.x * game.tileSize + 24;
-            targetPosition.y = home.position.y * game.tileSize + 24;
+            targetPosition = home.sprite.position;
           }
         }
       }
@@ -237,6 +235,7 @@ class Ship {
       selectedCircle.position += speed;
 
       if (sprite.position.x > targetPosition.x - 2 && sprite.position.x < targetPosition.x + 2 && sprite.position.y > targetPosition.y - 2 && sprite.position.y < targetPosition.y + 2) {
+        sprite.position = home.sprite.position;
         status = "FALLING";
       }
     }

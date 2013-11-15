@@ -39,6 +39,6 @@ class Sporetower {
     do {
       target = Building.buildings[engine.randomInt(0, Building.buildings.length - 1)];
     } while (!target.built);
-    Spore.add(new Spore(sprite.position, target.getCenter()));
+    Spore.add(new Spore(sprite.position, target.sprite.position));
   }
 }

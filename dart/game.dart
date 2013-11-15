@@ -15,7 +15,6 @@ class Game {
   Stopwatch stopwatch = new Stopwatch();
 
   Game() {
-    seed = engine.randomInt(0, 10000);
     init();
   }
 
@@ -224,12 +223,12 @@ class Game {
     //Building.add(building);
     base = building;   
 
-    int height = this.world.tiles[building.position.x + 4][building.position.y + 4].height;
+    int height = this.world.getTile(building.sprite.position).height;
     if (height < 0)
       height = 0;
-    for (int i = 0; i < 9; i++) {
-      for (int j = 0; j < 9; j++) {
-        world.tiles[building.position.x + i][building.position.y + j].height = height;
+    for (int i = -4; i <= 4; i++) {
+      for (int j = -4; j <= 4; j++) {
+        this.world.getTile(building.sprite.position + new Vector(i * tileSize, j * tileSize)).height = height;
       }
     }
 
@@ -244,12 +243,12 @@ class Game {
       Emitter emitter = new Emitter(new Vector(randomPosition.x * 16 + 24, randomPosition.y * 16 + 24), 25);
       Emitter.add(emitter);
   
-      height = world.getTile(emitter.sprite.position + new Vector(1, 1)).height; //this.world.tiles[emitter.sprite.position.x + 1][emitter.sprite.position.y + 1].height;
+      height = world.getTile(emitter.sprite.position).height; //this.world.tiles[emitter.sprite.position.x + 1][emitter.sprite.position.y + 1].height;
       if (height < 0)
         height = 0;
-      for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
-          world.getTile(emitter.sprite.position + new Vector(i, j)).height = height; //world.tiles[emitter.sprite.position.x + i][emitter.sprite.position.y + j].height = height;
+      for (int i = -1; i <= 1; i++) {
+        for (int j = -1; j <= 1; j++) {
+          world.getTile(emitter.sprite.position + new Vector(i * tileSize, j * tileSize)).height = height; //world.tiles[emitter.sprite.position.x + i][emitter.sprite.position.y + j].height = height;
         }
       }
     }
@@ -264,12 +263,12 @@ class Game {
       Sporetower sporetower = new Sporetower(new Vector(randomPosition.x * 16 + 24, randomPosition.y * 16 + 24));
       Sporetower.add(sporetower);
   
-      height = world.getTile(sporetower.sprite.position + new Vector(1,1)).height; //this.world.tiles[sporetower.position.x + 1][sporetower.position.y + 1].height;
+      height = world.getTile(sporetower.sprite.position).height; //this.world.tiles[sporetower.position.x + 1][sporetower.position.y + 1].height;
       if (height < 0)
         height = 0;
-      for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
-          world.getTile(sporetower.sprite.position + new Vector(i, j)).height = height; //world.tiles[sporetower.position.x + i][sporetower.position.y + j].height = height;
+      for (int i = -1; i <= 1; i++) {
+        for (int j = -1; j <= 1; j++) {
+          world.getTile(sporetower.sprite.position + new Vector(i * tileSize, j * tileSize)).height = height; //world.tiles[sporetower.position.x + i][sporetower.position.y + j].height = height;
         }
       }
     }
@@ -561,17 +560,17 @@ class Game {
     
     for (int i = 0; i < Building.buildings.length; i++) {
       // must not be the same building
-      if (!(Building.buildings[i].position == node.position)) {
+      if (!(Building.buildings[i].sprite.position == node.sprite.position)) {
         // must be idle
         if (Building.buildings[i].status == "IDLE") {
           // it must either be the target or be built
           if (Building.buildings[i] == target || Building.buildings[i].built) {
-              centerI = Building.buildings[i].getCenter();
-              centerNode = node.getCenter();
+              centerI = Building.buildings[i].sprite.position;
+              centerNode = node.sprite.position;
               num distance = centerNode.distanceTo(centerI);
 
               int allowedDistance = 10 * tileSize;
-              if (node.imageID == "relay" && Building.buildings[i].imageID == "relay") {
+              if (node.type == "relay" && Building.buildings[i].type == "relay") {
                 allowedDistance = 20 * tileSize;
               }
               if (distance <= allowedDistance) {
@@ -600,12 +599,12 @@ class Game {
           continue;
         if (building != null && building == Building.buildings[i])
           continue;
-        Rectangle buildingRect = new Rectangle(Building.buildings[i].position.x * tileSize,
-            Building.buildings[i].position.y * tileSize,
+        Rectangle buildingRect = new Rectangle(Building.buildings[i].sprite.position.x,
+            Building.buildings[i].sprite.position.y,
             Building.buildings[i].size * tileSize - 1,
             Building.buildings[i].size * tileSize - 1);
-        Rectangle currentRect = new Rectangle(position.x * tileSize,
-                                              position.y * tileSize,
+        Rectangle currentRect = new Rectangle(position.x,
+                                              position.y,
                                               size * tileSize - 1,
                                               size * tileSize - 1);       
         if (currentRect.intersects(buildingRect)) {
@@ -1040,11 +1039,11 @@ class Game {
 
         // draw lines to other buildings
         for (int i = 0; i < Building.buildings.length; i++) {
-          Vector center = Building.buildings[i].getCenter();
+          Vector center = Building.buildings[i].sprite.position;
           Vector drawCenter = center.real2screen();
 
           int allowedDistance = 10 * tileSize;
-          if (Building.buildings[i].imageID == "relay" && UISymbol.activeSymbol.imageID == "relay") {
+          if (Building.buildings[i].type == "relay" && UISymbol.activeSymbol.imageID == "relay") {
             allowedDistance = 20 * tileSize;
           }
 
@@ -1176,16 +1175,16 @@ class Game {
 
     // draw node connections
     for (int i = 0; i < Building.buildings.length; i++) {
-      Vector centerI = Building.buildings[i].getCenter();
+      Vector centerI = Building.buildings[i].sprite.position;
       Vector drawCenterI = centerI.real2screen();
       for (int j = 0; j < Building.buildings.length; j++) {
         if (i != j) {
           if (Building.buildings[i].status == "IDLE" && Building.buildings[j].status == "IDLE") {
-            Vector centerJ = Building.buildings[j].getCenter();
+            Vector centerJ = Building.buildings[j].sprite.position;
             Vector drawCenterJ = centerJ.real2screen();
 
             num allowedDistance = 10 * tileSize;
-            if (Building.buildings[i].imageID == "relay" && Building.buildings[j].imageID == "relay") {
+            if (Building.buildings[i].type == "relay" && Building.buildings[j].type == "relay") {
               allowedDistance = 20 * tileSize;
             }
 
@@ -1220,7 +1219,7 @@ class Game {
     if (engine.mouse.active) {
 
       // if a building is built and selected draw a green box and a line at mouse position as the reposition target
-      Building.drawRepositionInfo();
+      //Building.drawRepositionInfo();
 
       // draw attack symbol
       if (mode == "SHIP_SELECTED") {
@@ -1263,9 +1262,6 @@ class Game {
         context.stroke();
       }
     }
-
-    // draw building hover/selection box
-    Building.drawBox();
 
     /*Vector tp = game.getHoveredTilePosition();
     Vector tp2 = tp.tiled2screen();

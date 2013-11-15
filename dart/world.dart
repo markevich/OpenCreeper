@@ -61,7 +61,7 @@ class Route {
    */
   bool contains(Building node) {
     for (int i = 0; i < nodes.length; i++) {
-      if (node.position == nodes[i].position) {
+      if (node.sprite.position == nodes[i].sprite.position) {
         return true;
       }
     }
