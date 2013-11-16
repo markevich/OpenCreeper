@@ -1,7 +1,7 @@
 part of creeper;
 
 class Building {
-  Vector scale = new Vector(1, 1), moveTargetPosition, weaponTargetPosition, speed = new Vector(0, 0);
+  Vector position, scale = new Vector(1, 1), moveTargetPosition, weaponTargetPosition, speed = new Vector(0, 0);
   String type, status = "IDLE"; // MOVING, RISING, FALLING
   bool operating = false, selected = false, hovered = false, built = false, active = true, canMove = false, needsEnergy = false, rotating = false;
   num health, maxHealth = 0, energy, maxEnergy = 0, healthRequests = 0, energyRequests = 0, rotation = 0;
@@ -9,12 +9,14 @@ class Building {
   Ship ship;
   Sprite sprite, cannon;
   Circle selectedCircle;
+  Rect targetSymbol;
   static final double baseSpeed = .5;
   static int damageCounter = 0;
   static List<Building> buildings = new List<Building>();
 
   Building(position, imageID) {
     type = imageID;
+    this.position = position;
     sprite = new Sprite(1, engine.images[imageID], position, 48, 48);
     sprite.anchor = new Vector(0.5, 0.5);
     sprite.alpha = 0.5;
@@ -23,6 +25,11 @@ class Building {
     selectedCircle = new Circle(5, position, 24, 2, "#fff");
     selectedCircle.visible = false;
     engine.canvas["buffer"].addDisplayObject(selectedCircle);
+    
+    targetSymbol = new Rect(0, new Vector.empty(), new Vector(48, 48), 1, '#0f0');
+    targetSymbol.visible = false;
+    targetSymbol.anchor = new Vector(0.5, 0.5);
+    engine.canvas["buffer"].addDisplayObject(targetSymbol);
     
     health = 0;
     size = 3;
@@ -122,8 +129,8 @@ class Building {
 
     // only explode building when it has been built
     if (building.built) {
-      Explosion.add(new Explosion(building.sprite.position));
-      engine.playSound("explosion", building.sprite.position.real2tiled());
+      Explosion.add(new Explosion(building.position));
+      engine.playSound("explosion", building.position.real2tiled());
     }
 
     if (building.type == "base") {
@@ -195,12 +202,11 @@ class Building {
   
   static void updateHoverState() {
     for (int i = 0; i < buildings.length; i++) {
-      Vector realPosition = buildings[i].sprite.position.real2screen();
+      Vector realPosition = buildings[i].position.real2screen();
       buildings[i].hovered = (engine.mouse.x > realPosition.x - (game.tileSize * buildings[i].size * game.zoom / 2) &&
           engine.mouse.x < realPosition.x + (game.tileSize * buildings[i].size * game.zoom / 2) &&
           engine.mouse.y > realPosition.y - (game.tileSize * buildings[i].size * game.zoom / 2) &&
           engine.mouse.y < realPosition.y + (game.tileSize * buildings[i].size * game.zoom / 2));
-      querySelector("#debug").innerHtml = "Mouse: ${engine.mouse} - Position: ${realPosition} - ${buildings[i].hovered}";
     }
   }
   
@@ -254,9 +260,24 @@ class Building {
           buildings[i].operating = false;
           buildings[i].weaponTargetPosition = null;
           buildings[i].status = "RISING";
-          buildings[i].moveTargetPosition = position * game.tileSize;
+          buildings[i].moveTargetPosition = (position * game.tileSize) + new Vector(8, 8);
+          buildings[i].targetSymbol.visible = true;
+          buildings[i].targetSymbol.position = (position * game.tileSize) + new Vector(8, 8);
         }
       }
+    }
+  }
+  
+  void updateDisplayObjects() {
+    sprite.position = position;
+    sprite.scale = scale;
+    
+    selectedCircle.position = position;
+    selectedCircle.scale = scale.x;
+    
+    if (cannon != null) {
+      cannon.position = position;
+      cannon.scale = scale;
     }
   }
   
@@ -264,9 +285,8 @@ class Building {
     if (status == "RISING") {
       if (flightCounter < 25) {
         flightCounter++;
-        sprite.scale = sprite.scale * 1.01;
-        if (cannon != null)
-          cannon.scale = cannon.scale * 1.01;
+        scale = scale * 1.01;
+        updateDisplayObjects();
       }
       if (flightCounter == 25) {
         status = "MOVING";
@@ -276,39 +296,38 @@ class Building {
     else if (status == "FALLING") {
       if (flightCounter > 0) {
         flightCounter--;
-        sprite.scale = sprite.scale / 1.01;
-        if (cannon != null)
-          cannon.scale = cannon.scale / 1.01;
+        scale = scale / 1.01;
+        updateDisplayObjects();
       }
       if (flightCounter == 0) {
         status = "IDLE";
-        sprite.scale = new Vector(1.0, 1.0);
-        if (cannon != null)
-          cannon.scale = new Vector(1.0, 1.0);
+        scale = new Vector(1.0, 1.0);
+        targetSymbol.visible = false;
+        updateDisplayObjects();
       }
     }
 
     if (status == "MOVING") {
       calculateVector();
       
-      sprite.position += speed;
-      if (cannon != null)
-        cannon.position += speed;
+      position += speed;
       
-      if (sprite.position.x > moveTargetPosition.x - 1 &&
-          sprite.position.x < moveTargetPosition.x + 1 &&
-          sprite.position.y > moveTargetPosition.y - 1 &&
-          sprite.position.y < moveTargetPosition.y + 1) {
-        sprite.position = moveTargetPosition;
+      if (position.x > moveTargetPosition.x - 1 &&
+          position.x < moveTargetPosition.x + 1 &&
+          position.y > moveTargetPosition.y - 1 &&
+          position.y < moveTargetPosition.y + 1) {
+        position = moveTargetPosition;
         status = "FALLING";
       }
+      
+      updateDisplayObjects();
     }
   }
 
   void calculateVector() {
-    if (moveTargetPosition.x != sprite.position.x || moveTargetPosition.y != sprite.position.y) {
+    if (moveTargetPosition.x != position.x || moveTargetPosition.y != position.y) {
       Vector targetPosition = new Vector(moveTargetPosition.x, moveTargetPosition.y);
-      Vector ownPosition = new Vector(sprite.position.x, sprite.position.y);
+      Vector ownPosition = new Vector(position.x, position.y);
       Vector delta = targetPosition - ownPosition;
       num distance = ownPosition.distanceTo(targetPosition);
 
@@ -328,7 +347,7 @@ class Building {
 
       for (int i = 0; i < size; i++) {
         for (int j = 0; j < size; j++) {
-          Tile tile = game.world.getTile(sprite.position + new Vector(i * game.tileSize, j * game.tileSize));
+          Tile tile = game.world.getTile(position + new Vector(i * game.tileSize, j * game.tileSize));
           if (tile.creep > 0) {
             health -= tile.creep / 10;
           }
@@ -343,8 +362,8 @@ class Building {
   
   void shield() {
     if (built && type == "shield" && status == "IDLE") {
-      Vector center = sprite.position;
-      var tiledPosition = sprite.position.real2tiled();
+      Vector center = position;
+      var tiledPosition = position.real2tiled();
 
       for (int i = tiledPosition.x - weaponRadius; i <= tiledPosition.x + weaponRadius; i++) {
         for (int j = tiledPosition.y - weaponRadius; j <= tiledPosition.y + weaponRadius; j++) {
@@ -393,12 +412,12 @@ class Building {
 
   void collectEnergy() {
     if (type == "collector" && built) {
-      int height = game.world.getTile(sprite.position).height;
-      Vector centerBuilding = sprite.position;
+      int height = game.world.getTile(position).height;
+      Vector centerBuilding = position;
 
       for (int i = -5; i < 7; i++) {
         for (int j = -5; j < 7; j++) {
-          var tiledPosition = sprite.position.real2tiled();
+          var tiledPosition = position.real2tiled();
           Vector positionCurrent = new Vector(tiledPosition.x + i, tiledPosition.y + j);
 
           if (game.world.contains(positionCurrent)) {
@@ -423,7 +442,7 @@ class Building {
     if (collectedEnergy >= 100) {
       collectedEnergy -= 100;
       if (type == "collector") {
-        Packet packet = new Packet(sprite.position, "packet_collection", "collection");
+        Packet packet = new Packet(position, "packet_collection", "collection");
         packet.target = game.base;
         packet.currentTarget = this;
         if (packet.findRoute())
@@ -445,13 +464,13 @@ class Building {
    * is added or removed which is defined by the [action].
    */
   void updateCollection(String action) {
-    int height = game.world.getTile(sprite.position).height;
-    Vector centerBuilding = sprite.position;
+    int height = game.world.getTile(position).height;
+    Vector centerBuilding = position;
 
     for (int i = -5; i < 7; i++) {
       for (int j = -5; j < 7; j++) {
 
-        var tiledPosition = sprite.position.real2tiled();
+        var tiledPosition = position.real2tiled();
         Vector positionCurrent = new Vector(tiledPosition.x + i, tiledPosition.y + j);
 
         if (game.world.contains(positionCurrent)) {
@@ -473,8 +492,8 @@ class Building {
 
             for (int k = 0; k < Building.buildings.length; k++) {
               if (Building.buildings[k] != this && Building.buildings[k].type == "collector") {
-                int heightK = game.world.getTile(Building.buildings[k].sprite.position).height;
-                Vector centerBuildingK = Building.buildings[k].sprite.position;
+                int heightK = game.world.getTile(Building.buildings[k].position).height;
+                Vector centerBuildingK = Building.buildings[k].position;
                 if (pow(positionCurrentCenter.x - centerBuildingK.x, 2) + pow(positionCurrentCenter.y - centerBuildingK.y, 2) < pow(game.tileSize * 6, 2)) {
                   if (tileHeight == heightK) {
                     game.world.tiles[positionCurrent.x][positionCurrent.y].collector = Building.buildings[k];
@@ -497,7 +516,7 @@ class Building {
     if (needsEnergy && active && status == "IDLE") {
 
       energyCounter++;
-      Vector center = sprite.position;
+      Vector center = position;
 
       if (type == "analyzer" && energy > 0) {
         Emitter.find(this);
@@ -509,7 +528,7 @@ class Building {
           // find lowest tile
           Vector target = null;
           int lowestTile = 10;
-          var tiledPosition = sprite.position.real2tiled();
+          var tiledPosition = position.real2tiled();
           for (int i = tiledPosition.x - weaponRadius; i <= tiledPosition.x + weaponRadius; i++) {
             for (int j = tiledPosition.y - weaponRadius; j <= tiledPosition.y + weaponRadius; j++) {
 
@@ -587,13 +606,13 @@ class Building {
 
             energyCounter = 0;
 
-            int height = game.world.getTile(sprite.position).height;
+            int height = game.world.getTile(position).height;
 
             List targets = new List();
             // find closest random target
             for (int r = 0; r < weaponRadius + 1; r++) {
               int radius = r * game.tileSize;
-              var tiledPosition = sprite.position.real2tiled();
+              var tiledPosition = position.real2tiled();
               for (int i = tiledPosition.x - weaponRadius; i <= tiledPosition.x + weaponRadius; i++) {
                 for (int j = tiledPosition.y - weaponRadius; j <= tiledPosition.y + weaponRadius; j++) {
 
@@ -660,7 +679,7 @@ class Building {
               operating = true;
               Projectile projectile = new Projectile(center, new Vector(weaponTargetPosition.x * game.tileSize + game.tileSize / 2, weaponTargetPosition.y * game.tileSize + game.tileSize / 2), targetAngle); // FIXME: weaponTargetPosition might be NULL
               Projectile.add(projectile);
-              engine.playSound("laser", sprite.position.real2tiled());
+              engine.playSound("laser", position.real2tiled());
             }
           }
         }
@@ -671,7 +690,7 @@ class Building {
             // find most creep in range
             Vector target = null;
             var highestCreep = 0;
-            var tiledPosition = sprite.position.real2tiled();
+            var tiledPosition = position.real2tiled();
             for (int i = tiledPosition.x - weaponRadius; i <= tiledPosition.x + weaponRadius; i++) {
               for (int j = tiledPosition.y - weaponRadius; j <= tiledPosition.y + weaponRadius; j++) {
                 if (game.world.contains(new Vector(i, j))) {
@@ -685,7 +704,7 @@ class Building {
               }
             }
             if (target != null) {
-              engine.playSound("shot", sprite.position.real2tiled());
+              engine.playSound("shot", position.real2tiled());
               Shell shell = new Shell(center, new Vector(target.x * game.tileSize + game.tileSize / 2, target.y * game.tileSize + game.tileSize / 2));
               Shell.add(shell);
               energy -= 1;
@@ -697,22 +716,6 @@ class Building {
 
             Spore.damage(this);
           }
-    }
-  }
-  
-  static void drawMovementIndicators() {
-    CanvasRenderingContext2D context = engine.canvas["buffer"].context;
-    
-    for (int i = 0; i < buildings.length; i++) {
-      if (buildings[i].status != "IDLE") {
-        Vector center = buildings[i].sprite.position.real2screen();
-        Vector target = buildings[i].moveTargetPosition.tiled2screen();
-  
-        // draw box
-        context
-          ..fillStyle = "rgba(0,255,0,0.5)"
-          ..fillRect(target.x, target.y, buildings[i].size * game.tileSize * game.zoom, buildings[i].size * game.tileSize * game.zoom);
-      }
     }
   }
 
@@ -728,7 +731,7 @@ class Building {
         Vector positionScrolledCenter = new Vector(positionScrolled.x * game.tileSize + (game.tileSize / 2) * buildings[i].size, positionScrolled.y * game.tileSize + (game.tileSize / 2) * buildings[i].size);
         Vector drawPositionCenter = positionScrolledCenter.real2screen();
   
-        Vector center = buildings[i].sprite.position.real2screen();
+        Vector center = buildings[i].position.real2screen();
   
         game.drawRangeBoxes(positionScrolled, buildings[i].type, buildings[i].weaponRadius, buildings[i].size);
   
@@ -754,8 +757,8 @@ class Building {
     CanvasRenderingContext2D context = engine.canvas["buffer"].context;
     
     for (int i = 0; i < buildings.length; i++) {
-      Vector realPosition = buildings[i].sprite.position.real2screen();
-      Vector center = buildings[i].sprite.position.real2screen();
+      Vector realPosition = buildings[i].position.real2screen();
+      Vector center = buildings[i].position.real2screen();
   
       if (engine.canvas["buffer"].isVisible(realPosition, new Vector(engine.images[buildings[i].type].width * game.zoom, engine.images[buildings[i].type].height * game.zoom))) { 
         // draw energy bar

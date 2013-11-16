@@ -90,8 +90,8 @@ class Game {
    */
   Vector getHoveredTilePosition() {
     return new Vector(
-        (engine.mouse.x - engine.halfWidth) ~/ (tileSize * zoom) + scroll.x,
-        (engine.mouse.y - engine.halfHeight) ~/ (tileSize * zoom) + scroll.y);
+        ((engine.mouse.x - engine.halfWidth) / (tileSize * zoom)).floor() + scroll.x,
+        ((engine.mouse.y - engine.halfHeight) / (tileSize * zoom)).floor() + scroll.y);
   }
 
   void pause() {
@@ -1211,7 +1211,6 @@ class Game {
       }
     }
 
-    Building.drawMovementIndicators();
     Building.draw();
 
     engine.canvas["buffer"].draw();
@@ -1219,7 +1218,7 @@ class Game {
     if (engine.mouse.active) {
 
       // if a building is built and selected draw a green box and a line at mouse position as the reposition target
-      //Building.drawRepositionInfo();
+      Building.drawRepositionInfo();
 
       // draw attack symbol
       if (mode == "SHIP_SELECTED") {
@@ -1263,12 +1262,11 @@ class Game {
       }
     }
 
-    /*Vector tp = game.getHoveredTilePosition();
+    Vector tp = game.getHoveredTilePosition();
     Vector tp2 = tp.tiled2screen();
     engine.canvas["buffer"].context.strokeStyle = '#fff';
-    engine.canvas["buffer"].context.fillRect(tp2.x, tp2.y, 16, 16);
+    engine.canvas["buffer"].context.strokeRect(tp2.x, tp2.y, 16, 16);
     engine.canvas["buffer"].context.stroke();
-    query("#debug").innerHtml = "Coordinates: $tp";*/
     
     if (creeperDirty) {
       drawCreeper();

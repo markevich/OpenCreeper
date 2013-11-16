@@ -47,6 +47,13 @@ class Renderer {
   }
 
   void draw() {
+    
+    context.save();
+    context.shadowBlur = 5;
+    context.shadowColor = "#222";
+    context.shadowOffsetX = 5;
+    context.shadowOffsetY = 5;
+    
     for (var displayObject in displayObjects) {
       if (displayObject.visible) {
 
@@ -106,13 +113,15 @@ class Renderer {
 
         // render rectangle
         else if (displayObject is Rect) {
-          Vector position = new Vector(displayObject.rectangle.left, displayObject.rectangle.top);
-          Vector realPosition = position.real2screen();
+          Vector realPosition = displayObject.position.real2screen();
 
-          if (isVisible(realPosition, new Vector(displayObject.rectangle.width * game.zoom, displayObject.rectangle.height * game.zoom))) {
+          if (isVisible(realPosition, displayObject.size * game.zoom)) {
             context.lineWidth = displayObject.lineWidth;
             context.fillStyle = displayObject.color;
-            context.fillRect(realPosition.x, realPosition.y, displayObject.rectangle.width * game.zoom, displayObject.rectangle.height * game.zoom);
+            context.fillRect(realPosition.x - displayObject.size.x * displayObject.anchor.x * game.zoom,
+                             realPosition.y - displayObject.size.y * displayObject.anchor.y * game.zoom,
+                             displayObject.size.x * game.zoom,
+                             displayObject.size.y * game.zoom);
           }
         }
 
@@ -145,5 +154,7 @@ class Renderer {
         }
       }
     }
+    
+    context.restore();
   }
 }

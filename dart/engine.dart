@@ -162,11 +162,12 @@ class Engine {
   void updateMouse(MouseEvent evt) {
     mouse.x = (evt.client.x - canvas["main"].view.getBoundingClientRect().left).toInt();
     mouse.y = (evt.client.y - canvas["main"].view.getBoundingClientRect().top).toInt();
+    Vector position = null;
     if (game != null) {
-      Vector position = game.getHoveredTilePosition();
+      position = game.getHoveredTilePosition();
       mouse.dragEnd = new Vector(position.x, position.y);
     }
-    //$("#mouse").innerHtml = "Mouse: " + mouse.toString() + " - " + position.toString());
+    querySelector("#debug").innerHtml = "Mouse: ${engine.mouse} - Position: ${position}";
   }
 
   void updateMouseGUI(MouseEvent evt) {

@@ -6,12 +6,14 @@ abstract class DisplayObject {
 }
 
 class Rect extends DisplayObject {
-  Rectangle rectangle;
+  Vector position, size;
   int lineWidth;
   String color;
+  Vector anchor;
 
-  Rect(layer, this.rectangle, this.lineWidth, this.color) {
+  Rect(layer, this.position, this.size, this.lineWidth, this.color) {
     super.layer = layer;
+    anchor = new Vector.empty();
   }
 }
 
@@ -47,7 +49,7 @@ class Sprite extends DisplayObject {
 
   Sprite(layer, this.image, this.position, width, height) {
     super.layer = layer;
-    anchor = new Vector(0.0, 0.0);
+    anchor = new Vector.empty();
     scale = new Vector(1.0, 1.0);
     size = new Vector(width, height);
   }
