@@ -12,7 +12,7 @@ class Packet {
   static List<Packet> queue = new List<Packet>();
 
   Packet(position, imageID, this.type) {
-    sprite = new Sprite(2, engine.images[imageID], position, 16, 16);
+    sprite = new Sprite(20, engine.images[imageID], position, 16, 16);
     sprite.anchor = new Vector(0.5, 0.5);
 
     if (type == "collection")
@@ -115,6 +115,7 @@ class Packet {
             if (!target.built) {
               target.built = true;
               target.sprite.alpha = 1.0;
+              Connection.activate(target);
               if (target.cannon != null)
                 target.cannon.alpha = 1.0;
               if (target.type == "collector") {

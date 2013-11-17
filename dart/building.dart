@@ -17,7 +17,7 @@ class Building {
   Building(position, imageID) {
     type = imageID;
     this.position = position;
-    sprite = new Sprite(1, engine.images[imageID], position, 48, 48);
+    sprite = new Sprite(3, engine.images[imageID], position, 48, 48);
     sprite.anchor = new Vector(0.5, 0.5);
     sprite.alpha = 0.5;
     engine.canvas["buffer"].addDisplayObject(sprite);
@@ -26,7 +26,7 @@ class Building {
     selectedCircle.visible = false;
     engine.canvas["buffer"].addDisplayObject(selectedCircle);
     
-    targetSymbol = new Rect(0, new Vector.empty(), new Vector(48, 48), 1, '#0f0');
+    targetSymbol = new Rect(2, new Vector.empty(), new Vector(48, 48), 1, '#0f0');
     targetSymbol.visible = false;
     targetSymbol.anchor = new Vector(0.5, 0.5);
     engine.canvas["buffer"].addDisplayObject(targetSymbol);
@@ -109,6 +109,8 @@ class Building {
       canMove = true;
       needsEnergy = true;
     }
+    
+    Connection.add(this);
   }
   
   static void clear() {
@@ -157,6 +159,8 @@ class Building {
 
     // find all packets with this building as target and remove them
     Packet.removeWithTarget(building);
+    
+    Connection.remove(building);
 
     int index = buildings.indexOf(building);
     buildings.removeAt(index);
@@ -269,6 +273,7 @@ class Building {
           buildings[i].moveTargetPosition = (position * game.tileSize) + new Vector(8, 8);
           buildings[i].targetSymbol.visible = true;
           buildings[i].targetSymbol.position = (position * game.tileSize) + new Vector(8, 8);
+          Connection.remove(buildings[i]);
         }
       }
     }
@@ -310,6 +315,7 @@ class Building {
         scale = new Vector(1.0, 1.0);
         targetSymbol.visible = false;
         updateDisplayObjects();
+        Connection.add(this);
       }
     }
 
@@ -725,47 +731,6 @@ class Building {
     }
   }
   
-  static void drawNodeConnections() {
-    CanvasRenderingContext2D context = engine.canvas["buffer"].context;
-    
-    for (int i = 0; i < buildings.length; i++) {
-      Vector centerI = buildings[i].position;
-      Vector drawCenterI = centerI.real2screen();
-      for (int j = 0; j < buildings.length; j++) {
-        if (i != j) {
-          if (buildings[i].status == "IDLE" && buildings[j].status == "IDLE") {
-            Vector centerJ = buildings[j].position;
-            Vector drawCenterJ = centerJ.real2screen();
-
-            num allowedDistance = 10 * game.tileSize;
-            if (buildings[i].type == "relay" && buildings[j].type == "relay") {
-              allowedDistance = 20 * game.tileSize;
-            }
-
-            if (centerI.distanceTo(centerJ) <= allowedDistance) {
-              context.strokeStyle = '#000';
-              context.lineWidth = 3;
-              context.beginPath();
-              context.moveTo(drawCenterI.x, drawCenterI.y);
-              context.lineTo(drawCenterJ.x, drawCenterJ.y);
-              context.stroke();
-              
-              if (!buildings[i].built || !buildings[j].built)
-                context.strokeStyle = '#777';
-              else
-                context.strokeStyle = '#fff';
-              context.lineWidth = 2;
-              context.beginPath();
-              context.moveTo(drawCenterI.x, drawCenterI.y);
-              context.lineTo(drawCenterJ.x, drawCenterJ.y);
-              context.stroke();
-            }
-          }
-        }
-      }
-    }
-  }
-
   static void drawRepositionInfo() {
     CanvasRenderingContext2D context = engine.canvas["buffer"].context;
     
@@ -827,7 +792,7 @@ class Building {
   }
 
   static void draw() {
-    drawNodeConnections();
+    //drawNodeConnections();
     CanvasRenderingContext2D context = engine.canvas["buffer"].context;
     
     for (int i = 0; i < buildings.length; i++) {

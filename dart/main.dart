@@ -23,6 +23,7 @@ part 'smoke.dart';
 part 'explosion.dart';
 part 'vector.dart';
 part 'displayobject.dart';
+part 'connection.dart';
 
 Engine engine;
 Game game;
