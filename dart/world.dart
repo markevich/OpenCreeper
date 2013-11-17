@@ -18,6 +18,33 @@ class World {
   Tile getTile(Vector position) {
     return tiles[position.x ~/ 16][position.y ~/ 16];
   }  
+  
+  void drawTerraformNumbers() {
+    int timesX = (engine.halfWidth / game.tileSize / game.zoom).floor();
+    int timesY = (engine.halfHeight / game.tileSize / game.zoom).floor();
+
+    for (int i = -timesX; i <= timesX; i++) {
+      for (int j = -timesY; j <= timesY; j++) {
+
+        int iS = i + game.scroll.x;
+        int jS = j + game.scroll.y;
+
+        if (contains(new Vector(iS, jS))) {
+          if (tiles[iS][jS].terraformTarget > -1) {
+            engine.canvas["buffer"].context.drawImageScaledFromSource(engine.images["numbers"],
+                                                                      tiles[iS][jS].terraformTarget * 16,
+                                                                      0,
+                                                                      game.tileSize,
+                                                                      game.tileSize,
+                                                                      engine.halfWidth + i * game.tileSize * game.zoom,
+                                                                      engine.halfHeight + j * game.tileSize * game.zoom,
+                                                                      game.tileSize * game.zoom,
+                                                                      game.tileSize * game.zoom);
+          }
+        }
+      }
+    }
+  }
 }
 
 class Tile {

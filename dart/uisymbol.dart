@@ -28,7 +28,7 @@ class UISymbol {
   
   static void checkHovered() {
     for (int i = 0; i < symbols.length; i++) {
-      symbols[i].hovered = symbols[i].rectangle.containsPoint(new Point(engine.mouseGUI.x, engine.mouseGUI.y));
+      symbols[i].hovered = symbols[i].rectangle.containsPoint(new Point(engine.mouseGUI.position.x, engine.mouseGUI.position.y));
     }   
   }
   

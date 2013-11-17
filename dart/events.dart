@@ -4,10 +4,10 @@ void onMouseMove(MouseEvent evt) {
   engine.updateMouse(evt);
   
   if (game != null) {
-    game.scrollingLeft = (engine.mouse.x == 0);
-    game.scrollingRight = (engine.mouse.x == engine.width -1);  
-    game.scrollingUp = (engine.mouse.y == 0);
-    game.scrollingDown = (engine.mouse.y == engine.height -1);
+    game.scrollingLeft = (engine.mouse.position.x == 0);
+    game.scrollingRight = (engine.mouse.position.x == engine.width -1);  
+    game.scrollingUp = (engine.mouse.position.y == 0);
+    game.scrollingDown = (engine.mouse.position.y == engine.height -1);
   }
 }
 
@@ -138,7 +138,7 @@ void onKeyDown(KeyboardEvent evt) {
   // select height for terraforming
   if (game.mode == "TERRAFORM") {
 
-    // remove terraform number
+    // remove terraform
     if (evt.keyCode == KeyCode.DELETE) {
       game.world.tiles[position.x][position.y].terraformTarget = -1;
       game.world.tiles[position.x][position.y].terraformProgress = 0;
@@ -147,7 +147,8 @@ void onKeyDown(KeyboardEvent evt) {
     // set terraform value
     if (evt.keyCode >= 48 && evt.keyCode <= 57) {
       game.terraformingHeight = evt.keyCode - 49;
-      if (game.terraformingHeight == -1)game.terraformingHeight = 9;
+      if (game.terraformingHeight == -1)
+        game.terraformingHeight = 9;
     }
 
   }

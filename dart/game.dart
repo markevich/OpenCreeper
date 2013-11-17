@@ -13,6 +13,9 @@ class Game {
   Vector scroll = new Vector(0, 0);
   Building base;
   Stopwatch stopwatch = new Stopwatch();
+  Line tfLine1, tfLine2, tfLine3, tfLine4;
+  Sprite tfNumber; // TODO
+  Sprite targetCursor;
 
   Game() {
     init();
@@ -35,6 +38,25 @@ class Game {
     music.volume = 0.25;
     music.onCanPlay.listen((event) => music.play());
 
+    // create terraform lines
+    tfLine1 = new Line(10, new Vector.empty(), new Vector.empty(), 1, "#fff");
+    tfLine1.visible = false;
+    engine.canvas["buffer"].addDisplayObject(tfLine1);
+    tfLine2 = new Line(10, new Vector.empty(), new Vector.empty(), 1, "#fff");
+    tfLine2.visible = false;
+    engine.canvas["buffer"].addDisplayObject(tfLine2);
+    tfLine3 = new Line(10, new Vector.empty(), new Vector.empty(), 1, "#fff");
+    tfLine3.visible = false;
+    engine.canvas["buffer"].addDisplayObject(tfLine3);
+    tfLine4 = new Line(10, new Vector.empty(), new Vector.empty(), 1, "#fff");
+    tfLine4.visible = false;
+    engine.canvas["buffer"].addDisplayObject(tfLine4);
+    
+    targetCursor = new Sprite(10, engine.images["targetcursor"], new Vector.empty(), 48, 48);
+    targetCursor.anchor = new Vector(0.5, 0.5);
+    targetCursor.visible = false;
+    engine.canvas["buffer"].addDisplayObject(targetCursor);
+    
     drawTerrain();
     copyTerrain();
     engine.setupEventHandler();
@@ -90,8 +112,8 @@ class Game {
    */
   Vector getHoveredTilePosition() {
     return new Vector(
-        ((engine.mouse.x - engine.halfWidth) / (tileSize * zoom)).floor() + scroll.x,
-        ((engine.mouse.y - engine.halfHeight) / (tileSize * zoom)).floor() + scroll.y);
+        ((engine.mouse.position.x - engine.halfWidth) / (tileSize * zoom)).floor() + scroll.x,
+        ((engine.mouse.position.y - engine.halfHeight) / (tileSize * zoom)).floor() + scroll.y);
   }
 
   void pause() {
@@ -207,28 +229,20 @@ class Game {
 
     // create base
     Vector randomPosition = new Vector(
-        engine.randomInt(0, world.size.x - 9, seed + 1),
-        engine.randomInt(0, world.size.y - 9, seed + 1));
+        engine.randomInt(4, world.size.x - 5, seed + 1),
+        engine.randomInt(4, world.size.y - 5, seed + 1));
 
-    scroll.x = randomPosition.x + 4;
-    scroll.y = randomPosition.y + 4;
+    scroll = randomPosition;
 
-    //Building building = new Building(randomPosition, "base");
     Building building = Building.add(randomPosition, "base");
-    building.health = 40;
-    building.maxHealth = 40;
-    building.built = true;
-    building.size = 9;
-    building.canMove = true;
-    //Building.add(building);
     base = building;   
 
-    int height = this.world.getTile(building.sprite.position).height;
+    int height = this.world.getTile(building.position).height;
     if (height < 0)
       height = 0;
     for (int i = -4; i <= 4; i++) {
       for (int j = -4; j <= 4; j++) {
-        this.world.getTile(building.sprite.position + new Vector(i * tileSize, j * tileSize)).height = height;
+        this.world.getTile(building.position + new Vector(i * tileSize, j * tileSize)).height = height;
       }
     }
 
@@ -340,7 +354,7 @@ class Game {
             }
             
             indexAbove = index;
-
+           
             engine.canvas["level$k"].context.drawImageScaledFromSource(engine.images["mask"], index * (tileSize + 6) + 3, (tileSize + 6) + 3, tileSize, tileSize, i * tileSize, j * tileSize, tileSize, tileSize);
           }
         }
@@ -397,7 +411,7 @@ class Game {
             
             indexAbove = index;
   
-            engine.canvas["level$k"].context.drawImageScaledFromSource(engine.images["borders"], index * (tileSize + 6) + 2, 2, tileSize + 2, tileSize + 2, i * tileSize, j * tileSize, (tileSize + 2), (tileSize + 2));
+            engine.canvas["level$k"].context.drawImageScaledFromSource(engine.images["borders"], index * (tileSize + 6) + 2, 2, tileSize + 2, tileSize + 2, i * tileSize, j * tileSize, (tileSize + 2), (tileSize + 2));       
           }
         }
       }
@@ -560,13 +574,13 @@ class Game {
     
     for (int i = 0; i < Building.buildings.length; i++) {
       // must not be the same building
-      if (!(Building.buildings[i].sprite.position == node.sprite.position)) {
+      if (!(Building.buildings[i].position == node.position)) {
         // must be idle
         if (Building.buildings[i].status == "IDLE") {
           // it must either be the target or be built
           if (Building.buildings[i] == target || Building.buildings[i].built) {
-              centerI = Building.buildings[i].sprite.position;
-              centerNode = node.sprite.position;
+              centerI = Building.buildings[i].position;
+              centerNode = node.position;
               num distance = centerNode.distanceTo(centerI);
 
               int allowedDistance = 10 * tileSize;
@@ -584,12 +598,12 @@ class Game {
   }
 
   /**
-   * Checks if a [building] with its [size] can be placed on a given [position].
+   * Checks if a [building] with its [size] can be placed on a given [position]. // tileposition
    */
   bool canBePlaced(Vector position, num size, [Building building]) {
     bool collision = false;
 
-    if (position.x > -1 && position.x < world.size.x - size + 1 && position.y > -1 && position.y < world.size.y - size + 1) {
+    if (position.x > 0 && position.x < world.size.x - 1 && position.y > 0 && position.y < world.size.y - 1) {
       int height = game.world.tiles[position.x][position.y].height;
 
       // 1. check for collision with another building
@@ -599,12 +613,12 @@ class Game {
           continue;
         if (building != null && building == Building.buildings[i])
           continue;
-        Rectangle buildingRect = new Rectangle(Building.buildings[i].sprite.position.x,
-            Building.buildings[i].sprite.position.y,
+        Rectangle buildingRect = new Rectangle(Building.buildings[i].position.x - Building.buildings[i].size * tileSize / 2,
+            Building.buildings[i].position.y - Building.buildings[i].size * tileSize / 2,
             Building.buildings[i].size * tileSize - 1,
             Building.buildings[i].size * tileSize - 1);
-        Rectangle currentRect = new Rectangle(position.x,
-                                              position.y,
+        Rectangle currentRect = new Rectangle(position.x * tileSize - 16,
+                                              position.y * tileSize - 16,
                                               size * tileSize - 1,
                                               size * tileSize - 1);       
         if (currentRect.intersects(buildingRect)) {
@@ -615,8 +629,8 @@ class Game {
 
       // 2. check if all tiles have the same height and are not corners
       if (!collision) {
-        for (int i = position.x; i < position.x + size; i++) {
-          for (int j = position.y; j < position.y + size; j++) {
+        for (int i = position.x - 1; i <= position.x + 1; i++) {
+          for (int j = position.y - 1; j <= position.y + 1; j++) {
             if (world.contains(new Vector(i, j))) {
               int tileHeight = game.world.tiles[i][j].height;
               if (tileHeight < 0) {
@@ -774,6 +788,7 @@ class Game {
     if (scrollingLeft || scrollingRight || scrollingUp || scrollingDown) {
       copyTerrain();
       drawCollection();
+      updateTerraformInfo();
       creeperDirty = true;
     }
   }
@@ -785,7 +800,7 @@ class Game {
   void drawRangeBoxes(Vector position, String type, num rad, num size) {
     CanvasRenderingContext2D context = engine.canvas["buffer"].context;
     
-    Vector positionCenter = new Vector(position.x * tileSize + (tileSize / 2) * size, position.y * tileSize + (tileSize / 2) * size);
+    Vector positionCenter = new Vector(position.x * tileSize + 8, position.y * tileSize + 8);
     int positionHeight = game.world.tiles[position.x][position.y].height;
 
     if (canBePlaced(position, size, null) && (type == "collector" || type == "cannon" || type == "mortar" || type == "shield" || type == "beam" || type == "terp")) {
@@ -961,6 +976,39 @@ class Game {
     engine.canvas["creeper"].clear();
     engine.canvas["creeper"].context.drawImage(engine.canvas["creeperbuffer"].view, 0, 0);
   }
+  
+  void updateTerraformInfo() {
+    Vector position = getHoveredTilePosition();
+    if (world.contains(position)) {   
+      if (mode == "TERRAFORM") {
+        Vector drawPosition = position *= tileSize;
+        tfLine1.from = new Vector(0, drawPosition.y);
+        tfLine1.to = new Vector(world.size.y * tileSize, drawPosition.y);
+        tfLine2.from = new Vector(0, drawPosition.y + tileSize);
+        tfLine2.to = new Vector(world.size.y * tileSize, drawPosition.y + tileSize);
+        tfLine3.from = new Vector(drawPosition.x, 0);
+        tfLine3.to = new Vector(drawPosition.x, world.size.y * tileSize);
+        tfLine4.from = new Vector(drawPosition.x + tileSize, 0);
+        tfLine4.to = new Vector(drawPosition.x + tileSize, world.size.y * tileSize); 
+        tfLine1.visible = true;
+        tfLine2.visible = true;
+        tfLine3.visible = true;
+        tfLine4.visible = true;
+      } else {
+        tfLine1.visible = false;
+        tfLine2.visible = false;
+        tfLine3.visible = false;
+        tfLine4.visible = false;
+      }
+      
+      targetCursor.position = (position * tileSize) + new Vector(8, 8);
+    } else {
+      tfLine1.visible = false;
+      tfLine2.visible = false;
+      tfLine3.visible = false;
+      tfLine4.visible = false;
+    }
+  }
 
   /**
    * When a building from the GUI is selected this draws some info
@@ -968,132 +1016,134 @@ class Game {
    * white boxes and connections to other buildings
    */
   void drawPositionInfo() {
-    CanvasRenderingContext2D context = engine.canvas["buffer"].context;
-    
-    ghosts = new List(); // ghosts are all the placeholders to build
-    if (engine.mouse.dragStart != null) {
-
-      Vector start = engine.mouse.dragStart;
-      Vector end = engine.mouse.dragEnd;
-      Vector delta = end - start;
-      num distance = start.distanceTo(end);
+    if (UISymbol.activeSymbol != null) {
+      CanvasRenderingContext2D context = engine.canvas["buffer"].context;
       
-      num buildingDistance = 3;
-      if (UISymbol.activeSymbol.imageID == "collector")
-        buildingDistance = 9;
-      else if (UISymbol.activeSymbol.imageID == "relay")
-        buildingDistance = 18;
-    
-      num times = (distance / buildingDistance).floor() + 1;
-
-      ghosts.add(start);
-
-      for (int i = 1; i < times; i++) {
-        num newX = (start.x + (delta.x / distance) * i * buildingDistance).floor();
-        num newY = (start.y + (delta.y / distance) * i * buildingDistance).floor();
-
-        if (world.contains(new Vector(newX, newY))) {
-          Vector ghost = new Vector(newX, newY);
-          ghosts.add(ghost);
-        }
-      }
-      if (world.contains(end)) {
-        ghosts.add(end);
-      }
-    } else {
-      if (engine.mouse.active) {
-        Vector position = getHoveredTilePosition();
-        if (world.contains(position)) {
-          ghosts.add(position);
-        }
-      }
-    }
-
-    for (int j = 0; j < ghosts.length; j++) {
-      Vector positionScrolled = new Vector(ghosts[j].x, ghosts[j].y);
-      Vector drawPosition = positionScrolled.tiled2screen();
-      Vector positionScrolledCenter = new Vector(positionScrolled.x * tileSize + (tileSize / 2) * UISymbol.activeSymbol.size, positionScrolled.y * tileSize + (tileSize / 2) * UISymbol.activeSymbol.size);
-
-      drawRangeBoxes(positionScrolled, UISymbol.activeSymbol.imageID, UISymbol.activeSymbol.radius, UISymbol.activeSymbol.size);
-
-      if (world.contains(positionScrolled)) {
-        context.save();
-        context.globalAlpha = .5;
-
-        // draw building
-        context.drawImageScaled(engine.images[UISymbol.activeSymbol.imageID], drawPosition.x, drawPosition.y, UISymbol.activeSymbol.size * tileSize * zoom, UISymbol.activeSymbol.size * tileSize * zoom);
-        if (UISymbol.activeSymbol.imageID == "cannon")
-          context.drawImageScaled(engine.images["cannongun"], drawPosition.x, drawPosition.y, 48 * zoom, 48 * zoom);
-
-        // draw green or red box
-        // make sure there isn't a building on this tile yet
-        if (canBePlaced(positionScrolled, UISymbol.activeSymbol.size, null)) {
-          context.strokeStyle = "#0f0";
-        } else {
-          context.strokeStyle = "#f00";
-        }
-        context.lineWidth = 4 * zoom;
-        context.strokeRect(drawPosition.x, drawPosition.y, tileSize * UISymbol.activeSymbol.size * zoom, tileSize * UISymbol.activeSymbol.size * zoom);
-
-        context.restore();
-
-        // draw lines to other buildings
-        for (int i = 0; i < Building.buildings.length; i++) {
-          Vector center = Building.buildings[i].sprite.position;
-          Vector drawCenter = center.real2screen();
-
-          int allowedDistance = 10 * tileSize;
-          if (Building.buildings[i].type == "relay" && UISymbol.activeSymbol.imageID == "relay") {
-            allowedDistance = 20 * tileSize;
-          }
-
-          if (pow(center.x - positionScrolledCenter.x, 2) + pow(center.y - positionScrolledCenter.y, 2) <= pow(allowedDistance, 2)) {
-            Vector lineToTarget = positionScrolledCenter.real2screen();
-            context
-              ..strokeStyle = '#000'
-              ..lineWidth = 3 * game.zoom
-              ..beginPath()
-              ..moveTo(drawCenter.x, drawCenter.y)
-              ..lineTo(lineToTarget.x, lineToTarget.y)
-              ..stroke();
-
-            context
-              ..strokeStyle = '#0f0'
-              ..lineWidth = 2 * game.zoom
-              ..beginPath()
-              ..moveTo(drawCenter.x, drawCenter.y)
-              ..lineTo(lineToTarget.x, lineToTarget.y)
-              ..stroke();
+      ghosts = new List(); // ghosts are all the placeholders to build
+      if (engine.mouse.dragStart != null) {
+  
+        Vector start = engine.mouse.dragStart;
+        Vector end = engine.mouse.dragEnd;
+        Vector delta = end - start;
+        num distance = start.distanceTo(end);
+        
+        num buildingDistance = 3;
+        if (UISymbol.activeSymbol.imageID == "collector")
+          buildingDistance = 9;
+        else if (UISymbol.activeSymbol.imageID == "relay")
+          buildingDistance = 18;
+      
+        num times = (distance / buildingDistance).floor() + 1;
+  
+        ghosts.add(start);
+  
+        for (int i = 1; i < times; i++) {
+          num newX = (start.x + (delta.x / distance) * i * buildingDistance).floor();
+          num newY = (start.y + (delta.y / distance) * i * buildingDistance).floor();
+  
+          if (world.contains(new Vector(newX, newY))) {
+            Vector ghost = new Vector(newX, newY);
+            ghosts.add(ghost);
           }
         }
-        // draw lines to other ghosts
-        for (int k = 0; k < ghosts.length; k++) {
-          if (k != j) {
-            Vector center = new Vector(ghosts[k].x * tileSize + (tileSize / 2) * 3, ghosts[k].y * tileSize + (tileSize / 2) * 3);
+        if (world.contains(end)) {
+          ghosts.add(end);
+        }
+      } else {
+        if (engine.mouse.active) {
+          Vector position = getHoveredTilePosition();
+          if (world.contains(position)) {
+            ghosts.add(position);
+          }
+        }
+      }
+  
+      for (int j = 0; j < ghosts.length; j++) {
+        Vector positionScrolled = new Vector(ghosts[j].x, ghosts[j].y);
+        Vector drawPosition = positionScrolled.tiled2screen();
+        Vector positionScrolledCenter = new Vector(positionScrolled.x * tileSize + 8, positionScrolled.y * tileSize + 8);
+  
+        drawRangeBoxes(positionScrolled, UISymbol.activeSymbol.imageID, UISymbol.activeSymbol.radius, UISymbol.activeSymbol.size);
+  
+        if (world.contains(positionScrolled)) {
+          context.save();
+          context.globalAlpha = .5;
+  
+          // draw building
+          context.drawImageScaled(engine.images[UISymbol.activeSymbol.imageID], drawPosition.x - 16, drawPosition.y - 16, UISymbol.activeSymbol.size * tileSize * zoom, UISymbol.activeSymbol.size * tileSize * zoom);
+          if (UISymbol.activeSymbol.imageID == "cannon")
+            context.drawImageScaled(engine.images["cannongun"], drawPosition.x - 16, drawPosition.y - 16, 48 * zoom, 48 * zoom);
+  
+          // draw green or red box
+          // make sure there isn't a building on this tile yet
+          if (canBePlaced(positionScrolled, UISymbol.activeSymbol.size, null)) {
+            context.strokeStyle = "#0f0";
+          } else {
+            context.strokeStyle = "#f00";
+          }
+          context.lineWidth = 4 * zoom;
+          context.strokeRect(drawPosition.x - 16, drawPosition.y - 16, tileSize * UISymbol.activeSymbol.size * zoom, tileSize * UISymbol.activeSymbol.size * zoom);
+  
+          context.restore();
+  
+          // draw lines to other buildings
+          for (int i = 0; i < Building.buildings.length; i++) {
+            Vector center = Building.buildings[i].position;
             Vector drawCenter = center.real2screen();
-
+  
             int allowedDistance = 10 * tileSize;
-            if (UISymbol.activeSymbol.imageID == "relay") {
+            if (Building.buildings[i].type == "relay" && UISymbol.activeSymbol.imageID == "relay") {
               allowedDistance = 20 * tileSize;
             }
-
+  
             if (pow(center.x - positionScrolledCenter.x, 2) + pow(center.y - positionScrolledCenter.y, 2) <= pow(allowedDistance, 2)) {
               Vector lineToTarget = positionScrolledCenter.real2screen();
               context
                 ..strokeStyle = '#000'
-                ..lineWidth = 2
+                ..lineWidth = 3 * game.zoom
                 ..beginPath()
                 ..moveTo(drawCenter.x, drawCenter.y)
                 ..lineTo(lineToTarget.x, lineToTarget.y)
                 ..stroke();
-
+  
               context
-                ..strokeStyle = '#fff'
-                ..lineWidth = 1
+                ..strokeStyle = '#0f0'
+                ..lineWidth = 2 * game.zoom
                 ..beginPath()
                 ..moveTo(drawCenter.x, drawCenter.y)
                 ..lineTo(lineToTarget.x, lineToTarget.y)
                 ..stroke();
+            }
+          }
+          // draw lines to other ghosts
+          for (int k = 0; k < ghosts.length; k++) {
+            if (k != j) {
+              Vector center = new Vector(ghosts[k].x * tileSize + (tileSize / 2) * 3, ghosts[k].y * tileSize + (tileSize / 2) * 3);
+              Vector drawCenter = center.real2screen();
+  
+              int allowedDistance = 10 * tileSize;
+              if (UISymbol.activeSymbol.imageID == "relay") {
+                allowedDistance = 20 * tileSize;
+              }
+  
+              if (pow(center.x - positionScrolledCenter.x, 2) + pow(center.y - positionScrolledCenter.y, 2) <= pow(allowedDistance, 2)) {
+                Vector lineToTarget = positionScrolledCenter.real2screen();
+                context
+                  ..strokeStyle = '#000'
+                  ..lineWidth = 2
+                  ..beginPath()
+                  ..moveTo(drawCenter.x, drawCenter.y)
+                  ..lineTo(lineToTarget.x, lineToTarget.y)
+                  ..stroke();
+  
+                context
+                  ..strokeStyle = '#fff'
+                  ..lineWidth = 1
+                  ..beginPath()
+                  ..moveTo(drawCenter.x, drawCenter.y)
+                  ..lineTo(lineToTarget.x, lineToTarget.y)
+                  ..stroke();
+              }
             }
           }
         }
@@ -1149,124 +1199,33 @@ class Game {
   void draw(num _) {
     CanvasRenderingContext2D context = engine.canvas["buffer"].context;
     
-    drawGUI();
-
-    // clear canvas
     engine.canvas["buffer"].clear();
     engine.canvas["main"].clear();
-
-    // draw terraform numbers
-    int timesX = (engine.halfWidth / tileSize / zoom).floor();
-    int timesY = (engine.halfHeight / tileSize / zoom).floor();
-
-    for (int i = -timesX; i <= timesX; i++) {
-      for (int j = -timesY; j <= timesY; j++) {
-
-        int iS = i + scroll.x;
-        int jS = j + scroll.y;
-
-        if (world.contains(new Vector(iS, jS))) {
-          if (world.tiles[iS][jS].terraformTarget > -1) {
-            context.drawImageScaledFromSource(engine.images["numbers"], world.tiles[iS][jS].terraformTarget * 16, 0, tileSize, tileSize, engine.halfWidth + i * tileSize * zoom, engine.halfHeight + j * tileSize * zoom, tileSize * zoom, tileSize * zoom);
-          }
-        }
-      }
-    }
-
-    // draw node connections
-    for (int i = 0; i < Building.buildings.length; i++) {
-      Vector centerI = Building.buildings[i].sprite.position;
-      Vector drawCenterI = centerI.real2screen();
-      for (int j = 0; j < Building.buildings.length; j++) {
-        if (i != j) {
-          if (Building.buildings[i].status == "IDLE" && Building.buildings[j].status == "IDLE") {
-            Vector centerJ = Building.buildings[j].sprite.position;
-            Vector drawCenterJ = centerJ.real2screen();
-
-            num allowedDistance = 10 * tileSize;
-            if (Building.buildings[i].type == "relay" && Building.buildings[j].type == "relay") {
-              allowedDistance = 20 * tileSize;
-            }
-
-            if (pow(centerJ.x - centerI.x, 2) + pow(centerJ.y - centerI.y, 2) <= pow(allowedDistance, 2)) {
-              context.strokeStyle = '#000';
-              context.lineWidth = 3;
-              context.beginPath();
-              context.moveTo(drawCenterI.x, drawCenterI.y);
-              context.lineTo(drawCenterJ.x, drawCenterJ.y);
-              context.stroke();
-              
-              if (!Building.buildings[i].built || !Building.buildings[j].built)
-                context.strokeStyle = '#777';
-              else
-                context.strokeStyle = '#fff';
-              context.lineWidth = 2;
-              context.beginPath();
-              context.moveTo(drawCenterI.x, drawCenterI.y);
-              context.lineTo(drawCenterJ.x, drawCenterJ.y);
-              context.stroke();
-            }
-          }
-        }
-      }
-    }
-
-    Building.draw();
+    
+    drawGUI();
+    game.world.drawTerraformNumbers();
 
     engine.canvas["buffer"].draw();
+    Building.draw();
 
     if (engine.mouse.active) {
 
-      // if a building is built and selected draw a green box and a line at mouse position as the reposition target
+      // if a building is built and selected draw a green box and a line to the mouse position as the reposition target
       Building.drawRepositionInfo();
+      drawPositionInfo();
 
-      // draw attack symbol
-      if (mode == "SHIP_SELECTED") {
-        Vector position = getHoveredTilePosition().tiled2screen();
-        context.drawImageScaled(engine.images["targetcursor"], position.x - 24 * zoom, position.y - 24 * zoom, 48 * zoom, 48 * zoom);
-      }
-
-      // draw position info
-      if (UISymbol.activeSymbol != null) {
-        drawPositionInfo();
-      }
-
-      // draw terraform lines
+      // draw terraform number
       if (mode == "TERRAFORM") {
         Vector positionScrolled = getHoveredTilePosition();
         Vector drawPosition = positionScrolled.tiled2screen();
         context.drawImageScaledFromSource(engine.images["numbers"], terraformingHeight * tileSize, 0, tileSize, tileSize, drawPosition.x, drawPosition.y, tileSize * zoom, tileSize * zoom);
-
-        context.strokeStyle = '#fff';
-        context.lineWidth = 1;
-
-        context.beginPath();
-        context.moveTo(0, drawPosition.y);
-        context.lineTo(engine.width, drawPosition.y);
-        context.stroke();
-
-        context.beginPath();
-        context.moveTo(0, drawPosition.y + tileSize * zoom);
-        context.lineTo(engine.width, drawPosition.y + tileSize * zoom);
-        context.stroke();
-
-        context.beginPath();
-        context.moveTo(drawPosition.x, 0);
-        context.lineTo(drawPosition.x, engine.halfHeight * 2);
-        context.stroke();
-
-        context.beginPath();
-        context.moveTo(drawPosition.x + tileSize * zoom, 0);
-        context.lineTo(drawPosition.x + tileSize * zoom, engine.halfHeight * 2);
-        context.stroke();
       }
-    }
-
-    Vector tp = game.getHoveredTilePosition();
-    Vector tp2 = tp.tiled2screen();
-    engine.canvas["buffer"].context.strokeStyle = '#fff';
-    engine.canvas["buffer"].context.strokeRect(tp2.x, tp2.y, 16, 16);
-    engine.canvas["buffer"].context.stroke();
+      
+      /*Vector tp = game.getHoveredTilePosition();
+      Vector tp2 = tp.tiled2screen();
+      engine.canvas["buffer"].context.strokeStyle = '#f0f';
+      engine.canvas["buffer"].context.strokeRect(tp2.x, tp2.y, 16 * zoom, 16 * zoom);*/
+    } 
     
     if (creeperDirty) {
       drawCreeper();

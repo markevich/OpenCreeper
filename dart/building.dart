@@ -39,23 +39,28 @@ class Building {
       sprite.size = new Vector(144, 144);
       sprite.alpha = 1.0;
       selectedCircle.radius = 72;
+      health = 40;
+      maxHealth = 40;
+      built = true;
+      size = 9;
+      canMove = true;
     }   
     else if (type == "analyzer") {
-      maxHealth = 80;
+      maxHealth = 1; // 80
       maxEnergy = 20;
       canMove = true;
       needsEnergy = true;
       weaponRadius = 10;
     }
     else if (type == "terp") {
-      maxHealth = 60;
+      maxHealth = 1; // 60
       maxEnergy = 20;
       canMove = true;
       needsEnergy = true;
       weaponRadius = 14;
     }
     else if (type == "shield") {
-      maxHealth = 75;
+      maxHealth = 1; // 75
       maxEnergy = 20;
       canMove = true;
       needsEnergy = true;
@@ -67,16 +72,16 @@ class Building {
       needsEnergy = true;
     }
     else if (type == "storage") {
-      maxHealth = 8;
+      maxHealth = 1; // 8
     }
     else if (type == "reactor") {
-      maxHealth = 50;
+      maxHealth = 1; // 50
     }
     else if (type == "collector") {
-      maxHealth = 5;
+      maxHealth = 1; // 50
     }
     else if (type == "relay") {
-      maxHealth = 10;
+      maxHealth = 1; // 10
     }
     else if (type == "cannon") {
       maxHealth = 1; // 25
@@ -98,7 +103,7 @@ class Building {
       needsEnergy = true;
     }
     else if (type == "beam") {
-      maxHealth = 20;
+      maxHealth = 1; // 20
       maxEnergy = 10;
       weaponRadius = 14;
       canMove = true;
@@ -116,7 +121,7 @@ class Building {
    */
   static Building add(Vector position, String type) {
     position = position * 16;
-    position += new Vector(24, 24);
+    position += new Vector(8, 8);
     Building building = new Building(position, type);
     buildings.add(building);
     return building;
@@ -203,10 +208,10 @@ class Building {
   static void updateHoverState() {
     for (int i = 0; i < buildings.length; i++) {
       Vector realPosition = buildings[i].position.real2screen();
-      buildings[i].hovered = (engine.mouse.x > realPosition.x - (game.tileSize * buildings[i].size * game.zoom / 2) &&
-          engine.mouse.x < realPosition.x + (game.tileSize * buildings[i].size * game.zoom / 2) &&
-          engine.mouse.y > realPosition.y - (game.tileSize * buildings[i].size * game.zoom / 2) &&
-          engine.mouse.y < realPosition.y + (game.tileSize * buildings[i].size * game.zoom / 2));
+      buildings[i].hovered = (engine.mouse.position.x > realPosition.x - (game.tileSize * buildings[i].size * game.zoom / 2) &&
+          engine.mouse.position.x < realPosition.x + (game.tileSize * buildings[i].size * game.zoom / 2) &&
+          engine.mouse.position.y > realPosition.y - (game.tileSize * buildings[i].size * game.zoom / 2) &&
+          engine.mouse.position.y < realPosition.y + (game.tileSize * buildings[i].size * game.zoom / 2));
     }
   }
   
@@ -258,6 +263,7 @@ class Building {
         if (game.canBePlaced(position, buildings[i].size, buildings[i])) {
           engine.canvas["main"].view.style.cursor = "url('images/Normal.cur') 2 2, pointer";
           buildings[i].operating = false;
+          buildings[i].rotating = false;
           buildings[i].weaponTargetPosition = null;
           buildings[i].status = "RISING";
           buildings[i].moveTargetPosition = (position * game.tileSize) + new Vector(8, 8);
@@ -677,7 +683,7 @@ class Building {
               rotating = false;
               energy -= 1;
               operating = true;
-              Projectile projectile = new Projectile(center, new Vector(weaponTargetPosition.x * game.tileSize + game.tileSize / 2, weaponTargetPosition.y * game.tileSize + game.tileSize / 2), targetAngle); // FIXME: weaponTargetPosition might be NULL
+              Projectile projectile = new Projectile(center, new Vector(weaponTargetPosition.x * game.tileSize + game.tileSize / 2, weaponTargetPosition.y * game.tileSize + game.tileSize / 2), targetAngle);
               Projectile.add(projectile);
               engine.playSound("laser", position.real2tiled());
             }
@@ -718,6 +724,47 @@ class Building {
           }
     }
   }
+  
+  static void drawNodeConnections() {
+    CanvasRenderingContext2D context = engine.canvas["buffer"].context;
+    
+    for (int i = 0; i < buildings.length; i++) {
+      Vector centerI = buildings[i].position;
+      Vector drawCenterI = centerI.real2screen();
+      for (int j = 0; j < buildings.length; j++) {
+        if (i != j) {
+          if (buildings[i].status == "IDLE" && buildings[j].status == "IDLE") {
+            Vector centerJ = buildings[j].position;
+            Vector drawCenterJ = centerJ.real2screen();
+
+            num allowedDistance = 10 * game.tileSize;
+            if (buildings[i].type == "relay" && buildings[j].type == "relay") {
+              allowedDistance = 20 * game.tileSize;
+            }
+
+            if (centerI.distanceTo(centerJ) <= allowedDistance) {
+              context.strokeStyle = '#000';
+              context.lineWidth = 3;
+              context.beginPath();
+              context.moveTo(drawCenterI.x, drawCenterI.y);
+              context.lineTo(drawCenterJ.x, drawCenterJ.y);
+              context.stroke();
+              
+              if (!buildings[i].built || !buildings[j].built)
+                context.strokeStyle = '#777';
+              else
+                context.strokeStyle = '#fff';
+              context.lineWidth = 2;
+              context.beginPath();
+              context.moveTo(drawCenterI.x, drawCenterI.y);
+              context.lineTo(drawCenterJ.x, drawCenterJ.y);
+              context.stroke();
+            }
+          }
+        }
+      }
+    }
+  }
 
   static void drawRepositionInfo() {
     CanvasRenderingContext2D context = engine.canvas["buffer"].context;
@@ -726,34 +773,61 @@ class Building {
       if (buildings[i].built && buildings[i].selected && buildings[i].canMove) {
         engine.canvas["main"].view.style.cursor = "none";
         
-        Vector positionScrolled = game.getHoveredTilePosition();
-        Vector drawPosition = positionScrolled.tiled2screen();
-        Vector positionScrolledCenter = new Vector(positionScrolled.x * game.tileSize + (game.tileSize / 2) * buildings[i].size, positionScrolled.y * game.tileSize + (game.tileSize / 2) * buildings[i].size);
-        Vector drawPositionCenter = positionScrolledCenter.real2screen();
+        Vector hoveredTilePosition = game.getHoveredTilePosition();
+        Vector hoveredTilePositionDraw = hoveredTilePosition.tiled2screen();
   
         Vector center = buildings[i].position.real2screen();
   
-        game.drawRangeBoxes(positionScrolled, buildings[i].type, buildings[i].weaponRadius, buildings[i].size);
+        game.drawRangeBoxes(hoveredTilePosition, buildings[i].type, buildings[i].weaponRadius, buildings[i].size);
   
-        if (game.canBePlaced(positionScrolled, buildings[i].size, buildings[i]))
+        if (game.canBePlaced(hoveredTilePosition, buildings[i].size, buildings[i]))
           context.fillStyle = "rgba(0,255,0,0.5)";
         else
           context.fillStyle = "rgba(255,0,0,0.5)";
   
         // draw rectangle
-        context.strokeRect(drawPosition.x, drawPosition.y, game.tileSize * buildings[i].size * game.zoom, game.tileSize * buildings[i].size * game.zoom);
-        // draw line
-        context
-          ..strokeStyle = "rgba(255,255,255,0.5)"
-          ..beginPath()
-          ..moveTo(center.x, center.y)
-          ..lineTo(drawPositionCenter.x, drawPositionCenter.y)
-          ..stroke();
+        context.fillRect(hoveredTilePositionDraw.x + 8 - game.tileSize * buildings[i].size * game.zoom / 2,
+                         hoveredTilePositionDraw.y + 8 - game.tileSize * buildings[i].size * game.zoom / 2,
+                         game.tileSize * buildings[i].size * game.zoom,
+                         game.tileSize * buildings[i].size * game.zoom);
+        
+        // draw lines to other buildings
+        for (int j = 0; j < buildings.length; j++) {
+          if (i != j) {
+            Vector positionJ = buildings[j].position.real2screen();
+            
+            int allowedDistance = 10 * game.tileSize;
+            if (buildings[j].type == "relay" && buildings[i].type == "relay") {
+              allowedDistance = 20 * game.tileSize;
+            }
+            
+            if (positionJ.distanceTo(hoveredTilePositionDraw) <= allowedDistance) {
+              context
+                ..strokeStyle = '#000'
+                ..lineWidth = 3 * game.zoom
+                ..beginPath()
+                ..moveTo(positionJ.x, positionJ.y)
+                ..lineTo(hoveredTilePositionDraw.x + 8, hoveredTilePositionDraw.y + 8)
+                ..stroke();
+    
+              context
+                ..strokeStyle = '#0f0'
+                ..lineWidth = 2 * game.zoom
+                ..beginPath()
+                ..moveTo(positionJ.x, positionJ.y)
+                ..lineTo(hoveredTilePositionDraw.x + 8, hoveredTilePositionDraw.y + 8)
+                ..stroke();
+            }
+          }
+        }
+        
+        //break;
       }
     }
   }
 
   static void draw() {
+    drawNodeConnections();
     CanvasRenderingContext2D context = engine.canvas["buffer"].context;
     
     for (int i = 0; i < buildings.length; i++) {

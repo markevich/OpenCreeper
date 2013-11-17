@@ -1,14 +1,14 @@
 part of creeper;
 
 class Mouse {
-  int x = 0, y = 0;
+  Vector position = new Vector.empty();
   bool active = true;
   Vector dragStart, dragEnd;
   
   Mouse();
   
   String toString() {
-    return "$x/$y";
+    return "$position";
   }
 }
 
@@ -160,19 +160,20 @@ class Engine {
   }
 
   void updateMouse(MouseEvent evt) {
-    mouse.x = (evt.client.x - canvas["main"].view.getBoundingClientRect().left).toInt();
-    mouse.y = (evt.client.y - canvas["main"].view.getBoundingClientRect().top).toInt();
+    mouse.position.x = (evt.client.x - canvas["main"].view.getBoundingClientRect().left).toInt();
+    mouse.position.y = (evt.client.y - canvas["main"].view.getBoundingClientRect().top).toInt();
     Vector position = null;
     if (game != null) {
       position = game.getHoveredTilePosition();
       mouse.dragEnd = new Vector(position.x, position.y);
+      game.updateTerraformInfo();   
     }
-    querySelector("#debug").innerHtml = "Mouse: ${engine.mouse} - Position: ${position}";
+    /*querySelector("#debug").innerHtml = "Mouse: ${engine.mouse} - Position: ${position}";*/
   }
 
   void updateMouseGUI(MouseEvent evt) {
-    mouseGUI.x = (evt.client.x - canvas["gui"].view.getBoundingClientRect().left).toInt();
-    mouseGUI.y = (evt.client.y - canvas["gui"].view.getBoundingClientRect().top).toInt();
+    mouseGUI.position.x = (evt.client.x - canvas["gui"].view.getBoundingClientRect().left).toInt();
+    mouseGUI.position.y = (evt.client.y - canvas["gui"].view.getBoundingClientRect().top).toInt();
   }
  
   int randomInt(num from, num to, [num seed]) {

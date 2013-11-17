@@ -44,17 +44,28 @@ class Ship {
     }
   }
   
+  static void select() {
+    // select a ship if hovered
+    for (int i = 0; i < ships.length; i++) {
+      if (ships[i].hovered) {
+        ships[i].selected = true;
+      }
+    }
+    game.targetCursor.visible = true;
+  }
+  
   static void deselect() {
     for (int i = 0; i < ships.length; i++) {
       ships[i].selected = false;
       ships[i].selectedCircle.visible = false;
     }
+    game.targetCursor.visible = false;
   }
   
   static void updateHoverState() {
     for (int i = 0; i < ships.length; i++) {
       Vector realPosition = ships[i].sprite.position.real2screen();
-      ships[i].hovered = (engine.mouse.x > realPosition.x - 24 && engine.mouse.x < realPosition.x + 24 && engine.mouse.y > realPosition.y - 24 && engine.mouse.y < realPosition.y + 24);
+      ships[i].hovered = (engine.mouse.position.x > realPosition.x - 24 && engine.mouse.position.x < realPosition.x + 24 && engine.mouse.position.y > realPosition.y - 24 && engine.mouse.position.y < realPosition.y + 24);
       ships[i].hoverCircle.visible = ships[i].hovered;
     }
   }
@@ -96,7 +107,7 @@ class Ship {
   
   static void control(Vector position) {
     position = position * game.tileSize;
-    position += new Vector(24, 24);
+    position += new Vector(8, 8);
     
     for (int i = 0; i < ships.length; i++) {
       
@@ -138,15 +149,6 @@ class Ship {
       }
     }
   }
-  
-  static void select() {
-    // select a ship if hovered
-    for (int i = 0; i < ships.length; i++) {
-      if (ships[i].hovered) {
-        ships[i].selected = true;
-      }
-    }
-  }
 
   void move() {
     if (status == "ATTACKING" || status == "RETURNING") {
@@ -174,7 +176,7 @@ class Ship {
         flightCounter--;
         sprite.scale = sprite.scale / 1.01;
         hoverCircle.scale /= 1.01;
-        selectedCircle.scale *= 1.01;
+        selectedCircle.scale /= 1.01;
       }
       if (flightCounter == 0) {
         status = "IDLE";
@@ -211,6 +213,10 @@ class Ship {
                   game.world.tiles[i][j].creep -= 5;
                   if (game.world.tiles[i][j].creep < 0) {
                     game.world.tiles[i][j].creep = 0;
+                  }
+                  game.world.tiles[i][j].newcreep -= 5;
+                  if (game.world.tiles[i][j].newcreep < 0) {
+                    game.world.tiles[i][j].newcreep = 0;
                   }
                 }
               }

@@ -79,7 +79,7 @@ class Packet {
    */
   static void queuePacket(Building target, String type) {
     String img = "packet_" + type;
-    Vector center = game.base.sprite.position;
+    Vector center = game.base.position;
     Packet packet = new Packet(center, img, type);
     packet.target = target;
     packet.currentTarget = game.base;
@@ -99,7 +99,7 @@ class Packet {
     
     sprite.position += speed;
 
-    Vector centerTarget = currentTarget.sprite.position;
+    Vector centerTarget = currentTarget.position;
     if (sprite.position.x > centerTarget.x - 1 && sprite.position.x < centerTarget.x + 1 && sprite.position.y > centerTarget.y - 1 && sprite.position.y < centerTarget.y + 1) {
       sprite.position = centerTarget;
 
@@ -119,14 +119,14 @@ class Packet {
                 target.cannon.alpha = 1.0;
               if (target.type == "collector") {
                 target.updateCollection("add");
-                engine.playSound("energy", target.sprite.position.real2tiled());
+                engine.playSound("energy", target.position.real2tiled());
               }
               if (target.type == "storage")
                 game.maxEnergy += 20;
               if (target.type == "speed")
                 Packet.baseSpeed *= 1.01;
               if (target.type == "bomber") {
-                Ship ship = new Ship(new Vector(target.sprite.position.x + 24, target.sprite.position.y + 24), "bombership", "Bomber", target);
+                Ship ship = new Ship(new Vector(target.position.x, target.position.y), "bombership", "Bomber", target);
                 target.ship = ship;
                 Ship.add(ship);
               }
@@ -150,7 +150,7 @@ class Packet {
   }
 
   void calculateVector() {
-    Vector targetPosition = currentTarget.sprite.position;
+    Vector targetPosition = currentTarget.position;
     Vector delta = targetPosition - sprite.position;
     num distance = sprite.position.distanceTo(targetPosition);
 
@@ -214,12 +214,12 @@ class Packet {
           newRoute.nodes.add(neighbours[i]);
 
           // increase distance travelled
-          Vector centerA = newRoute.nodes[newRoute.nodes.length - 1].sprite.position;
-          Vector centerB = newRoute.nodes[newRoute.nodes.length - 2].sprite.position;
+          Vector centerA = newRoute.nodes[newRoute.nodes.length - 1].position;
+          Vector centerB = newRoute.nodes[newRoute.nodes.length - 2].position;
           newRoute.distanceTravelled += centerA.distanceTo(centerB);
 
           // update underestimate of distance remaining
-          Vector centerC = target.sprite.position;
+          Vector centerC = target.position;
           newRoute.distanceRemaining = centerA.distanceTo(centerC);
 
           // finally push the new route to the list of routes
