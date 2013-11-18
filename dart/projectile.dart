@@ -18,8 +18,10 @@ class Projectile {
     projectiles.clear();
   }
   
-  static void add(Projectile projectile) {
+  static Projectile add(Vector position, Vector targetPosition, num rotation) {
+    Projectile projectile = new Projectile(position, targetPosition, rotation);
     projectiles.add(projectile);
+    return projectile;
   }
   
   static void update() {
@@ -55,7 +57,7 @@ class Projectile {
       // if the target is reached smoke and remove
       remove = true;
 
-      Smoke.add(new Smoke(targetPosition));
+      Smoke.add(targetPosition);
       Vector tiledPosition = targetPosition.real2tiled();
       
       game.world.tiles[tiledPosition.x][tiledPosition.y].creep -= 1;

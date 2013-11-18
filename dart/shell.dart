@@ -18,8 +18,10 @@ class Shell {
     shells.clear();
   }
   
-  static void add(Shell shell) {
+  static Shell add(Vector position, Vector targetPosition) {
+    Shell shell = new Shell(position, targetPosition);
     shells.add(shell);
+    return shell;
   }
   
   static void update() {
@@ -52,7 +54,7 @@ class Shell {
     trailCounter++;
     if (trailCounter == 10) {
       trailCounter = 0;
-      Smoke.add(new Smoke(new Vector(sprite.position.x, sprite.position.y - 16)));
+      Smoke.add(new Vector(sprite.position.x, sprite.position.y - 16));
     }
 
     sprite.rotation += 20;
@@ -66,7 +68,7 @@ class Shell {
       remove = true;
 
       Vector targetPositionTiled = targetPosition.real2tiled();
-      Explosion.add(new Explosion(targetPosition));
+      Explosion.add(targetPosition);
       engine.playSound("explosion", targetPositionTiled);
 
       for (int i = -4; i <= 4; i++) {

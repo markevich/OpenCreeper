@@ -254,8 +254,7 @@ class Game {
           engine.randomInt(0, world.size.x - 3, seed + engine.randomInt(1, 1000, seed + l)),
           engine.randomInt(0, world.size.y - 3, seed + engine.randomInt(1, 1000, seed + 1 + l)));
   
-      Emitter emitter = new Emitter(new Vector(randomPosition.x * 16 + 24, randomPosition.y * 16 + 24), 25);
-      Emitter.add(emitter);
+      Emitter emitter = Emitter.add(new Vector(randomPosition.x * 16 + 24, randomPosition.y * 16 + 24), 25);
   
       height = world.getTile(emitter.sprite.position).height; //this.world.tiles[emitter.sprite.position.x + 1][emitter.sprite.position.y + 1].height;
       if (height < 0)
@@ -274,8 +273,7 @@ class Game {
           engine.randomInt(0, world.size.x - 3, seed + 3 + engine.randomInt(1, 1000, seed + 2 + l)),
           engine.randomInt(0, world.size.y - 3, seed + 3 + engine.randomInt(1, 1000, seed + 3 + l)));
   
-      Sporetower sporetower = new Sporetower(new Vector(randomPosition.x * 16 + 24, randomPosition.y * 16 + 24));
-      Sporetower.add(sporetower);
+      Sporetower sporetower = Sporetower.add(new Vector(randomPosition.x * 16 + 24, randomPosition.y * 16 + 24));
   
       height = world.getTile(sporetower.sprite.position).height; //this.world.tiles[sporetower.position.x + 1][sporetower.position.y + 1].height;
       if (height < 0)

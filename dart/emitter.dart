@@ -18,8 +18,10 @@ class Emitter {
     counter = 0;
   }
   
-  static void add(Emitter emitter) {
+  static Emitter add(Vector position, int strength) {
+    Emitter emitter = new Emitter(position, strength);
     emitters.add(emitter);
+    return emitter;
   }
   
   static void update() {

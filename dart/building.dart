@@ -122,8 +122,7 @@ class Building {
    * Adds a building of a given [type] at the given [position].
    */
   static Building add(Vector position, String type) {
-    position = position * 16;
-    position += new Vector(8, 8);
+    position = position * 16 + new Vector(8, 8);
     Building building = new Building(position, type);
     buildings.add(building);
     return building;
@@ -136,7 +135,7 @@ class Building {
 
     // only explode building when it has been built
     if (building.built) {
-      Explosion.add(new Explosion(building.position));
+      Explosion.add(building.position);
       engine.playSound("explosion", building.position.real2tiled());
     }
 
@@ -688,8 +687,7 @@ class Building {
               rotating = false;
               energy -= 1;
               operating = true;
-              Projectile projectile = new Projectile(position, new Vector(weaponTargetPosition.x * game.tileSize + game.tileSize / 2, weaponTargetPosition.y * game.tileSize + game.tileSize / 2), targetAngle);
-              Projectile.add(projectile);
+              Projectile.add(position, new Vector(weaponTargetPosition.x * game.tileSize + game.tileSize / 2, weaponTargetPosition.y * game.tileSize + game.tileSize / 2), targetAngle);
               engine.playSound("laser", position.real2tiled());
             }
           }
@@ -716,8 +714,7 @@ class Building {
             }
             if (target != null) {
               engine.playSound("shot", position.real2tiled());
-              Shell shell = new Shell(position, new Vector(target.x * game.tileSize + game.tileSize / 2, target.y * game.tileSize + game.tileSize / 2));
-              Shell.add(shell);
+              Shell.add(position, new Vector(target.x * game.tileSize + game.tileSize / 2, target.y * game.tileSize + game.tileSize / 2));             
               energy -= 1;
             }
           }

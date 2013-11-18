@@ -19,8 +19,10 @@ class Spore {
     spores.clear();
   }
   
-  static void add(Spore spore) {
+  static Spore add(Vector position, Vector targetPosition) {
+    Spore spore = new Spore(position, targetPosition);
     spores.add(spore);
+    return spore;
   }
   
   static void update() {
@@ -50,7 +52,7 @@ class Spore {
         if (spores[i].health <= 0) {
           spores[i].remove = true;
           engine.playSound("explosion", spores[i].sprite.position.real2tiled());
-          Explosion.add(new Explosion(sporeCenter));
+          Explosion.add(sporeCenter);
         }
       }
     }
@@ -75,7 +77,7 @@ class Spore {
     trailCounter++;
     if (trailCounter == 10) {
       trailCounter = 0;
-      Smoke.add(new Smoke(new Vector(sprite.position.x, sprite.position.y - 16)));
+      Smoke.add(new Vector(sprite.position.x, sprite.position.y - 16));
     }
     sprite.rotation += 10;
     if (sprite.rotation > 359)

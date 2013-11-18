@@ -16,8 +16,10 @@ class Sporetower {
     sporetowers.clear();
   }
   
-  static void add(Sporetower sporetower) {
+  static Sporetower add(Vector position) {
+    Sporetower sporetower = new Sporetower(position);
     sporetowers.add(sporetower);
+    return sporetower;
   }
   
   static void update() {
@@ -39,6 +41,6 @@ class Sporetower {
     do {
       target = Building.buildings[engine.randomInt(0, Building.buildings.length - 1)];
     } while (!target.built);
-    Spore.add(new Spore(sprite.position, target.sprite.position));
+    Spore.add(sprite.position, target.sprite.position);
   }
 }

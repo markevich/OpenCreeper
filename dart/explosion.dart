@@ -18,8 +18,10 @@ class Explosion {
     counter = 0;
   }
   
-  static void add(Explosion explosion) {
+  static Explosion add(Vector position) {
+    Explosion explosion = new Explosion(position);
     explosions.add(explosion);
+    return explosion;
   }
   
   static void update() {

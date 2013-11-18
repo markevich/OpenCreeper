@@ -18,8 +18,10 @@ class Smoke {
     counter = 0;
   }
   
-  static void add(Smoke smoke) {
+  static Smoke add(Vector position) {
+    Smoke smoke = new Smoke(position);
     smokes.add(smoke);
+    return smoke;
   }
   
   static void update() {
