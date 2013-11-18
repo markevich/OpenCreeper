@@ -61,37 +61,3 @@ class Tile {
     terraformProgress = 0;
   }
 }
-
-/**
- * Route object used in A*
- */
-
-class Route {
-  num distanceTravelled = 0, distanceRemaining = 0;
-  List<Building> nodes = new List<Building>();
-  bool remove = false;
-  
-  Route();
-  
-  Route clone() {
-    Route route = new Route();
-    route.distanceTravelled = this.distanceTravelled;
-    route.distanceRemaining = this.distanceRemaining;
-    for (int i = 0; i < this.nodes.length; i++) {
-      route.nodes.add(this.nodes[i]);
-    }
-    return route;
-  }
-  
-  /**
-   * Used for A*, checks if a [node] is in the list of nodes.
-   */
-  bool contains(Building node) {
-    for (int i = 0; i < nodes.length; i++) {
-      if (node.sprite.position == nodes[i].sprite.position) {
-        return true;
-      }
-    }
-    return false;
-  }
-}

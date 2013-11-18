@@ -24,6 +24,7 @@ part 'explosion.dart';
 part 'vector.dart';
 part 'displayobject.dart';
 part 'connection.dart';
+part 'route.dart';
 
 Engine engine;
 Game game;
