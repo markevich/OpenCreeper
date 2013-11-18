@@ -61,24 +61,29 @@ class Shell {
 
     sprite.position += speed;
 
-    if (sprite.position.x > targetPosition.x - 2 && sprite.position.x < targetPosition.x + 2 && sprite.position.y > targetPosition.y - 2 && sprite.position.y < targetPosition.y + 2) {
-      // if the target is reached explode and remove
+    // if the target is reached explode and remove
+     if (sprite.position == targetPosition) {
       remove = true;
 
+      Vector targetPositionTiled = targetPosition.real2tiled();
       Explosion.add(new Explosion(targetPosition));
-      engine.playSound("explosion", targetPosition.real2tiled());
+      engine.playSound("explosion", targetPositionTiled);
 
-      for (int i = (targetPosition.x / game.tileSize).floor() - 4; i < (targetPosition.x / game.tileSize).floor() + 5; i++) {
-        for (int j = (targetPosition.y / game.tileSize).floor() - 4; j < (targetPosition.y / game.tileSize).floor() + 5; j++) {
-          if (game.world.contains(new Vector(i, j))) {
-            num distance = pow((i * game.tileSize + game.tileSize / 2) - targetPosition.x, 2) + pow((j * game.tileSize + game.tileSize / 2) - targetPosition.y, 2);
-            if (distance < pow(game.tileSize * 4, 2)) {
-              game.world.tiles[i][j].creep -= 10;
-              if (game.world.tiles[i][j].creep < 0)
-                game.world.tiles[i][j].creep = 0;
-              game.world.tiles[i][j].newcreep -= 10;
-              if (game.world.tiles[i][j].newcreep < 0)
-                game.world.tiles[i][j].newcreep = 0;
+      for (int i = -4; i <= 4; i++) {
+        for (int j = -4; j <= 4; j++) {
+          
+          Vector tilePosition = targetPositionTiled + new Vector(i, j);
+          
+          if (game.world.contains(tilePosition)) {
+            if ((tilePosition * game.tileSize + new Vector(8, 8)).distanceTo(targetPosition) <= game.tileSize * 4) {
+              Tile tile = game.world.getTile(tilePosition * game.tileSize);
+              
+              tile.creep -= 10;
+              if (tile.creep < 0)
+                tile.creep = 0;
+              tile.newcreep -= 10;
+              if (tile.newcreep < 0)
+                tile.newcreep = 0;
               game.creeperDirty = true;
             }
           }
