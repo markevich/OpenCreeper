@@ -525,16 +525,15 @@ class Building {
 
   void checkOperating() {
     operating = false;
-    if (needsEnergy && active && status == "IDLE") {
+    if (needsEnergy && active && status == "IDLE" && energy > 0) {
 
       energyCounter++;
-      Vector center = position;
 
-      if (type == "analyzer" && energy > 0) {
+      if (type == "analyzer") {
         Emitter.find(this);
       }
 
-      if (type == "terp" && energy > 0) {
+      if (type == "terp") {
         // find lowest target
         if (weaponTargetPosition == null) {
           // find lowest tile
@@ -545,7 +544,7 @@ class Building {
             for (int j = tiledPosition.y - weaponRadius; j <= tiledPosition.y + weaponRadius; j++) {
 
               if (game.world.contains(new Vector(i, j))) {
-                var distance = pow((i * game.tileSize + game.tileSize / 2) - center.x, 2) + pow((j * game.tileSize + game.tileSize / 2) - center.y, 2);
+                var distance = pow((i * game.tileSize + game.tileSize / 2) - position.x, 2) + pow((j * game.tileSize + game.tileSize / 2) - position.y, 2);
                 var tileHeight = game.world.tiles[i][j].height;
 
                 if (distance <= pow(weaponRadius * game.tileSize, 2) && game.world.tiles[i][j].terraformTarget > -1 && tileHeight <= lowestTile) {
@@ -605,7 +604,7 @@ class Building {
         }
       }
 
-      else if (type == "shield" && energy > 0) {
+      else if (type == "shield") {
         if (energyCounter > 20) {
           energyCounter = 0;
           energy -= 1;
@@ -613,7 +612,7 @@ class Building {
         operating = true;
       }
 
-      else if (type == "cannon" && energy > 0 && energyCounter > 10) {
+      else if (type == "cannon" && energyCounter > 10) {
           if (!rotating) {
 
             energyCounter = 0;
@@ -632,7 +631,7 @@ class Building {
                   if (game.world.contains(new Vector(i, j))) {
                     int tileHeight = game.world.tiles[i][j].height;
                     if (tileHeight <= height) {
-                      var distance = pow((i * game.tileSize + game.tileSize / 2) - center.x, 2) + pow((j * game.tileSize + game.tileSize / 2) - center.y, 2);
+                      var distance = pow((i * game.tileSize + game.tileSize / 2) - position.x, 2) + pow((j * game.tileSize + game.tileSize / 2) - position.y, 2);
 
                       if (distance <= pow(radius, 2) && game.world.tiles[i][j].creep > 0) {
                         targets.add(new Vector(i, j));
@@ -648,8 +647,8 @@ class Building {
             if (targets.length > 0) {
               targets.shuffle();
 
-              var dx = targets[0].x * game.tileSize + game.tileSize / 2 - center.x;
-              var dy = targets[0].y * game.tileSize + game.tileSize / 2 - center.y;
+              var dx = targets[0].x * game.tileSize + game.tileSize / 2 - position.x;
+              var dy = targets[0].y * game.tileSize + game.tileSize / 2 - position.y;
 
               targetAngle = engine.rad2deg(atan2(dy, dx)).floor();
               weaponTargetPosition = new Vector(targets[0].x, targets[0].y);
@@ -689,14 +688,14 @@ class Building {
               rotating = false;
               energy -= 1;
               operating = true;
-              Projectile projectile = new Projectile(center, new Vector(weaponTargetPosition.x * game.tileSize + game.tileSize / 2, weaponTargetPosition.y * game.tileSize + game.tileSize / 2), targetAngle);
+              Projectile projectile = new Projectile(position, new Vector(weaponTargetPosition.x * game.tileSize + game.tileSize / 2, weaponTargetPosition.y * game.tileSize + game.tileSize / 2), targetAngle);
               Projectile.add(projectile);
               engine.playSound("laser", position.real2tiled());
             }
           }
         }
 
-        else if (type == "mortar" && energy > 0 && energyCounter > 200) {
+        else if (type == "mortar" && energyCounter > 200) {
           energyCounter = 0;
 
             // find most creep in range
@@ -706,7 +705,7 @@ class Building {
             for (int i = tiledPosition.x - weaponRadius; i <= tiledPosition.x + weaponRadius; i++) {
               for (int j = tiledPosition.y - weaponRadius; j <= tiledPosition.y + weaponRadius; j++) {
                 if (game.world.contains(new Vector(i, j))) {
-                  var distance = pow((i * game.tileSize + game.tileSize / 2) - center.x, 2) + pow((j * game.tileSize + game.tileSize / 2) - center.y, 2);
+                  var distance = pow((i * game.tileSize + game.tileSize / 2) - position.x, 2) + pow((j * game.tileSize + game.tileSize / 2) - position.y, 2);
 
                   if (distance <= pow(weaponRadius * game.tileSize, 2) && game.world.tiles[i][j].creep > 0 && game.world.tiles[i][j].creep >= highestCreep) {
                     highestCreep = game.world.tiles[i][j].creep;
@@ -717,13 +716,13 @@ class Building {
             }
             if (target != null) {
               engine.playSound("shot", position.real2tiled());
-              Shell shell = new Shell(center, new Vector(target.x * game.tileSize + game.tileSize / 2, target.y * game.tileSize + game.tileSize / 2));
+              Shell shell = new Shell(position, new Vector(target.x * game.tileSize + game.tileSize / 2, target.y * game.tileSize + game.tileSize / 2));
               Shell.add(shell);
               energy -= 1;
             }
           }
 
-          else if (type == "beam" && energy > 0 && energyCounter > 0) {
+          else if (type == "beam" && energyCounter > 0) {
             energyCounter = 0;
 
             Spore.damage(this);
