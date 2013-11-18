@@ -36,11 +36,11 @@ class Connection {
   }
   
   static void remove(Building building) {
-    for (var connection in connections) {
-      if (connection.from == building || connection.to == building) {
-        engine.canvas["buffer"].removeDisplayObject(connection.line);
-        engine.canvas["buffer"].removeDisplayObject(connection.line2);
-        connections.removeAt(connections.indexOf(connection));
+    for (int i = connections.length - 1; i >= 0; i--) {
+      if (connections[i].from == building || connections[i].to == building) {
+        engine.canvas["buffer"].removeDisplayObject(connections[i].line);
+        engine.canvas["buffer"].removeDisplayObject(connections[i].line2);
+        connections.removeAt(i);
       }
     }
   }
