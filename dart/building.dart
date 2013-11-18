@@ -90,7 +90,7 @@ class Building {
       canMove = true;
       needsEnergy = true;
       
-      cannon = new Sprite(2, engine.images["cannongun"], position, 48, 48);
+      cannon = new Sprite(4, engine.images["cannongun"], position, 48, 48);
       cannon.anchor = new Vector(0.5, 0.5);
       cannon.alpha = 0.5;
       engine.canvas["buffer"].addDisplayObject(cannon);
