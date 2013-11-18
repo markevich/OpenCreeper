@@ -6,7 +6,7 @@ class Sporetower {
   static List<Sporetower> sporetowers = new List<Sporetower>();
 
   Sporetower(position) {
-    sprite = new Sprite(0, engine.images["sporetower"], position, 48, 48);
+    sprite = new Sprite(Layer.SPORETOWER, engine.images["sporetower"], position, 48, 48);
     sprite.anchor = new Vector(0.5, 0.5);
     engine.canvas["buffer"].addDisplayObject(sprite);
     reset();

@@ -8,7 +8,7 @@ class Emitter {
   static List<Emitter> emitters = new List<Emitter>();
 
   Emitter(position, this.strength) {
-    sprite = new Sprite(0, engine.images["emitter"], position, 48, 48);
+    sprite = new Sprite(Layer.EMITTER, engine.images["emitter"], position, 48, 48);
     sprite.anchor = new Vector(0.5, 0.5);
     engine.canvas["buffer"].addDisplayObject(sprite);
   }

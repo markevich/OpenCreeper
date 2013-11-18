@@ -39,20 +39,20 @@ class Game {
     music.onCanPlay.listen((event) => music.play());
 
     // create terraform lines
-    tfLine1 = new Line(10, new Vector.empty(), new Vector.empty(), 1, "#fff");
+    tfLine1 = new Line(Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff");
     tfLine1.visible = false;
     engine.canvas["buffer"].addDisplayObject(tfLine1);
-    tfLine2 = new Line(10, new Vector.empty(), new Vector.empty(), 1, "#fff");
+    tfLine2 = new Line(Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff");
     tfLine2.visible = false;
     engine.canvas["buffer"].addDisplayObject(tfLine2);
-    tfLine3 = new Line(10, new Vector.empty(), new Vector.empty(), 1, "#fff");
+    tfLine3 = new Line(Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff");
     tfLine3.visible = false;
     engine.canvas["buffer"].addDisplayObject(tfLine3);
-    tfLine4 = new Line(10, new Vector.empty(), new Vector.empty(), 1, "#fff");
+    tfLine4 = new Line(Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff");
     tfLine4.visible = false;
     engine.canvas["buffer"].addDisplayObject(tfLine4);
     
-    targetCursor = new Sprite(10, engine.images["targetcursor"], new Vector.empty(), 48, 48);
+    targetCursor = new Sprite(Layer.TARGETSYMBOL, engine.images["targetcursor"], new Vector.empty(), 48, 48);
     targetCursor.anchor = new Vector(0.5, 0.5);
     targetCursor.visible = false;
     engine.canvas["buffer"].addDisplayObject(targetCursor);

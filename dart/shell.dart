@@ -9,7 +9,7 @@ class Shell {
   static List<Shell> shells = new List<Shell>();
 
   Shell(position, this.targetPosition) {
-    sprite = new Sprite(2, engine.images["shell"], position, 16, 16);
+    sprite = new Sprite(Layer.SHELL, engine.images["shell"], position, 16, 16);
     sprite.anchor = new Vector(0.5, 0.5);  
     engine.canvas["buffer"].addDisplayObject(sprite);
   }

@@ -17,16 +17,16 @@ class Building {
   Building(position, imageID) {
     type = imageID;
     this.position = position;
-    sprite = new Sprite(3, engine.images[imageID], position, 48, 48);
+    sprite = new Sprite(Layer.BUILDING, engine.images[imageID], position, 48, 48);
     sprite.anchor = new Vector(0.5, 0.5);
     sprite.alpha = 0.5;
     engine.canvas["buffer"].addDisplayObject(sprite);
 
-    selectedCircle = new Circle(5, position, 24, 2, "#fff");
+    selectedCircle = new Circle(Layer.SELECTEDCIRCLE, position, 24, 2, "#fff");
     selectedCircle.visible = false;
     engine.canvas["buffer"].addDisplayObject(selectedCircle);
     
-    targetSymbol = new Rect(2, new Vector.empty(), new Vector(48, 48), 1, '#0f0');
+    targetSymbol = new Rect(Layer.TARGETSYMBOL, new Vector.empty(), new Vector(48, 48), 1, '#0f0');
     targetSymbol.visible = false;
     targetSymbol.anchor = new Vector(0.5, 0.5);
     engine.canvas["buffer"].addDisplayObject(targetSymbol);
@@ -90,7 +90,7 @@ class Building {
       canMove = true;
       needsEnergy = true;
       
-      cannon = new Sprite(4, engine.images["cannongun"], position, 48, 48);
+      cannon = new Sprite(Layer.CANNONGUN, engine.images["cannongun"], position, 48, 48);
       cannon.anchor = new Vector(0.5, 0.5);
       cannon.alpha = 0.5;
       engine.canvas["buffer"].addDisplayObject(cannon);

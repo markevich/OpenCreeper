@@ -12,7 +12,7 @@ class Packet {
   static List<Packet> queue = new List<Packet>();
 
   Packet(position, imageID, this.type) {
-    sprite = new Sprite(20, engine.images[imageID], position, 16, 16);
+    sprite = new Sprite(Layer.PACKET, engine.images[imageID], position, 16, 16);
     sprite.anchor = new Vector(0.5, 0.5);
 
     if (type == "collection")

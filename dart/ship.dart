@@ -7,23 +7,20 @@ class Ship {
   int maxEnergy = 15, energy = 0, trailCounter = 0, weaponCounter = 0, flightCounter = 0;
   Building home;
   Sprite sprite, targetSymbol;
-  Circle hoverCircle, selectedCircle;
+  Circle selectedCircle;
   static final int baseSpeed = 1;
   static List<Ship> ships = new List<Ship>();
 
   Ship(position, imageID, this.type, this.home) {
-    sprite = new Sprite(4, engine.images[imageID], position, 48, 48);
+    sprite = new Sprite(Layer.SHIP, engine.images[imageID], position, 48, 48);
     sprite.anchor = new Vector(0.5, 0.5);
     engine.canvas["buffer"].addDisplayObject(sprite);
 
-    hoverCircle = new Circle(5, position, 24, 2, "#f00");
-    engine.canvas["buffer"].addDisplayObject(hoverCircle);
-
-    selectedCircle = new Circle(5, position, 24, 2, "#fff");
+    selectedCircle = new Circle(Layer.SELECTEDCIRCLE, position, 24, 2, "#fff");
     selectedCircle.visible = false;
     engine.canvas["buffer"].addDisplayObject(selectedCircle);
 
-    targetSymbol = new Sprite(0, engine.images["targetcursor"], position, 48, 48);
+    targetSymbol = new Sprite(Layer.TARGETSYMBOL, engine.images["targetcursor"], position, 48, 48);
     targetSymbol.anchor = new Vector(0.5, 0.5);
     targetSymbol.alpha = 0.5;
     targetSymbol.visible = false;
@@ -66,7 +63,6 @@ class Ship {
     for (int i = 0; i < ships.length; i++) {
       Vector realPosition = ships[i].sprite.position.real2screen();
       ships[i].hovered = (engine.mouse.position.x > realPosition.x - 24 && engine.mouse.position.x < realPosition.x + 24 && engine.mouse.position.y > realPosition.y - 24 && engine.mouse.position.y < realPosition.y + 24);
-      ships[i].hoverCircle.visible = ships[i].hovered;
     }
   }
 
@@ -163,7 +159,6 @@ class Ship {
       if (flightCounter < 25) {
         flightCounter++;
         sprite.scale = sprite.scale * 1.01;
-        hoverCircle.scale *= 1.01;
         selectedCircle.scale *= 1.01;
       }
       if (flightCounter == 25) {
@@ -175,7 +170,6 @@ class Ship {
       if (flightCounter > 0) {
         flightCounter--;
         sprite.scale = sprite.scale / 1.01;
-        hoverCircle.scale /= 1.01;
         selectedCircle.scale /= 1.01;
       }
       if (flightCounter == 0) {
@@ -184,7 +178,6 @@ class Ship {
         targetPosition.y = 0;
         energy = 5;
         sprite.scale = new Vector(1.0, 1.0);
-        hoverCircle.scale = 1.0;
         selectedCircle.scale = 1.0;
       }
     }
@@ -196,7 +189,6 @@ class Ship {
       calculateVector();
 
       sprite.position += speed;
-      hoverCircle.position += speed;
       selectedCircle.position += speed;
 
       if (sprite.position.x > targetPosition.x - 2 && sprite.position.x < targetPosition.x + 2 && sprite.position.y > targetPosition.y - 2 && sprite.position.y < targetPosition.y + 2) {
@@ -243,7 +235,6 @@ class Ship {
       calculateVector();
 
       sprite.position += speed;
-      hoverCircle.position += speed;
       selectedCircle.position += speed;
 
       if (sprite.position.x > targetPosition.x - 2 && sprite.position.x < targetPosition.x + 2 && sprite.position.y > targetPosition.y - 2 && sprite.position.y < targetPosition.y + 2) {

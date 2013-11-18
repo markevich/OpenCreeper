@@ -6,9 +6,9 @@ class Connection {
   static List<Connection> connections = new List<Connection>();
   
   Connection(this.from, this.to) {
-    line = new Line(1, this.from.position, this.to.position, 3, "#000");
+    line = new Line(Layer.CONNECTIONBORDER, this.from.position, this.to.position, 3, "#000");
     engine.canvas["buffer"].addDisplayObject(line);
-    line2 = new Line(2, this.from.position, this.to.position, 2, "#777");
+    line2 = new Line(Layer.CONNECTION, this.from.position, this.to.position, 2, "#777");
     engine.canvas["buffer"].addDisplayObject(line2);
   }
   

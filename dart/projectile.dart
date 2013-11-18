@@ -8,7 +8,7 @@ class Projectile {
   static List<Projectile> projectiles = new List<Projectile>();
 
   Projectile(position, this.targetPosition, rotation) {
-    sprite = new Sprite(1, engine.images["projectile"], position, 16, 16);
+    sprite = new Sprite(Layer.PROJECTILE, engine.images["projectile"], position, 16, 16);
     sprite.anchor = new Vector(0.5, 0.5);
     sprite.rotation = rotation;
     engine.canvas["buffer"].addDisplayObject(sprite);
