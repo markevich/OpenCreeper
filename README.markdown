@@ -87,6 +87,9 @@ http://april-young.com/home/spritesheet-for-explosion/
 Cursor image credits:
 http://ozzy8031.deviantart.com/art/Polar-Cursor-Set-for-Windows-123943236
 
+Ship image credits:
+http://opengameart.org/content/modular-ships#
+
 Shot sound:
 http://www.freesound.org/people/nthompson/sounds/47252/
 

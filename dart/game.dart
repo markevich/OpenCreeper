@@ -1044,7 +1044,7 @@ class Game {
       for (int j = 0; j < ghosts.length; j++) {
         Vector positionScrolled = new Vector(ghosts[j].x, ghosts[j].y);
         Vector drawPosition = positionScrolled.tiled2screen();
-        Vector positionScrolledCenter = new Vector(positionScrolled.x * tileSize + 8, positionScrolled.y * tileSize + 8);
+        Vector positionScrolledCenter = drawPosition + new Vector(8 * zoom, 8 * zoom); //new Vector(positionScrolled.x * tileSize + 8 * zoom, positionScrolled.y * tileSize + 8 * zoom);
   
         drawRangeBoxes(positionScrolled, UISymbol.activeSymbol.imageID, UISymbol.activeSymbol.radius, UISymbol.activeSymbol.size);
   
@@ -1053,9 +1053,9 @@ class Game {
           context.globalAlpha = .5;
   
           // draw building
-          context.drawImageScaled(engine.images[UISymbol.activeSymbol.imageID], drawPosition.x - 16, drawPosition.y - 16, UISymbol.activeSymbol.size * tileSize * zoom, UISymbol.activeSymbol.size * tileSize * zoom);
+          context.drawImageScaled(engine.images[UISymbol.activeSymbol.imageID], drawPosition.x - 16 * zoom, drawPosition.y - 16 * zoom, UISymbol.activeSymbol.size * tileSize * zoom, UISymbol.activeSymbol.size * tileSize * zoom);
           if (UISymbol.activeSymbol.imageID == "cannon")
-            context.drawImageScaled(engine.images["cannongun"], drawPosition.x - 16, drawPosition.y - 16, 48 * zoom, 48 * zoom);
+            context.drawImageScaled(engine.images["cannongun"], drawPosition.x - 16 * zoom, drawPosition.y - 16 * zoom, 48 * zoom, 48 * zoom);
   
           // draw green or red box
           // make sure there isn't a building on this tile yet
@@ -1065,7 +1065,7 @@ class Game {
             context.strokeStyle = "#f00";
           }
           context.lineWidth = 4 * zoom;
-          context.strokeRect(drawPosition.x - 16, drawPosition.y - 16, tileSize * UISymbol.activeSymbol.size * zoom, tileSize * UISymbol.activeSymbol.size * zoom);
+          context.strokeRect(drawPosition.x - 16 * zoom, drawPosition.y - 16 * zoom, tileSize * UISymbol.activeSymbol.size * zoom, tileSize * UISymbol.activeSymbol.size * zoom);
   
           context.restore();
   
@@ -1078,9 +1078,9 @@ class Game {
             if (Building.buildings[i].type == "relay" && UISymbol.activeSymbol.imageID == "relay") {
               allowedDistance = 20 * tileSize;
             }
-  
-            if (pow(center.x - positionScrolledCenter.x, 2) + pow(center.y - positionScrolledCenter.y, 2) <= pow(allowedDistance, 2)) {
-              Vector lineToTarget = positionScrolledCenter.real2screen();
+
+            if (drawCenter.distanceTo(positionScrolledCenter) <= allowedDistance * zoom) {
+              Vector lineToTarget = positionScrolledCenter;
               context
                 ..strokeStyle = '#000'
                 ..lineWidth = 3 * game.zoom

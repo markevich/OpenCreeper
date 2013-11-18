@@ -372,7 +372,7 @@ class Building {
   }
   
   void shield() {
-    if (built && type == "shield" && status == "IDLE") {
+    if (built && operating && type == "shield" && status == "IDLE") {
       Vector center = position;
       var tiledPosition = position.real2tiled();
 
@@ -799,13 +799,13 @@ class Building {
         // draw energy bar
         if (buildings[i].needsEnergy) {
           context.fillStyle = '#f00';
-          context.fillRect(realPosition.x -22, realPosition.y - 22 + 1, (44 * game.zoom / buildings[i].maxEnergy) * buildings[i].energy, 3);
+          context.fillRect(realPosition.x - 22 * game.zoom, realPosition.y - 21 * game.zoom, (44 * game.zoom / buildings[i].maxEnergy) * buildings[i].energy, 3);
         }
   
         // draw health bar (only if health is below maxHealth)
         if (buildings[i].health < buildings[i].maxHealth) {
           context.fillStyle = '#0f0';
-          context.fillRect(realPosition.x -22, realPosition.y - 22 + game.tileSize * game.zoom * buildings[i].size - 3, ((game.tileSize * game.zoom * buildings[i].size - 8) / buildings[i].maxHealth) * buildings[i].health, 3);
+          context.fillRect(realPosition.x - 22 * game.zoom, realPosition.y - 22 + game.tileSize * game.zoom * buildings[i].size - 3, ((game.tileSize * game.zoom * buildings[i].size - 8) / buildings[i].maxHealth) * buildings[i].health, 3);
         }
   
         // draw inactive sign
@@ -860,7 +860,10 @@ class Building {
           context.stroke();
         }
         else if (buildings[i].type == "shield") {
+          context.save();
+          context.globalAlpha = .5;
           context.drawImageScaled(engine.images["forcefield"], center.x - 168 * game.zoom, center.y - 168 * game.zoom, 336 * game.zoom, 336 * game.zoom);
+          context.restore();
         }
         else if (buildings[i].type == "terp") {
           Vector targetPosition = buildings[i].weaponTargetPosition.tiled2screen();
