@@ -795,50 +795,35 @@ class Game {
 
   /**
    * Draws the range boxes around the [position] of a building
-   * with a given [type], radius [rad] and [size].
+   * with a given [type], [radius] and [size].
    */
-  void drawRangeBoxes(Vector position, String type, num rad, num size) {
+  void drawRangeBoxes(Vector position, String type, num radius, num size) {
     CanvasRenderingContext2D context = engine.canvas["buffer"].context;
     
-    Vector positionCenter = new Vector(position.x * tileSize + 8, position.y * tileSize + 8);
-    int positionHeight = game.world.tiles[position.x][position.y].height;
-
     if (canBePlaced(position, size, null) && (type == "collector" || type == "cannon" || type == "mortar" || type == "shield" || type == "beam" || type == "terp")) {
 
+      Vector positionCenter = new Vector(position.x * tileSize + 8, position.y * tileSize + 8);
+      int positionHeight = game.world.tiles[position.x][position.y].height;
+      
       context.save();
       context.globalAlpha = .35;
 
-      int radius = rad * tileSize;
+      for (int i = -radius; i <= radius; i++) {
+        for (int j = -radius; j <= radius; j++) {
 
-      for (int i = -radius; i < radius; i++) {
-        for (int j = -radius; j < radius; j++) {
-
-          Vector positionCurrent = new Vector(position.x + i, position.y + j);
-          Vector positionCurrentCenter = new Vector(positionCurrent.x * tileSize + (tileSize / 2), positionCurrent.y * tileSize + (tileSize / 2));
-
-          Vector drawPositionCurrent = positionCurrent.tiled2screen();
+          Vector positionCurrent = position + new Vector(i, j);
 
           if (world.contains(positionCurrent)) {
+            Vector positionCurrentCenter = new Vector(positionCurrent.x * tileSize + (tileSize / 2), positionCurrent.y * tileSize + (tileSize / 2));
+            Vector drawPositionCurrent = positionCurrent.tiled2screen();
+            
             int positionCurrentHeight = game.world.tiles[positionCurrent.x][positionCurrent.y].height;
 
-            if (pow(positionCurrentCenter.x - positionCenter.x, 2) + pow(positionCurrentCenter.y - positionCenter.y, 2) < pow(radius, 2)) {
-              if (type == "collector") {
-                if (positionCurrentHeight == positionHeight) {
-                  context.fillStyle = "#fff";
-                } else {
-                  context.fillStyle = "#f00";
-                }
-              } 
-              else if (type == "cannon") {
-                if (positionCurrentHeight <= positionHeight) {
-                  context.fillStyle = "#fff";
-                } else {
-                  context.fillStyle = "#f00";
-                }
-              }
-              else if (type == "mortar" || type == "shield" || type == "beam" || type == "terp") {
-                context.fillStyle = "#fff";
-              }
+            if (positionCenter.distanceTo(positionCurrentCenter) < radius * tileSize) {
+              context.fillStyle = "#fff";
+              if ((type == "collector" && positionCurrentHeight != positionHeight) ||
+                  (type == "cannon" && positionCurrentHeight > positionHeight))
+                context.fillStyle = "#f00";
               context.fillRect(drawPositionCurrent.x, drawPositionCurrent.y, tileSize * zoom, tileSize * zoom);
             }
 
