@@ -41,7 +41,10 @@ class Renderer {
    * is visible in the renderer view. Returns true or false.
    */
   bool isVisible(Vector position, Vector size) {
-    Rectangle object = new Rectangle(position.x, position.y, size.x, size.y);    
+    Rectangle object = new Rectangle(position.x - (size.x * game.tileSize * game.zoom / 2),
+                                     position.y - (size.y * game.tileSize * game.zoom / 2),
+                                     size.x * game.tileSize * game.zoom,
+                                     size.y * game.tileSize * game.zoom);    
     Rectangle myview = new Rectangle(0, 0, view.width, view.height);   
     return myview.intersects(object);
   }
@@ -61,7 +64,7 @@ class Renderer {
         if (displayObject is Sprite) {
           Vector realPosition = displayObject.position.real2screen();
 
-          if (isVisible(realPosition, new Vector(displayObject.size.x * game.zoom, displayObject.size.y * game.zoom))) {
+          if (isVisible(realPosition, displayObject.size)) {
 
             if (displayObject.alpha != 1.0)
               context.globalAlpha = displayObject.alpha;
