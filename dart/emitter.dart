@@ -25,9 +25,9 @@ class Emitter {
   }
   
   static void update() {
-    counter++;
-    if (counter >= (25 / game.speed)) {
-      counter = 0;
+    counter += 1 * game.speed;
+    if (counter >= 25) {
+      counter -= 25;
       
       for (int i = 0; i < emitters.length; i++) {
         // only spawn creeper if not targeted by an analyzer

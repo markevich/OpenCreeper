@@ -2,9 +2,8 @@ part of creeper;
 
 class Game {
   final int tileSize = 16;
-  int seed, currentEnergy = 0, maxEnergy = 0, terraformingHeight = 0;
-  num creeperCounter = 0, collectCounter = 0;
-  double speed = 1.0, zoom = 1.0;
+  int seed, currentEnergy = 0, maxEnergy = 0, terraformingHeight = 0, speed = 1, creeperCounter = 0;
+  double zoom = 1.0;
   Timer running;
   String mode;
   bool paused = false, scrollingUp = false, scrollingDown = false, scrollingLeft = false, scrollingRight = false, creeperDirty = true;
@@ -87,8 +86,7 @@ class Game {
     maxEnergy = 20;
     currentEnergy = 20;
     creeperCounter = 0;
-    collectCounter = 0;
-    speed = 1.0;
+    speed = 1;
     
     updateEnergyElement();
     updateSpeedElement();
@@ -133,7 +131,7 @@ class Game {
   }
 
   void run() {
-    running = new Timer.periodic(new Duration(milliseconds: (1000 / speed / engine.TPS).floor()), (Timer timer) => updateAll());
+    running = new Timer.periodic(new Duration(milliseconds: (1000 / engine.TPS).floor()), (Timer timer) => updateAll());
     engine.animationRequest = window.requestAnimationFrame(draw);
   }
   
@@ -164,8 +162,8 @@ class Game {
     //query('#faster').style.display = 'none';
     if (speed < 2) {
       speed *= 2;
-      stop();
-      run();
+      //stop();
+      //run();
       updateSpeedElement();
     }
   }
@@ -174,9 +172,9 @@ class Game {
     //query('#slower').style.display = 'none';
     //query('#faster').style.display = 'inline';
     if (speed > 1) {
-      speed /= 2;
-      stop();
-      run();
+      speed = speed ~/ 2;
+      //stop();
+      //run();
       updateSpeedElement();
     }
   }
@@ -657,9 +655,9 @@ class Game {
   void updateCreeper() {
     Emitter.update();
 
-    creeperCounter++;
-    if (creeperCounter > (25 / speed)) {
-      creeperCounter -= (25 / speed);
+    creeperCounter += 1 * game.speed;
+    if (creeperCounter >= 25) {
+      creeperCounter -= 25;
       creeperDirty = true;
 
       for (int i = 0; i < world.size.x; i++) {

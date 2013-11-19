@@ -25,9 +25,9 @@ class Smoke {
   }
   
   static void update() {
-    counter++;
-    if (counter > 3) {
-      counter = 0;
+    counter += 1; // * game.speed;
+    if (counter >= 3) {
+      counter -= 3;
       for (int i = smokes.length - 1; i >= 0; i--) {
         if (smokes[i].sprite.frame == 36) {
           engine.renderer["buffer"].removeDisplayObject(smokes[i].sprite);

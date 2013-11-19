@@ -25,9 +25,9 @@ class Explosion {
   }
   
   static void update() {
-    counter++;
-    if (counter == 1) {
-      counter = 0;
+    counter += 1; // * game.speed;
+    if (counter >= 1) {
+      counter -= 1;
       for (int i = explosions.length - 1; i >= 0; i--) {
         if (explosions[i].sprite.frame == 44) {
           engine.renderer["buffer"].removeDisplayObject(explosions[i].sprite);

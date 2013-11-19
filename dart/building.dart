@@ -11,7 +11,7 @@ class Building {
   Circle selectedCircle;
   Rect targetSymbol;
   static final double baseSpeed = .5;
-  static int damageCounter = 0;
+  static int damageCounter = 0, collectCounter = 0;
   static List<Building> buildings = new List<Building>();
 
   Building(position, imageID) {
@@ -227,18 +227,18 @@ class Building {
     }
 
     // take damage
-    damageCounter++;
+    damageCounter += 1 * game.speed;
     if (damageCounter > 10) {
-      damageCounter = 0;
+      damageCounter -= 10;
       for (int i = 0; i < buildings.length; i++) {
         buildings[i].takeDamage();
       }
     }
 
     // collect energy
-    game.collectCounter++;
-    if (game.collectCounter > (250 / game.speed)) {
-      game.collectCounter -= (250 / game.speed);
+    collectCounter += 1 * game.speed;
+    if (collectCounter > 250) {
+      collectCounter -= 250;
       for (int i = 0; i < buildings.length; i++) {
         buildings[i].collectEnergy();
       }
@@ -294,11 +294,12 @@ class Building {
   void move() {
     if (status == "RISING") {
       if (flightCounter < 25) {
-        flightCounter++;
+        flightCounter += 1 * game.speed;
         scale = scale * 1.01;
         updateDisplayObjects();
       }
-      if (flightCounter == 25) {
+      if (flightCounter >= 25) {
+        flightCounter = 25;
         status = "MOVING";
         sprite.layer = Layer.BUILDINGFLYING;
         engine.renderer["buffer"].sortDisplayObjects();
@@ -307,11 +308,12 @@ class Building {
     
     else if (status == "FALLING") {
       if (flightCounter > 0) {
-        flightCounter--;
+        flightCounter -= 1 * game.speed;
         scale = scale / 1.01;
         updateDisplayObjects();
       }
-      if (flightCounter == 0) {
+      if (flightCounter <= 0) {
+        flightCounter = 0;
         status = "IDLE";
         scale = new Vector(1.0, 1.0);
         targetSymbol.visible = false;
@@ -403,13 +405,13 @@ class Building {
 
   void requestPacket() {
     if (active && status == "IDLE") {
-      requestCounter++;
-      if (requestCounter > 50) {
+      requestCounter += 1 * game.speed;
+      if (requestCounter >= 50) {
         // request health
         if (type != "base") {
           num healthAndRequestDelta = maxHealth - health - healthRequests;
           if (healthAndRequestDelta > 0) {
-            requestCounter = 0;
+            requestCounter -= 50;
             Packet.queuePacket(this, "health");
           }
         }
@@ -417,7 +419,7 @@ class Building {
         if (needsEnergy && built) {
           num energyAndRequestDelta = maxEnergy - energy - energyRequests;
           if (energyAndRequestDelta > 0) {
-            requestCounter = 0;
+            requestCounter -= 50;
             Packet.queuePacket(this, "energy");
           }
         }
@@ -530,7 +532,7 @@ class Building {
     operating = false;
     if (needsEnergy && active && status == "IDLE" && energy > 0) {
 
-      energyCounter++;
+      energyCounter += 1 * game.speed;
 
       if (type == "analyzer") {
         Emitter.find(this);
@@ -561,8 +563,8 @@ class Building {
             weaponTargetPosition = target;
           }
         } else {
-          if (energyCounter > 20) {
-            energyCounter = 0;
+          if (energyCounter >= 20) {
+            energyCounter -=20;
             energy -= 1;
           }
 
@@ -608,17 +610,17 @@ class Building {
       }
 
       else if (type == "shield") {
-        if (energyCounter > 20) {
-          energyCounter = 0;
+        if (energyCounter >= 20) {
+          energyCounter -= 20;
           energy -= 1;
         }
         operating = true;
       }
 
-      else if (type == "cannon" && energyCounter > 10) {
+      else if (type == "cannon" && energyCounter >= 10) {
           if (!rotating) {
 
-            energyCounter = 0;
+            energyCounter -= 10;
 
             int height = game.world.getTile(position).height;
 
@@ -697,8 +699,8 @@ class Building {
           }
         }
 
-        else if (type == "mortar" && energyCounter > 200) {
-          energyCounter = 0;
+        else if (type == "mortar" && energyCounter >= 200) {
+          energyCounter =- 200;
 
             // find most creep in range
             Vector target = null;
