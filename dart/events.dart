@@ -190,11 +190,8 @@ void onDoubleClick(MouseEvent evt) {
 
 void onMouseDown(MouseEvent evt) {
   if (evt.which == 1) {
-    // left mouse button
-    Vector position = game.getHoveredTilePosition();
-
     if (engine.mouse.dragStart == null) {
-      engine.mouse.dragStart = new Vector(position.x, position.y);
+      engine.mouse.dragStart = game.getHoveredTilePosition();
     }
   }
 }
@@ -219,11 +216,13 @@ void onMouseUp(MouseEvent evt) {
     // when there is an active symbol place building
     if (UISymbol.activeSymbol != null) {
       String type = UISymbol.activeSymbol.imageID.substring(0, 1).toUpperCase() + UISymbol.activeSymbol.imageID.substring(1);
+      
+      // if at least one ghost can be placed play matching sound
       bool soundSuccess = false;
       for (int i = 0; i < game.ghosts.length; i++) {
         if (game.canBePlaced(game.ghosts[i], UISymbol.activeSymbol.size, null)) {
-          soundSuccess = true;
           Building.add(game.ghosts[i], UISymbol.activeSymbol.imageID);
+          soundSuccess = true;
         }
       }
       if (soundSuccess)
@@ -242,10 +241,10 @@ void onMouseUp(MouseEvent evt) {
 
 void onMouseScroll(WheelEvent evt) {
   if (evt.deltaY > 0) {
-  //scroll down
+    //scroll down
     game.zoomOut();
   } else {
-  //scroll up
+    //scroll up
     game.zoomIn();
   }
   //prevent page fom scrolling
