@@ -278,6 +278,36 @@ class Building {
     }
   }
   
+  /**
+   * Used for A*, finds all neighbouring buildings.
+   * The [target] node is also passed as it is a valid neighbour.
+   */
+  List getNeighbours(Building target) {
+    List neighbours = new List();
+    
+    for (int i = 0; i < buildings.length; i++) {
+      // must not be the same building
+      if (buildings[i].position != position) {
+        // must be idle
+        if (buildings[i].status == "IDLE") {
+          // it must either be the target or be built
+          if (buildings[i] == target || (buildings[i].built && (buildings[i].type == "collector" || buildings[i].type == "relay"))) {
+
+              int allowedDistance = 10 * game.tileSize;
+              if (type == "relay" && buildings[i].type == "relay") {
+                allowedDistance = 20 * game.tileSize;
+              }
+              
+              if (position.distanceTo(buildings[i].position) <= allowedDistance) {
+                neighbours.add(buildings[i]);
+              }
+          }
+        }
+      }
+    }
+    return neighbours;
+  }
+  
   void updateDisplayObjects() {
     sprite.position = position;
     sprite.scale = scale;

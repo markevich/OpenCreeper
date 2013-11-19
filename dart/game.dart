@@ -560,36 +560,6 @@ class Game {
   }
 
   /**
-   * Used for A*, finds all neighbouring nodes of the given [node].
-   * The [target] node is also passed as it is a valid neighbour.
-   */
-  List getNeighbours(Building node, Building target) {
-    List neighbours = new List();
-    
-    for (int i = 0; i < Building.buildings.length; i++) {
-      // must not be the same building
-      if (!(Building.buildings[i].position == node.position)) {
-        // must be idle
-        if (Building.buildings[i].status == "IDLE") {
-          // it must either be the target or be built
-          if (Building.buildings[i] == target || (Building.buildings[i].built && (Building.buildings[i].type == "collector" || Building.buildings[i].type == "relay"))) {
-
-              int allowedDistance = 10 * tileSize;
-              if (node.type == "relay" && Building.buildings[i].type == "relay") {
-                allowedDistance = 20 * tileSize;
-              }
-              
-              if (node.position.distanceTo(Building.buildings[i].position) <= allowedDistance) {
-                neighbours.add(Building.buildings[i]);
-              }
-          }
-        }
-      }
-    }
-    return neighbours;
-  }
-
-  /**
    * Checks if a [building] with its [size] can be placed on a given [position]. // tileposition
    */
   bool canBePlaced(Vector position, num size, [Building building]) {

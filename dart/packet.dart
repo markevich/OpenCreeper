@@ -193,7 +193,7 @@ class Packet {
       Building lastNode = oldRoute.nodes[oldRoute.nodes.length - 1];
 
       // find all neighbours of this node
-      List neighbours = game.getNeighbours(lastNode, target);
+      List neighbours = lastNode.getNeighbours(target);
 
       int newRoutes = 0;
       // extend the old route with each neighbour creating a new route each
