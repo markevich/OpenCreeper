@@ -828,7 +828,7 @@ class Building {
       // draw various stuff when operating
       if (buildings[i].operating) {
         if (buildings[i].type == "analyzer") {
-          Vector targetPosition = buildings[i].weaponTargetPosition.tiled2screen();
+          Vector targetPosition = buildings[i].weaponTargetPosition.real2screen();
           context.strokeStyle = '#00f';
           context.lineWidth = 4;
           context.beginPath();
