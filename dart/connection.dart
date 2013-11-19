@@ -8,7 +8,12 @@ class Connection {
   Connection(this.from, this.to) {
     line = new Line(Layer.CONNECTIONBORDER, this.from.position, this.to.position, 3, "#000");
     engine.renderer["buffer"].addDisplayObject(line);
-    line2 = new Line(Layer.CONNECTION, this.from.position, this.to.position, 2, "#777");
+
+    var color = '#777';
+    if (from.built && to.built)
+      color = '#fff';
+
+    line2 = new Line(Layer.CONNECTION, this.from.position, this.to.position, 2, color);
     engine.renderer["buffer"].addDisplayObject(line2);
   }
   
