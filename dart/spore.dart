@@ -3,7 +3,7 @@ part of creeper;
 class Spore {
   Vector targetPosition, speed = new Vector(0, 0);
   bool remove = false;
-  num health = 100;
+  num health = 500;
   int trailCounter = 0;
   Sprite sprite;
   static final int baseSpeed = 1;
