@@ -10,7 +10,7 @@ class Smoke {
     sprite.animated = true;
     sprite.anchor = new Vector(0.5, 0.5);
     sprite.scale = new Vector(0.5, 0.5);
-    engine.canvas["buffer"].addDisplayObject(sprite);
+    engine.renderer["buffer"].addDisplayObject(sprite);
   }
   
   static void clear() {
@@ -30,7 +30,7 @@ class Smoke {
       counter = 0;
       for (int i = smokes.length - 1; i >= 0; i--) {
         if (smokes[i].sprite.frame == 36) {
-          engine.canvas["buffer"].removeDisplayObject(smokes[i].sprite);
+          engine.renderer["buffer"].removeDisplayObject(smokes[i].sprite);
           smokes.removeAt(i);
         }
         else {

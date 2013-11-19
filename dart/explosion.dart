@@ -10,7 +10,7 @@ class Explosion {
     sprite.animated = true;
     sprite.rotation = engine.randomInt(0, 359);
     sprite.anchor = new Vector(0.5, 0.5);
-    engine.canvas["buffer"].addDisplayObject(sprite);
+    engine.renderer["buffer"].addDisplayObject(sprite);
   }
   
   static void clear() {
@@ -30,7 +30,7 @@ class Explosion {
       counter = 0;
       for (int i = explosions.length - 1; i >= 0; i--) {
         if (explosions[i].sprite.frame == 44) {
-          engine.canvas["buffer"].removeDisplayObject(explosions[i].sprite);
+          engine.renderer["buffer"].removeDisplayObject(explosions[i].sprite);
           explosions.removeAt(i);
         }
         else

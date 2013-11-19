@@ -16,7 +16,7 @@ class Engine {
   num animationRequest, TPS = 60; // TPS = ticks per second
   int width, height, halfWidth, halfHeight;
   Mouse mouse = new Mouse(), mouseGUI = new Mouse();
-  Map canvas = new Map(), sounds = new Map(), images = new Map();
+  Map renderer = new Map(), sounds = new Map(), images = new Map();
   Timer resizeTimer;
 
   Engine() {
@@ -26,39 +26,39 @@ class Engine {
     halfHeight = (height / 2).floor();
 
     // main
-    canvas["main"] = new Renderer(new CanvasElement(), width, height);
-    querySelector('#canvasContainer').children.add(canvas["main"].view);
-    canvas["main"].top = canvas["main"].view.offsetTop;
-    canvas["main"].left = canvas["main"].view.offsetLeft;
-    canvas["main"].right = canvas["main"].view.offset.right;
-    canvas["main"].bottom = canvas["main"].view.offset.bottom;
-    canvas["main"].view.style.zIndex = "1";
+    renderer["main"] = new Renderer(new CanvasElement(), width, height);
+    querySelector('#canvasContainer').children.add(renderer["main"].view);
+    renderer["main"].top = renderer["main"].view.offsetTop;
+    renderer["main"].left = renderer["main"].view.offsetLeft;
+    renderer["main"].right = renderer["main"].view.offset.right;
+    renderer["main"].bottom = renderer["main"].view.offset.bottom;
+    renderer["main"].view.style.zIndex = "1";
 
     // buffer
-    canvas["buffer"] = new Renderer(new CanvasElement(), width, height);
+    renderer["buffer"] = new Renderer(new CanvasElement(), width, height);
 
     // gui
-    canvas["gui"] = new Renderer(new CanvasElement(), 780, 110);
-    querySelector('#gui').children.add(canvas["gui"].view);
-    canvas["gui"].top = canvas["gui"].view.offsetTop;
-    canvas["gui"].left = canvas["gui"].view.offsetLeft;
+    renderer["gui"] = new Renderer(new CanvasElement(), 780, 110);
+    querySelector('#gui').children.add(renderer["gui"].view);
+    renderer["gui"].top = renderer["gui"].view.offsetTop;
+    renderer["gui"].left = renderer["gui"].view.offsetLeft;
 
     for (int i = 0; i < 10; i++) {
-      canvas["level$i"] = new Renderer(new CanvasElement(), 128 * 16, 128 * 16);
+      renderer["level$i"] = new Renderer(new CanvasElement(), 128 * 16, 128 * 16);
     }
 
-    canvas["levelbuffer"] = new Renderer(new CanvasElement(), 128 * 16, 128 * 16);
-    canvas["levelfinal"] = new Renderer(new CanvasElement(), width, height);
-    querySelector('#canvasContainer').children.add(canvas["levelfinal"].view);
+    renderer["levelbuffer"] = new Renderer(new CanvasElement(), 128 * 16, 128 * 16);
+    renderer["levelfinal"] = new Renderer(new CanvasElement(), width, height);
+    querySelector('#canvasContainer').children.add(renderer["levelfinal"].view);
 
     // collection
-    canvas["collection"] = new Renderer(new CanvasElement(), width, height);
-    querySelector('#canvasContainer').children.add(canvas["collection"].view);
+    renderer["collection"] = new Renderer(new CanvasElement(), width, height);
+    querySelector('#canvasContainer').children.add(renderer["collection"].view);
 
     // creeper
-    canvas["creeperbuffer"] = new Renderer(new CanvasElement(), width, height);
-    canvas["creeper"] = new Renderer(new CanvasElement(), width, height);
-    querySelector('#canvasContainer').children.add(canvas["creeper"].view);
+    renderer["creeperbuffer"] = new Renderer(new CanvasElement(), width, height);
+    renderer["creeper"] = new Renderer(new CanvasElement(), width, height);
+    querySelector('#canvasContainer').children.add(renderer["creeper"].view);
     
     loadSounds();
   }
@@ -73,8 +73,8 @@ class Engine {
     querySelector('#deactivate').onClick.listen((event) => Building.deactivate());
     querySelector('#activate').onClick.listen((event) => Building.activate());
 
-    CanvasElement mainCanvas = canvas["main"].view;
-    CanvasElement guiCanvas = canvas["gui"].view;
+    CanvasElement mainCanvas = renderer["main"].view;
+    CanvasElement guiCanvas = renderer["gui"].view;
     mainCanvas.onMouseMove.listen((event) => onMouseMove(event));
     mainCanvas.onDoubleClick.listen((event) => onDoubleClick(event));
     mainCanvas
@@ -160,8 +160,8 @@ class Engine {
   }
 
   void updateMouse(MouseEvent evt) {
-    mouse.position.x = (evt.client.x - canvas["main"].view.getBoundingClientRect().left).toInt();
-    mouse.position.y = (evt.client.y - canvas["main"].view.getBoundingClientRect().top).toInt();
+    mouse.position.x = (evt.client.x - renderer["main"].view.getBoundingClientRect().left).toInt();
+    mouse.position.y = (evt.client.y - renderer["main"].view.getBoundingClientRect().top).toInt();
     Vector position = null;
     if (game != null) {
       position = game.getHoveredTilePosition();
@@ -172,8 +172,8 @@ class Engine {
   }
 
   void updateMouseGUI(MouseEvent evt) {
-    mouseGUI.position.x = (evt.client.x - canvas["gui"].view.getBoundingClientRect().left).toInt();
-    mouseGUI.position.y = (evt.client.y - canvas["gui"].view.getBoundingClientRect().top).toInt();
+    mouseGUI.position.x = (evt.client.x - renderer["gui"].view.getBoundingClientRect().left).toInt();
+    mouseGUI.position.y = (evt.client.y - renderer["gui"].view.getBoundingClientRect().top).toInt();
   }
  
   int randomInt(num from, num to, [num seed]) {

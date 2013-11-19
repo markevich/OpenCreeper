@@ -50,7 +50,7 @@ void onKeyDown(KeyboardEvent evt) {
     UISymbol.deselect();
     Building.deselect();
     Ship.deselect();
-    engine.canvas["main"].view.style.cursor = "url('images/Normal.cur') 2 2, pointer";
+    engine.renderer["main"].view.style.cursor = "url('images/Normal.cur') 2 2, pointer";
   }
 
   if (evt.keyCode == KeyCode.LEFT)
@@ -268,15 +268,15 @@ void doneResizing() {
   engine.halfWidth = width ~/ 2;
   engine.halfHeight = height ~/ 2;
 
-  engine.canvas["main"].updateRect(width, height);
-  engine.canvas["levelfinal"].updateRect(width, height);
-  engine.canvas["buffer"].updateRect(width, height);
-  engine.canvas["collection"].updateRect(width, height);
-  engine.canvas["creeperbuffer"].updateRect(width, height);
-  engine.canvas["creeper"].updateRect(width, height);
+  engine.renderer["main"].updateRect(width, height);
+  engine.renderer["levelfinal"].updateRect(width, height);
+  engine.renderer["buffer"].updateRect(width, height);
+  engine.renderer["collection"].updateRect(width, height);
+  engine.renderer["creeperbuffer"].updateRect(width, height);
+  engine.renderer["creeper"].updateRect(width, height);
 
-  engine.canvas["gui"].top = engine.canvas["gui"].view.offsetTop;
-  engine.canvas["gui"].left = engine.canvas["gui"].view.offsetLeft;
+  engine.renderer["gui"].top = engine.renderer["gui"].view.offsetTop;
+  engine.renderer["gui"].left = engine.renderer["gui"].view.offsetLeft;
 
   if (game != null) {
     game.copyTerrain();

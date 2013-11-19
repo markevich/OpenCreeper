@@ -19,7 +19,7 @@ class UISymbol {
   static void reset() {
     activeSymbol = null;
     UISymbol.deselect();
-    engine.canvas["main"].view.style.cursor = "url('images/Normal.cur') 2 2, pointer";
+    engine.renderer["main"].view.style.cursor = "url('images/Normal.cur') 2 2, pointer";
   }
   
   static void add(UISymbol symbol) {
@@ -45,7 +45,7 @@ class UISymbol {
       if (evt.keyCode == symbols[i].keyCode) {
         activeSymbol = symbols[i];
         symbols[i].active = true;
-        engine.canvas["main"].view.style.cursor = "none";
+        engine.renderer["main"].view.style.cursor = "none";
       }
     }
   }
@@ -69,13 +69,13 @@ class UISymbol {
     
 
     if (activeSymbol != null) {
-      engine.canvas["main"].view.style.cursor = "none";
+      engine.renderer["main"].view.style.cursor = "none";
     }
 
   }
   
   void draw() {
-    CanvasRenderingContext2D context = engine.canvas["gui"].context;
+    CanvasRenderingContext2D context = engine.renderer["gui"].context;
     
     if (active) {
       context.fillStyle = "#696";

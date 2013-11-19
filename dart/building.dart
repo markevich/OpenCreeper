@@ -20,16 +20,16 @@ class Building {
     sprite = new Sprite(Layer.BUILDING, engine.images[imageID], position, 48, 48);
     sprite.anchor = new Vector(0.5, 0.5);
     sprite.alpha = 0.5;
-    engine.canvas["buffer"].addDisplayObject(sprite);
+    engine.renderer["buffer"].addDisplayObject(sprite);
 
     selectedCircle = new Circle(Layer.SELECTEDCIRCLE, position, 24, 2, "#fff");
     selectedCircle.visible = false;
-    engine.canvas["buffer"].addDisplayObject(selectedCircle);
+    engine.renderer["buffer"].addDisplayObject(selectedCircle);
     
     targetSymbol = new Rect(Layer.TARGETSYMBOL, new Vector.empty(), new Vector(48, 48), 1, '#0f0');
     targetSymbol.visible = false;
     targetSymbol.anchor = new Vector(0.5, 0.5);
-    engine.canvas["buffer"].addDisplayObject(targetSymbol);
+    engine.renderer["buffer"].addDisplayObject(targetSymbol);
     
     health = 0;
     size = 3;
@@ -93,7 +93,7 @@ class Building {
       cannon = new Sprite(Layer.CANNONGUN, engine.images["cannongun"], position, 48, 48);
       cannon.anchor = new Vector(0.5, 0.5);
       cannon.alpha = 0.5;
-      engine.canvas["buffer"].addDisplayObject(cannon);
+      engine.renderer["buffer"].addDisplayObject(cannon);
     }
     else if (type == "mortar") {
       maxHealth = 1; //40
@@ -264,7 +264,7 @@ class Building {
       if (buildings[i].built && buildings[i].selected && buildings[i].canMove) {
         // check if it can be placed
         if (game.canBePlaced(position, buildings[i].size, buildings[i])) {
-          engine.canvas["main"].view.style.cursor = "url('images/Normal.cur') 2 2, pointer";
+          engine.renderer["main"].view.style.cursor = "url('images/Normal.cur') 2 2, pointer";
           buildings[i].operating = false;
           buildings[i].rotating = false;
           buildings[i].weaponTargetPosition = null;
@@ -301,7 +301,7 @@ class Building {
       if (flightCounter == 25) {
         status = "MOVING";
         sprite.layer = Layer.BUILDINGFLYING;
-        engine.canvas["buffer"].sortDisplayObjects();
+        engine.renderer["buffer"].sortDisplayObjects();
       }
     }
     
@@ -318,7 +318,7 @@ class Building {
         updateDisplayObjects();
         Connection.add(this);
         sprite.layer = Layer.BUILDING;
-        engine.canvas["buffer"].sortDisplayObjects();
+        engine.renderer["buffer"].sortDisplayObjects();
       }
     }
 
@@ -463,7 +463,7 @@ class Building {
         if (packet.findRoute())
           Packet.add(packet);
         else
-          engine.canvas["buffer"].removeDisplayObject(packet.sprite);
+          engine.renderer["buffer"].removeDisplayObject(packet.sprite);
       }
       if (type == "reactor") {
         game.currentEnergy += 1;
@@ -732,11 +732,11 @@ class Building {
   }
   
   static void drawRepositionInfo() {
-    CanvasRenderingContext2D context = engine.canvas["buffer"].context;
+    CanvasRenderingContext2D context = engine.renderer["buffer"].context;
     
     for (int i = 0; i < buildings.length; i++) {
       if (buildings[i].built && buildings[i].selected && buildings[i].canMove) {
-        engine.canvas["main"].view.style.cursor = "none";
+        engine.renderer["main"].view.style.cursor = "none";
         
         Vector hoveredTilePosition = game.getHoveredTilePosition();
         Vector hoveredTilePositionDraw = hoveredTilePosition.tiled2screen();
@@ -793,13 +793,13 @@ class Building {
 
   static void draw() {
     //drawNodeConnections();
-    CanvasRenderingContext2D context = engine.canvas["buffer"].context;
+    CanvasRenderingContext2D context = engine.renderer["buffer"].context;
     
     for (int i = 0; i < buildings.length; i++) {
       Vector realPosition = buildings[i].position.real2screen();
       Vector center = buildings[i].position.real2screen();
   
-      if (engine.canvas["buffer"].isVisible(realPosition, new Vector(engine.images[buildings[i].type].width * game.zoom, engine.images[buildings[i].type].height * game.zoom))) { 
+      if (engine.renderer["buffer"].isVisible(realPosition, new Vector(engine.images[buildings[i].type].width * game.zoom, engine.images[buildings[i].type].height * game.zoom))) { 
         // draw energy bar
         if (buildings[i].needsEnergy) {
           context.fillStyle = '#f00';

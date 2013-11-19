@@ -11,7 +11,7 @@ class Shell {
   Shell(position, this.targetPosition) {
     sprite = new Sprite(Layer.SHELL, engine.images["shell"], position, 16, 16);
     sprite.anchor = new Vector(0.5, 0.5);  
-    engine.canvas["buffer"].addDisplayObject(sprite);
+    engine.renderer["buffer"].addDisplayObject(sprite);
   }
   
   static void clear() {
@@ -27,7 +27,7 @@ class Shell {
   static void update() {
     for (int i = shells.length - 1; i >= 0; i--) {
       if (shells[i].remove) {
-        engine.canvas["buffer"].removeDisplayObject(shells[i].sprite);
+        engine.renderer["buffer"].removeDisplayObject(shells[i].sprite);
         shells.removeAt(i);
       }
       else

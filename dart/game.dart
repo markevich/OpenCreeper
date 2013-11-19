@@ -41,21 +41,21 @@ class Game {
     // create terraform lines
     tfLine1 = new Line(Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff");
     tfLine1.visible = false;
-    engine.canvas["buffer"].addDisplayObject(tfLine1);
+    engine.renderer["buffer"].addDisplayObject(tfLine1);
     tfLine2 = new Line(Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff");
     tfLine2.visible = false;
-    engine.canvas["buffer"].addDisplayObject(tfLine2);
+    engine.renderer["buffer"].addDisplayObject(tfLine2);
     tfLine3 = new Line(Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff");
     tfLine3.visible = false;
-    engine.canvas["buffer"].addDisplayObject(tfLine3);
+    engine.renderer["buffer"].addDisplayObject(tfLine3);
     tfLine4 = new Line(Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff");
     tfLine4.visible = false;
-    engine.canvas["buffer"].addDisplayObject(tfLine4);
+    engine.renderer["buffer"].addDisplayObject(tfLine4);
     
     targetCursor = new Sprite(Layer.TARGETSYMBOL, engine.images["targetcursor"], new Vector.empty(), 48, 48);
     targetCursor.anchor = new Vector(0.5, 0.5);
     targetCursor.visible = false;
-    engine.canvas["buffer"].addDisplayObject(targetCursor);
+    engine.renderer["buffer"].addDisplayObject(targetCursor);
     
     drawTerrain();
     copyTerrain();
@@ -306,7 +306,7 @@ class Game {
    */
   void drawTerrain() {
     for (int i = 0; i < 10; i++) {
-      engine.canvas["level$i"].clear();
+      engine.renderer["level$i"].clear();
     }
 
     // 1st pass - draw masks
@@ -353,7 +353,7 @@ class Game {
             
             indexAbove = index;
            
-            engine.canvas["level$k"].context.drawImageScaledFromSource(engine.images["mask"], index * (tileSize + 6) + 3, (tileSize + 6) + 3, tileSize, tileSize, i * tileSize, j * tileSize, tileSize, tileSize);
+            engine.renderer["level$k"].context.drawImageScaledFromSource(engine.images["mask"], index * (tileSize + 6) + 3, (tileSize + 6) + 3, tileSize, tileSize, i * tileSize, j * tileSize, tileSize, tileSize);
           }
         }
       }
@@ -361,11 +361,11 @@ class Game {
 
     // 2nd pass - draw textures
     for (int i = 0; i < 10; i++) {
-      CanvasPattern pattern = engine.canvas["level$i"].context.createPatternFromImage(engine.images["level$i"], 'repeat');
-      engine.canvas["level$i"].context.globalCompositeOperation = 'source-in';
-      engine.canvas["level$i"].context.fillStyle = pattern;
-      engine.canvas["level$i"].context.fillRect(0, 0, engine.canvas["level$i"].view.width, engine.canvas["level$i"].view.height);
-      engine.canvas["level$i"].context.globalCompositeOperation = 'source-over';
+      CanvasPattern pattern = engine.renderer["level$i"].context.createPatternFromImage(engine.images["level$i"], 'repeat');
+      engine.renderer["level$i"].context.globalCompositeOperation = 'source-in';
+      engine.renderer["level$i"].context.fillStyle = pattern;
+      engine.renderer["level$i"].context.fillRect(0, 0, engine.renderer["level$i"].view.width, engine.renderer["level$i"].view.height);
+      engine.renderer["level$i"].context.globalCompositeOperation = 'source-over';
     }
 
     // 3rd pass - draw borders
@@ -409,15 +409,15 @@ class Game {
             
             indexAbove = index;
   
-            engine.canvas["level$k"].context.drawImageScaledFromSource(engine.images["borders"], index * (tileSize + 6) + 2, 2, tileSize + 2, tileSize + 2, i * tileSize, j * tileSize, (tileSize + 2), (tileSize + 2));       
+            engine.renderer["level$k"].context.drawImageScaledFromSource(engine.images["borders"], index * (tileSize + 6) + 2, 2, tileSize + 2, tileSize + 2, i * tileSize, j * tileSize, (tileSize + 2), (tileSize + 2));       
           }
         }
       }
     }
 
-    engine.canvas["levelbuffer"].clear();
+    engine.renderer["levelbuffer"].clear();
     for (int k = 0; k < 10; k++) {
-      engine.canvas["levelbuffer"].context.drawImage(engine.canvas["level$k"].view, 0, 0);
+      engine.renderer["levelbuffer"].context.drawImage(engine.renderer["level$k"].view, 0, 0);
     }
     querySelector('#loading').style.display = 'none';
   }
@@ -427,7 +427,7 @@ class Game {
    * to the visible buffer.
    */
   void copyTerrain() {
-    engine.canvas["levelfinal"].clear();
+    engine.renderer["levelfinal"].clear();
 
     Vector delta = new Vector(0,0);
     var left = scroll.x * tileSize - (engine.width / 2) * (1 / zoom);
@@ -453,7 +453,7 @@ class Game {
       height = world.size.y * tileSize - top ;
     }
 
-    engine.canvas["levelfinal"].context.drawImageScaledFromSource(engine.canvas["levelbuffer"].view, left, top, width, height, delta.x, delta.y, engine.width - delta2.x, engine.height - delta2.y);
+    engine.renderer["levelfinal"].context.drawImageScaledFromSource(engine.renderer["levelbuffer"].view, left, top, width, height, delta.x, delta.y, engine.width - delta2.x, engine.height - delta2.y);
   }
 
   /**
@@ -553,9 +553,9 @@ class Game {
           indexAbove = index;
         }
   
-        engine.canvas["levelbuffer"].context.clearRect(iS * tileSize, jS * tileSize, tileSize, tileSize);
+        engine.renderer["levelbuffer"].context.clearRect(iS * tileSize, jS * tileSize, tileSize, tileSize);
         for (int t = 0; t < 10; t++) {
-          engine.canvas["levelbuffer"].context.drawImageScaledFromSource(tempCanvas[t], 0, 0, tileSize, tileSize, iS * tileSize, jS * tileSize, tileSize, tileSize);
+          engine.renderer["levelbuffer"].context.drawImageScaledFromSource(tempCanvas[t], 0, 0, tileSize, tileSize, iS * tileSize, jS * tileSize, tileSize, tileSize);
         }
       }
     }
@@ -796,7 +796,7 @@ class Game {
    * with a given [type], [radius] and [size].
    */
   void drawRangeBoxes(Vector position, String type, num radius, num size) {
-    CanvasRenderingContext2D context = engine.canvas["buffer"].context;
+    CanvasRenderingContext2D context = engine.renderer["buffer"].context;
     
     if (canBePlaced(position, size, null) && (type == "collector" || type == "cannon" || type == "mortar" || type == "shield" || type == "beam" || type == "terp" || type == "analyzer")) {
 
@@ -836,9 +836,9 @@ class Game {
    * Draws the green collection areas of collectors.
    */
   void drawCollection() {
-    engine.canvas["collection"].clear();
-    engine.canvas["collection"].context.save();
-    engine.canvas["collection"].context.globalAlpha = .5;
+    engine.renderer["collection"].clear();
+    engine.renderer["collection"].context.save();
+    engine.renderer["collection"].context.globalAlpha = .5;
 
     int timesX = (engine.halfWidth / tileSize / zoom).ceil();
     int timesY = (engine.halfHeight / tileSize / zoom).ceil();
@@ -872,17 +872,17 @@ class Game {
                 right = world.tiles[iS + 1][jS].collector != null ? 1 : 0;
 
               int index = (8 * down) + (4 * left) + (2 * up) + right;
-              engine.canvas["collection"].context.drawImageScaledFromSource(engine.images["mask"], index * (tileSize + 6) + 3, (tileSize + 6) + 3, tileSize, tileSize, engine.halfWidth + i * tileSize * zoom, engine.halfHeight + j * tileSize * zoom, tileSize * zoom, tileSize * zoom);
+              engine.renderer["collection"].context.drawImageScaledFromSource(engine.images["mask"], index * (tileSize + 6) + 3, (tileSize + 6) + 3, tileSize, tileSize, engine.halfWidth + i * tileSize * zoom, engine.halfHeight + j * tileSize * zoom, tileSize * zoom, tileSize * zoom);
             }
           //}
         }
       }
     }
-    engine.canvas["collection"].context.restore();
+    engine.renderer["collection"].context.restore();
   }
 
   void drawCreeper() {
-    engine.canvas["creeperbuffer"].clear();
+    engine.renderer["creeperbuffer"].clear();
 
     int timesX = (engine.halfWidth / tileSize / zoom).ceil();
     int timesY = (engine.halfHeight / tileSize / zoom).ceil();
@@ -921,7 +921,7 @@ class Game {
                 right = 1;
   
               int index = (8 * down) + (4 * left) + (2 * up) + right;
-              engine.canvas["creeperbuffer"].context.drawImageScaledFromSource(engine.images["creeper"], index * tileSize, 0, tileSize, tileSize, engine.halfWidth + i * tileSize * zoom, engine.halfHeight + j * tileSize * zoom, tileSize * zoom, tileSize * zoom);
+              engine.renderer["creeperbuffer"].context.drawImageScaledFromSource(engine.images["creeper"], index * tileSize, 0, tileSize, tileSize, engine.halfWidth + i * tileSize * zoom, engine.halfHeight + j * tileSize * zoom, tileSize * zoom, tileSize * zoom);
               continue;
             }
             
@@ -948,7 +948,7 @@ class Game {
   
               int index = (8 * down) + (4 * left) + (2 * up) + right;
               if (index != 0)
-                engine.canvas["creeperbuffer"].context.drawImageScaledFromSource(engine.images["creeper"], index * tileSize, 0, tileSize, tileSize, engine.halfWidth + i * tileSize * zoom, engine.halfHeight + j * tileSize * zoom, tileSize * zoom, tileSize * zoom);            
+                engine.renderer["creeperbuffer"].context.drawImageScaledFromSource(engine.images["creeper"], index * tileSize, 0, tileSize, tileSize, engine.halfWidth + i * tileSize * zoom, engine.halfHeight + j * tileSize * zoom, tileSize * zoom, tileSize * zoom);            
             }
           }
         }
@@ -956,8 +956,8 @@ class Game {
       }
     }
     
-    engine.canvas["creeper"].clear();
-    engine.canvas["creeper"].context.drawImage(engine.canvas["creeperbuffer"].view, 0, 0);
+    engine.renderer["creeper"].clear();
+    engine.renderer["creeper"].context.drawImage(engine.renderer["creeperbuffer"].view, 0, 0);
   }
   
   void updateTerraformInfo() {
@@ -1000,7 +1000,7 @@ class Game {
    */
   void drawPositionInfo() {
     if (UISymbol.activeSymbol != null) {
-      CanvasRenderingContext2D context = engine.canvas["buffer"].context;
+      CanvasRenderingContext2D context = engine.renderer["buffer"].context;
       
       ghosts = new List(); // ghosts are all the placeholders to build
       if (engine.mouse.dragStart != null) {
@@ -1143,11 +1143,11 @@ class Game {
    * Draws the GUI with symbols, height and creep meter.
    */
   void drawGUI() {
-    CanvasRenderingContext2D context = engine.canvas["gui"].context;
+    CanvasRenderingContext2D context = engine.renderer["gui"].context;
     
     Vector position = getHoveredTilePosition();
 
-    engine.canvas["gui"].clear();
+    engine.renderer["gui"].clear();
     for (int i = 0; i < UISymbol.symbols.length; i++) {
       UISymbol.symbols[i].draw();
     }
@@ -1184,15 +1184,15 @@ class Game {
    * Is called by requestAnimationFrame every frame.
    */
   void draw(num _) {
-    CanvasRenderingContext2D context = engine.canvas["buffer"].context;
+    CanvasRenderingContext2D context = engine.renderer["buffer"].context;
     
-    engine.canvas["buffer"].clear();
-    engine.canvas["main"].clear();
+    engine.renderer["buffer"].clear();
+    engine.renderer["main"].clear();
     
     drawGUI();
     game.world.drawTerraformNumbers();
 
-    engine.canvas["buffer"].draw();
+    engine.renderer["buffer"].draw();
     Building.draw();
 
     if (engine.mouse.active) {
@@ -1219,7 +1219,7 @@ class Game {
       creeperDirty = false;
     }
 
-    engine.canvas["main"].context.drawImage(engine.canvas["buffer"].view, 0, 0);
+    engine.renderer["main"].context.drawImage(engine.renderer["buffer"].view, 0, 0);
 
     window.requestAnimationFrame(draw);
   }

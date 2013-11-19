@@ -11,7 +11,7 @@ class Projectile {
     sprite = new Sprite(Layer.PROJECTILE, engine.images["projectile"], position, 16, 16);
     sprite.anchor = new Vector(0.5, 0.5);
     sprite.rotation = rotation;
-    engine.canvas["buffer"].addDisplayObject(sprite);
+    engine.renderer["buffer"].addDisplayObject(sprite);
   }
   
   static void clear() {
@@ -27,7 +27,7 @@ class Projectile {
   static void update() {
     for (int i = projectiles.length - 1; i >= 0; i--) {
       if (projectiles[i].remove) {
-        engine.canvas["buffer"].removeDisplayObject(projectiles[i].sprite);
+        engine.renderer["buffer"].removeDisplayObject(projectiles[i].sprite);
         projectiles.removeAt(i);
       }
       else

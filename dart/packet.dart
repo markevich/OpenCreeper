@@ -18,7 +18,7 @@ class Packet {
     if (type == "collection")
       sprite.scale = new Vector(1.5, 1.5);
 
-    engine.canvas["buffer"].addDisplayObject(sprite);
+    engine.renderer["buffer"].addDisplayObject(sprite);
   }
   
   static void clear() {
@@ -37,7 +37,7 @@ class Packet {
   static void update() {
     for (int i = packets.length - 1; i >= 0; i--) {
       if (packets[i].remove) {
-        engine.canvas["buffer"].removeDisplayObject(packets[i].sprite);
+        engine.renderer["buffer"].removeDisplayObject(packets[i].sprite);
         packets.removeAt(i);
       }
       else
@@ -90,7 +90,7 @@ class Packet {
         packet.target.energyRequests += 4;
       Packet.addQueue(packet);
     } else {
-      engine.canvas["buffer"].removeDisplayObject(packet.sprite);
+      engine.renderer["buffer"].removeDisplayObject(packet.sprite);
     }
   }
 

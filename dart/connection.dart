@@ -7,9 +7,9 @@ class Connection {
   
   Connection(this.from, this.to) {
     line = new Line(Layer.CONNECTIONBORDER, this.from.position, this.to.position, 3, "#000");
-    engine.canvas["buffer"].addDisplayObject(line);
+    engine.renderer["buffer"].addDisplayObject(line);
     line2 = new Line(Layer.CONNECTION, this.from.position, this.to.position, 2, "#777");
-    engine.canvas["buffer"].addDisplayObject(line2);
+    engine.renderer["buffer"].addDisplayObject(line2);
   }
   
   static void clear() {
@@ -38,8 +38,8 @@ class Connection {
   static void remove(Building building) {
     for (int i = connections.length - 1; i >= 0; i--) {
       if (connections[i].from == building || connections[i].to == building) {
-        engine.canvas["buffer"].removeDisplayObject(connections[i].line);
-        engine.canvas["buffer"].removeDisplayObject(connections[i].line2);
+        engine.renderer["buffer"].removeDisplayObject(connections[i].line);
+        engine.renderer["buffer"].removeDisplayObject(connections[i].line2);
         connections.removeAt(i);
       }
     }

@@ -31,7 +31,7 @@ class World {
 
         if (contains(new Vector(iS, jS))) {
           if (tiles[iS][jS].terraformTarget > -1) {
-            engine.canvas["buffer"].context.drawImageScaledFromSource(engine.images["numbers"],
+            engine.renderer["buffer"].context.drawImageScaledFromSource(engine.images["numbers"],
                                                                       tiles[iS][jS].terraformTarget * 16,
                                                                       0,
                                                                       game.tileSize,

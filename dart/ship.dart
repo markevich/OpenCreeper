@@ -14,17 +14,17 @@ class Ship {
   Ship(position, imageID, this.type, this.home) {
     sprite = new Sprite(Layer.SHIP, engine.images[imageID], position, 48, 48);
     sprite.anchor = new Vector(0.5, 0.5);
-    engine.canvas["buffer"].addDisplayObject(sprite);
+    engine.renderer["buffer"].addDisplayObject(sprite);
 
     selectedCircle = new Circle(Layer.SELECTEDCIRCLE, position, 24, 2, "#fff");
     selectedCircle.visible = false;
-    engine.canvas["buffer"].addDisplayObject(selectedCircle);
+    engine.renderer["buffer"].addDisplayObject(selectedCircle);
 
     targetSymbol = new Sprite(Layer.TARGETSYMBOL, engine.images["targetcursor"], position, 48, 48);
     targetSymbol.anchor = new Vector(0.5, 0.5);
     targetSymbol.alpha = 0.5;
     targetSymbol.visible = false;
-    engine.canvas["buffer"].addDisplayObject(targetSymbol);
+    engine.renderer["buffer"].addDisplayObject(targetSymbol);
   }
   
   static void clear() {

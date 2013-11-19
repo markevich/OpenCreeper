@@ -12,7 +12,7 @@ class Spore {
   Spore(position, this.targetPosition) {   
     sprite = new Sprite(Layer.SPORE, engine.images["spore"], position, 32, 32);
     sprite.anchor = new Vector(0.5, 0.5);  
-    engine.canvas["buffer"].addDisplayObject(sprite);
+    engine.renderer["buffer"].addDisplayObject(sprite);
   }
   
   static void clear() {
@@ -28,7 +28,7 @@ class Spore {
   static void update() {
     for (int i = spores.length - 1; i >= 0; i--) {
       if (spores[i].remove) {
-        engine.canvas["buffer"].removeDisplayObject(spores[i].sprite);
+        engine.renderer["buffer"].removeDisplayObject(spores[i].sprite);
         spores.removeAt(i);
       }
       else
