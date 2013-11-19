@@ -161,8 +161,13 @@ class Building {
     
     Connection.remove(building);
 
-    int index = buildings.indexOf(building);
-    buildings.removeAt(index);
+    engine.renderer["buffer"].removeDisplayObject(building.sprite);
+    engine.renderer["buffer"].removeDisplayObject(building.selectedCircle);
+    engine.renderer["buffer"].removeDisplayObject(building.targetSymbol);
+    if (building.cannon != null)
+      engine.renderer["buffer"].removeDisplayObject(building.cannon);
+
+    buildings.removeAt(buildings.indexOf(building));
   }
   
   static void removeSelected() {
