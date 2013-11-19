@@ -90,7 +90,7 @@ class Building {
       canMove = true;
       needsEnergy = true;
       
-      cannon = new Sprite(Layer.CANNONGUN, engine.images["cannongun"], position, 48, 48);
+      cannon = new Sprite(Layer.BUILDINGGUN, engine.images["cannongun"], position, 48, 48);
       cannon.anchor = new Vector(0.5, 0.5);
       cannon.alpha = 0.5;
       engine.renderer["buffer"].addDisplayObject(cannon);
@@ -337,6 +337,8 @@ class Building {
         flightCounter = 25;
         status = "MOVING";
         sprite.layer = Layer.BUILDINGFLYING;
+        if (cannon != null)
+          cannon.layer = Layer.BUILDINGGUNFLYING;
         engine.renderer["buffer"].sortDisplayObjects();
       }
     }

@@ -61,20 +61,23 @@ class Layer {
   const Layer._internal(this._value);
 
   int operator -(Layer other) => _value - other._value;
+
+  static const BUILDINGGUNFLYING = const Layer._internal(9);
+
+  static const SPORE = const Layer._internal(8);
+  static const SHELL = const Layer._internal(8);
+  static const SHIP = const Layer._internal(8);
+  static const BUILDINGFLYING = const Layer._internal(8);
   
-  static const SPORE = const Layer._internal(7);
-  static const PROJECTILE = const Layer._internal(7);
-  static const SHELL = const Layer._internal(7);  
-  static const SHIP = const Layer._internal(7);
-  static const BUILDINGFLYING = const Layer._internal(7);
+  static const SMOKE = const Layer._internal(7);
+  static const EXPLOSION = const Layer._internal(7);
   
-  static const SMOKE = const Layer._internal(6);
-  static const EXPLOSION = const Layer._internal(6);
+  static const PACKET = const Layer._internal(6);
   
-  static const PACKET = const Layer._internal(5);
-  
-  static const CANNONGUN = const Layer._internal(4);
-  
+  static const BUILDINGGUN = const Layer._internal(5);
+
+  static const PROJECTILE = const Layer._internal(4);
+
   static const EMITTER = const Layer._internal(3);
   static const SPORETOWER = const Layer._internal(3);
   static const BUILDING = const Layer._internal(3);
