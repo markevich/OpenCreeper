@@ -865,48 +865,53 @@ class Building {
       if (buildings[i].operating) {
         if (buildings[i].type == "analyzer") {
           Vector targetPosition = buildings[i].weaponTargetPosition.real2screen();
-          context.strokeStyle = '#00f';
-          context.lineWidth = 5;
-          context.beginPath();
-          context.moveTo(center.x, center.y);
-          context.lineTo(targetPosition.x, targetPosition.y);
-          context.stroke();
+          context
+            ..strokeStyle = '#00f'
+            ..lineWidth = 5 * game.zoom
+            ..beginPath()
+            ..moveTo(center.x, center.y)
+            ..lineTo(targetPosition.x, targetPosition.y)
+            ..stroke();
   
-          context.strokeStyle = '#fff';
-          context.lineWidth = 3;
-          context.beginPath();
-          context.moveTo(center.x, center.y);
-          context.lineTo(targetPosition.x, targetPosition.y);
-          context.stroke();
+          context
+            ..strokeStyle = '#fff'
+            ..lineWidth = 3 * game.zoom
+            ..beginPath()
+            ..moveTo(center.x, center.y)
+            ..lineTo(targetPosition.x, targetPosition.y)
+            ..stroke();
         }
         else if (buildings[i].type == "beam") {
           Vector targetPosition = buildings[i].weaponTargetPosition.real2screen();
-          context.strokeStyle = '#f00';
-          context.lineWidth = 5;
-          context.beginPath();
-          context.moveTo(center.x, center.y);
-          context.lineTo(targetPosition.x, targetPosition.y);
-          context.stroke();
+          context
+            ..strokeStyle = '#f00'
+            ..lineWidth = 5 * game.zoom
+            ..beginPath()
+            ..moveTo(center.x, center.y)
+            ..lineTo(targetPosition.x, targetPosition.y)
+            ..stroke();
   
-          context.strokeStyle = '#fff';
-          context.lineWidth = 3;
-          context.beginPath();
-          context.moveTo(center.x, center.y);
-          context.lineTo(targetPosition.x, targetPosition.y);
-          context.stroke();
+          context
+            ..strokeStyle = '#fff'
+            ..lineWidth = 3 * game.zoom
+            ..beginPath()
+            ..moveTo(center.x, center.y)
+            ..lineTo(targetPosition.x, targetPosition.y)
+            ..stroke();
         }
         else if (buildings[i].type == "shield") {
-          context.save();
-          context.globalAlpha = .5;
-          context.drawImageScaled(engine.images["forcefield"], center.x - 168 * game.zoom, center.y - 168 * game.zoom, 336 * game.zoom, 336 * game.zoom);
-          context.restore();
+          context
+            ..save()
+            ..globalAlpha = .5
+            ..drawImageScaled(engine.images["forcefield"], center.x - 168 * game.zoom, center.y - 168 * game.zoom, 336 * game.zoom, 336 * game.zoom)
+            ..restore();
         }
         else if (buildings[i].type == "terp") {
           Vector targetPosition = buildings[i].weaponTargetPosition.tiled2screen();
   
           context
             ..strokeStyle = '#f00'
-            ..lineWidth = 4
+            ..lineWidth = 4 * game.zoom
             ..beginPath()
             ..moveTo(center.x, center.y)
             ..lineTo(targetPosition.x + 8, targetPosition.y + 8)
@@ -914,7 +919,7 @@ class Building {
   
           context
             ..strokeStyle = '#fff'
-            ..lineWidth = 2
+            ..lineWidth = 2 * game.zoom
             ..beginPath()
             ..moveTo(center.x, center.y)
             ..lineTo(targetPosition.x + 8, targetPosition.y + 8)
