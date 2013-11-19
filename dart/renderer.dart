@@ -137,7 +137,7 @@ class Renderer {
           Vector realPosition = displayObject.position.real2screen();
 
           if (isVisible(realPosition, new Vector(displayObject.radius * displayObject.scale * game.zoom, displayObject.radius * displayObject.scale * game.zoom))) {
-            context.lineWidth = displayObject.lineWidth;
+            context.lineWidth = displayObject.lineWidth * game.zoom;
             context.strokeStyle = displayObject.color;
             context.beginPath();
             context.arc(realPosition.x, realPosition.y, displayObject.radius * displayObject.scale * game.zoom, 0, PI * 2, true);
@@ -151,7 +151,7 @@ class Renderer {
           Vector realPositionFrom = displayObject.from.real2screen();
           Vector realPositionTo = displayObject.to.real2screen();
 
-          context.lineWidth = displayObject.lineWidth;
+          context.lineWidth = displayObject.lineWidth * game.zoom;
           context.strokeStyle = displayObject.color;
 
           context.beginPath();
