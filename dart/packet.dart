@@ -63,12 +63,12 @@ class Packet {
   static void removeWithTarget(building) {
     for (int i = packets.length - 1; i >= 0; i--) {
       if (packets[i].currentTarget == building || packets[i].target == building) {
-        packets.removeAt(i);
+        packets[i].remove = true;
       }
     }
     for (int i = queue.length - 1; i >= 0; i--) {
       if (queue[i].currentTarget == building || queue[i].target == building) {
-        queue.removeAt(i);
+        queue[i].remove = true;
       }
     }
   }
