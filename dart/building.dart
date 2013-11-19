@@ -830,14 +830,14 @@ class Building {
         if (buildings[i].type == "analyzer") {
           Vector targetPosition = buildings[i].weaponTargetPosition.real2screen();
           context.strokeStyle = '#00f';
-          context.lineWidth = 4;
+          context.lineWidth = 5;
           context.beginPath();
           context.moveTo(center.x, center.y);
           context.lineTo(targetPosition.x, targetPosition.y);
           context.stroke();
   
           context.strokeStyle = '#fff';
-          context.lineWidth = 2;
+          context.lineWidth = 3;
           context.beginPath();
           context.moveTo(center.x, center.y);
           context.lineTo(targetPosition.x, targetPosition.y);
@@ -846,14 +846,14 @@ class Building {
         else if (buildings[i].type == "beam") {
           Vector targetPosition = buildings[i].weaponTargetPosition.real2screen();
           context.strokeStyle = '#f00';
-          context.lineWidth = 4;
+          context.lineWidth = 5;
           context.beginPath();
           context.moveTo(center.x, center.y);
           context.lineTo(targetPosition.x, targetPosition.y);
           context.stroke();
   
           context.strokeStyle = '#fff';
-          context.lineWidth = 2;
+          context.lineWidth = 3;
           context.beginPath();
           context.moveTo(center.x, center.y);
           context.lineTo(targetPosition.x, targetPosition.y);
