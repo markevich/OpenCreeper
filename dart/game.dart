@@ -426,31 +426,32 @@ class Game {
   void copyTerrain() {
     engine.renderer["levelfinal"].clear();
 
-    Vector delta = new Vector(0,0);
-    var left = scroll.x * tileSize - (engine.width / 2) * (1 / zoom);
-    var top = scroll.y * tileSize - (engine.height / 2) * (1 / zoom);
-    if (left < 0) {
-      delta.x = -left * zoom;
-      left = 0;
+    var targetLeft = 0;
+    var targetTop = 0;
+    var sourceLeft = scroll.x * tileSize - engine.halfWidth / zoom;
+    var sourceTop = scroll.y * tileSize - engine.halfHeight / zoom;
+    if (sourceLeft < 0) {
+      targetLeft = -sourceLeft * zoom;
+      sourceLeft = 0;
     }
-    if (top < 0) {
-      delta.y = -top * zoom;
-      top = 0;
-    }
-
-    Vector delta2 = new Vector(0, 0);
-    var width = engine.width * (1 / zoom);
-    var height = engine.height * (1 / zoom);
-    if (left + width > world.size.x * tileSize) {
-      delta2.x = (left + width - world.size.x * tileSize) * zoom;
-      width = world.size.x * tileSize - left;
-    }
-    if (top + height > world.size.y * tileSize) {
-      delta2.y = (top + height - world.size.y * tileSize) * zoom;
-      height = world.size.y * tileSize - top ;
+    if (sourceTop < 0) {
+      targetTop = -sourceTop * zoom;
+      sourceTop = 0;
     }
 
-    engine.renderer["levelfinal"].context.drawImageScaledFromSource(engine.renderer["levelbuffer"].view, left, top, width, height, delta.x, delta.y, engine.width - delta2.x, engine.height - delta2.y);
+    var targetWidth = engine.width;
+    var targetHeight = engine.height;
+    var sourceWidth = engine.width / zoom;
+    var sourceHeight = engine.height / zoom;
+    if (sourceLeft + sourceWidth > world.size.x * tileSize) {
+      targetWidth -= (sourceLeft + sourceWidth - world.size.x * tileSize) * zoom;
+      sourceWidth = world.size.x * tileSize - sourceLeft;
+    }
+    if (sourceTop + sourceHeight > world.size.y * tileSize) {
+      targetHeight -= (sourceTop + sourceHeight - world.size.y * tileSize) * zoom;
+      sourceHeight = world.size.y * tileSize - sourceTop;
+    }
+    engine.renderer["levelfinal"].context.drawImageScaledFromSource(engine.renderer["levelbuffer"].view, sourceLeft, sourceTop, sourceWidth, sourceHeight, targetLeft, targetTop, targetWidth, targetHeight);
   }
 
   /**
@@ -1174,8 +1175,8 @@ class Game {
       
       /*Vector tp = game.getHoveredTilePosition();
       Vector tp2 = tp.tiled2screen();
-      engine.canvas["buffer"].context.strokeStyle = '#f0f';
-      engine.canvas["buffer"].context.strokeRect(tp2.x, tp2.y, 16 * zoom, 16 * zoom);*/
+      engine.renderer["buffer"].context.strokeStyle = '#f0f';
+      engine.renderer["buffer"].context.strokeRect(tp2.x, tp2.y, 16 * zoom, 16 * zoom);*/
     } 
     
     if (creeperDirty) {
