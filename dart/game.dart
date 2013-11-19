@@ -798,7 +798,7 @@ class Game {
   void drawRangeBoxes(Vector position, String type, num radius, num size) {
     CanvasRenderingContext2D context = engine.canvas["buffer"].context;
     
-    if (canBePlaced(position, size, null) && (type == "collector" || type == "cannon" || type == "mortar" || type == "shield" || type == "beam" || type == "terp")) {
+    if (canBePlaced(position, size, null) && (type == "collector" || type == "cannon" || type == "mortar" || type == "shield" || type == "beam" || type == "terp" || type == "analyzer")) {
 
       Vector positionCenter = new Vector(position.x * tileSize + 8, position.y * tileSize + 8);
       int positionHeight = game.world.tiles[position.x][position.y].height;
