@@ -85,22 +85,28 @@ class Spore {
 
     sprite.position += speed;
 
-    if (sprite.position.x > targetPosition.x - 2 && sprite.position.x < targetPosition.x + 2 && sprite.position.y > targetPosition.y - 2 && sprite.position.y < targetPosition.y + 2) {
+    if (sprite.position == targetPosition) {
       // if the target is reached explode and remove
       remove = true;
+      Vector targetPositionTiled = targetPosition.real2tiled();
       engine.playSound("explosion", targetPosition.real2tiled());
 
-      for (int i = (targetPosition.x ~/ game.tileSize) - 2; i < (targetPosition.x ~/ game.tileSize) + 2; i++) {
-        for (int j = (targetPosition.y ~/ game.tileSize) - 2; j < (targetPosition.y ~/ game.tileSize) + 2; j++) {
-          if (game.world.contains(new Vector(i, j))) {
-            num distance = pow((i * game.tileSize + game.tileSize / 2) - (targetPosition.x + game.tileSize), 2) + pow((j * game.tileSize + game.tileSize / 2) - (targetPosition.y + game.tileSize), 2);
-            if (distance < pow(game.tileSize, 2)) {
-              game.world.tiles[i][j].creep += .5;
-              game.creeperDirty = true;
+      for (int i = -2; i <= 2; i++) {
+        for (int j = -2; j <= 2; j++) {
+          
+          Vector tilePosition = targetPositionTiled + new Vector(i, j);
+          
+          if (game.world.contains(tilePosition)) {
+            if ((tilePosition * game.tileSize + new Vector(8, 8)).distanceTo(targetPosition) <= game.tileSize * 2) {
+              Tile tile = game.world.getTile(tilePosition * game.tileSize);
+              
+              tile.creep += .5;
+              tile.newcreep += .5;
             }
           }
         }
       }
+      game.creeperDirty = true;
     }
   }
 }

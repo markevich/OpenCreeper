@@ -22,8 +22,10 @@ class UISymbol {
     engine.renderer["main"].view.style.cursor = "url('images/Normal.cur') 2 2, pointer";
   }
   
-  static void add(UISymbol symbol) {
+  static UISymbol add(Vector position, String imageID, int keyCode, int size, int packets, int radius) {
+    UISymbol symbol = new UISymbol(position, imageID, keyCode, size, packets, radius);
     symbols.add(symbol);
+    return symbol;
   }
   
   static void checkHovered(evt) {

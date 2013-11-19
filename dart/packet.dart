@@ -99,10 +99,8 @@ class Packet {
     
     sprite.position += speed;
 
-    Vector centerTarget = currentTarget.position;
-    if (sprite.position.x > centerTarget.x - 1 && sprite.position.x < centerTarget.x + 1 && sprite.position.y > centerTarget.y - 1 && sprite.position.y < centerTarget.y + 1) {
-      sprite.position = centerTarget;
-
+    if (sprite.position == currentTarget.position) {
+      
       // if the final node was reached deliver and remove
       if (currentTarget == target) {
         remove = true;
@@ -127,9 +125,7 @@ class Packet {
               if (target.type == "speed")
                 Packet.baseSpeed *= 1.01;
               if (target.type == "bomber") {
-                Ship ship = new Ship(new Vector(target.position.x, target.position.y), "bombership", "Bomber", target);
-                target.ship = ship;
-                Ship.add(ship);
+                target.ship = Ship.add(new Vector(target.position.x, target.position.y), "bombership", "Bomber", target);           
               }
             }
           }

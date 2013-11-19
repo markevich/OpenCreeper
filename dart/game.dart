@@ -244,10 +244,9 @@ class Game {
       }
     }
 
+    // create emitters
     int number = engine.randomInt(2, 3, seed);
-    for (var l = 0; l < number; l++) {
-      // create emitter
-      
+    for (var l = 0; l < number; l++) {    
       randomPosition = new Vector(
           engine.randomInt(0, world.size.x - 3, seed + engine.randomInt(1, 1000, seed + l)),
           engine.randomInt(0, world.size.y - 3, seed + engine.randomInt(1, 1000, seed + 1 + l)));
@@ -264,9 +263,9 @@ class Game {
       }
     }
 
+    // create sporetowers
     number = engine.randomInt(1, 2, seed + 1);
     for (var l = 0; l < number; l++) {
-      // create sporetower
       randomPosition = new Vector(
           engine.randomInt(0, world.size.x - 3, seed + 3 + engine.randomInt(1, 1000, seed + 2 + l)),
           engine.randomInt(0, world.size.y - 3, seed + 3 + engine.randomInt(1, 1000, seed + 3 + l)));
@@ -285,17 +284,17 @@ class Game {
   }
 
   void setupUI() {
-    UISymbol.add(new UISymbol(new Vector(0, 0), "cannon", KeyCode.Q, 3, 25, 10));
-    UISymbol.add(new UISymbol(new Vector(81, 0), "collector", KeyCode.W, 3, 5, 6));
-    UISymbol.add(new UISymbol(new Vector(2 * 81, 0), "reactor", KeyCode.E, 3, 50, 0));
-    UISymbol.add(new UISymbol(new Vector(3 * 81, 0), "storage", KeyCode.R, 3, 8, 0));
-    UISymbol.add(new UISymbol(new Vector(4 * 81, 0), "shield", KeyCode.T, 3, 75, 10));
-    UISymbol.add(new UISymbol(new Vector(5 * 81, 0), "analyzer", KeyCode.Z, 3, 80, 10));
-    UISymbol.add(new UISymbol(new Vector(0, 56), "relay", KeyCode.A, 3, 10, 8));
-    UISymbol.add(new UISymbol(new Vector(81, 56), "mortar", KeyCode.S, 3, 40, 14));
-    UISymbol.add(new UISymbol(new Vector(2 * 81, 56), "beam", KeyCode.D, 3, 20, 14));
-    UISymbol.add(new UISymbol(new Vector(3 * 81, 56), "bomber", KeyCode.F, 3, 75, 0));
-    UISymbol.add(new UISymbol(new Vector(4 * 81, 56), "terp", KeyCode.G, 3, 60, 14));
+    UISymbol.add(new Vector(0, 0), "cannon", KeyCode.Q, 3, 25, 10);
+    UISymbol.add(new Vector(81, 0), "collector", KeyCode.W, 3, 5, 6);
+    UISymbol.add(new Vector(2 * 81, 0), "reactor", KeyCode.E, 3, 50, 0);
+    UISymbol.add(new Vector(3 * 81, 0), "storage", KeyCode.R, 3, 8, 0);
+    UISymbol.add(new Vector(4 * 81, 0), "shield", KeyCode.T, 3, 75, 10);
+    UISymbol.add(new Vector(5 * 81, 0), "analyzer", KeyCode.Z, 3, 80, 10);
+    UISymbol.add(new Vector(0, 56), "relay", KeyCode.A, 3, 10, 8);
+    UISymbol.add(new Vector(81, 56), "mortar", KeyCode.S, 3, 40, 14);
+    UISymbol.add(new Vector(2 * 81, 56), "beam", KeyCode.D, 3, 20, 14);
+    UISymbol.add(new Vector(3 * 81, 56), "bomber", KeyCode.F, 3, 75, 0);
+    UISymbol.add(new Vector(4 * 81, 56), "terp", KeyCode.G, 3, 60, 14);
   }
 
   /**
@@ -303,9 +302,9 @@ class Game {
    * This method is only called ONCE at the start of the game.
    */
   void drawTerrain() {
-    for (int i = 0; i < 10; i++) {
+    /*for (int i = 0; i < 10; i++) {
       engine.renderer["level$i"].clear();
-    }
+    }*/
 
     // 1st pass - draw masks
     for (int i = 0; i < world.size.x; i++) {
@@ -566,7 +565,6 @@ class Game {
    */
   List getNeighbours(Building node, Building target) {
     List neighbours = new List();
-    Vector centerI, centerNode;
     
     for (int i = 0; i < Building.buildings.length; i++) {
       // must not be the same building
@@ -575,15 +573,13 @@ class Game {
         if (Building.buildings[i].status == "IDLE") {
           // it must either be the target or be built
           if (Building.buildings[i] == target || (Building.buildings[i].built && (Building.buildings[i].type == "collector" || Building.buildings[i].type == "relay"))) {
-              centerI = Building.buildings[i].position;
-              centerNode = node.position;
-              num distance = centerNode.distanceTo(centerI);
 
               int allowedDistance = 10 * tileSize;
               if (node.type == "relay" && Building.buildings[i].type == "relay") {
                 allowedDistance = 20 * tileSize;
               }
-              if (distance <= allowedDistance) {
+              
+              if (node.position.distanceTo(Building.buildings[i].position) <= allowedDistance) {
                 neighbours.add(Building.buildings[i]);
               }
           }

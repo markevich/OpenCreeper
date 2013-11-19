@@ -53,7 +53,7 @@ class Projectile {
 
     sprite.position += speed;
 
-    if (sprite.position.x > targetPosition.x - 2 && sprite.position.x < targetPosition.x + 2 && sprite.position.y > targetPosition.y - 2 && sprite.position.y < targetPosition.y + 2) {
+    if (sprite.position == targetPosition) {
       // if the target is reached smoke and remove
       remove = true;
 

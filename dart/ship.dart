@@ -31,8 +31,10 @@ class Ship {
     ships.clear();
   }
   
-  static void add(Ship ship) {
+  static Ship add(Vector position, String imageID, String type, Building home) {
+    Ship ship = new Ship(position, imageID, type, home);
     ships.add(ship);
+    return ship;
   }
   
   static void update() {

@@ -64,7 +64,7 @@ class Shell {
     sprite.position += speed;
 
     // if the target is reached explode and remove
-     if (sprite.position == targetPosition) {
+    if (sprite.position == targetPosition) {
       remove = true;
 
       Vector targetPositionTiled = targetPosition.real2tiled();

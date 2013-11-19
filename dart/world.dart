@@ -53,7 +53,7 @@ class Tile {
   int height, index, terraformTarget, terraformProgress;
 
   Tile() {
-    index = -1;
+    index = -1; // TODO: unused, maybe remove
     creep = 0;
     newcreep = 0;
     collector = null;
