@@ -576,7 +576,7 @@ class Game {
         // must be idle
         if (Building.buildings[i].status == "IDLE") {
           // it must either be the target or be built
-          if (Building.buildings[i] == target || Building.buildings[i].built) {
+          if (Building.buildings[i] == target || (Building.buildings[i].built && (Building.buildings[i].type == "collector" || Building.buildings[i].type == "relay"))) {
               centerI = Building.buildings[i].position;
               centerNode = node.position;
               num distance = centerNode.distanceTo(centerI);
@@ -1071,61 +1071,65 @@ class Game {
   
           // draw lines to other buildings
           for (int i = 0; i < Building.buildings.length; i++) {
-            Vector center = Building.buildings[i].position;
-            Vector drawCenter = center.real2screen();
+            if (Building.buildings[i].type == "collector" || Building.buildings[i].type == "relay" || Building.buildings[i].type == "base") {
+              Vector center = Building.buildings[i].position;
+              Vector drawCenter = center.real2screen();
+    
+              int allowedDistance = 10 * tileSize;
+              if (Building.buildings[i].type == "relay" && UISymbol.activeSymbol.imageID == "relay") {
+                allowedDistance = 20 * tileSize;
+              }
   
-            int allowedDistance = 10 * tileSize;
-            if (Building.buildings[i].type == "relay" && UISymbol.activeSymbol.imageID == "relay") {
-              allowedDistance = 20 * tileSize;
-            }
-
-            if (drawCenter.distanceTo(positionScrolledCenter) <= allowedDistance * zoom) {
-              Vector lineToTarget = positionScrolledCenter;
-              context
-                ..strokeStyle = '#000'
-                ..lineWidth = 3 * game.zoom
-                ..beginPath()
-                ..moveTo(drawCenter.x, drawCenter.y)
-                ..lineTo(lineToTarget.x, lineToTarget.y)
-                ..stroke();
-  
-              context
-                ..strokeStyle = '#0f0'
-                ..lineWidth = 2 * game.zoom
-                ..beginPath()
-                ..moveTo(drawCenter.x, drawCenter.y)
-                ..lineTo(lineToTarget.x, lineToTarget.y)
-                ..stroke();
+              if (drawCenter.distanceTo(positionScrolledCenter) <= allowedDistance * zoom) {
+                Vector lineToTarget = positionScrolledCenter;
+                context
+                  ..strokeStyle = '#000'
+                  ..lineWidth = 3 * game.zoom
+                  ..beginPath()
+                  ..moveTo(drawCenter.x, drawCenter.y)
+                  ..lineTo(lineToTarget.x, lineToTarget.y)
+                  ..stroke();
+    
+                context
+                  ..strokeStyle = '#0f0'
+                  ..lineWidth = 2 * game.zoom
+                  ..beginPath()
+                  ..moveTo(drawCenter.x, drawCenter.y)
+                  ..lineTo(lineToTarget.x, lineToTarget.y)
+                  ..stroke();
+              }
             }
           }
           // draw lines to other ghosts
           for (int k = 0; k < ghosts.length; k++) {
             if (k != j) {
-              Vector center = new Vector(ghosts[k].x * tileSize + (tileSize / 2) * 3, ghosts[k].y * tileSize + (tileSize / 2) * 3);
-              Vector drawCenter = center.real2screen();
-  
-              int allowedDistance = 10 * tileSize;
-              if (UISymbol.activeSymbol.imageID == "relay") {
-                allowedDistance = 20 * tileSize;
-              }
-  
-              if (pow(center.x - positionScrolledCenter.x, 2) + pow(center.y - positionScrolledCenter.y, 2) <= pow(allowedDistance, 2)) {
-                Vector lineToTarget = positionScrolledCenter.real2screen();
-                context
-                  ..strokeStyle = '#000'
-                  ..lineWidth = 2
-                  ..beginPath()
-                  ..moveTo(drawCenter.x, drawCenter.y)
-                  ..lineTo(lineToTarget.x, lineToTarget.y)
-                  ..stroke();
-  
-                context
-                  ..strokeStyle = '#fff'
-                  ..lineWidth = 1
-                  ..beginPath()
-                  ..moveTo(drawCenter.x, drawCenter.y)
-                  ..lineTo(lineToTarget.x, lineToTarget.y)
-                  ..stroke();
+              if (UISymbol.activeSymbol.imageID == "collector" || UISymbol.activeSymbol.imageID == "relay") {
+                Vector center = new Vector(ghosts[k].x * tileSize + (tileSize / 2) * 3, ghosts[k].y * tileSize + (tileSize / 2) * 3);
+                Vector drawCenter = center.real2screen();
+    
+                int allowedDistance = 10 * tileSize;
+                if (UISymbol.activeSymbol.imageID == "relay") {
+                  allowedDistance = 20 * tileSize;
+                }
+    
+                if (pow(center.x - positionScrolledCenter.x, 2) + pow(center.y - positionScrolledCenter.y, 2) <= pow(allowedDistance, 2)) {
+                  Vector lineToTarget = positionScrolledCenter.real2screen();
+                  context
+                    ..strokeStyle = '#000'
+                    ..lineWidth = 2
+                    ..beginPath()
+                    ..moveTo(drawCenter.x, drawCenter.y)
+                    ..lineTo(lineToTarget.x, lineToTarget.y)
+                    ..stroke();
+    
+                  context
+                    ..strokeStyle = '#fff'
+                    ..lineWidth = 1
+                    ..beginPath()
+                    ..moveTo(drawCenter.x, drawCenter.y)
+                    ..lineTo(lineToTarget.x, lineToTarget.y)
+                    ..stroke();
+                }
               }
             }
           }
