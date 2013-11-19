@@ -64,9 +64,10 @@ class Layer {
   
   static const SPORE = const Layer._internal(7);
   static const PROJECTILE = const Layer._internal(7);
-  static const SHELL = const Layer._internal(7);
+  static const SHELL = const Layer._internal(7);  
+  static const SHIP = const Layer._internal(7);
+  static const BUILDINGFLYING = const Layer._internal(7);
   
-  static const SHIP = const Layer._internal(6);
   static const SMOKE = const Layer._internal(6);
   static const EXPLOSION = const Layer._internal(6);
   

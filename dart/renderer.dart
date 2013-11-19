@@ -27,6 +27,10 @@ class Renderer {
 
   void addDisplayObject(DisplayObject displayObject) {
     displayObjects.add(displayObject);
+    sortDisplayObjects();
+  }
+  
+  void sortDisplayObjects() {
     displayObjects.sort((DisplayObject a, DisplayObject b) {
       return a.layer - b.layer;
     });

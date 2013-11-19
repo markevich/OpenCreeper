@@ -300,6 +300,8 @@ class Building {
       }
       if (flightCounter == 25) {
         status = "MOVING";
+        sprite.layer = Layer.BUILDINGFLYING;
+        engine.canvas["buffer"].sortDisplayObjects();
       }
     }
     
@@ -315,6 +317,8 @@ class Building {
         targetSymbol.visible = false;
         updateDisplayObjects();
         Connection.add(this);
+        sprite.layer = Layer.BUILDING;
+        engine.canvas["buffer"].sortDisplayObjects();
       }
     }
 
