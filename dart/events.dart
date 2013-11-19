@@ -12,8 +12,7 @@ void onMouseMove(MouseEvent evt) {
 }
 
 void onMouseMoveGUI(MouseEvent evt) {
-  engine.updateMouseGUI(evt);
-  UISymbol.checkHovered();
+  UISymbol.checkHovered(evt);
 }
 
 void onKeyDown(KeyboardEvent evt) {

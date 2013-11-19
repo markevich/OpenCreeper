@@ -15,7 +15,7 @@ class Mouse {
 class Engine {
   num animationRequest, TPS = 60; // TPS = ticks per second
   int width, height, halfWidth, halfHeight;
-  Mouse mouse = new Mouse(), mouseGUI = new Mouse();
+  Mouse mouse = new Mouse();
   Map renderer = new Map(), sounds = new Map(), images = new Map();
   Timer resizeTimer;
 
@@ -73,29 +73,29 @@ class Engine {
     querySelector('#deactivate').onClick.listen((event) => Building.deactivate());
     querySelector('#activate').onClick.listen((event) => Building.activate());
 
-    CanvasElement mainCanvas = renderer["main"].view;
-    CanvasElement guiCanvas = renderer["gui"].view;
-    mainCanvas.onMouseMove.listen((event) => onMouseMove(event));
-    mainCanvas.onDoubleClick.listen((event) => onDoubleClick(event));
-    mainCanvas
+    renderer["main"].view
+      ..onMouseMove.listen((event) => onMouseMove(event))
+      ..onDoubleClick.listen((event) => onDoubleClick(event))
       ..onMouseDown.listen((event) => onMouseDown(event))
-      ..onMouseUp.listen((event) => onMouseUp(event));
+      ..onMouseUp.listen((event) => onMouseUp(event))
+      ..onMouseWheel.listen((event) => onMouseScroll(event));
     // FIXME: will be implemented in M5: https://code.google.com/p/dart/issues/detail?id=9852
     //mainCanvas
     //  ..onMouseEnter.listen((event) => onEnter)
     //  ..onMouseLeave.listen((event) => onLeave);
-    mainCanvas.onMouseWheel.listen((event) => onMouseScroll(event));
 
-    guiCanvas.onMouseMove.listen((event) => onMouseMoveGUI(event));
-    guiCanvas.onClick.listen((event) => onClickGUI(event));
-    //guiCanvas.onMouseLeave.listen((event) => onLeaveGUI);
+    renderer["gui"].view
+      ..onMouseMove.listen((event) => onMouseMoveGUI(event))
+      ..onClick.listen((event) => onClickGUI(event));
+      //..onMouseLeave.listen((event) => onLeaveGUI);
 
     document
       ..onKeyDown.listen((event) => onKeyDown(event))
-      ..onKeyUp.listen((event) => onKeyUp(event));
-    document.onContextMenu.listen((event) => event.preventDefault());
+      ..onKeyUp.listen((event) => onKeyUp(event))
+      ..onContextMenu.listen((event) => event.preventDefault());
 
-    window..onResize.listen((event) => onResize(event));
+    window
+      ..onResize.listen((event) => onResize(event));
   }
 
   /**
@@ -162,18 +162,10 @@ class Engine {
   void updateMouse(MouseEvent evt) {
     mouse.position.x = (evt.client.x - renderer["main"].view.getBoundingClientRect().left).toInt();
     mouse.position.y = (evt.client.y - renderer["main"].view.getBoundingClientRect().top).toInt();
-    Vector position = null;
     if (game != null) {
-      position = game.getHoveredTilePosition();
-      mouse.dragEnd = new Vector(position.x, position.y);
+      mouse.dragEnd = game.getHoveredTilePosition();
       game.updateTerraformInfo();   
     }
-    /*querySelector("#debug").innerHtml = "Mouse: ${engine.mouse} - Position: ${position}";*/
-  }
-
-  void updateMouseGUI(MouseEvent evt) {
-    mouseGUI.position.x = (evt.client.x - renderer["gui"].view.getBoundingClientRect().left).toInt();
-    mouseGUI.position.y = (evt.client.y - renderer["gui"].view.getBoundingClientRect().top).toInt();
   }
  
   int randomInt(num from, num to, [num seed]) {
