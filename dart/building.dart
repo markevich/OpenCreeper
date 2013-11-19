@@ -57,7 +57,7 @@ class Building {
       maxEnergy = 20;
       canMove = true;
       needsEnergy = true;
-      weaponRadius = 14;
+      weaponRadius = 20;
     }
     else if (type == "shield") {
       maxHealth = 1; // 75
@@ -105,7 +105,7 @@ class Building {
     else if (type == "beam") {
       maxHealth = 1; // 20
       maxEnergy = 10;
-      weaponRadius = 14;
+      weaponRadius = 20;
       canMove = true;
       needsEnergy = true;
     }

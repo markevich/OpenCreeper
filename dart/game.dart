@@ -292,9 +292,9 @@ class Game {
     UISymbol.add(new Vector(5 * 81, 0), "analyzer", KeyCode.Z, 3, 80, 10);
     UISymbol.add(new Vector(0, 56), "relay", KeyCode.A, 3, 10, 8);
     UISymbol.add(new Vector(81, 56), "mortar", KeyCode.S, 3, 40, 14);
-    UISymbol.add(new Vector(2 * 81, 56), "beam", KeyCode.D, 3, 20, 14);
+    UISymbol.add(new Vector(2 * 81, 56), "beam", KeyCode.D, 3, 20, 20);
     UISymbol.add(new Vector(3 * 81, 56), "bomber", KeyCode.F, 3, 75, 0);
-    UISymbol.add(new Vector(4 * 81, 56), "terp", KeyCode.G, 3, 60, 14);
+    UISymbol.add(new Vector(4 * 81, 56), "terp", KeyCode.G, 3, 60, 20);
   }
 
   /**
