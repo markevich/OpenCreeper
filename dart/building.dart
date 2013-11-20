@@ -576,28 +576,25 @@ class Building {
       }
 
       if (type == "terp") {
-        // find lowest target
+        // find lowest tile
         if (weaponTargetPosition == null) {
-          // find lowest tile
-          Vector target = null;
           int lowestTile = 10;
-          var tiledPosition = position.real2tiled();
-          for (int i = tiledPosition.x - weaponRadius; i <= tiledPosition.x + weaponRadius; i++) {
-            for (int j = tiledPosition.y - weaponRadius; j <= tiledPosition.y + weaponRadius; j++) {
+          
+          var positionTiled = position.real2tiled();
+          for (int i = -weaponRadius; i <= weaponRadius; i++) {
+            for (int j = -weaponRadius; j <= weaponRadius; j++) {
 
-              if (game.world.contains(new Vector(i, j))) {
-                var distance = pow((i * game.tileSize + game.tileSize / 2) - position.x, 2) + pow((j * game.tileSize + game.tileSize / 2) - position.y, 2);
-                var tileHeight = game.world.tiles[i][j].height;
-
-                if (distance <= pow(weaponRadius * game.tileSize, 2) && game.world.tiles[i][j].terraformTarget > -1 && tileHeight <= lowestTile) {
+              Vector tilePosition = positionTiled + new Vector(i, j);
+              
+              if (game.world.contains(tilePosition) && game.world.tiles[tilePosition.x][tilePosition.y].terraformTarget > -1) {
+                int tileHeight = game.world.tiles[tilePosition.x][tilePosition.y].height;
+                
+                if (tileHeight <= lowestTile && (tilePosition * game.tileSize + new Vector(8, 8)).distanceTo(position) <= weaponRadius * game.tileSize) {
                   lowestTile = tileHeight;
-                  target = new Vector(i, j);
+                  weaponTargetPosition = new Vector(tilePosition.x, tilePosition.y);
                 }
               }
             }
-          }
-          if (target != null) {
-            weaponTargetPosition = target;
           }
         } else {
           if (energyCounter >= 20) {
