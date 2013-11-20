@@ -3,6 +3,7 @@ part of creeper;
 class Mouse {
   Vector position = new Vector.empty();
   bool active = true;
+  int buttonPressed = 0;
   Vector dragStart, dragEnd;
   
   Mouse();

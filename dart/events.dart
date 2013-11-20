@@ -9,6 +9,19 @@ void onMouseMove(MouseEvent evt) {
     game.scrollingUp = (engine.mouse.position.y == 0);
     game.scrollingDown = (engine.mouse.position.y == engine.height -1);
   }
+  
+  // flag for terraforming
+  if (engine.mouse.buttonPressed == 1) {
+    Vector hoveredTilePosition = game.getHoveredTilePosition();   
+    if (game.mode == "TERRAFORM") {
+      if (game.world.contains(hoveredTilePosition)) {
+        if (game.world.tiles[hoveredTilePosition.x][hoveredTilePosition.y].terraformTarget != game.terraformingHeight) {
+          game.world.tiles[hoveredTilePosition.x][hoveredTilePosition.y].terraformTarget = game.terraformingHeight;
+          game.world.tiles[hoveredTilePosition.x][hoveredTilePosition.y].terraformProgress = 0;
+        }
+      }
+    }
+  }
 }
 
 void onMouseMoveGUI(MouseEvent evt) {
@@ -189,26 +202,36 @@ void onDoubleClick(MouseEvent evt) {
 }
 
 void onMouseDown(MouseEvent evt) {
-  if (evt.which == 1) {
+  engine.mouse.buttonPressed = evt.which;
+  
+  if (evt.which == 1) {   
+    Vector hoveredTilePosition = game.getHoveredTilePosition();
+    
     if (engine.mouse.dragStart == null) {
-      engine.mouse.dragStart = game.getHoveredTilePosition();
+      engine.mouse.dragStart = hoveredTilePosition;
+    }  
+    
+    // flag for terraforming 
+    if (game.mode == "TERRAFORM") {
+      if (game.world.contains(hoveredTilePosition)) {
+        if (game.world.tiles[hoveredTilePosition.x][hoveredTilePosition.y].terraformTarget != game.terraformingHeight) {
+          game.world.tiles[hoveredTilePosition.x][hoveredTilePosition.y].terraformTarget = game.terraformingHeight;
+          game.world.tiles[hoveredTilePosition.x][hoveredTilePosition.y].terraformProgress = 0;
+        }
+      }
     }
   }
 }
 
 void onMouseUp(MouseEvent evt) {
+  engine.mouse.buttonPressed = 0;
+  
   if (evt.which == 1) {
 
-    Vector position = game.getHoveredTilePosition();
+    Vector hoveredTilePosition = game.getHoveredTilePosition();
 
-    // set terraforming target
-    if (game.mode == "TERRAFORM") {
-      game.world.tiles[position.x][position.y].terraformTarget = game.terraformingHeight;
-      game.world.tiles[position.x][position.y].terraformProgress = 0;
-    }
-
-    Ship.control(position);
-    Building.reposition(position);
+    Ship.control(hoveredTilePosition);
+    Building.reposition(hoveredTilePosition);
     Building.select();
 
     engine.mouse.dragStart = null;
