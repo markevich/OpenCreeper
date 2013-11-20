@@ -2439,7 +2439,7 @@ initHooks_closure1: {"": "Closure;prototypeForTag_2",
 }}],
 ["creeper", "main.dart", , U, {
 onMouseMove: function(evt) {
-  var t1, t2, t3;
+  var t1, t2, t3, hoveredTilePosition;
   $.engine.updateMouse$1(evt);
   t1 = $.game;
   if (t1 != null) {
@@ -2455,6 +2455,22 @@ onMouseMove: function(evt) {
     t2 = $.game;
     t3 = $.engine;
     t2.scrollingDown = J.$eq(t3.mouse.position.y, J.$sub$n(t3.height, 1));
+  }
+  if ($.engine.mouse.buttonPressed === 1) {
+    hoveredTilePosition = $.game.getHoveredTilePosition$0();
+    t1 = $.game;
+    if (t1.mode === "TERRAFORM") {
+      t1 = t1.world;
+      if (t1.contains$1(t1, hoveredTilePosition)) {
+        t1 = $.game.world.tiles;
+        t2 = hoveredTilePosition.x;
+        if (t2 >>> 0 !== t2 || t2 >= t1.length)
+          throw H.ioore(t1, t2);
+        t2 = J.$index$asx(t1[t2], hoveredTilePosition.y);
+        t1 = $.game.tileSize;
+        t2.flagTerraform$1(new U.Vector(J.$mul$n(hoveredTilePosition.x, t1), J.$mul$n(hoveredTilePosition.y, t1)));
+      }
+    }
   }
 },
 
@@ -2483,7 +2499,7 @@ onKeyDown: function(evt) {
     U.UISymbol_deselect();
     U.Building_deselect();
     U.Ship_deselect();
-    t2 = $.engine.canvas;
+    t2 = $.engine.renderer;
     J.set$cursor$x(J.get$style$x(J.get$view$x(t2.$index(t2, "main"))), "url('images/Normal.cur') 2 2, pointer");
   }
   if (t1.get$keyCode(evt) === 37)
@@ -2496,8 +2512,7 @@ onKeyDown: function(evt) {
     $.game.scrollingDown = true;
   position = $.game.getHoveredTilePosition$0();
   if (t1.get$keyCode(evt) === 86) {
-    t2 = U.Explosion$(new U.Vector(J.$add$ns(J.$mul$n(position.x, $.game.tileSize), 8), J.$add$ns(J.$mul$n(position.y, $.game.tileSize), 8)));
-    $.get$Explosion_explosions().push(t2);
+    U.Explosion_add(new U.Vector(J.$add$ns(J.$mul$n(position.x, $.game.tileSize), 8), J.$add$ns(J.$mul$n(position.y, $.game.tileSize), 8)));
     $.engine.playSound$2("explosion", position);
   }
   if (t1.get$keyCode(evt) === 78) {
@@ -2628,12 +2643,7 @@ onKeyDown: function(evt) {
       t3 = position.x;
       if (t3 >>> 0 !== t3 || t3 >= t2.length)
         throw H.ioore(t2, t3);
-      J.$index$asx(t2[t3], position.y).set$terraformTarget(-1);
-      t3 = $.game.world.tiles;
-      t2 = position.x;
-      if (t2 >>> 0 !== t2 || t2 >= t3.length)
-        throw H.ioore(t3, t2);
-      J.$index$asx(t3[t2], position.y).set$terraformProgress(0);
+      J.$index$asx(t2[t3], position.y).unflagTerraform$0();
     }
     t2 = t1.get$keyCode(evt);
     if (typeof t2 !== "number")
@@ -2654,6 +2664,7 @@ onKeyDown: function(evt) {
       t1 = $.game;
       if (t1.terraformingHeight === -1)
         t1.terraformingHeight = 9;
+      t1.tfNumber.frame = t1.terraformingHeight;
     }
   }
 },
@@ -2678,34 +2689,36 @@ onClickGUI: function(evt) {
 },
 
 onMouseDown: function(evt) {
-  var position, t1;
-  if (J.get$which$x(evt) === 1) {
-    position = $.game.getHoveredTilePosition$0();
+  var hoveredTilePosition, t1, t2;
+  $.engine.mouse.buttonPressed = J.get$which$x(evt);
+  if (evt.which === 1) {
+    hoveredTilePosition = $.game.getHoveredTilePosition$0();
     t1 = $.engine.mouse;
     if (t1.dragStart == null)
-      t1.dragStart = new U.Vector(position.x, position.y);
+      t1.dragStart = hoveredTilePosition;
+    t1 = $.game;
+    if (t1.mode === "TERRAFORM") {
+      t1 = t1.world;
+      if (t1.contains$1(t1, hoveredTilePosition)) {
+        t1 = $.game.world.tiles;
+        t2 = hoveredTilePosition.x;
+        if (t2 >>> 0 !== t2 || t2 >= t1.length)
+          throw H.ioore(t1, t2);
+        t2 = J.$index$asx(t1[t2], hoveredTilePosition.y);
+        t1 = $.game.tileSize;
+        t2.flagTerraform$1(new U.Vector(J.$mul$n(hoveredTilePosition.x, t1), J.$mul$n(hoveredTilePosition.y, t1)));
+      }
+    }
   }
 },
 
 onMouseUp: function(evt) {
-  var position, t1, t2, soundSuccess, i, building;
+  var hoveredTilePosition, t1, soundSuccess, i, t2;
+  $.engine.mouse.buttonPressed = 0;
   if (J.get$which$x(evt) === 1) {
-    position = $.game.getHoveredTilePosition$0();
-    t1 = $.game;
-    if (t1.mode === "TERRAFORM") {
-      t1 = t1.world.tiles;
-      t2 = position.x;
-      if (t2 >>> 0 !== t2 || t2 >= t1.length)
-        throw H.ioore(t1, t2);
-      J.$index$asx(t1[t2], position.y).set$terraformTarget($.game.terraformingHeight);
-      t2 = $.game.world.tiles;
-      t1 = position.x;
-      if (t1 >>> 0 !== t1 || t1 >= t2.length)
-        throw H.ioore(t2, t1);
-      J.$index$asx(t2[t1], position.y).set$terraformProgress(0);
-    }
-    U.Ship_control(position);
-    U.Building_reposition(position);
+    hoveredTilePosition = $.game.getHoveredTilePosition$0();
+    U.Ship_control(hoveredTilePosition);
+    U.Building_reposition(hoveredTilePosition);
     U.Building_select();
     $.engine.mouse.dragStart = null;
     t1 = $.UISymbol_activeSymbol;
@@ -2716,12 +2729,7 @@ onMouseUp: function(evt) {
           t1 = $.game.ghosts;
           if (i >= t1.length)
             throw H.ioore(t1, i);
-          t1 = t1[i];
-          t2 = $.UISymbol_activeSymbol.imageID;
-          position = new U.Vector(J.$mul$n(t1.x, 16), J.$mul$n(t1.y, 16));
-          t1 = new U.Vector(8, 8);
-          building = U.Building$(new U.Vector(J.$add$ns(position.x, t1.x), J.$add$ns(position.y, t1.y)), t2);
-          $.get$Building_buildings().push(building);
+          U.Building_add(t1[i], $.UISymbol_activeSymbol.imageID);
           soundSuccess = true;
         }
       t1 = $.engine;
@@ -2774,25 +2782,25 @@ doneResizing: function() {
   if (typeof height !== "number")
     throw height.$tdiv();
   t1.halfHeight = C.JSInt_methods.$tdiv(height, 2);
-  t1 = t1.canvas;
+  t1 = t1.renderer;
   t1.$index(t1, "main").updateRect$2(width, height);
-  t1 = $.engine.canvas;
+  t1 = $.engine.renderer;
   t1.$index(t1, "levelfinal").updateRect$2(width, height);
-  t1 = $.engine.canvas;
+  t1 = $.engine.renderer;
   t1.$index(t1, "buffer").updateRect$2(width, height);
-  t1 = $.engine.canvas;
+  t1 = $.engine.renderer;
   t1.$index(t1, "collection").updateRect$2(width, height);
-  t1 = $.engine.canvas;
+  t1 = $.engine.renderer;
   t1.$index(t1, "creeperbuffer").updateRect$2(width, height);
-  t1 = $.engine.canvas;
+  t1 = $.engine.renderer;
   t1.$index(t1, "creeper").updateRect$2(width, height);
-  t1 = $.engine.canvas;
+  t1 = $.engine.renderer;
   t1 = t1.$index(t1, "gui");
-  t2 = $.engine.canvas;
+  t2 = $.engine.renderer;
   J.set$top$x(t1, J.get$offsetTop$x(J.get$view$x(t2.$index(t2, "gui"))));
-  t2 = $.engine.canvas;
+  t2 = $.engine.renderer;
   t2 = t2.$index(t2, "gui");
-  t1 = $.engine.canvas;
+  t1 = $.engine.renderer;
   J.set$left$x(t2, J.get$offsetLeft$x(J.get$view$x(t1.$index(t1, "gui"))));
   t1 = $.game;
   if (t1 != null) {
@@ -2807,7 +2815,77 @@ main: function() {
   $.engine.loadImages$0().then$1(new U.main_closure());
 },
 
-Building: {"": "Object;position>,scale,moveTargetPosition?,weaponTargetPosition@,speed,type>,status*,operating@,selected*,hovered@,built<,active@,canMove<,needsEnergy<,rotating?,health<,maxHealth<,energy<,maxEnergy<,healthRequests,energyRequests,rotation,targetAngle,weaponRadius<,size>,collectedEnergy,flightCounter,requestCounter,energyCounter,ship,sprite<,cannon,selectedCircle<,targetSymbol<",
+Building: {"": "Object;position>,scale,moveTargetPosition?,weaponTargetPosition@,speed,type>,status*,operating@,selected*,hovered@,built<,active@,canMove<,needsEnergy<,rotating?,health<,maxHealth<,energy<,maxEnergy<,healthRequests,energyRequests,rotation,targetAngle,weaponRadius<,size>,collectedEnergy,flightCounter,requestCounter,energyCounter,ship,sprite,cannon,selectedCircle<,targetSymbol<",
+  getNeighbours$1: function(target) {
+    var neighbours, i, t1, allowedDistance, t2, t3;
+    neighbours = P.List_List(null, null);
+    for (i = 0; i < $.get$Building_buildings().length; ++i) {
+      t1 = $.get$Building_buildings();
+      if (i >= t1.length)
+        throw H.ioore(t1, i);
+      if (!J.$eq(J.get$position$x(t1[i]), this.position)) {
+        t1 = $.get$Building_buildings();
+        if (i >= t1.length)
+          throw H.ioore(t1, i);
+        if (J.get$status$x(t1[i]) === "IDLE") {
+          t1 = $.get$Building_buildings();
+          if (i >= t1.length)
+            throw H.ioore(t1, i);
+          if (!J.$eq(t1[i], target)) {
+            t1 = $.get$Building_buildings();
+            if (i >= t1.length)
+              throw H.ioore(t1, i);
+            if (t1[i].get$built()) {
+              t1 = $.get$Building_buildings();
+              if (i >= t1.length)
+                throw H.ioore(t1, i);
+              if (J.get$type$x(t1[i]) !== "collector") {
+                t1 = $.get$Building_buildings();
+                if (i >= t1.length)
+                  throw H.ioore(t1, i);
+                t1 = J.get$type$x(t1[i]) === "relay";
+              } else
+                t1 = true;
+            } else
+              t1 = false;
+          } else
+            t1 = true;
+          if (t1) {
+            allowedDistance = 10 * $.game.tileSize;
+            if (this.type === "relay") {
+              t1 = $.get$Building_buildings();
+              if (i >= t1.length)
+                throw H.ioore(t1, i);
+              t1 = J.get$type$x(t1[i]) === "relay";
+            } else
+              t1 = false;
+            if (t1)
+              allowedDistance = 20 * $.game.tileSize;
+            t1 = this.position;
+            t2 = $.get$Building_buildings();
+            if (i >= t2.length)
+              throw H.ioore(t2, i);
+            t2 = J.get$position$x(t2[i]);
+            t3 = J.$sub$n(t1.x, J.get$x$x(t2));
+            if (typeof t3 !== "number")
+              H.throwExpression(new P.ArgumentError(t3));
+            t3 = Math.pow(t3, 2);
+            t2 = J.$sub$n(t1.y, t2.y);
+            if (typeof t2 !== "number")
+              H.throwExpression(new P.ArgumentError(t2));
+            t1 = Math.pow(t2, 2);
+            if (Math.sqrt(t3 + t1) <= allowedDistance) {
+              t1 = $.get$Building_buildings();
+              if (i >= t1.length)
+                throw H.ioore(t1, i);
+              neighbours.push(t1[i]);
+            }
+          }
+        }
+      }
+    }
+    return neighbours;
+  },
   updateDisplayObjects$0: function() {
     this.sprite.position = this.position;
     this.sprite.scale = this.scale;
@@ -2824,27 +2902,42 @@ Building: {"": "Object;position>,scale,moveTargetPosition?,weaponTargetPosition@
     if (t1 === "RISING") {
       t1 = this.flightCounter;
       if (t1 < 25) {
-        this.flightCounter = t1 + 1;
+        this.flightCounter = t1 + 1 * $.game.speed;
         t1 = this.scale;
         this.scale = new U.Vector(J.$mul$n(t1.x, 1.01), J.$mul$n(t1.y, 1.01));
         this.updateDisplayObjects$0();
       }
-      if (this.flightCounter === 25)
+      if (this.flightCounter >= 25) {
+        this.flightCounter = 25;
         this.status = "MOVING";
+        t1 = $.engine.renderer;
+        t1.$index(t1, "buffer").switchLayer$2(this.sprite, C.Layer_8);
+        if (this.cannon != null) {
+          t1 = $.engine.renderer;
+          t1.$index(t1, "buffer").switchLayer$2(this.cannon, C.Layer_9);
+        }
+      }
     } else if (t1 === "FALLING") {
       t1 = this.flightCounter;
       if (t1 > 0) {
-        this.flightCounter = t1 - 1;
+        this.flightCounter = t1 - 1 * $.game.speed;
         t1 = this.scale;
         this.scale = new U.Vector(J.$div$n(t1.x, 1.01), J.$div$n(t1.y, 1.01));
         this.updateDisplayObjects$0();
       }
-      if (this.flightCounter === 0) {
+      if (this.flightCounter <= 0) {
+        this.flightCounter = 0;
         this.status = "IDLE";
         this.scale = new U.Vector(1, 1);
         this.targetSymbol.visible = false;
         this.updateDisplayObjects$0();
         U.Connection_add(this);
+        t1 = $.engine.renderer;
+        t1.$index(t1, "buffer").switchLayer$2(this.sprite, C.Layer_3);
+        if (this.cannon != null) {
+          t1 = $.engine.renderer;
+          t1.$index(t1, "buffer").switchLayer$2(this.cannon, C.Layer_5);
+        }
       }
     }
     if (this.status === "MOVING") {
@@ -2900,7 +2993,7 @@ Building: {"": "Object;position>,scale,moveTargetPosition?,weaponTargetPosition@
   },
   shield$0: function() {
     var center, tiledPosition, i, t1, j, t2, t3, t4, distance, t5;
-    if (this.built && this.type === "shield" && this.status === "IDLE") {
+    if (this.built && this.operating && this.type === "shield" && this.status === "IDLE") {
       center = this.position;
       tiledPosition = center.real2tiled$0();
       for (i = J.$sub$n(tiledPosition.x, this.weaponRadius); t1 = J.getInterceptor$n(i), t1.$le(i, J.$add$ns(tiledPosition.x, this.weaponRadius)); i = t1.$add(i, 1))
@@ -2946,16 +3039,17 @@ Building: {"": "Object;position>,scale,moveTargetPosition?,weaponTargetPosition@
   },
   requestPacket$0: function() {
     if (this.active && this.status === "IDLE") {
-      this.requestCounter = this.requestCounter + 1;
-      if (this.requestCounter > 50) {
+      this.requestCounter = this.requestCounter + 1 * $.game.speed;
+      var t1 = this.requestCounter;
+      if (t1 >= 50) {
         if (this.type !== "base")
           if (this.maxHealth - this.health - this.healthRequests > 0) {
-            this.requestCounter = 0;
+            this.requestCounter = t1 - 50;
             U.Packet_queuePacket(this, "health");
           }
         if (this.needsEnergy && this.built)
           if (this.maxEnergy - this.energy - this.energyRequests > 0) {
-            this.requestCounter = 0;
+            this.requestCounter = this.requestCounter - 50;
             U.Packet_queuePacket(this, "energy");
           }
       }
@@ -3012,7 +3106,7 @@ Building: {"": "Object;position>,scale,moveTargetPosition?,weaponTargetPosition@
         if (packet.findRoute$0())
           $.get$Packet_packets().push(packet);
         else {
-          t1 = $.engine.canvas;
+          t1 = $.engine.renderer;
           t1.$index(t1, "buffer").removeDisplayObject$1(packet.sprite);
         }
       }
@@ -3028,7 +3122,7 @@ Building: {"": "Object;position>,scale,moveTargetPosition?,weaponTargetPosition@
     }
   },
   updateCollection$1: function(action) {
-    var height, centerBuilding, t1, t2, i, j, t3, tiledPosition, positionCurrent, positionCurrentCenter, t4, tileHeight, t5, k, t6, t7, heightK, centerBuildingK;
+    var height, centerBuilding, t1, t2, i, j, t3, tiledPosition, positionCurrent, positionCurrentCenter, t4, tileHeight, t5, k, t6, heightK, centerBuildingK;
     height = J.get$height$x($.game.world.getTile$1(this.position));
     centerBuilding = this.position;
     for (t1 = action === "remove", t2 = action === "add", i = -5; i < 7; ++i)
@@ -3098,26 +3192,24 @@ Building: {"": "Object;position>,scale,moveTargetPosition?,weaponTargetPosition@
                   throw H.ioore(t5, k);
                 t5 = J.get$position$x(t5[k]);
                 t4 = t4.tiles;
-                t6 = J.getInterceptor$x(t5);
-                t7 = J.$tdiv$n(t6.get$x(t5), 16);
-                if (t7 >>> 0 !== t7 || t7 >= t4.length)
-                  throw H.ioore(t4, t7);
-                heightK = J.get$height$x(J.$index$asx(t4[t7], J.$tdiv$n(t6.get$y(t5), 16)));
+                t6 = J.$tdiv$n(J.get$x$x(t5), 16);
+                if (t6 >>> 0 !== t6 || t6 >= t4.length)
+                  throw H.ioore(t4, t6);
+                heightK = J.get$height$x(J.$index$asx(t4[t6], J.$tdiv$n(t5.y, 16)));
                 t5 = $.get$Building_buildings();
                 if (k >= t5.length)
                   throw H.ioore(t5, k);
                 centerBuildingK = J.get$position$x(t5[k]);
-                t4 = J.getInterceptor$x(centerBuildingK);
-                t5 = J.$sub$n(positionCurrentCenter.x, t4.get$x(centerBuildingK));
-                if (typeof t5 !== "number")
-                  H.throwExpression(new P.ArgumentError(t5));
-                t5 = Math.pow(t5, 2);
-                t4 = J.$sub$n(positionCurrentCenter.y, t4.get$y(centerBuildingK));
+                t4 = J.$sub$n(positionCurrentCenter.x, J.get$x$x(centerBuildingK));
                 if (typeof t4 !== "number")
                   H.throwExpression(new P.ArgumentError(t4));
                 t4 = Math.pow(t4, 2);
+                t5 = J.$sub$n(positionCurrentCenter.y, centerBuildingK.y);
+                if (typeof t5 !== "number")
+                  H.throwExpression(new P.ArgumentError(t5));
+                t5 = Math.pow(t5, 2);
                 t6 = $.game.tileSize;
-                if (t5 + t4 < Math.pow(t6 * 6, 2))
+                if (t4 + t5 < Math.pow(t6 * 6, 2))
                   if (t3.$eq(tileHeight, heightK)) {
                     t4 = $.game.world.tiles;
                     t5 = positionCurrent.x;
@@ -3137,73 +3229,81 @@ Building: {"": "Object;position>,scale,moveTargetPosition?,weaponTargetPosition@
     $.game.drawCollection$0();
   },
   checkOperating$0: function() {
-    var center, t1, tiledPosition, i, target, lowestTile, j, t2, t3, t4, t5, tileHeight, t6, terraformElement, height, tilesToRedraw, targets, r, radius, dx, dy, absoluteDelta, turnRate, projectile, highestCreep, shell;
+    var t1, positionTiled, i, lowestTile, j, tilePosition, t2, tileHeight, t3, terraformElement, height, tilesToRedraw, t4, targets, targetPositionTiled, closestDistance, distance, dx, dy, absoluteDelta, turnRate, tiledPosition, target, highestCreep, t5, t6;
     this.operating = false;
-    if (this.needsEnergy && this.active && this.status === "IDLE") {
-      this.energyCounter = this.energyCounter + 1;
-      center = this.position;
-      if (this.type === "analyzer" && this.energy > 0)
+    if (this.needsEnergy && this.active && this.status === "IDLE" && this.energy > 0) {
+      this.energyCounter = this.energyCounter + 1 * $.game.speed;
+      if (this.type === "analyzer")
         U.Emitter_find(this);
       t1 = this.type;
-      if (t1 === "terp" && this.energy > 0)
+      if (t1 === "terp")
         if (this.weaponTargetPosition == null) {
-          tiledPosition = this.position.real2tiled$0();
-          for (i = J.$sub$n(tiledPosition.x, this.weaponRadius), target = null, lowestTile = 10; t1 = J.getInterceptor$n(i), t1.$le(i, J.$add$ns(tiledPosition.x, this.weaponRadius)); i = t1.$add(i, 1))
-            for (j = J.$sub$n(tiledPosition.y, this.weaponRadius); t2 = J.getInterceptor$n(j), t2.$le(j, J.$add$ns(tiledPosition.y, this.weaponRadius)); j = t2.$add(j, 1)) {
-              t3 = $.game.world;
-              if (t3.contains$1(t3, new U.Vector(i, j))) {
-                t3 = J.$sub$n(J.$add$ns(t1.$mul(i, $.game.tileSize), $.game.tileSize / 2), center.x);
-                if (typeof t3 !== "number")
-                  H.throwExpression(new P.ArgumentError(t3));
-                t3 = Math.pow(t3, 2);
-                t4 = J.$sub$n(J.$add$ns(t2.$mul(j, $.game.tileSize), $.game.tileSize / 2), center.y);
-                if (typeof t4 !== "number")
-                  H.throwExpression(new P.ArgumentError(t4));
-                t4 = Math.pow(t4, 2);
-                t5 = $.game.world.tiles;
-                if (i >>> 0 !== i || i >= t5.length)
-                  throw H.ioore(t5, i);
-                tileHeight = J.get$height$x(J.$index$asx(t5[i], j));
-                t5 = this.weaponRadius;
-                t6 = $.game.tileSize;
-                if (t3 + t4 <= Math.pow(t5 * t6, 2)) {
-                  t3 = $.game.world.tiles;
-                  if (i >= t3.length)
-                    throw H.ioore(t3, i);
-                  t3 = J.$index$asx(t3[i], j).get$terraformTarget() > -1 && J.$le$n(tileHeight, lowestTile);
+          positionTiled = this.position.real2tiled$0();
+          for (i = -this.weaponRadius, lowestTile = 10; t1 = this.weaponRadius, i <= t1; ++i)
+            for (j = -t1; j <= this.weaponRadius; ++j) {
+              t1 = new U.Vector(i, j);
+              tilePosition = new U.Vector(J.$add$ns(positionTiled.x, t1.x), J.$add$ns(positionTiled.y, t1.y));
+              t1 = $.game.world;
+              if (t1.contains$1(t1, tilePosition)) {
+                t1 = $.game.world.tiles;
+                t2 = tilePosition.x;
+                if (t2 >>> 0 !== t2 || t2 >= t1.length)
+                  throw H.ioore(t1, t2);
+                t2 = J.$index$asx(t1[t2], tilePosition.y).get$terraformTarget() > -1;
+                t1 = t2;
+              } else
+                t1 = false;
+              if (t1) {
+                t1 = $.game.world.tiles;
+                t2 = tilePosition.x;
+                if (t2 >>> 0 !== t2 || t2 >= t1.length)
+                  throw H.ioore(t1, t2);
+                tileHeight = J.get$height$x(J.$index$asx(t1[t2], tilePosition.y));
+                if (J.$le$n(tileHeight, lowestTile)) {
+                  t1 = $.game.tileSize;
+                  t1 = new U.Vector(J.$mul$n(tilePosition.x, t1), J.$mul$n(tilePosition.y, t1));
+                  t2 = new U.Vector(8, 8);
+                  t2 = new U.Vector(J.$add$ns(t1.x, t2.x), J.$add$ns(t1.y, t2.y));
+                  t1 = this.position;
+                  t3 = J.$sub$n(t2.x, t1.x);
+                  if (typeof t3 !== "number")
+                    H.throwExpression(new P.ArgumentError(t3));
+                  t3 = Math.pow(t3, 2);
+                  t1 = J.$sub$n(t2.y, t1.y);
+                  if (typeof t1 !== "number")
+                    H.throwExpression(new P.ArgumentError(t1));
+                  t1 = Math.pow(t1, 2);
+                  t1 = Math.sqrt(t3 + t1) <= this.weaponRadius * $.game.tileSize;
                 } else
-                  t3 = false;
-                if (t3) {
-                  target = new U.Vector(i, j);
+                  t1 = false;
+                if (t1) {
+                  this.weaponTargetPosition = new U.Vector(tilePosition.x, tilePosition.y);
                   lowestTile = tileHeight;
                 }
               }
             }
-          if (target != null)
-            this.weaponTargetPosition = target;
         } else {
-          if (this.energyCounter > 20) {
-            this.energyCounter = 0;
+          t1 = this.energyCounter;
+          if (t1 >= 20) {
+            this.energyCounter = t1 - 20;
             this.energy = this.energy - 1;
           }
           this.operating = true;
           t1 = $.game.world.tiles;
           t2 = this.weaponTargetPosition;
-          t3 = J.getInterceptor$x(t2);
-          t4 = t3.get$x(t2);
-          if (t4 >>> 0 !== t4 || t4 >= t1.length)
-            throw H.ioore(t1, t4);
-          terraformElement = J.$index$asx(t1[t4], t3.get$y(t2));
+          t3 = t2.x;
+          if (t3 >>> 0 !== t3 || t3 >= t1.length)
+            throw H.ioore(t1, t3);
+          terraformElement = J.$index$asx(t1[t3], t2.y);
           terraformElement.terraformProgress = terraformElement.get$terraformProgress() + 1;
           if (terraformElement.terraformProgress === 100) {
             terraformElement.terraformProgress = 0;
             t1 = $.game.world.tiles;
             t2 = this.weaponTargetPosition;
-            t3 = J.getInterceptor$x(t2);
-            t4 = t3.get$x(t2);
-            if (t4 >>> 0 !== t4 || t4 >= t1.length)
-              throw H.ioore(t1, t4);
-            height = J.get$height$x(J.$index$asx(t1[t4], t3.get$y(t2)));
+            t3 = t2.x;
+            if (t3 >>> 0 !== t3 || t3 >= t1.length)
+              throw H.ioore(t1, t3);
+            height = J.get$height$x(J.$index$asx(t1[t3], t2.y));
             tilesToRedraw = P.List_List(null, null);
             t1 = J.getInterceptor$n(height);
             t2 = t1.$lt(height, terraformElement.terraformTarget);
@@ -3211,128 +3311,119 @@ Building: {"": "Object;position>,scale,moveTargetPosition?,weaponTargetPosition@
             t4 = $.game;
             if (t2) {
               t2 = t4.world.tiles;
-              t4 = J.getInterceptor$x(t3);
-              t5 = t4.get$x(t3);
-              if (t5 >>> 0 !== t5 || t5 >= t2.length)
-                throw H.ioore(t2, t5);
-              t3 = J.$index$asx(t2[t5], t4.get$y(t3));
+              t4 = t3.x;
+              if (t4 >>> 0 !== t4 || t4 >= t2.length)
+                throw H.ioore(t2, t4);
+              t3 = J.$index$asx(t2[t4], t3.y);
               t4 = J.getInterceptor$x(t3);
               t4.set$height(t3, J.$add$ns(t4.get$height(t3), 1));
               t3 = this.weaponTargetPosition;
-              t4 = J.getInterceptor$x(t3);
-              tilesToRedraw.push(new U.Vector3(t4.get$x(t3), t4.get$y(t3), t1.$add(height, 1)));
-              tilesToRedraw.push(new U.Vector3(J.$sub$n(J.get$x$x(this.weaponTargetPosition), 1), J.get$y$x(this.weaponTargetPosition), t1.$add(height, 1)));
+              tilesToRedraw.push(new U.Vector3(t3.x, t3.y, t1.$add(height, 1)));
+              tilesToRedraw.push(new U.Vector3(J.$sub$n(this.weaponTargetPosition.x, 1), this.weaponTargetPosition.y, t1.$add(height, 1)));
               t3 = this.weaponTargetPosition;
-              t4 = J.getInterceptor$x(t3);
-              tilesToRedraw.push(new U.Vector3(t4.get$x(t3), J.$sub$n(t4.get$y(t3), 1), t1.$add(height, 1)));
-              tilesToRedraw.push(new U.Vector3(J.$add$ns(J.get$x$x(this.weaponTargetPosition), 1), J.get$y$x(this.weaponTargetPosition), t1.$add(height, 1)));
+              tilesToRedraw.push(new U.Vector3(t3.x, J.$sub$n(t3.y, 1), t1.$add(height, 1)));
+              tilesToRedraw.push(new U.Vector3(J.$add$ns(this.weaponTargetPosition.x, 1), this.weaponTargetPosition.y, t1.$add(height, 1)));
               t3 = this.weaponTargetPosition;
-              t4 = J.getInterceptor$x(t3);
-              tilesToRedraw.push(new U.Vector3(t4.get$x(t3), J.$add$ns(t4.get$y(t3), 1), t1.$add(height, 1)));
+              tilesToRedraw.push(new U.Vector3(t3.x, J.$add$ns(t3.y, 1), t1.$add(height, 1)));
             } else {
-              t1 = t4.world.tiles;
-              t2 = J.getInterceptor$x(t3);
-              t4 = t2.get$x(t3);
-              if (t4 >>> 0 !== t4 || t4 >= t1.length)
-                throw H.ioore(t1, t4);
-              t3 = J.$index$asx(t1[t4], t2.get$y(t3));
-              t2 = J.getInterceptor$x(t3);
-              t2.set$height(t3, J.$sub$n(t2.get$height(t3), 1));
+              t2 = t4.world.tiles;
+              t4 = t3.x;
+              if (t4 >>> 0 !== t4 || t4 >= t2.length)
+                throw H.ioore(t2, t4);
+              t3 = J.$index$asx(t2[t4], t3.y);
+              t4 = J.getInterceptor$x(t3);
+              t4.set$height(t3, J.$sub$n(t4.get$height(t3), 1));
               t3 = this.weaponTargetPosition;
-              t2 = J.getInterceptor$x(t3);
-              tilesToRedraw.push(new U.Vector3(t2.get$x(t3), t2.get$y(t3), height));
-              tilesToRedraw.push(new U.Vector3(J.$sub$n(J.get$x$x(this.weaponTargetPosition), 1), J.get$y$x(this.weaponTargetPosition), height));
+              tilesToRedraw.push(new U.Vector3(t3.x, t3.y, height));
+              tilesToRedraw.push(new U.Vector3(J.$sub$n(this.weaponTargetPosition.x, 1), this.weaponTargetPosition.y, height));
               t3 = this.weaponTargetPosition;
-              t2 = J.getInterceptor$x(t3);
-              tilesToRedraw.push(new U.Vector3(t2.get$x(t3), J.$sub$n(t2.get$y(t3), 1), height));
-              tilesToRedraw.push(new U.Vector3(J.$add$ns(J.get$x$x(this.weaponTargetPosition), 1), J.get$y$x(this.weaponTargetPosition), height));
+              tilesToRedraw.push(new U.Vector3(t3.x, J.$sub$n(t3.y, 1), height));
+              tilesToRedraw.push(new U.Vector3(J.$add$ns(this.weaponTargetPosition.x, 1), this.weaponTargetPosition.y, height));
               t3 = this.weaponTargetPosition;
-              t2 = J.getInterceptor$x(t3);
-              tilesToRedraw.push(new U.Vector3(t2.get$x(t3), J.$add$ns(t2.get$y(t3), 1), height));
+              tilesToRedraw.push(new U.Vector3(t3.x, J.$add$ns(t3.y, 1), height));
             }
             $.game.redrawTerrain$1(tilesToRedraw);
-            t1 = $.game.world.tiles;
-            t2 = this.weaponTargetPosition;
-            t3 = J.getInterceptor$x(t2);
-            t4 = t3.get$x(t2);
-            if (t4 >>> 0 !== t4 || t4 >= t1.length)
-              throw H.ioore(t1, t4);
-            if (J.$eq(J.get$height$x(J.$index$asx(t1[t4], t3.get$y(t2))), terraformElement.terraformTarget)) {
+            t2 = $.game.world.tiles;
+            t3 = this.weaponTargetPosition;
+            t4 = t3.x;
+            if (t4 >>> 0 !== t4 || t4 >= t2.length)
+              throw H.ioore(t2, t4);
+            if (t1.$eq(height, J.$index$asx(t2[t4], t3.y).get$terraformTarget())) {
               t1 = $.game.world.tiles;
               t2 = this.weaponTargetPosition;
-              t3 = J.getInterceptor$x(t2);
-              t4 = t3.get$x(t2);
-              if (t4 >>> 0 !== t4 || t4 >= t1.length)
-                throw H.ioore(t1, t4);
-              J.$index$asx(t1[t4], t3.get$y(t2)).set$terraformProgress(0);
-              t2 = $.game.world.tiles;
-              t3 = this.weaponTargetPosition;
-              t4 = J.getInterceptor$x(t3);
-              t1 = t4.get$x(t3);
-              if (t1 >>> 0 !== t1 || t1 >= t2.length)
-                throw H.ioore(t2, t1);
-              J.$index$asx(t2[t1], t4.get$y(t3)).set$terraformTarget(-1);
+              t3 = t2.x;
+              if (t3 >>> 0 !== t3 || t3 >= t1.length)
+                throw H.ioore(t1, t3);
+              J.$index$asx(t1[t3], t2.y).unflagTerraform$0();
             }
             this.weaponTargetPosition = null;
             this.operating = false;
           }
         }
-      else if (t1 === "shield" && this.energy > 0) {
-        if (this.energyCounter > 20) {
-          this.energyCounter = 0;
+      else if (t1 === "shield") {
+        t1 = this.energyCounter;
+        if (t1 >= 20) {
+          this.energyCounter = t1 - 20;
           this.energy = this.energy - 1;
         }
         this.operating = true;
-      } else if (t1 === "cannon" && this.energy > 0 && this.energyCounter > 10)
+      } else if (t1 === "cannon" && this.energyCounter >= 10)
         if (!this.rotating) {
-          this.energyCounter = 0;
+          this.energyCounter = this.energyCounter - 10;
           height = J.get$height$x($.game.world.getTile$1(this.position));
           targets = P.List_List(null, null);
-          for (r = 0; r < this.weaponRadius + 1; ++r) {
-            t1 = $.game.tileSize;
-            radius = r * t1;
-            t2 = this.position;
-            tiledPosition = new U.Vector(J.$tdiv$n(t2.x, t1), J.$tdiv$n(t2.y, $.game.tileSize));
-            for (i = J.$sub$n(tiledPosition.x, this.weaponRadius); t1 = J.getInterceptor$n(i), t1.$le(i, J.$add$ns(tiledPosition.x, this.weaponRadius)); i = t1.$add(i, 1))
-              for (j = J.$sub$n(tiledPosition.y, this.weaponRadius); t2 = J.getInterceptor$n(j), t2.$le(j, J.$add$ns(tiledPosition.y, this.weaponRadius)); j = t2.$add(j, 1)) {
-                t3 = $.game.world;
-                if (t3.contains$1(t3, new U.Vector(i, j))) {
-                  t3 = $.game.world.tiles;
-                  if (i >>> 0 !== i || i >= t3.length)
-                    throw H.ioore(t3, i);
-                  if (J.$le$n(J.get$height$x(J.$index$asx(t3[i], j)), height)) {
-                    t3 = $.game.tileSize;
-                    t4 = center.x;
-                    if (typeof t4 !== "number")
-                      throw H.iae(t4);
-                    t3 = Math.pow(i * t3 + t3 / 2 - t4, 2);
-                    t4 = J.$sub$n(J.$add$ns(t2.$mul(j, $.game.tileSize), $.game.tileSize / 2), center.y);
-                    if (typeof t4 !== "number")
-                      H.throwExpression(new P.ArgumentError(t4));
-                    t4 = Math.pow(t4, 2);
-                    if (t3 + t4 <= Math.pow(radius, 2)) {
-                      t3 = $.game.world.tiles;
-                      if (i >= t3.length)
-                        throw H.ioore(t3, i);
-                      t3 = J.$index$asx(t3[i], j).get$creep() > 0;
-                    } else
-                      t3 = false;
-                    if (t3)
-                      targets.push(new U.Vector(i, j));
+          targetPositionTiled = this.position.real2tiled$0();
+          for (i = -this.weaponRadius, closestDistance = 1000; t1 = this.weaponRadius, i <= t1; ++i)
+            for (j = -t1; j <= this.weaponRadius; ++j) {
+              t1 = new U.Vector(i, j);
+              tilePosition = new U.Vector(J.$add$ns(targetPositionTiled.x, t1.x), J.$add$ns(targetPositionTiled.y, t1.y));
+              t1 = $.game.world;
+              if (t1.contains$1(t1, tilePosition)) {
+                t1 = $.game.world.tiles;
+                t2 = tilePosition.x;
+                if (t2 >>> 0 !== t2 || t2 >= t1.length)
+                  throw H.ioore(t1, t2);
+                t2 = J.$index$asx(t1[t2], tilePosition.y).get$creep() > 0;
+                t1 = t2;
+              } else
+                t1 = false;
+              if (t1) {
+                t1 = $.game.world.tiles;
+                t2 = tilePosition.x;
+                if (t2 >>> 0 !== t2 || t2 >= t1.length)
+                  throw H.ioore(t1, t2);
+                if (J.$le$n(J.get$height$x(J.$index$asx(t1[t2], tilePosition.y)), height)) {
+                  t1 = $.game.tileSize;
+                  t1 = new U.Vector(J.$mul$n(tilePosition.x, t1), J.$mul$n(tilePosition.y, t1));
+                  t2 = new U.Vector(8, 8);
+                  t2 = new U.Vector(J.$add$ns(t1.x, t2.x), J.$add$ns(t1.y, t2.y));
+                  t1 = this.position;
+                  t3 = J.$sub$n(t2.x, t1.x);
+                  if (typeof t3 !== "number")
+                    H.throwExpression(new P.ArgumentError(t3));
+                  t3 = Math.pow(t3, 2);
+                  t1 = J.$sub$n(t2.y, t1.y);
+                  if (typeof t1 !== "number")
+                    H.throwExpression(new P.ArgumentError(t1));
+                  t1 = Math.pow(t1, 2);
+                  distance = Math.sqrt(t3 + t1);
+                  t1 = this.weaponRadius;
+                  t2 = $.game.tileSize;
+                  if (distance <= Math.pow(t1 * t2, 2) && distance <= closestDistance) {
+                    targets.push(tilePosition);
+                    closestDistance = distance;
                   }
                 }
               }
-            if (targets.length > 0)
-              break;
-          }
+            }
           if (targets.length > 0) {
             H.IterableMixinWorkaround_shuffleList(targets, null);
             if (0 >= targets.length)
               throw H.ioore(targets, 0);
-            dx = J.$sub$n(J.$add$ns(J.$mul$n(J.get$x$x(targets[0]), $.game.tileSize), $.game.tileSize / 2), center.x);
+            dx = J.$sub$n(J.$add$ns(J.$mul$n(J.get$x$x(targets[0]), $.game.tileSize), $.game.tileSize / 2), this.position.x);
             if (0 >= targets.length)
               throw H.ioore(targets, 0);
-            dy = J.$sub$n(J.$add$ns(J.$mul$n(J.get$y$x(targets[0]), $.game.tileSize), $.game.tileSize / 2), center.y);
+            dy = J.$sub$n(J.$add$ns(J.$mul$n(J.get$y$x(targets[0]), $.game.tileSize), $.game.tileSize / 2), this.position.y);
             t1 = $.engine;
             if (typeof dy !== "number")
               H.throwExpression(new P.ArgumentError(dy));
@@ -3388,23 +3479,22 @@ Building: {"": "Object;position>,scale,moveTargetPosition?,weaponTargetPosition@
             this.rotating = false;
             this.energy = this.energy - 1;
             this.operating = true;
-            projectile = U.Projectile$(center, new U.Vector(J.$add$ns(J.$mul$n(J.get$x$x(this.weaponTargetPosition), $.game.tileSize), $.game.tileSize / 2), J.$add$ns(J.$mul$n(J.get$y$x(this.weaponTargetPosition), $.game.tileSize), $.game.tileSize / 2)), this.targetAngle);
-            $.get$Projectile_projectiles().push(projectile);
+            U.Projectile_add(this.position, new U.Vector(J.$add$ns(J.$mul$n(this.weaponTargetPosition.x, $.game.tileSize), $.game.tileSize / 2), J.$add$ns(J.$mul$n(this.weaponTargetPosition.y, $.game.tileSize), $.game.tileSize / 2)), this.targetAngle);
             $.engine.playSound$2("laser", this.position.real2tiled$0());
           }
         }
-      else if (t1 === "mortar" && this.energy > 0 && this.energyCounter > 200) {
-        this.energyCounter = 0;
+      else if (t1 === "mortar" && this.energyCounter >= 200) {
+        this.energyCounter = -200;
         tiledPosition = this.position.real2tiled$0();
         for (i = J.$sub$n(tiledPosition.x, this.weaponRadius), target = null, highestCreep = 0; t1 = J.getInterceptor$n(i), t1.$le(i, J.$add$ns(tiledPosition.x, this.weaponRadius)); i = t1.$add(i, 1))
           for (j = J.$sub$n(tiledPosition.y, this.weaponRadius); t2 = J.getInterceptor$n(j), t2.$le(j, J.$add$ns(tiledPosition.y, this.weaponRadius)); j = t2.$add(j, 1)) {
             t3 = $.game.world;
             if (t3.contains$1(t3, new U.Vector(i, j))) {
-              t3 = J.$sub$n(J.$add$ns(t1.$mul(i, $.game.tileSize), $.game.tileSize / 2), center.x);
+              t3 = J.$sub$n(J.$add$ns(t1.$mul(i, $.game.tileSize), $.game.tileSize / 2), this.position.x);
               if (typeof t3 !== "number")
                 H.throwExpression(new P.ArgumentError(t3));
               t3 = Math.pow(t3, 2);
-              t4 = J.$sub$n(J.$add$ns(t2.$mul(j, $.game.tileSize), $.game.tileSize / 2), center.y);
+              t4 = J.$sub$n(J.$add$ns(t2.$mul(j, $.game.tileSize), $.game.tileSize / 2), this.position.y);
               if (typeof t4 !== "number")
                 H.throwExpression(new P.ArgumentError(t4));
               t4 = Math.pow(t4, 2);
@@ -3434,11 +3524,10 @@ Building: {"": "Object;position>,scale,moveTargetPosition?,weaponTargetPosition@
           }
         if (target != null) {
           $.engine.playSound$2("shot", this.position.real2tiled$0());
-          shell = U.Shell$(center, new U.Vector(J.$add$ns(J.$mul$n(target.x, $.game.tileSize), $.game.tileSize / 2), J.$add$ns(J.$mul$n(target.y, $.game.tileSize), $.game.tileSize / 2)));
-          $.get$Shell_shells().push(shell);
+          U.Shell_add(this.position, new U.Vector(J.$add$ns(J.$mul$n(target.x, $.game.tileSize), $.game.tileSize / 2), J.$add$ns(J.$mul$n(target.y, $.game.tileSize), $.game.tileSize / 2)));
           this.energy = this.energy - 1;
         }
-      } else if (t1 === "beam" && this.energy > 0 && this.energyCounter > 0) {
+      } else if (t1 === "beam" && this.energyCounter > 0) {
         this.energyCounter = 0;
         U.Spore_damage(this);
       }
@@ -3449,25 +3538,25 @@ Building: {"": "Object;position>,scale,moveTargetPosition?,weaponTargetPosition@
     this.type = imageID;
     this.position = position;
     t1 = $.engine.images;
-    this.sprite = U.Sprite$(3, t1.$index(t1, imageID), position, 48, 48);
+    this.sprite = U.Sprite$(C.Layer_3, t1.$index(t1, imageID), position, 48, 48);
     this.sprite.anchor = new U.Vector(0.5, 0.5);
     this.sprite.alpha = 0.5;
-    t1 = $.engine.canvas;
+    t1 = $.engine.renderer;
     t1.$index(t1, "buffer").addDisplayObject$1(this.sprite);
-    t1 = new U.Circle(position, 24, 2, "#fff", null, 0, true);
-    t1.layer = 5;
+    t1 = new U.Circle(position, 24, 2, "#fff", null, null, true);
+    t1.layer = C.Layer_0;
     t1.scale = 1;
     this.selectedCircle = t1;
     this.selectedCircle.visible = false;
-    t1 = $.engine.canvas;
+    t1 = $.engine.renderer;
     t1.$index(t1, "buffer").addDisplayObject$1(this.selectedCircle);
-    t1 = new U.Rect(new U.Vector(0, 0), new U.Vector(48, 48), 1, "#0f0", null, 0, true);
-    t1.layer = 2;
+    t1 = new U.Rect(new U.Vector(0, 0), new U.Vector(48, 48), 1, "#0f0", null, null, true);
+    t1.layer = C.Layer_0;
     t1.anchor = new U.Vector(0, 0);
     this.targetSymbol = t1;
     this.targetSymbol.visible = false;
     this.targetSymbol.anchor = new U.Vector(0.5, 0.5);
-    t1 = $.engine.canvas;
+    t1 = $.engine.renderer;
     t1.$index(t1, "buffer").addDisplayObject$1(this.targetSymbol);
     this.health = 0;
     this.size = 3;
@@ -3493,7 +3582,7 @@ Building: {"": "Object;position>,scale,moveTargetPosition?,weaponTargetPosition@
       this.maxEnergy = 20;
       this.canMove = true;
       this.needsEnergy = true;
-      this.weaponRadius = 14;
+      this.weaponRadius = 20;
     } else if (t1 === "shield") {
       this.maxHealth = 1;
       this.maxEnergy = 20;
@@ -3519,10 +3608,10 @@ Building: {"": "Object;position>,scale,moveTargetPosition?,weaponTargetPosition@
       this.canMove = true;
       this.needsEnergy = true;
       t1 = $.engine.images;
-      this.cannon = U.Sprite$(2, t1.$index(t1, "cannongun"), position, 48, 48);
+      this.cannon = U.Sprite$(C.Layer_5, t1.$index(t1, "cannongun"), position, 48, 48);
       this.cannon.anchor = new U.Vector(0.5, 0.5);
       this.cannon.alpha = 0.5;
-      t1 = $.engine.canvas;
+      t1 = $.engine.renderer;
       t1.$index(t1, "buffer").addDisplayObject$1(this.cannon);
     } else if (t1 === "mortar") {
       this.maxHealth = 1;
@@ -3533,14 +3622,14 @@ Building: {"": "Object;position>,scale,moveTargetPosition?,weaponTargetPosition@
     } else if (t1 === "beam") {
       this.maxHealth = 1;
       this.maxEnergy = 10;
-      this.weaponRadius = 14;
+      this.weaponRadius = 20;
       this.canMove = true;
       this.needsEnergy = true;
     }
     U.Connection_add(this);
   },
   static: {
-"": "Building_baseSpeed,Building_damageCounter,Building_buildings",
+"": "Building_baseSpeed,Building_damageCounter,Building_collectCounter,Building_buildings",
 Building$: function(position, imageID) {
   var t1 = new U.Building(null, new U.Vector(1, 1), null, null, new U.Vector(0, 0), null, "IDLE", false, false, false, false, true, false, false, false, null, 0, null, 0, 0, 0, 0, null, 0, null, 0, 0, 0, 0, null, null, null, null, null);
   t1.Building$2(position, imageID);
@@ -3548,19 +3637,20 @@ Building$: function(position, imageID) {
 },
 
 Building_add: function(position, type) {
-  var t1, building;
-  position = new U.Vector(J.$mul$n(position.x, 16), J.$mul$n(position.y, 16));
-  t1 = new U.Vector(8, 8);
-  building = U.Building$(new U.Vector(J.$add$ns(position.x, t1.x), J.$add$ns(position.y, t1.y)), type);
+  var t1, t2, building;
+  t1 = $.game.tileSize;
+  t1 = new U.Vector(J.$mul$n(position.x, t1), J.$mul$n(position.y, t1));
+  t2 = new U.Vector(8, 8);
+  building = U.Building$(new U.Vector(J.$add$ns(t1.x, t2.x), J.$add$ns(t1.y, t2.y)), type);
   $.get$Building_buildings().push(building);
   return building;
 },
 
 Building_remove: function(building) {
-  var t1, t2, index;
+  var explosion, t1, t2;
   if (building.get$built()) {
-    t1 = U.Explosion$(building.position);
-    $.get$Explosion_explosions().push(t1);
+    explosion = U.Explosion$(building.position);
+    $.get$Explosion_explosions().push(explosion);
     t1 = $.engine;
     t2 = building.position;
     t1.playSound$2("explosion", new U.Vector(J.$tdiv$n(t2.x, $.game.tileSize), J.$tdiv$n(t2.y, $.game.tileSize)));
@@ -3584,9 +3674,19 @@ Building_remove: function(building) {
     $.Packet_baseSpeed = $.Packet_baseSpeed / 1.01;
   U.Packet_removeWithTarget(building);
   U.Connection_remove(building);
+  t1 = $.engine.renderer;
+  t1.$index(t1, "buffer").removeDisplayObject$1(building.sprite);
+  t1 = $.engine.renderer;
+  t1.$index(t1, "buffer").removeDisplayObject$1(building.selectedCircle);
+  t1 = $.engine.renderer;
+  t1.$index(t1, "buffer").removeDisplayObject$1(building.targetSymbol);
+  if (building.cannon != null) {
+    t1 = $.engine.renderer;
+    t1.$index(t1, "buffer").removeDisplayObject$1(building.cannon);
+  }
   t1 = $.get$Building_buildings();
-  index = H.Arrays_indexOf(t1, building, 0, t1.length);
-  J.removeAt$1$ax($.get$Building_buildings(), index);
+  t2 = $.get$Building_buildings();
+  J.removeAt$1$ax(t1, H.Arrays_indexOf(t2, building, 0, t2.length));
 },
 
 Building_removeSelected: function() {
@@ -3741,7 +3841,7 @@ Building_updateHoverState: function() {
 },
 
 Building_update: function() {
-  var i, t1, t2, t3;
+  var i, t1;
   for (i = 0; i < $.get$Building_buildings().length; ++i) {
     t1 = $.get$Building_buildings();
     if (i >= t1.length)
@@ -3760,9 +3860,10 @@ Building_update: function() {
       throw H.ioore(t1, i);
     t1[i].requestPacket$0();
   }
-  $.Building_damageCounter = $.Building_damageCounter + 1;
-  if ($.Building_damageCounter > 10) {
-    $.Building_damageCounter = 0;
+  $.Building_damageCounter = $.Building_damageCounter + 1 * $.game.speed;
+  t1 = $.Building_damageCounter;
+  if (t1 > 10) {
+    $.Building_damageCounter = t1 - 10;
     for (i = 0; i < $.get$Building_buildings().length; ++i) {
       t1 = $.get$Building_buildings();
       if (i >= t1.length)
@@ -3770,12 +3871,10 @@ Building_update: function() {
       t1[i].takeDamage$0();
     }
   }
-  t1 = $.game;
-  t1.collectCounter = t1.collectCounter + 1;
-  t2 = t1.collectCounter;
-  t3 = 250 / t1.speed;
-  if (t2 > t3) {
-    t1.collectCounter = t2 - t3;
+  $.Building_collectCounter = $.Building_collectCounter + 1 * $.game.speed;
+  t1 = $.Building_collectCounter;
+  if (t1 > 250) {
+    $.Building_collectCounter = t1 - 250;
     for (i = 0; i < $.get$Building_buildings().length; ++i) {
       t1 = $.get$Building_buildings();
       if (i >= t1.length)
@@ -3844,7 +3943,7 @@ Building_reposition: function(position) {
       if (i >= t3.length)
         throw H.ioore(t3, i);
       if (t1.canBePlaced$3(position, t2, t3[i])) {
-        t1 = $.engine.canvas;
+        t1 = $.engine.renderer;
         J.set$cursor$x(J.get$style$x(J.get$view$x(t1.$index(t1, "main"))), "url('images/Normal.cur') 2 2, pointer");
         t1 = $.get$Building_buildings();
         if (i >= t1.length)
@@ -3892,8 +3991,8 @@ Building_reposition: function(position) {
 },
 
 Building_drawRepositionInfo: function() {
-  var t1, context, i, t2, hoveredTilePosition, hoveredTilePositionDraw, t3, t4, t5, t6, t7, t8, t9, j, positionJ, allowedDistance;
-  t1 = $.engine.canvas;
+  var t1, context, i, t2, hoveredTilePosition, t3, positionI, t4, t5, t6, t7, t8, t9, j, positionJ, allowedDistance;
+  t1 = $.engine.renderer;
   context = t1.$index(t1, "buffer").get$context();
   for (t1 = J.getInterceptor$x(context), i = 0; i < $.get$Building_buildings().length; ++i) {
     t2 = $.get$Building_buildings();
@@ -3913,19 +4012,21 @@ Building_drawRepositionInfo: function() {
     } else
       t2 = false;
     if (t2) {
-      t2 = $.engine.canvas;
+      t2 = $.engine.renderer;
       J.set$cursor$x(J.get$style$x(J.get$view$x(t2.$index(t2, "main"))), "none");
       hoveredTilePosition = $.game.getHoveredTilePosition$0();
-      hoveredTilePositionDraw = hoveredTilePosition.tiled2screen$0();
+      t2 = hoveredTilePosition.tiled2screen$0();
+      t3 = $.game.zoom;
+      if (typeof t3 !== "number")
+        throw H.iae(t3);
+      t3 = 8 * t3;
+      t3 = new U.Vector(t3, t3);
+      positionI = new U.Vector(J.$add$ns(t2.x, t3.x), J.$add$ns(t2.y, t3.y));
+      t3 = $.game;
       t2 = $.get$Building_buildings();
       if (i >= t2.length)
         throw H.ioore(t2, i);
-      J.get$position$x(t2[i]).real2screen$0();
-      t2 = $.game;
-      t3 = $.get$Building_buildings();
-      if (i >= t3.length)
-        throw H.ioore(t3, i);
-      t3 = J.get$type$x(t3[i]);
+      t2 = J.get$type$x(t2[i]);
       t4 = $.get$Building_buildings();
       if (i >= t4.length)
         throw H.ioore(t4, i);
@@ -3933,7 +4034,7 @@ Building_drawRepositionInfo: function() {
       t5 = $.get$Building_buildings();
       if (i >= t5.length)
         throw H.ioore(t5, i);
-      t2.drawRangeBoxes$4(hoveredTilePosition, t3, t4, J.get$size$x(t5[i]));
+      t3.drawRangeBoxes$4(hoveredTilePosition, t2, t4, J.get$size$x(t5[i]));
       t2 = $.game;
       t3 = $.get$Building_buildings();
       if (i >= t3.length)
@@ -3946,7 +4047,7 @@ Building_drawRepositionInfo: function() {
         t1.set$fillStyle(context, "rgba(0,255,0,0.5)");
       else
         t1.set$fillStyle(context, "rgba(255,0,0,0.5)");
-      t2 = J.$add$ns(hoveredTilePositionDraw.x, 8);
+      t2 = positionI.x;
       t3 = $.game.tileSize;
       t4 = $.get$Building_buildings();
       if (i >= t4.length)
@@ -3958,7 +4059,7 @@ Building_drawRepositionInfo: function() {
       if (typeof t5 !== "number")
         throw H.iae(t5);
       t5 = J.$sub$n(t2, t3 * t4 * t5 / 2);
-      t4 = J.$add$ns(hoveredTilePositionDraw.y, 8);
+      t4 = positionI.y;
       t3 = $.game.tileSize;
       t2 = $.get$Building_buildings();
       if (i >= t2.length)
@@ -3997,47 +4098,65 @@ Building_drawRepositionInfo: function() {
           t2 = $.get$Building_buildings();
           if (j >= t2.length)
             throw H.ioore(t2, j);
-          positionJ = J.get$position$x(t2[j]).real2screen$0();
-          allowedDistance = 10 * $.game.tileSize;
-          t2 = $.get$Building_buildings();
-          if (j >= t2.length)
-            throw H.ioore(t2, j);
-          if (J.get$type$x(t2[j]) === "relay") {
+          if (J.get$type$x(t2[j]) !== "collector") {
             t2 = $.get$Building_buildings();
-            if (i >= t2.length)
-              throw H.ioore(t2, i);
-            t2 = J.get$type$x(t2[i]) === "relay";
+            if (j >= t2.length)
+              throw H.ioore(t2, j);
+            if (J.get$type$x(t2[j]) !== "relay") {
+              t2 = $.get$Building_buildings();
+              if (j >= t2.length)
+                throw H.ioore(t2, j);
+              t2 = J.get$type$x(t2[j]) === "base";
+            } else
+              t2 = true;
           } else
-            t2 = false;
-          if (t2)
-            allowedDistance = 20 * $.game.tileSize;
-          t2 = J.$sub$n(positionJ.x, hoveredTilePositionDraw.x);
-          if (typeof t2 !== "number")
-            H.throwExpression(new P.ArgumentError(t2));
-          t2 = Math.pow(t2, 2);
-          t3 = J.$sub$n(positionJ.y, hoveredTilePositionDraw.y);
-          if (typeof t3 !== "number")
-            H.throwExpression(new P.ArgumentError(t3));
-          t3 = Math.pow(t3, 2);
-          if (Math.sqrt(t2 + t3) <= allowedDistance) {
-            context.strokeStyle = "#000";
-            t2 = $.game.zoom;
+            t2 = true;
+          if (t2) {
+            t2 = $.get$Building_buildings();
+            if (j >= t2.length)
+              throw H.ioore(t2, j);
+            positionJ = J.get$position$x(t2[j]).real2screen$0();
+            allowedDistance = 10 * $.game.tileSize;
+            t2 = $.get$Building_buildings();
+            if (j >= t2.length)
+              throw H.ioore(t2, j);
+            if (J.get$type$x(t2[j]) === "relay") {
+              t2 = $.get$Building_buildings();
+              if (i >= t2.length)
+                throw H.ioore(t2, i);
+              t2 = J.get$type$x(t2[i]) === "relay";
+            } else
+              t2 = false;
+            if (t2)
+              allowedDistance = 20 * $.game.tileSize;
+            t2 = J.$sub$n(positionJ.x, positionI.x);
             if (typeof t2 !== "number")
-              throw H.iae(t2);
-            context.lineWidth = 3 * t2;
-            context.beginPath();
-            context.moveTo(positionJ.x, positionJ.y);
-            context.lineTo(J.$add$ns(hoveredTilePositionDraw.x, 8), J.$add$ns(hoveredTilePositionDraw.y, 8));
-            context.stroke();
-            context.strokeStyle = "#0f0";
-            t2 = $.game.zoom;
-            if (typeof t2 !== "number")
-              throw H.iae(t2);
-            context.lineWidth = 2 * t2;
-            context.beginPath();
-            context.moveTo(positionJ.x, positionJ.y);
-            context.lineTo(J.$add$ns(hoveredTilePositionDraw.x, 8), J.$add$ns(hoveredTilePositionDraw.y, 8));
-            context.stroke();
+              H.throwExpression(new P.ArgumentError(t2));
+            t2 = Math.pow(t2, 2);
+            t3 = J.$sub$n(positionJ.y, positionI.y);
+            if (typeof t3 !== "number")
+              H.throwExpression(new P.ArgumentError(t3));
+            t3 = Math.pow(t3, 2);
+            if (Math.sqrt(t2 + t3) <= allowedDistance) {
+              context.strokeStyle = "#000";
+              t2 = $.game.zoom;
+              if (typeof t2 !== "number")
+                throw H.iae(t2);
+              context.lineWidth = 3 * t2;
+              context.beginPath();
+              context.moveTo(positionJ.x, positionJ.y);
+              context.lineTo(positionI.x, positionI.y);
+              context.stroke();
+              context.strokeStyle = "#0f0";
+              t2 = $.game.zoom;
+              if (typeof t2 !== "number")
+                throw H.iae(t2);
+              context.lineWidth = 2 * t2;
+              context.beginPath();
+              context.moveTo(positionJ.x, positionJ.y);
+              context.lineTo(positionI.x, positionI.y);
+              context.stroke();
+            }
           }
         }
     }
@@ -4046,7 +4165,7 @@ Building_drawRepositionInfo: function() {
 
 Building_draw: function() {
   var t1, context, i, t2, realPosition, center, t3, t4, t5, t6, t7, t8, targetPosition;
-  t1 = $.engine.canvas;
+  t1 = $.engine.renderer;
   context = t1.$index(t1, "buffer").get$context();
   for (t1 = J.getInterceptor$x(context), i = 0; i < $.get$Building_buildings().length; ++i) {
     t2 = $.get$Building_buildings();
@@ -4057,7 +4176,7 @@ Building_draw: function() {
     if (i >= t2.length)
       throw H.ioore(t2, i);
     center = J.get$position$x(t2[i]).real2screen$0();
-    t2 = $.engine.canvas;
+    t2 = $.engine.renderer;
     t2 = t2.$index(t2, "buffer");
     t3 = $.engine.images;
     t4 = $.get$Building_buildings();
@@ -4074,11 +4193,19 @@ Building_draw: function() {
         throw H.ioore(t2, i);
       if (t2[i].get$needsEnergy()) {
         t1.set$fillStyle(context, "#f00");
-        t2 = J.$sub$n(realPosition.x, 22);
-        t3 = J.$add$ns(J.$sub$n(realPosition.y, 22), 1);
+        t2 = realPosition.x;
+        t3 = $.game.zoom;
+        if (typeof t3 !== "number")
+          throw H.iae(t3);
+        t3 = J.$sub$n(t2, 22 * t3);
+        t2 = realPosition.y;
         t4 = $.game.zoom;
         if (typeof t4 !== "number")
           throw H.iae(t4);
+        t4 = J.$sub$n(t2, 21 * t4);
+        t2 = $.game.zoom;
+        if (typeof t2 !== "number")
+          throw H.iae(t2);
         t5 = $.get$Building_buildings();
         if (i >= t5.length)
           throw H.ioore(t5, i);
@@ -4086,7 +4213,7 @@ Building_draw: function() {
         t6 = $.get$Building_buildings();
         if (i >= t6.length)
           throw H.ioore(t6, i);
-        context.fillRect(t2, t3, 44 * t4 / t5 * t6[i].get$energy(), 3);
+        context.fillRect(t3, t4, 44 * t2 / t5 * t6[i].get$energy(), 3);
       }
       t2 = $.get$Building_buildings();
       if (i >= t2.length)
@@ -4097,8 +4224,12 @@ Building_draw: function() {
         throw H.ioore(t3, i);
       if (t2 < t3[i].get$maxHealth()) {
         t1.set$fillStyle(context, "#0f0");
-        t2 = J.$sub$n(realPosition.x, 22);
-        t3 = J.$sub$n(realPosition.y, 22);
+        t2 = realPosition.x;
+        t3 = $.game.zoom;
+        if (typeof t3 !== "number")
+          throw H.iae(t3);
+        t3 = J.$sub$n(t2, 22 * t3);
+        t2 = J.$sub$n(realPosition.y, 22);
         t4 = $.game;
         t5 = t4.tileSize;
         t4 = t4.zoom;
@@ -4110,18 +4241,18 @@ Building_draw: function() {
         t6 = J.get$size$x(t6[i]);
         if (typeof t6 !== "number")
           throw H.iae(t6);
-        t6 = J.$sub$n(J.$add$ns(t3, t5 * t4 * t6), 3);
+        t6 = J.$sub$n(J.$add$ns(t2, t5 * t4 * t6), 3);
         t4 = $.game;
         t5 = t4.tileSize;
         t4 = t4.zoom;
         if (typeof t4 !== "number")
           throw H.iae(t4);
-        t3 = $.get$Building_buildings();
-        if (i >= t3.length)
-          throw H.ioore(t3, i);
-        t3 = J.get$size$x(t3[i]);
-        if (typeof t3 !== "number")
-          throw H.iae(t3);
+        t2 = $.get$Building_buildings();
+        if (i >= t2.length)
+          throw H.ioore(t2, i);
+        t2 = J.get$size$x(t2[i]);
+        if (typeof t2 !== "number")
+          throw H.iae(t2);
         t7 = $.get$Building_buildings();
         if (i >= t7.length)
           throw H.ioore(t7, i);
@@ -4129,7 +4260,7 @@ Building_draw: function() {
         t8 = $.get$Building_buildings();
         if (i >= t8.length)
           throw H.ioore(t8, i);
-        context.fillRect(t2, t6, (t5 * t4 * t3 - 8) / t7 * t8[i].get$health(), 3);
+        context.fillRect(t3, t6, (t5 * t4 * t2 - 8) / t7 * t8[i].get$health(), 3);
       }
       t2 = $.get$Building_buildings();
       if (i >= t2.length)
@@ -4201,15 +4332,21 @@ Building_draw: function() {
         t2 = $.get$Building_buildings();
         if (i >= t2.length)
           throw H.ioore(t2, i);
-        targetPosition = t2[i].get$weaponTargetPosition().tiled2screen$0();
+        targetPosition = t2[i].get$weaponTargetPosition().real2screen$0();
         t1.set$strokeStyle(context, "#00f");
-        context.lineWidth = 4;
+        t2 = $.game.zoom;
+        if (typeof t2 !== "number")
+          throw H.iae(t2);
+        context.lineWidth = 5 * t2;
         context.beginPath();
         context.moveTo(center.x, center.y);
         context.lineTo(targetPosition.x, targetPosition.y);
         context.stroke();
         context.strokeStyle = "#fff";
-        context.lineWidth = 2;
+        t2 = $.game.zoom;
+        if (typeof t2 !== "number")
+          throw H.iae(t2);
+        context.lineWidth = 3 * t2;
         context.beginPath();
         context.moveTo(center.x, center.y);
         context.lineTo(targetPosition.x, targetPosition.y);
@@ -4224,13 +4361,19 @@ Building_draw: function() {
             throw H.ioore(t2, i);
           targetPosition = t2[i].get$weaponTargetPosition().real2screen$0();
           t1.set$strokeStyle(context, "#f00");
-          context.lineWidth = 4;
+          t2 = $.game.zoom;
+          if (typeof t2 !== "number")
+            throw H.iae(t2);
+          context.lineWidth = 5 * t2;
           context.beginPath();
           context.moveTo(center.x, center.y);
           context.lineTo(targetPosition.x, targetPosition.y);
           context.stroke();
           context.strokeStyle = "#fff";
-          context.lineWidth = 2;
+          t2 = $.game.zoom;
+          if (typeof t2 !== "number")
+            throw H.iae(t2);
+          context.lineWidth = 3 * t2;
           context.beginPath();
           context.moveTo(center.x, center.y);
           context.lineTo(targetPosition.x, targetPosition.y);
@@ -4240,6 +4383,8 @@ Building_draw: function() {
           if (i >= t2.length)
             throw H.ioore(t2, i);
           if (J.get$type$x(t2[i]) === "shield") {
+            t1.save$0(context);
+            context.globalAlpha = 0.5;
             t2 = $.engine.images;
             t2 = t2.$index(t2, "forcefield");
             t3 = center.x;
@@ -4256,7 +4401,8 @@ Building_draw: function() {
             if (typeof t3 !== "number")
               throw H.iae(t3);
             t3 = 336 * t3;
-            t1.drawImageScaled$5(context, t2, t4, t5, t3, t3);
+            context.drawImage(t2, t4, t5, t3, t3);
+            context.restore();
           } else {
             t2 = $.get$Building_buildings();
             if (i >= t2.length)
@@ -4267,13 +4413,19 @@ Building_draw: function() {
                 throw H.ioore(t2, i);
               targetPosition = t2[i].get$weaponTargetPosition().tiled2screen$0();
               t1.set$strokeStyle(context, "#f00");
-              context.lineWidth = 4;
+              t2 = $.game.zoom;
+              if (typeof t2 !== "number")
+                throw H.iae(t2);
+              context.lineWidth = 4 * t2;
               context.beginPath();
               context.moveTo(center.x, center.y);
               context.lineTo(J.$add$ns(targetPosition.x, 8), J.$add$ns(targetPosition.y, 8));
               context.stroke();
               context.strokeStyle = "#fff";
-              context.lineWidth = 2;
+              t2 = $.game.zoom;
+              if (typeof t2 !== "number")
+                throw H.iae(t2);
+              context.lineWidth = 2 * t2;
               context.beginPath();
               context.moveTo(center.x, center.y);
               context.lineTo(J.$add$ns(targetPosition.x, 8), J.$add$ns(targetPosition.y, 8));
@@ -4288,17 +4440,20 @@ Building_draw: function() {
 
 },
 
-Connection: {"": "Object;from<,to<,line<,line2<",
+Connection: {"": "Object;from<,to<,line,line2<",
   Connection$2: function(from, to) {
-    var t1 = new U.Line("#000", this.from.position, J.get$position$x(this.to), 3, 0, true);
-    t1.layer = 1;
+    var t1, color;
+    t1 = new U.Line("#000", this.from.position, J.get$position$x(this.to), 3, null, true);
+    t1.layer = C.Layer_1;
     this.line = t1;
-    t1 = $.engine.canvas;
+    t1 = $.engine.renderer;
     t1.$index(t1, "buffer").addDisplayObject$1(this.line);
-    t1 = new U.Line("#777", this.from.position, J.get$position$x(this.to), 2, 0, true);
-    t1.layer = 2;
+    t1 = this.from;
+    color = t1.built && this.to.get$built() ? "#fff" : "#777";
+    t1 = new U.Line(color, t1.position, J.get$position$x(this.to), 2, null, true);
+    t1.layer = C.Layer_2;
     this.line2 = t1;
-    t1 = $.engine.canvas;
+    t1 = $.engine.renderer;
     t1.$index(t1, "buffer").addDisplayObject$1(this.line2);
   },
   static: {
@@ -4310,7 +4465,7 @@ Connection$: function(from, to) {
 },
 
 Connection_add: function(building) {
-  var i, t1, allowedDistance, t2, t3, t4, connection;
+  var i, t1, allowedDistance, t2, t3, connection;
   for (i = 0; i < $.get$Building_buildings().length; ++i) {
     t1 = $.get$Building_buildings();
     if (i >= t1.length)
@@ -4319,7 +4474,25 @@ Connection_add: function(building) {
       t1 = $.get$Building_buildings();
       if (i >= t1.length)
         throw H.ioore(t1, i);
-      t1 = J.get$status$x(t1[i]) === "IDLE";
+      if (J.get$status$x(t1[i]) === "IDLE") {
+        t1 = $.get$Building_buildings();
+        if (i >= t1.length)
+          throw H.ioore(t1, i);
+        if (J.get$type$x(t1[i]) !== "collector") {
+          t1 = $.get$Building_buildings();
+          if (i >= t1.length)
+            throw H.ioore(t1, i);
+          if (J.get$type$x(t1[i]) !== "relay") {
+            t1 = $.get$Building_buildings();
+            if (i >= t1.length)
+              throw H.ioore(t1, i);
+            t1 = J.get$type$x(t1[i]) === "base";
+          } else
+            t1 = true;
+        } else
+          t1 = true;
+      } else
+        t1 = false;
     } else
       t1 = false;
     if (t1) {
@@ -4334,16 +4507,15 @@ Connection_add: function(building) {
       if (i >= t2.length)
         throw H.ioore(t2, i);
       t2 = J.get$position$x(t2[i]);
-      t3 = J.getInterceptor$x(t2);
-      t4 = J.$sub$n(t1.x, t3.get$x(t2));
-      if (typeof t4 !== "number")
-        H.throwExpression(new P.ArgumentError(t4));
-      t4 = Math.pow(t4, 2);
-      t2 = J.$sub$n(t1.y, t3.get$y(t2));
+      t3 = J.$sub$n(t1.x, J.get$x$x(t2));
+      if (typeof t3 !== "number")
+        H.throwExpression(new P.ArgumentError(t3));
+      t3 = Math.pow(t3, 2);
+      t2 = J.$sub$n(t1.y, t2.y);
       if (typeof t2 !== "number")
         H.throwExpression(new P.ArgumentError(t2));
       t1 = Math.pow(t2, 2);
-      if (Math.sqrt(t4 + t1) <= allowedDistance) {
+      if (Math.sqrt(t3 + t1) <= allowedDistance) {
         t1 = $.get$Building_buildings();
         if (i >= t1.length)
           throw H.ioore(t1, i);
@@ -4360,17 +4532,32 @@ Connection_add: function(building) {
 },
 
 Connection_remove: function(building) {
-  var t1, connection, t2, t3;
-  for (t1 = $.get$Connection_connections(), t1 = new H.ListIterator(t1, t1.length, 0, null); t1.moveNext$0();) {
-    connection = t1._current;
-    if (J.$eq(connection.get$from(), building) || J.$eq(connection.get$to(), building)) {
-      t2 = $.engine.canvas;
-      t2.$index(t2, "buffer").removeDisplayObject$1(connection.get$line());
-      t2 = $.engine.canvas;
-      t2.$index(t2, "buffer").removeDisplayObject$1(connection.line2);
+  var i, t1, t2;
+  for (i = $.get$Connection_connections().length - 1; i >= 0; --i) {
+    t1 = $.get$Connection_connections();
+    if (i >= t1.length)
+      throw H.ioore(t1, i);
+    if (t1[i].from !== building) {
+      t1 = $.get$Connection_connections();
+      if (i >= t1.length)
+        throw H.ioore(t1, i);
+      t1 = J.$eq(t1[i].to, building);
+    } else
+      t1 = true;
+    if (t1) {
+      t1 = $.engine.renderer;
+      t1 = t1.$index(t1, "buffer");
       t2 = $.get$Connection_connections();
-      t3 = $.get$Connection_connections();
-      J.removeAt$1$ax(t2, H.Arrays_indexOf(t3, connection, 0, t3.length));
+      if (i >= t2.length)
+        throw H.ioore(t2, i);
+      t1.removeDisplayObject$1(t2[i].line);
+      t2 = $.engine.renderer;
+      t2 = t2.$index(t2, "buffer");
+      t1 = $.get$Connection_connections();
+      if (i >= t1.length)
+        throw H.ioore(t1, i);
+      t2.removeDisplayObject$1(t1[i].line2);
+      J.removeAt$1$ax($.get$Connection_connections(), i);
     }
   }
 },
@@ -4400,7 +4587,7 @@ Connection_activate: function(building) {
 
 },
 
-DisplayObject: {"": "Object;layer>,visible<"},
+DisplayObject: {"": "Object;visible<"},
 
 Rect: {"": "DisplayObject;position*,size>,lineWidth,color,anchor,layer,visible", $isRect: true},
 
@@ -4418,27 +4605,51 @@ Sprite: {"": "DisplayObject;frame,image,anchor,scale,position*,size>,rotation,al
   $isSprite: true,
   static: {
 Sprite$: function(layer, image, position, width, height) {
-  var t1 = new U.Sprite(0, image, null, null, position, null, 0, 1, false, 0, true);
+  var t1 = new U.Sprite(0, image, null, null, position, null, 0, 1, false, null, true);
   t1.Sprite$5(layer, image, position, width, height);
   return t1;
 }}
 
 },
 
-Emitter: {"": "Object;sprite<,strength,analyzer", static: {
+Layer: {"": "Object;_value<",
+  $sub: function(_, other) {
+    return this._value - other.get$_value();
+  },
+  static: {
+"": "Layer_BUILDINGGUNFLYING,Layer_SPORE,Layer_SHELL,Layer_SHIP,Layer_BUILDINGFLYING,Layer_SMOKE,Layer_EXPLOSION,Layer_PACKET,Layer_BUILDINGGUN,Layer_PROJECTILE,Layer_EMITTER,Layer_SPORETOWER,Layer_BUILDING,Layer_CONNECTION,Layer_CONNECTIONBORDER,Layer_TARGETSYMBOL,Layer_SELECTEDCIRCLE,Layer_TERRAFORM",
+}
+
+},
+
+Emitter: {"": "Object;sprite,strength,analyzer",
+  Emitter$2: function(position, strength) {
+    var t1 = $.engine.images;
+    this.sprite = U.Sprite$(C.Layer_3, t1.$index(t1, "emitter"), position, 48, 48);
+    this.sprite.anchor = new U.Vector(0.5, 0.5);
+    t1 = $.engine.renderer;
+    t1.$index(t1, "buffer").addDisplayObject$1(this.sprite);
+  },
+  static: {
 "": "Emitter_counter,Emitter_emitters",
+Emitter$: function(position, strength) {
+  var t1 = new U.Emitter(null, strength, null);
+  t1.Emitter$2(position, strength);
+  return t1;
+},
+
 Emitter_update: function() {
-  var t1, t2, i, t3, t4;
-  t1 = $.Emitter_counter;
-  if (typeof t1 !== "number")
-    throw t1.$add();
-  $.Emitter_counter = t1 + 1;
+  var t1, t2, i, t3;
   t1 = $.Emitter_counter;
   t2 = $.game.speed;
   if (typeof t1 !== "number")
+    throw t1.$add();
+  $.Emitter_counter = t1 + 1 * t2;
+  t1 = $.Emitter_counter;
+  if (typeof t1 !== "number")
     throw t1.$ge();
-  if (t1 >= 25 / t2) {
-    $.Emitter_counter = 0;
+  if (t1 >= 25) {
+    $.Emitter_counter = t1 - 25;
     for (i = 0; i < $.get$Emitter_emitters().length; ++i) {
       t1 = $.get$Emitter_emitters();
       if (i >= t1.length)
@@ -4450,16 +4661,15 @@ Emitter_update: function() {
           throw H.ioore(t2, i);
         t2 = t2[i].sprite.position;
         t1 = t1.tiles;
-        t3 = J.getInterceptor$x(t2);
-        t4 = J.$tdiv$n(t3.get$x(t2), 16);
-        if (t4 >>> 0 !== t4 || t4 >= t1.length)
-          throw H.ioore(t1, t4);
-        t2 = J.$index$asx(t1[t4], J.$tdiv$n(t3.get$y(t2), 16));
+        t3 = J.$tdiv$n(t2.x, 16);
+        if (t3 >>> 0 !== t3 || t3 >= t1.length)
+          throw H.ioore(t1, t3);
+        t2 = J.$index$asx(t1[t3], J.$tdiv$n(t2.y, 16));
         t3 = t2.get$creep();
-        t4 = $.get$Emitter_emitters();
-        if (i >= t4.length)
-          throw H.ioore(t4, i);
-        t2.creep = t3 + t4[i].strength;
+        t1 = $.get$Emitter_emitters();
+        if (i >= t1.length)
+          throw H.ioore(t1, i);
+        t2.creep = t3 + t1[i].strength;
         $.game.creeperDirty = true;
       }
     }
@@ -4467,30 +4677,29 @@ Emitter_update: function() {
 },
 
 Emitter_find: function(building) {
-  var center, t1, i, t2, emitterCenter, t3, t4, t5;
+  var center, i, t1, emitterCenter, t2, t3, t4;
   center = building.sprite.position;
   if (building.weaponTargetPosition == null)
-    for (t1 = J.getInterceptor$x(center), i = 0; i < $.get$Emitter_emitters().length; ++i) {
-      t2 = $.get$Emitter_emitters();
-      if (i >= t2.length)
-        throw H.ioore(t2, i);
-      emitterCenter = t2[i].sprite.position;
-      t2 = J.getInterceptor$x(emitterCenter);
-      t3 = J.$sub$n(t2.get$x(emitterCenter), t1.get$x(center));
-      if (typeof t3 !== "number")
-        H.throwExpression(new P.ArgumentError(t3));
-      t3 = Math.pow(t3, 2);
-      t2 = J.$sub$n(t2.get$y(emitterCenter), t1.get$y(center));
+    for (i = 0; i < $.get$Emitter_emitters().length; ++i) {
+      t1 = $.get$Emitter_emitters();
+      if (i >= t1.length)
+        throw H.ioore(t1, i);
+      emitterCenter = t1[i].sprite.position;
+      t1 = J.$sub$n(emitterCenter.x, center.x);
+      if (typeof t1 !== "number")
+        H.throwExpression(new P.ArgumentError(t1));
+      t1 = Math.pow(t1, 2);
+      t2 = J.$sub$n(emitterCenter.y, center.y);
       if (typeof t2 !== "number")
         H.throwExpression(new P.ArgumentError(t2));
       t2 = Math.pow(t2, 2);
-      t4 = building.weaponRadius;
-      t5 = $.game.tileSize;
-      if (t3 + t2 <= Math.pow(t4 * t5, 2)) {
-        t2 = $.get$Emitter_emitters();
-        if (i >= t2.length)
-          throw H.ioore(t2, i);
-        if (t2[i].analyzer == null) {
+      t3 = building.weaponRadius;
+      t4 = $.game.tileSize;
+      if (t1 + t2 <= Math.pow(t3 * t4, 2)) {
+        t1 = $.get$Emitter_emitters();
+        if (i >= t1.length)
+          throw H.ioore(t1, i);
+        if (t1[i].analyzer == null) {
           t1 = $.get$Emitter_emitters();
           if (i >= t1.length)
             throw H.ioore(t1, i);
@@ -4528,17 +4737,18 @@ Emitter_checkWinningCondition: function() {
     $.game.running.cancel$0();
   }
 }}
+
 },
 
-Mouse: {"": "Object;position>,active@,dragStart,dragEnd",
+Mouse: {"": "Object;position>,active@,buttonPressed,dragStart,dragEnd",
   toString$0: function(_) {
     return H.S(this.position);
   }
 },
 
-Engine: {"": "Object;animationRequest,TPS,width>,height*,halfWidth,halfHeight,mouse,mouseGUI,canvas,sounds,images,resizeTimer",
+Engine: {"": "Object;animationRequest,TPS,width>,height*,halfWidth,halfHeight,mouse,renderer,sounds,images,resizeTimer",
   setupEventHandler$0: function() {
-    var t1, t2, mainCanvas, guiCanvas, t3;
+    var t1, t2, t3, t4, t5;
     t1 = document.querySelector("#terraform");
     t1.toString;
     t1 = C.EventStreamProvider_click.forElement$1(t1);
@@ -4563,56 +4773,56 @@ Engine: {"": "Object;animationRequest,TPS,width>,height*,halfWidth,halfHeight,mo
     t1 = new W._EventStreamSubscription(0, t2._target, t2._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure2()), t2._useCapture);
     H.setRuntimeTypeInfo(t1, [H.getRuntimeTypeArgument(t2, "_EventStream", 0)]);
     t1._tryResume$0();
-    t1 = this.canvas;
-    mainCanvas = J.get$view$x(t1.$index(t1, "main"));
-    guiCanvas = J.get$view$x(t1.$index(t1, "gui"));
-    t1 = J.getInterceptor$x(mainCanvas);
-    t2 = t1.get$onMouseMove(mainCanvas);
-    t3 = new W._EventStreamSubscription(0, t2._target, t2._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure3()), t2._useCapture);
+    t1 = this.renderer;
+    t2 = J.get$view$x(t1.$index(t1, "main"));
+    t3 = J.getInterceptor$x(t2);
+    t4 = t3.get$onMouseMove(t2);
+    t5 = new W._EventStreamSubscription(0, t4._target, t4._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure3()), t4._useCapture);
+    H.setRuntimeTypeInfo(t5, [H.getRuntimeTypeArgument(t4, "_EventStream", 0)]);
+    t5._tryResume$0();
+    t5 = t3.get$onDoubleClick(t2);
+    t4 = new W._EventStreamSubscription(0, t5._target, t5._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure4()), t5._useCapture);
+    H.setRuntimeTypeInfo(t4, [H.getRuntimeTypeArgument(t5, "_EventStream", 0)]);
+    t4._tryResume$0();
+    t4 = t3.get$onMouseDown(t2);
+    t5 = new W._EventStreamSubscription(0, t4._target, t4._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure5()), t4._useCapture);
+    H.setRuntimeTypeInfo(t5, [H.getRuntimeTypeArgument(t4, "_EventStream", 0)]);
+    t5._tryResume$0();
+    t5 = t3.get$onMouseUp(t2);
+    t4 = new W._EventStreamSubscription(0, t5._target, t5._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure6()), t5._useCapture);
+    H.setRuntimeTypeInfo(t4, [H.getRuntimeTypeArgument(t5, "_EventStream", 0)]);
+    t4._tryResume$0();
+    t2 = t3.get$onMouseWheel(t2);
+    t3 = new W._EventStreamSubscription(0, t2._target, t2._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure7()), t2._useCapture);
     H.setRuntimeTypeInfo(t3, [H.getRuntimeTypeArgument(t2, "_EventStream", 0)]);
     t3._tryResume$0();
-    t3 = t1.get$onDoubleClick(mainCanvas);
-    t2 = new W._EventStreamSubscription(0, t3._target, t3._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure4()), t3._useCapture);
-    H.setRuntimeTypeInfo(t2, [H.getRuntimeTypeArgument(t3, "_EventStream", 0)]);
-    t2._tryResume$0();
-    t2 = t1.get$onMouseDown(mainCanvas);
-    t3 = new W._EventStreamSubscription(0, t2._target, t2._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure5()), t2._useCapture);
-    H.setRuntimeTypeInfo(t3, [H.getRuntimeTypeArgument(t2, "_EventStream", 0)]);
-    t3._tryResume$0();
-    t3 = t1.get$onMouseUp(mainCanvas);
-    t2 = new W._EventStreamSubscription(0, t3._target, t3._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure6()), t3._useCapture);
-    H.setRuntimeTypeInfo(t2, [H.getRuntimeTypeArgument(t3, "_EventStream", 0)]);
-    t2._tryResume$0();
-    t1 = t1.get$onMouseWheel(mainCanvas);
-    t2 = new W._EventStreamSubscription(0, t1._target, t1._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure7()), t1._useCapture);
-    H.setRuntimeTypeInfo(t2, [H.getRuntimeTypeArgument(t1, "_EventStream", 0)]);
-    t2._tryResume$0();
-    t2 = J.getInterceptor$x(guiCanvas);
-    t1 = t2.get$onMouseMove(guiCanvas);
-    t3 = new W._EventStreamSubscription(0, t1._target, t1._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure8()), t1._useCapture);
+    t1 = J.get$view$x(t1.$index(t1, "gui"));
+    t3 = J.getInterceptor$x(t1);
+    t2 = t3.get$onMouseMove(t1);
+    t4 = new W._EventStreamSubscription(0, t2._target, t2._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure8()), t2._useCapture);
+    H.setRuntimeTypeInfo(t4, [H.getRuntimeTypeArgument(t2, "_EventStream", 0)]);
+    t4._tryResume$0();
+    t1 = t3.get$onClick(t1);
+    t3 = new W._EventStreamSubscription(0, t1._target, t1._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure9()), t1._useCapture);
     H.setRuntimeTypeInfo(t3, [H.getRuntimeTypeArgument(t1, "_EventStream", 0)]);
-    t3._tryResume$0();
-    t2 = t2.get$onClick(guiCanvas);
-    t3 = new W._EventStreamSubscription(0, t2._target, t2._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure9()), t2._useCapture);
-    H.setRuntimeTypeInfo(t3, [H.getRuntimeTypeArgument(t2, "_EventStream", 0)]);
     t3._tryResume$0();
     t3 = document;
-    t2 = C.EventStreamProvider_keydown.forTarget$1(t3);
-    t1 = new W._EventStreamSubscription(0, t2._target, t2._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure10()), t2._useCapture);
-    H.setRuntimeTypeInfo(t1, [H.getRuntimeTypeArgument(t2, "_EventStream", 0)]);
+    t1 = C.EventStreamProvider_keydown.forTarget$1(t3);
+    t4 = new W._EventStreamSubscription(0, t1._target, t1._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure10()), t1._useCapture);
+    H.setRuntimeTypeInfo(t4, [H.getRuntimeTypeArgument(t1, "_EventStream", 0)]);
+    t4._tryResume$0();
+    t4 = C.EventStreamProvider_keyup.forTarget$1(t3);
+    t1 = new W._EventStreamSubscription(0, t4._target, t4._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure11()), t4._useCapture);
+    H.setRuntimeTypeInfo(t1, [H.getRuntimeTypeArgument(t4, "_EventStream", 0)]);
     t1._tryResume$0();
-    t3 = C.EventStreamProvider_keyup.forTarget$1(t3);
-    t1 = new W._EventStreamSubscription(0, t3._target, t3._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure11()), t3._useCapture);
+    t3 = C.EventStreamProvider_contextmenu.forTarget$1(t3);
+    t1 = new W._EventStreamSubscription(0, t3._target, t3._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure12()), t3._useCapture);
     H.setRuntimeTypeInfo(t1, [H.getRuntimeTypeArgument(t3, "_EventStream", 0)]);
     t1._tryResume$0();
-    t1 = C.EventStreamProvider_contextmenu.forTarget$1(document);
-    t3 = new W._EventStreamSubscription(0, t1._target, t1._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure12()), t1._useCapture);
+    t1 = C.EventStreamProvider_resize.forTarget$1(window);
+    t3 = new W._EventStreamSubscription(0, t1._target, t1._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure13()), t1._useCapture);
     H.setRuntimeTypeInfo(t3, [H.getRuntimeTypeArgument(t1, "_EventStream", 0)]);
     t3._tryResume$0();
-    t3 = C.EventStreamProvider_resize.forTarget$1(window);
-    t1 = new W._EventStreamSubscription(0, t3._target, t3._eventType, W._wrapZone(new U.Engine_setupEventHandler_closure13()), t3._useCapture);
-    H.setRuntimeTypeInfo(t1, [H.getRuntimeTypeArgument(t3, "_EventStream", 0)]);
-    t1._tryResume$0();
   },
   loadImages$0: function() {
     var t1, t2, completer, filenames;
@@ -4648,34 +4858,21 @@ Engine: {"": "Object;animationRequest,TPS,width>,height*,halfWidth,halfHeight,mo
     return this.playSound$2(name, null);
   },
   updateMouse$1: function(evt) {
-    var t1, t2, t3, t4, t5, position;
+    var t1, t2, t3, t4, t5;
     t1 = this.mouse;
     t2 = t1.position;
     t3 = J.getInterceptor$x(evt);
     t4 = t3.get$client(evt);
-    t5 = this.canvas;
+    t5 = this.renderer;
     t2.x = J.toInt$0$n(J.$sub$n(t4.get$x(t4), J.get$left$x(J.getBoundingClientRect$0$x(J.get$view$x(t5.$index(t5, "main"))))));
     t4 = t1.position;
     t3 = t3.get$client(evt);
     t4.y = J.toInt$0$n(J.$sub$n(t3.get$y(t3), J.get$top$x(J.getBoundingClientRect$0$x(J.get$view$x(t5.$index(t5, "main"))))));
     t2 = $.game;
     if (t2 != null) {
-      position = t2.getHoveredTilePosition$0();
-      t1.dragEnd = new U.Vector(position.x, position.y);
+      t1.dragEnd = t2.getHoveredTilePosition$0();
       $.game.updateTerraformInfo$0();
     }
-  },
-  updateMouseGUI$1: function(evt) {
-    var t1, t2, t3, t4, t5;
-    t1 = this.mouseGUI;
-    t2 = t1.position;
-    t3 = J.getInterceptor$x(evt);
-    t4 = t3.get$client(evt);
-    t5 = this.canvas;
-    t2.x = J.toInt$0$n(J.$sub$n(t4.get$x(t4), J.get$left$x(J.getBoundingClientRect$0$x(J.get$view$x(t5.$index(t5, "gui"))))));
-    t1 = t1.position;
-    t3 = t3.get$client(evt);
-    t1.y = J.toInt$0$n(J.$sub$n(t3.get$y(t3), J.get$top$x(J.getBoundingClientRect$0$x(J.get$view$x(t5.$index(t5, "gui"))))));
   },
   randomInt$3: function(from, to, seed) {
     return C.C__Random.nextInt$1(J.$add$ns(J.$sub$n(to, from), 1)) + from;
@@ -4684,7 +4881,7 @@ Engine: {"": "Object;animationRequest,TPS,width>,height*,halfWidth,halfHeight,mo
     return this.randomInt$3(from, to, null);
   },
   Engine$0: function() {
-    var t1, t2, t3, i, e, t4;
+    var t1, t2, t3, i, e;
     this.width = window.innerWidth;
     this.height = window.innerHeight;
     t1 = this.width;
@@ -4692,7 +4889,7 @@ Engine: {"": "Object;animationRequest,TPS,width>,height*,halfWidth,halfHeight,mo
       throw t1.$div();
     this.halfWidth = C.JSNumber_methods.toInt$0(Math.floor(t1 / 2));
     this.halfHeight = J.floor$0$n(J.$div$n(this.height, 2));
-    t1 = this.canvas;
+    t1 = this.renderer;
     t1.$indexSet(t1, "main", U.Renderer$(W.CanvasElement_CanvasElement(null, null), this.width, this.height));
     t2 = J.get$children$x(document.querySelector("#canvasContainer"));
     t2.add$1(t2, J.get$view$x(t1.$index(t1, "main")));
@@ -4714,14 +4911,7 @@ Engine: {"": "Object;animationRequest,TPS,width>,height*,halfWidth,halfHeight,mo
     for (i = 0; i < 10; ++i) {
       t2 = "level" + i;
       e = document.createElement("canvas", null);
-      t3 = P.List_List(null, U.DisplayObject);
-      t3.$builtinTypeInfo = [U.DisplayObject];
-      t3 = new U.Renderer(e, null, null, null, null, null, t3);
-      t3.updateRect$2(2048, 2048);
-      t4 = t3.view;
-      J.set$position$x(t4.style, "absolute");
-      t3.context = J.getContext$1$x(t4, "2d");
-      t1.$indexSet(t1, t2, t3);
+      t1.$indexSet(t1, t2, U.Renderer$(e, 2048, 2048));
     }
     t1.$indexSet(t1, "levelbuffer", U.Renderer$(W.CanvasElement_CanvasElement(null, null), 2048, 2048));
     t1.$indexSet(t1, "levelfinal", U.Renderer$(W.CanvasElement_CanvasElement(null, null), this.width, this.height));
@@ -4738,7 +4928,7 @@ Engine: {"": "Object;animationRequest,TPS,width>,height*,halfWidth,halfHeight,mo
   },
   static: {
 Engine$: function() {
-  var t1 = new U.Engine(null, 60, null, null, null, null, new U.Mouse(new U.Vector(0, 0), true, null, null), new U.Mouse(new U.Vector(0, 0), true, null, null), P.LinkedHashMap_LinkedHashMap(null, null, null, null, null), P.LinkedHashMap_LinkedHashMap(null, null, null, null, null), P.LinkedHashMap_LinkedHashMap(null, null, null, null, null), null);
+  var t1 = new U.Engine(null, 60, null, null, null, null, new U.Mouse(new U.Vector(0, 0), true, 0, null, null), P.LinkedHashMap_LinkedHashMap(null, null, null, null, null), P.LinkedHashMap_LinkedHashMap(null, null, null, null, null), P.LinkedHashMap_LinkedHashMap(null, null, null, null, null), null);
   t1.Engine$0();
   return t1;
 }}
@@ -4811,8 +5001,7 @@ Engine_setupEventHandler_closure7: {"": "Closure;",
 
 Engine_setupEventHandler_closure8: {"": "Closure;",
   call$1: function($event) {
-    $.engine.updateMouseGUI$1($event);
-    U.UISymbol_checkHovered();
+    U.UISymbol_checkHovered($event);
     return;
   },
   $is_args1: true
@@ -4897,14 +5086,14 @@ Engine_loadSounds_closure: {"": "Closure;this_0",
   $is_args1: true
 },
 
-Explosion: {"": "Object;sprite<",
+Explosion: {"": "Object;sprite",
   Explosion$1: function(position) {
     var t1 = $.engine.images;
-    this.sprite = U.Sprite$(3, t1.$index(t1, "explosion"), position, 64, 64);
+    this.sprite = U.Sprite$(C.Layer_7, t1.$index(t1, "explosion"), position, 64, 64);
     this.sprite.animated = true;
     this.sprite.rotation = $.engine.randomInt$2(0, 359);
     this.sprite.anchor = new U.Vector(0.5, 0.5);
-    t1 = $.engine.canvas;
+    t1 = $.engine.renderer;
     t1.$index(t1, "buffer").addDisplayObject$1(this.sprite);
   },
   static: {
@@ -4915,17 +5104,24 @@ Explosion$: function(position) {
   return t1;
 },
 
+Explosion_add: function(position) {
+  var explosion = U.Explosion$(position);
+  $.get$Explosion_explosions().push(explosion);
+  return explosion;
+},
+
 Explosion_update: function() {
-  var i, t1, t2;
+  var t1, i, t2;
   $.Explosion_counter = $.Explosion_counter + 1;
-  if ($.Explosion_counter === 1) {
-    $.Explosion_counter = 0;
+  t1 = $.Explosion_counter;
+  if (t1 >= 1) {
+    $.Explosion_counter = t1 - 1;
     for (i = $.get$Explosion_explosions().length - 1; i >= 0; --i) {
       t1 = $.get$Explosion_explosions();
       if (i >= t1.length)
         throw H.ioore(t1, i);
       if (t1[i].sprite.frame === 44) {
-        t1 = $.engine.canvas;
+        t1 = $.engine.renderer;
         t1 = t1.$index(t1, "buffer");
         t2 = $.get$Explosion_explosions();
         if (i >= t2.length)
@@ -4945,7 +5141,7 @@ Explosion_update: function() {
 
 },
 
-Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy<,terraformingHeight,creeperCounter,collectCounter,speed,zoom,running,mode,paused,scrollingUp,scrollingDown,scrollingLeft,scrollingRight,creeperDirty,ghosts,world,scroll,base,stopwatch,tfLine1,tfLine2,tfLine3,tfLine4,tfNumber,targetCursor",
+Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy<,terraformingHeight,speed,creeperCounter,zoom,running,mode,paused,scrollingUp,scrollingDown,scrollingLeft,scrollingRight,creeperDirty,ghosts,world,scroll,base,stopwatch,tfLine1,tfLine2,tfLine3,tfLine4,tfNumber,targetCursor",
   init$0: function() {
     var t1, music, t2;
     t1 = this.seed;
@@ -4960,35 +5156,42 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy<,terraformingHeight,cre
     t2 = new W._EventStreamSubscription(0, t1._target, t1._eventType, W._wrapZone(new U.Game_init_closure(music)), t1._useCapture);
     H.setRuntimeTypeInfo(t2, [H.getRuntimeTypeArgument(t1, "_EventStream", 0)]);
     t2._tryResume$0();
-    t2 = new U.Line("#fff", new U.Vector(0, 0), new U.Vector(0, 0), 1, 0, true);
-    t2.layer = 10;
+    t2 = new U.Line("#fff", new U.Vector(0, 0), new U.Vector(0, 0), 1, null, true);
+    t2.layer = C.Layer_0;
     this.tfLine1 = t2;
     this.tfLine1.visible = false;
-    t2 = $.engine.canvas;
+    t2 = $.engine.renderer;
     t2.$index(t2, "buffer").addDisplayObject$1(this.tfLine1);
-    t2 = new U.Line("#fff", new U.Vector(0, 0), new U.Vector(0, 0), 1, 0, true);
-    t2.layer = 10;
+    t2 = new U.Line("#fff", new U.Vector(0, 0), new U.Vector(0, 0), 1, null, true);
+    t2.layer = C.Layer_0;
     this.tfLine2 = t2;
     this.tfLine2.visible = false;
-    t2 = $.engine.canvas;
+    t2 = $.engine.renderer;
     t2.$index(t2, "buffer").addDisplayObject$1(this.tfLine2);
-    t2 = new U.Line("#fff", new U.Vector(0, 0), new U.Vector(0, 0), 1, 0, true);
-    t2.layer = 10;
+    t2 = new U.Line("#fff", new U.Vector(0, 0), new U.Vector(0, 0), 1, null, true);
+    t2.layer = C.Layer_0;
     this.tfLine3 = t2;
     this.tfLine3.visible = false;
-    t2 = $.engine.canvas;
+    t2 = $.engine.renderer;
     t2.$index(t2, "buffer").addDisplayObject$1(this.tfLine3);
-    t2 = new U.Line("#fff", new U.Vector(0, 0), new U.Vector(0, 0), 1, 0, true);
-    t2.layer = 10;
+    t2 = new U.Line("#fff", new U.Vector(0, 0), new U.Vector(0, 0), 1, null, true);
+    t2.layer = C.Layer_0;
     this.tfLine4 = t2;
     this.tfLine4.visible = false;
-    t2 = $.engine.canvas;
+    t2 = $.engine.renderer;
     t2.$index(t2, "buffer").addDisplayObject$1(this.tfLine4);
     t2 = $.engine.images;
-    this.targetCursor = U.Sprite$(10, t2.$index(t2, "targetcursor"), new U.Vector(0, 0), 48, 48);
+    this.tfNumber = U.Sprite$(C.Layer_0, t2.$index(t2, "numbers"), new U.Vector(0, 0), 16, 16);
+    this.tfNumber.visible = false;
+    this.tfNumber.animated = true;
+    this.tfNumber.frame = this.terraformingHeight;
+    t2 = $.engine.renderer;
+    t2.$index(t2, "buffer").addDisplayObject$1(this.tfNumber);
+    t2 = $.engine.images;
+    this.targetCursor = U.Sprite$(C.Layer_0, t2.$index(t2, "targetcursor"), new U.Vector(0, 0), 48, 48);
     this.targetCursor.anchor = new U.Vector(0.5, 0.5);
     this.targetCursor.visible = false;
-    t2 = $.engine.canvas;
+    t2 = $.engine.renderer;
     t2.$index(t2, "buffer").addDisplayObject$1(this.targetCursor);
     this.drawTerrain$0();
     this.copyTerrain$0();
@@ -5022,7 +5225,6 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy<,terraformingHeight,cre
     this.maxEnergy = 20;
     this.currentEnergy = 20;
     this.creeperCounter = 0;
-    this.collectCounter = 0;
     this.speed = 1;
     this.updateEnergyElement$0();
     this.updateSpeedElement$0();
@@ -5082,7 +5284,7 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy<,terraformingHeight,cre
   },
   run$0: function() {
     var t1, t2, t3;
-    this.running = P.Timer_Timer$periodic(P.Duration$(0, 0, 0, C.JSNumber_methods.toInt$0(Math.floor(1000 / this.speed / $.engine.TPS)), 0, 0), new U.Game_run_closure(this));
+    this.running = P.Timer_Timer$periodic(P.Duration$(0, 0, 0, C.JSNumber_methods.toInt$0(Math.floor(1000 / $.engine.TPS)), 0, 0), new U.Game_run_closure(this));
     t1 = $.engine;
     t2 = window;
     t3 = this.get$draw();
@@ -5102,28 +5304,26 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy<,terraformingHeight,cre
       var t1 = document.querySelector("#terraform");
       t1.toString;
       new W._ElementAttributeMap(t1)._element.setAttribute("value", "Terraform Off");
+      this.tfNumber.visible = false;
     } else {
       this.mode = "TERRAFORM";
       t1 = document.querySelector("#terraform");
       t1.toString;
       new W._ElementAttributeMap(t1)._element.setAttribute("value", "Terraform On");
+      this.tfNumber.visible = true;
     }
   },
   faster$0: function() {
     var t1 = this.speed;
     if (t1 < 2) {
       this.speed = t1 * 2;
-      this.running.cancel$0();
-      this.run$0();
       this.updateSpeedElement$0();
     }
   },
   slower$0: function() {
     var t1 = this.speed;
     if (t1 > 1) {
-      this.speed = t1 / 2;
-      this.running.cancel$0();
-      this.run$0();
+      this.speed = C.JSNumber_methods.$tdiv(t1, 2);
       this.updateSpeedElement$0();
     }
   },
@@ -5161,7 +5361,8 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy<,terraformingHeight,cre
       if (!(i < t3))
         break;
       t1 = t1.tiles;
-      t2 = P.List_List(t2.y, null);
+      t2 = P.List_List(t2.y, U.Tile);
+      t2.$builtinTypeInfo = [U.Tile];
       if (i >= t1.length)
         throw H.ioore(t1, i);
       t1[i] = t2;
@@ -5260,40 +5461,28 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy<,terraformingHeight,cre
       if (t4.$gt(max, 4294967295))
         max = 4294967295;
       randomPosition = new U.Vector(t1 + 0, (Math.random() * max >>> 0) + 0);
-      t1 = J.$add$ns(J.$mul$n(randomPosition.x, 16), 24);
-      t4 = J.$add$ns(J.$mul$n(randomPosition.y, 16), 24);
-      emitter = new U.Emitter(null, 25, null);
-      t5 = $.engine.images;
-      t4 = new U.Sprite(0, t5.$index(t5, "emitter"), null, null, new U.Vector(t1, t4), null, 0, 1, false, 0, true);
-      t4.layer = 0;
-      t4.anchor = new U.Vector(0, 0);
-      t4.scale = new U.Vector(1, 1);
-      t4.size = new U.Vector(48, 48);
-      emitter.sprite = t4;
-      emitter.sprite.anchor = new U.Vector(0.5, 0.5);
-      t4 = $.engine.canvas;
-      t4.$index(t4, "buffer").addDisplayObject$1(emitter.sprite);
+      emitter = U.Emitter$(new U.Vector(J.$add$ns(J.$mul$n(randomPosition.x, t2), 24), J.$add$ns(J.$mul$n(randomPosition.y, t2), 24)), 25);
       $.get$Emitter_emitters().push(emitter);
-      t4 = this.world;
-      t1 = emitter.sprite.position;
-      t4 = t4.tiles;
-      t5 = J.getInterceptor$x(t1);
-      t6 = J.$tdiv$n(t5.get$x(t1), 16);
-      if (t6 >>> 0 !== t6 || t6 >= t4.length)
-        throw H.ioore(t4, t6);
-      height = J.get$height$x(J.$index$asx(t4[t6], J.$tdiv$n(t5.get$y(t1), 16)));
+      t1 = this.world;
+      t4 = emitter.sprite.position;
+      t1 = t1.tiles;
+      t5 = J.$tdiv$n(t4.x, 16);
+      if (t5 >>> 0 !== t5 || t5 >= t1.length)
+        throw H.ioore(t1, t5);
+      height = J.get$height$x(J.$index$asx(t1[t5], J.$tdiv$n(t4.y, 16)));
       if (J.$lt$n(height, 0))
         height = 0;
       for (i = -1; i <= 1; ++i)
         for (t1 = i * t2, j = -1; j <= 1; ++j) {
           t4 = this.world;
-          t5 = J.$add$ns(emitter.sprite.position, new U.Vector(t1, j * t2));
+          t5 = emitter.sprite.position;
+          t6 = new U.Vector(t1, j * t2);
+          t6 = new U.Vector(J.$add$ns(t5.x, t6.x), J.$add$ns(t5.y, t6.y));
           t4 = t4.tiles;
-          t6 = J.getInterceptor$x(t5);
-          t7 = J.$tdiv$n(t6.get$x(t5), 16);
-          if (t7 >>> 0 !== t7 || t7 >= t4.length)
-            throw H.ioore(t4, t7);
-          J.set$height$x(J.$index$asx(t4[t7], J.$tdiv$n(t6.get$y(t5), 16)), height);
+          t5 = J.$tdiv$n(t6.x, 16);
+          if (t5 >>> 0 !== t5 || t5 >= t4.length)
+            throw H.ioore(t4, t5);
+          J.set$height$x(J.$index$asx(t4[t5], J.$tdiv$n(t6.y, 16)), height);
         }
     }
     number = t1.randomInt$3(1, 2, t3);
@@ -5322,106 +5511,102 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy<,terraformingHeight,cre
       if (t3.$gt(max, 4294967295))
         max = 4294967295;
       randomPosition = new U.Vector(t1 + 0, (Math.random() * max >>> 0) + 0);
-      sporetower = U.Sporetower$(new U.Vector(J.$add$ns(J.$mul$n(randomPosition.x, 16), 24), J.$add$ns(J.$mul$n(randomPosition.y, 16), 24)));
+      sporetower = U.Sporetower$(new U.Vector(J.$add$ns(J.$mul$n(randomPosition.x, t2), 24), J.$add$ns(J.$mul$n(randomPosition.y, t2), 24)));
       $.get$Sporetower_sporetowers().push(sporetower);
       t1 = this.world;
       t3 = sporetower.sprite.position;
       t1 = t1.tiles;
-      t4 = J.getInterceptor$x(t3);
-      t5 = J.$tdiv$n(t4.get$x(t3), 16);
-      if (t5 >>> 0 !== t5 || t5 >= t1.length)
-        throw H.ioore(t1, t5);
-      height = J.get$height$x(J.$index$asx(t1[t5], J.$tdiv$n(t4.get$y(t3), 16)));
+      t4 = J.$tdiv$n(t3.x, 16);
+      if (t4 >>> 0 !== t4 || t4 >= t1.length)
+        throw H.ioore(t1, t4);
+      height = J.get$height$x(J.$index$asx(t1[t4], J.$tdiv$n(t3.y, 16)));
       if (J.$lt$n(height, 0))
         height = 0;
       for (i = -1; i <= 1; ++i)
         for (t1 = i * t2, j = -1; j <= 1; ++j) {
           t3 = this.world;
-          t4 = J.$add$ns(sporetower.sprite.position, new U.Vector(t1, j * t2));
+          t4 = sporetower.sprite.position;
+          t5 = new U.Vector(t1, j * t2);
+          t5 = new U.Vector(J.$add$ns(t4.x, t5.x), J.$add$ns(t4.y, t5.y));
           t3 = t3.tiles;
-          t5 = J.getInterceptor$x(t4);
-          t6 = J.$tdiv$n(t5.get$x(t4), 16);
-          if (t6 >>> 0 !== t6 || t6 >= t3.length)
-            throw H.ioore(t3, t6);
-          J.set$height$x(J.$index$asx(t3[t6], J.$tdiv$n(t5.get$y(t4), 16)), height);
+          t4 = J.$tdiv$n(t5.x, 16);
+          if (t4 >>> 0 !== t4 || t4 >= t3.length)
+            throw H.ioore(t3, t4);
+          J.set$height$x(J.$index$asx(t3[t4], J.$tdiv$n(t5.y, 16)), height);
         }
     }
   },
   setupUI$0: function() {
-    var t1, t2;
+    var t1, symbol;
     t1 = new U.Vector(0, 0);
-    t2 = new U.UISymbol(null, "cannon", 3, 25, 10, 81, false, false);
+    symbol = new U.UISymbol(null, "cannon", 3, 25, 10, 81, false, false);
     t1 = new P.Rectangle(t1.x, t1.y, 80, 55);
     H.setRuntimeTypeInfo(t1, [null]);
-    t2.rectangle = t1;
-    $.get$UISymbol_symbols().push(t2);
-    t2 = new U.Vector(81, 0);
-    t1 = new U.UISymbol(null, "collector", 3, 5, 6, 87, false, false);
-    t2 = new P.Rectangle(t2.x, t2.y, 80, 55);
-    H.setRuntimeTypeInfo(t2, [null]);
-    t1.rectangle = t2;
-    $.get$UISymbol_symbols().push(t1);
+    symbol.rectangle = t1;
+    $.get$UISymbol_symbols().push(symbol);
+    t1 = new U.Vector(81, 0);
+    symbol = new U.UISymbol(null, "collector", 3, 5, 6, 87, false, false);
+    t1 = new P.Rectangle(t1.x, t1.y, 80, 55);
+    H.setRuntimeTypeInfo(t1, [null]);
+    symbol.rectangle = t1;
+    $.get$UISymbol_symbols().push(symbol);
     t1 = new U.Vector(162, 0);
-    t2 = new U.UISymbol(null, "reactor", 3, 50, 0, 69, false, false);
+    symbol = new U.UISymbol(null, "reactor", 3, 50, 0, 69, false, false);
     t1 = new P.Rectangle(t1.x, t1.y, 80, 55);
     H.setRuntimeTypeInfo(t1, [null]);
-    t2.rectangle = t1;
-    $.get$UISymbol_symbols().push(t2);
-    t2 = new U.Vector(243, 0);
-    t1 = new U.UISymbol(null, "storage", 3, 8, 0, 82, false, false);
-    t2 = new P.Rectangle(t2.x, t2.y, 80, 55);
-    H.setRuntimeTypeInfo(t2, [null]);
-    t1.rectangle = t2;
-    $.get$UISymbol_symbols().push(t1);
+    symbol.rectangle = t1;
+    $.get$UISymbol_symbols().push(symbol);
+    t1 = new U.Vector(243, 0);
+    symbol = new U.UISymbol(null, "storage", 3, 8, 0, 82, false, false);
+    t1 = new P.Rectangle(t1.x, t1.y, 80, 55);
+    H.setRuntimeTypeInfo(t1, [null]);
+    symbol.rectangle = t1;
+    $.get$UISymbol_symbols().push(symbol);
     t1 = new U.Vector(324, 0);
-    t2 = new U.UISymbol(null, "shield", 3, 75, 10, 84, false, false);
+    symbol = new U.UISymbol(null, "shield", 3, 75, 10, 84, false, false);
     t1 = new P.Rectangle(t1.x, t1.y, 80, 55);
     H.setRuntimeTypeInfo(t1, [null]);
-    t2.rectangle = t1;
-    $.get$UISymbol_symbols().push(t2);
-    t2 = new U.Vector(405, 0);
-    t1 = new U.UISymbol(null, "analyzer", 3, 80, 10, 90, false, false);
-    t2 = new P.Rectangle(t2.x, t2.y, 80, 55);
-    H.setRuntimeTypeInfo(t2, [null]);
-    t1.rectangle = t2;
-    $.get$UISymbol_symbols().push(t1);
+    symbol.rectangle = t1;
+    $.get$UISymbol_symbols().push(symbol);
+    t1 = new U.Vector(405, 0);
+    symbol = new U.UISymbol(null, "analyzer", 3, 80, 10, 90, false, false);
+    t1 = new P.Rectangle(t1.x, t1.y, 80, 55);
+    H.setRuntimeTypeInfo(t1, [null]);
+    symbol.rectangle = t1;
+    $.get$UISymbol_symbols().push(symbol);
     t1 = new U.Vector(0, 56);
-    t2 = new U.UISymbol(null, "relay", 3, 10, 8, 65, false, false);
+    symbol = new U.UISymbol(null, "relay", 3, 10, 8, 65, false, false);
     t1 = new P.Rectangle(t1.x, t1.y, 80, 55);
     H.setRuntimeTypeInfo(t1, [null]);
-    t2.rectangle = t1;
-    $.get$UISymbol_symbols().push(t2);
-    t2 = new U.Vector(81, 56);
-    t1 = new U.UISymbol(null, "mortar", 3, 40, 14, 83, false, false);
-    t2 = new P.Rectangle(t2.x, t2.y, 80, 55);
-    H.setRuntimeTypeInfo(t2, [null]);
-    t1.rectangle = t2;
-    $.get$UISymbol_symbols().push(t1);
+    symbol.rectangle = t1;
+    $.get$UISymbol_symbols().push(symbol);
+    t1 = new U.Vector(81, 56);
+    symbol = new U.UISymbol(null, "mortar", 3, 40, 14, 83, false, false);
+    t1 = new P.Rectangle(t1.x, t1.y, 80, 55);
+    H.setRuntimeTypeInfo(t1, [null]);
+    symbol.rectangle = t1;
+    $.get$UISymbol_symbols().push(symbol);
     t1 = new U.Vector(162, 56);
-    t2 = new U.UISymbol(null, "beam", 3, 20, 14, 68, false, false);
+    symbol = new U.UISymbol(null, "beam", 3, 20, 20, 68, false, false);
     t1 = new P.Rectangle(t1.x, t1.y, 80, 55);
     H.setRuntimeTypeInfo(t1, [null]);
-    t2.rectangle = t1;
-    $.get$UISymbol_symbols().push(t2);
-    t2 = new U.Vector(243, 56);
-    t1 = new U.UISymbol(null, "bomber", 3, 75, 0, 70, false, false);
-    t2 = new P.Rectangle(t2.x, t2.y, 80, 55);
-    H.setRuntimeTypeInfo(t2, [null]);
-    t1.rectangle = t2;
-    $.get$UISymbol_symbols().push(t1);
+    symbol.rectangle = t1;
+    $.get$UISymbol_symbols().push(symbol);
+    t1 = new U.Vector(243, 56);
+    symbol = new U.UISymbol(null, "bomber", 3, 75, 0, 70, false, false);
+    t1 = new P.Rectangle(t1.x, t1.y, 80, 55);
+    H.setRuntimeTypeInfo(t1, [null]);
+    symbol.rectangle = t1;
+    $.get$UISymbol_symbols().push(symbol);
     t1 = new U.Vector(324, 56);
-    t2 = new U.UISymbol(null, "terp", 3, 60, 14, 71, false, false);
+    symbol = new U.UISymbol(null, "terp", 3, 60, 20, 71, false, false);
     t1 = new P.Rectangle(t1.x, t1.y, 80, 55);
     H.setRuntimeTypeInfo(t1, [null]);
-    t2.rectangle = t1;
-    $.get$UISymbol_symbols().push(t2);
+    symbol.rectangle = t1;
+    $.get$UISymbol_symbols().push(symbol);
   },
   drawTerrain$0: function() {
-    var i, t1, t2, t3, t4, i0, t5, t6, j, t7, j0, t8, t9, indexAbove, k, t10, up, down, left, right, index, t11, pattern;
-    for (i = 0; i < 10; ++i) {
-      t1 = $.engine.canvas;
-      J.clear$0$ax(t1.$index(t1, "level" + i));
-    }
+    var t1, t2, t3, i, t4, i0, t5, t6, j, t7, j0, t8, t9, indexAbove, k, t10, up, down, left, right, index, t11, pattern;
     t1 = this.tileSize;
     t2 = t1 + 6;
     t3 = t2 + 3;
@@ -5505,7 +5690,7 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy<,terraformingHeight,cre
               if (indexAbove === 5 || indexAbove === 7 || indexAbove === 10 || indexAbove === 11 || indexAbove === 13 || indexAbove === 14 || indexAbove === 15)
                 continue;
             }
-            t10 = $.engine.canvas;
+            t10 = $.engine.renderer;
             t10 = t10.$index(t10, "level" + k).get$context();
             t11 = $.engine.images;
             J.drawImageScaledFromSource$9$x(t10, t11.$index(t11, "mask"), index * t2 + 3, t3, t1, t1, t4, t7, t1, t1);
@@ -5517,21 +5702,21 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy<,terraformingHeight,cre
       i = i0;
     }
     for (i = 0; i < 10; ++i) {
-      t3 = $.engine.canvas;
+      t3 = $.engine.renderer;
       t3 = t3.$index(t3, "level" + i).get$context();
       t4 = $.engine.images;
       pattern = J.createPatternFromImage$2$x(t3, t4.$index(t4, "level" + i), "repeat");
-      t4 = $.engine.canvas;
+      t4 = $.engine.renderer;
       J.set$globalCompositeOperation$x(t4.$index(t4, "level" + i).get$context(), "source-in");
-      t4 = $.engine.canvas;
+      t4 = $.engine.renderer;
       J.set$fillStyle$x(t4.$index(t4, "level" + i).get$context(), pattern);
-      t4 = $.engine.canvas;
+      t4 = $.engine.renderer;
       t4 = t4.$index(t4, "level" + i).get$context();
-      t3 = $.engine.canvas;
+      t3 = $.engine.renderer;
       t3 = J.get$width$x(J.get$view$x(t3.$index(t3, "level" + i)));
-      t5 = $.engine.canvas;
+      t5 = $.engine.renderer;
       J.fillRect$4$x(t4, 0, 0, t3, J.get$height$x(J.get$view$x(t5.$index(t5, "level" + i))));
-      t5 = $.engine.canvas;
+      t5 = $.engine.renderer;
       J.set$globalCompositeOperation$x(t5.$index(t5, "level" + i).get$context(), "source-over");
     }
     t3 = t1 + 2;
@@ -5606,7 +5791,7 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy<,terraformingHeight,cre
               if (indexAbove === 5 || indexAbove === 7 || indexAbove === 10 || indexAbove === 11 || indexAbove === 13 || indexAbove === 14 || indexAbove === 15)
                 continue;
             }
-            t10 = $.engine.canvas;
+            t10 = $.engine.renderer;
             t10 = t10.$index(t10, "level" + k).get$context();
             t11 = $.engine.images;
             J.drawImageScaledFromSource$9$x(t10, t11.$index(t11, "borders"), index * t2 + 2, 2, t3, t3, t4, t7, t3, t3);
@@ -5617,89 +5802,81 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy<,terraformingHeight,cre
       }
       i = i0;
     }
-    t1 = $.engine.canvas;
+    t1 = $.engine.renderer;
     J.clear$0$ax(t1.$index(t1, "levelbuffer"));
     for (k = 0; k < 10; ++k) {
-      t1 = $.engine.canvas;
+      t1 = $.engine.renderer;
       t1 = t1.$index(t1, "levelbuffer").get$context();
-      t2 = $.engine.canvas;
+      t2 = $.engine.renderer;
       J.drawImage$3$x(t1, J.get$view$x(t2.$index(t2, "level" + k)), 0, 0);
     }
     J.set$display$x(document.querySelector("#loading").style, "none");
   },
   copyTerrain$0: function() {
-    var t1, delta, t2, t3, t4, left, $top, delta2, width, height, t5, t6, t7;
-    t1 = $.engine.canvas;
+    var t1, t2, t3, t4, sourceLeft, sourceTop, targetLeft, targetTop, targetWidth, targetHeight, sourceWidth, sourceHeight;
+    t1 = $.engine.renderer;
     J.clear$0$ax(t1.$index(t1, "levelfinal"));
-    delta = new U.Vector(0, 0);
     t1 = this.tileSize;
     t2 = J.$mul$n(this.scroll.x, t1);
-    t3 = $.engine.width;
-    if (typeof t3 !== "number")
-      throw t3.$div();
+    t3 = $.engine.halfWidth;
     t4 = this.zoom;
     if (typeof t4 !== "number")
       throw H.iae(t4);
-    left = J.$sub$n(t2, t3 / 2 * (1 / t4));
+    sourceLeft = J.$sub$n(t2, t3 / t4);
     t4 = J.$mul$n(this.scroll.y, t1);
-    t3 = J.$div$n($.engine.height, 2);
+    t3 = $.engine.halfHeight;
     t2 = this.zoom;
     if (typeof t2 !== "number")
       throw H.iae(t2);
-    $top = J.$sub$n(t4, J.$mul$n(t3, 1 / t2));
-    if (J.$lt$n(left, 0)) {
-      if (typeof left !== "number")
-        throw left.$negate();
+    sourceTop = J.$sub$n(t4, t3 / t2);
+    if (J.$lt$n(sourceLeft, 0)) {
+      if (typeof sourceLeft !== "number")
+        throw sourceLeft.$negate();
       t2 = this.zoom;
       if (typeof t2 !== "number")
         throw H.iae(t2);
-      delta.x = -left * t2;
-      left = 0;
-    }
-    if (J.$lt$n($top, 0)) {
-      if (typeof $top !== "number")
-        throw $top.$negate();
+      targetLeft = -sourceLeft * t2;
+      sourceLeft = 0;
+    } else
+      targetLeft = 0;
+    if (J.$lt$n(sourceTop, 0)) {
+      if (typeof sourceTop !== "number")
+        throw sourceTop.$negate();
       t2 = this.zoom;
       if (typeof t2 !== "number")
         throw H.iae(t2);
-      delta.y = -$top * t2;
-      $top = 0;
-    }
-    delta2 = new U.Vector(0, 0);
+      targetTop = -sourceTop * t2;
+      sourceTop = 0;
+    } else
+      targetTop = 0;
     t2 = $.engine;
-    t3 = t2.width;
-    t4 = this.zoom;
-    if (typeof t4 !== "number")
-      throw H.iae(t4);
-    t4 = 1 / t4;
-    if (typeof t3 !== "number")
-      throw t3.$mul();
-    width = t3 * t4;
-    height = J.$mul$n(t2.height, t4);
-    t2 = J.getInterceptor$ns(left);
-    if (J.$gt$n(t2.$add(left, width), J.$mul$n(this.world.size.x, t1))) {
-      delta2.x = J.$mul$n(J.$sub$n(t2.$add(left, width), J.$mul$n(this.world.size.x, t1)), this.zoom);
-      width = J.$sub$n(J.$mul$n(this.world.size.x, t1), left);
+    targetWidth = t2.width;
+    targetHeight = t2.height;
+    t2 = this.zoom;
+    if (typeof targetWidth !== "number")
+      throw targetWidth.$div();
+    if (typeof t2 !== "number")
+      throw H.iae(t2);
+    sourceWidth = targetWidth / t2;
+    t3 = J.getInterceptor$n(targetHeight);
+    sourceHeight = t3.$div(targetHeight, t2);
+    t2 = J.getInterceptor$ns(sourceLeft);
+    if (J.$gt$n(t2.$add(sourceLeft, sourceWidth), J.$mul$n(this.world.size.x, t1))) {
+      t2 = J.$mul$n(J.$sub$n(t2.$add(sourceLeft, sourceWidth), J.$mul$n(this.world.size.x, t1)), this.zoom);
+      if (typeof t2 !== "number")
+        throw H.iae(t2);
+      targetWidth -= t2;
+      sourceWidth = J.$sub$n(J.$mul$n(this.world.size.x, t1), sourceLeft);
     }
-    t2 = J.getInterceptor$ns($top);
-    if (J.$gt$n(t2.$add($top, height), J.$mul$n(this.world.size.y, t1))) {
-      delta2.y = J.$mul$n(J.$sub$n(t2.$add($top, height), J.$mul$n(this.world.size.y, t1)), this.zoom);
-      height = J.$sub$n(J.$mul$n(this.world.size.y, t1), $top);
+    t2 = J.getInterceptor$ns(sourceTop);
+    if (J.$gt$n(t2.$add(sourceTop, sourceHeight), J.$mul$n(this.world.size.y, t1))) {
+      targetHeight = t3.$sub(targetHeight, J.$mul$n(J.$sub$n(t2.$add(sourceTop, sourceHeight), J.$mul$n(this.world.size.y, t1)), this.zoom));
+      sourceHeight = J.$sub$n(J.$mul$n(this.world.size.y, t1), sourceTop);
     }
-    t1 = $.engine.canvas;
+    t1 = $.engine.renderer;
     t1 = t1.$index(t1, "levelfinal").get$context();
-    t2 = $.engine.canvas;
-    t2 = J.get$view$x(t2.$index(t2, "levelbuffer"));
-    t3 = delta.x;
-    t4 = delta.y;
-    t5 = $.engine;
-    t6 = t5.width;
-    t7 = delta2.x;
-    if (typeof t6 !== "number")
-      throw t6.$sub();
-    if (typeof t7 !== "number")
-      throw H.iae(t7);
-    J.drawImageScaledFromSource$9$x(t1, t2, left, $top, width, height, t3, t4, t6 - t7, J.$sub$n(t5.height, delta2.y));
+    t2 = $.engine.renderer;
+    J.drawImageScaledFromSource$9$x(t1, J.get$view$x(t2.$index(t2, "levelbuffer")), sourceLeft, sourceTop, sourceWidth, sourceHeight, targetLeft, targetTop, targetWidth, targetHeight);
   },
   redrawTerrain$1: function(tiles) {
     var tempCanvas, tempContext, t1, t, e, t2, t3, t4, i, t5, iS, jS, index, indexAbove, t6, up, down, left, t7, right, t8, t9, pattern, translation, t10;
@@ -5748,26 +5925,26 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy<,terraformingHeight,cre
                 throw H.ioore(t6, iS);
               down = J.$ge$n(J.get$height$x(J.$index$asx(t6[iS], t5.$add(jS, 1))), t) ? 1 : 0;
             }
-            t6 = iS - 1;
-            if (t6 < 0)
+            if (iS - 1 < 0)
               left = 0;
             else {
-              t7 = this.world.tiles;
-              if (t6 >= t7.length)
-                throw H.ioore(t7, t6);
-              left = J.$ge$n(J.get$height$x(J.$index$asx(t7[t6], jS)), t) ? 1 : 0;
+              t6 = this.world.tiles;
+              t7 = iS - 1;
+              if (t7 < 0 || t7 >= t6.length)
+                throw H.ioore(t6, t7);
+              left = J.$ge$n(J.get$height$x(J.$index$asx(t6[t7], jS)), t) ? 1 : 0;
             }
-            t6 = iS + 1;
-            t7 = J.$sub$n(this.world.size.x, 1);
-            if (typeof t7 !== "number")
-              throw H.iae(t7);
-            if (t6 > t7)
+            t6 = J.$sub$n(this.world.size.x, 1);
+            if (typeof t6 !== "number")
+              throw H.iae(t6);
+            if (iS + 1 > t6)
               right = 0;
             else {
-              t7 = this.world.tiles;
-              if (t6 >= t7.length)
-                throw H.ioore(t7, t6);
-              right = J.$ge$n(J.get$height$x(J.$index$asx(t7[t6], jS)), t) ? 1 : 0;
+              t6 = this.world.tiles;
+              t7 = iS + 1;
+              if (t7 < 0 || t7 >= t6.length)
+                throw H.ioore(t6, t7);
+              right = J.$ge$n(J.get$height$x(J.$index$asx(t6[t7], jS)), t) ? 1 : 0;
             }
             index = 8 * down + 4 * left + 2 * up + right;
           }
@@ -5834,11 +6011,11 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy<,terraformingHeight,cre
           J.drawImageScaledFromSource$9$x(t6, t7.$index(t7, "borders"), t9 + 2, 2, t3, t3, 0, 0, t3, t3);
           indexAbove = index;
         }
-        t6 = $.engine.canvas;
+        t6 = $.engine.renderer;
         t7 = J.getInterceptor$n(iS);
         J.clearRect$4$x(t6.$index(t6, "levelbuffer").get$context(), t7.$mul(iS, t1), t5.$mul(jS, t1), t1, t1);
         for (t = 0; t < 10; ++t) {
-          t6 = $.engine.canvas;
+          t6 = $.engine.renderer;
           t6 = t6.$index(t6, "levelbuffer").get$context();
           if (t >= tempCanvas.length)
             throw H.ioore(tempCanvas, t);
@@ -5847,54 +6024,6 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy<,terraformingHeight,cre
       }
     }
     this.copyTerrain$0();
-  },
-  getNeighbours$2: function(node, target) {
-    var neighbours, t1, t2, allowedDistance, allowedDistance0, centerI, centerNode, i, distance;
-    neighbours = P.List_List(null, null);
-    for (t1 = J.getInterceptor$x(node), t2 = this.tileSize, allowedDistance = 10 * t2, allowedDistance0 = 20 * t2, centerI = null, centerNode = null, i = 0; i < $.get$Building_buildings().length; ++i) {
-      t2 = $.get$Building_buildings();
-      if (i >= t2.length)
-        throw H.ioore(t2, i);
-      if (!J.$eq(J.get$position$x(t2[i]), t1.get$position(node))) {
-        t2 = $.get$Building_buildings();
-        if (i >= t2.length)
-          throw H.ioore(t2, i);
-        if (J.get$status$x(t2[i]) === "IDLE") {
-          t2 = $.get$Building_buildings();
-          if (i >= t2.length)
-            throw H.ioore(t2, i);
-          if (!J.$eq(t2[i], target)) {
-            t2 = $.get$Building_buildings();
-            if (i >= t2.length)
-              throw H.ioore(t2, i);
-            t2 = t2[i].get$built();
-          } else
-            t2 = true;
-          if (t2) {
-            t2 = $.get$Building_buildings();
-            if (i >= t2.length)
-              throw H.ioore(t2, i);
-            centerI = J.get$position$x(t2[i]);
-            centerNode = t1.get$position(node);
-            distance = centerNode.distanceTo$1(centerI);
-            if (t1.get$type(node) === "relay") {
-              t2 = $.get$Building_buildings();
-              if (i >= t2.length)
-                throw H.ioore(t2, i);
-              t2 = J.get$type$x(t2[i]) === "relay";
-            } else
-              t2 = false;
-            if (distance <= (t2 ? allowedDistance0 : allowedDistance)) {
-              t2 = $.get$Building_buildings();
-              if (i >= t2.length)
-                throw H.ioore(t2, i);
-              neighbours.push(t2[i]);
-            }
-          }
-        }
-      }
-    }
-    return neighbours;
   },
   canBePlaced$3: function(position, size, building) {
     var t1, t2, height, t3, t4, i, collision, t5, t6, t7, t8, buildingRect, currentRect, j, tileHeight;
@@ -5944,7 +6073,7 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy<,terraformingHeight,cre
           throw H.ioore(t8, i);
         buildingRect = new P.Rectangle(t6, t7, t5, J.$sub$n(J.$mul$n(J.get$size$x(t8[i]), t1), 1));
         buildingRect.$builtinTypeInfo = [null];
-        currentRect = new P.Rectangle(J.$sub$n(J.$mul$n(position.x, t1), 16), J.$sub$n(J.$mul$n(position.y, t1), 16), J.$sub$n(t2.$mul(size, t1), 1), J.$sub$n(t2.$mul(size, t1), 1));
+        currentRect = new P.Rectangle(J.$sub$n(J.$mul$n(position.x, t1), t1), J.$sub$n(J.$mul$n(position.y, t1), t1), J.$sub$n(t2.$mul(size, t1), 1), J.$sub$n(t2.$mul(size, t1), 1));
         currentRect.$builtinTypeInfo = [null];
         if (currentRect.intersects$1(currentRect, buildingRect)) {
           collision = true;
@@ -6008,13 +6137,12 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy<,terraformingHeight,cre
     return !collision;
   },
   updateCreeper$0: function() {
-    var t1, t2, i, i0, j, t3, t4, t5, j0;
+    var t1, i, t2, i0, j, t3, t4, t5, j0;
     U.Emitter_update();
-    this.creeperCounter = this.creeperCounter + 1;
+    this.creeperCounter = this.creeperCounter + 1 * $.game.speed;
     t1 = this.creeperCounter;
-    t2 = 25 / this.speed;
-    if (t1 > t2) {
-      this.creeperCounter = t1 - t2;
+    if (t1 >= 25) {
+      this.creeperCounter = t1 - 25;
       this.creeperDirty = true;
       i = 0;
       while (true) {
@@ -6208,65 +6336,61 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy<,terraformingHeight,cre
       this.creeperDirty = true;
     }
   },
-  drawRangeBoxes$4: function(position, type, rad, size) {
-    var t1, context, positionCenter, t2, t3, positionHeight, radius, i, t4, t5, t6, t7, t8, i0, j, positionCurrent, positionCurrentCenter, drawPositionCurrent, t9, t10, positionCurrentHeight, t11;
-    t1 = $.engine.canvas;
+  drawRangeBoxes$4: function(position, type, radius, size) {
+    var t1, context, t2, positionCenter, t3, t4, positionHeight, i, t5, i0, j, t6, positionCurrent, positionCurrentCenter, drawPositionCurrent, t7, positionCurrentHeight, t8;
+    t1 = $.engine.renderer;
     context = t1.$index(t1, "buffer").get$context();
-    t1 = this.tileSize;
-    positionCenter = new U.Vector(J.$add$ns(J.$mul$n(position.x, t1), 8), J.$add$ns(J.$mul$n(position.y, t1), 8));
-    t2 = $.game.world.tiles;
-    t3 = position.x;
-    if (t3 >>> 0 !== t3 || t3 >= t2.length)
-      throw H.ioore(t2, t3);
-    positionHeight = J.get$height$x(J.$index$asx(t2[t3], position.y));
     if (this.canBePlaced$3(position, size, null))
-      t2 = type === "collector" || type === "cannon" || type === "mortar" || type === "shield" || type === "beam" || type === "terp";
+      t1 = type === "collector" || type === "cannon" || type === "mortar" || type === "shield" || type === "beam" || type === "terp" || type === "analyzer";
     else
-      t2 = false;
-    if (t2) {
+      t1 = false;
+    if (t1) {
+      t1 = this.tileSize;
+      t2 = t1 / 2;
+      positionCenter = new U.Vector(J.$add$ns(J.$mul$n(position.x, t1), t2), J.$add$ns(J.$mul$n(position.y, t1), t2));
+      t3 = $.game.world.tiles;
+      t4 = position.x;
+      if (t4 >>> 0 !== t4 || t4 >= t3.length)
+        throw H.ioore(t3, t4);
+      positionHeight = J.get$height$x(J.$index$asx(t3[t4], position.y));
       J.save$0$x(context);
       context.globalAlpha = 0.35;
-      radius = rad * t1;
-      for (i = -radius, t2 = t1 / 2, t3 = type !== "mortar", t4 = type === "cannon", t5 = type === "collector", t6 = type !== "shield", t7 = type !== "beam", t8 = type === "terp", i0 = i; i0 < radius; ++i0)
-        for (j = i; j < radius; ++j) {
-          positionCurrent = new U.Vector(J.$add$ns(position.x, i0), J.$add$ns(position.y, j));
-          positionCurrentCenter = new U.Vector(J.$add$ns(J.$mul$n(positionCurrent.x, t1), t2), J.$add$ns(J.$mul$n(positionCurrent.y, t1), t2));
-          drawPositionCurrent = positionCurrent.tiled2screen$0();
-          t9 = this.world;
-          if (t9.contains$1(t9, positionCurrent)) {
-            t9 = $.game.world.tiles;
-            t10 = positionCurrent.x;
-            if (t10 >>> 0 !== t10 || t10 >= t9.length)
-              throw H.ioore(t9, t10);
-            positionCurrentHeight = J.get$height$x(J.$index$asx(t9[t10], positionCurrent.y));
-            t9 = J.$sub$n(positionCurrentCenter.x, positionCenter.x);
-            if (typeof t9 !== "number")
-              H.throwExpression(new P.ArgumentError(t9));
-            t9 = Math.pow(t9, 2);
-            t10 = J.$sub$n(positionCurrentCenter.y, positionCenter.y);
-            if (typeof t10 !== "number")
-              H.throwExpression(new P.ArgumentError(t10));
-            t10 = Math.pow(t10, 2);
-            if (t9 + t10 < Math.pow(radius, 2)) {
-              if (t5)
-                if (J.$eq(positionCurrentHeight, positionHeight))
-                  context.fillStyle = "#fff";
-                else
-                  context.fillStyle = "#f00";
-              else if (t4)
-                if (J.$le$n(positionCurrentHeight, positionHeight))
-                  context.fillStyle = "#fff";
-                else
-                  context.fillStyle = "#f00";
-              else if (type === "mortar" || type === "shield" || type === "beam" || t8)
-                context.fillStyle = "#fff";
-              t9 = drawPositionCurrent.x;
-              t10 = drawPositionCurrent.y;
-              t11 = this.zoom;
-              if (typeof t11 !== "number")
-                throw H.iae(t11);
-              t11 = t1 * t11;
-              context.fillRect(t9, t10, t11, t11);
+      for (i = -radius, t3 = radius * t1, t4 = type === "collector", t5 = type === "cannon", i0 = i; i0 <= radius; ++i0)
+        for (j = i; j <= radius; ++j) {
+          t6 = new U.Vector(i0, j);
+          positionCurrent = new U.Vector(J.$add$ns(position.x, t6.x), J.$add$ns(position.y, t6.y));
+          t6 = this.world;
+          if (t6.contains$1(t6, positionCurrent)) {
+            positionCurrentCenter = new U.Vector(J.$add$ns(J.$mul$n(positionCurrent.x, t1), t2), J.$add$ns(J.$mul$n(positionCurrent.y, t1), t2));
+            drawPositionCurrent = positionCurrent.tiled2screen$0();
+            t6 = $.game.world.tiles;
+            t7 = positionCurrent.x;
+            if (t7 >>> 0 !== t7 || t7 >= t6.length)
+              throw H.ioore(t6, t7);
+            positionCurrentHeight = J.get$height$x(J.$index$asx(t6[t7], positionCurrent.y));
+            t6 = J.$sub$n(positionCenter.x, positionCurrentCenter.x);
+            if (typeof t6 !== "number")
+              H.throwExpression(new P.ArgumentError(t6));
+            t6 = Math.pow(t6, 2);
+            t7 = J.$sub$n(positionCenter.y, positionCurrentCenter.y);
+            if (typeof t7 !== "number")
+              H.throwExpression(new P.ArgumentError(t7));
+            t7 = Math.pow(t7, 2);
+            if (Math.sqrt(t6 + t7) < t3) {
+              context.fillStyle = "#fff";
+              if (!(t4 && !J.$eq(positionCurrentHeight, positionHeight)))
+                t6 = t5 && J.$gt$n(positionCurrentHeight, positionHeight);
+              else
+                t6 = true;
+              if (t6)
+                context.fillStyle = "#f00";
+              t6 = drawPositionCurrent.x;
+              t7 = drawPositionCurrent.y;
+              t8 = this.zoom;
+              if (typeof t8 !== "number")
+                throw H.iae(t8);
+              t8 = t1 * t8;
+              context.fillRect(t6, t7, t8, t8);
             }
           }
         }
@@ -6275,11 +6399,11 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy<,terraformingHeight,cre
   },
   drawCollection$0: function() {
     var t1, t2, t3, timesX, timesY, i, j, t4, j0, t5, t6, iS, jS, up, down, left, right, t7, t8, t9, t10;
-    t1 = $.engine.canvas;
+    t1 = $.engine.renderer;
     J.clear$0$ax(t1.$index(t1, "collection"));
-    t1 = $.engine.canvas;
+    t1 = $.engine.renderer;
     J.save$0$x(t1.$index(t1, "collection").get$context());
-    t1 = $.engine.canvas;
+    t1 = $.engine.renderer;
     J.set$globalAlpha$x(t1.$index(t1, "collection").get$context(), 0.5);
     t1 = $.engine.halfWidth;
     t2 = this.tileSize;
@@ -6351,7 +6475,7 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy<,terraformingHeight,cre
                 throw H.ioore(t6, t5);
               right = J.$index$asx(t6[t5], jS).get$collector() != null ? 1 : 0;
             }
-            t5 = $.engine.canvas;
+            t5 = $.engine.renderer;
             t5 = t5.$index(t5, "collection").get$context();
             t6 = $.engine.images;
             t6 = t6.$index(t6, "mask");
@@ -6365,12 +6489,12 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy<,terraformingHeight,cre
           }
         }
       }
-    t1 = $.engine.canvas;
+    t1 = $.engine.renderer;
     J.restore$0$x(t1.$index(t1, "collection").get$context());
   },
   drawCreeper$0: function() {
     var t1, t2, t3, timesX, timesY, i, j, j0, t4, iS, jS, height, t5, t6, t7, t8, t9, t, t10, up, down, left, right, t11, t12, t13, t14, t15, ind, indexOk, index;
-    t1 = $.engine.canvas;
+    t1 = $.engine.renderer;
     J.clear$0$ax(t1.$index(t1, "creeperbuffer"));
     t1 = $.engine.halfWidth;
     t2 = this.tileSize;
@@ -6471,7 +6595,7 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy<,terraformingHeight,cre
                   t10 = true;
                 right = t10 ? 1 : 0;
               }
-              t10 = $.engine.canvas;
+              t10 = $.engine.renderer;
               t10 = t10.$index(t10, "creeperbuffer").get$context();
               t11 = $.engine.images;
               t11 = t11.$index(t11, "creeper");
@@ -6587,7 +6711,7 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy<,terraformingHeight,cre
               }
               index = 8 * down + 4 * left + 2 * up + right;
               if (index !== 0) {
-                t10 = $.engine.canvas;
+                t10 = $.engine.renderer;
                 t10 = t10.$index(t10, "creeperbuffer").get$context();
                 t11 = $.engine.images;
                 t11 = t11.$index(t11, "creeper");
@@ -6603,38 +6727,41 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy<,terraformingHeight,cre
           }
         }
       }
-    t1 = $.engine.canvas;
+    t1 = $.engine.renderer;
     J.clear$0$ax(t1.$index(t1, "creeper"));
-    t1 = $.engine.canvas;
+    t1 = $.engine.renderer;
     t1 = t1.$index(t1, "creeper").get$context();
-    t2 = $.engine.canvas;
+    t2 = $.engine.renderer;
     J.drawImage$3$x(t1, J.get$view$x(t2.$index(t2, "creeperbuffer")), 0, 0);
   },
   updateTerraformInfo$0: function() {
-    var position, t1;
+    var position, t1, drawPosition;
     position = this.getHoveredTilePosition$0();
     t1 = this.world;
     if (t1.contains$1(t1, position)) {
       if (this.mode === "TERRAFORM") {
         t1 = this.tileSize;
-        position = new U.Vector(J.$mul$n(position.x, t1), J.$mul$n(position.y, t1));
-        this.tfLine1.from = new U.Vector(0, position.y);
-        this.tfLine1.to = new U.Vector(J.$mul$n(this.world.size.y, t1), position.y);
-        this.tfLine2.from = new U.Vector(0, J.$add$ns(position.y, t1));
-        this.tfLine2.to = new U.Vector(J.$mul$n(this.world.size.y, t1), J.$add$ns(position.y, t1));
-        this.tfLine3.from = new U.Vector(position.x, 0);
-        this.tfLine3.to = new U.Vector(position.x, J.$mul$n(this.world.size.y, t1));
-        this.tfLine4.from = new U.Vector(J.$add$ns(position.x, t1), 0);
-        this.tfLine4.to = new U.Vector(J.$add$ns(position.x, t1), J.$mul$n(this.world.size.y, t1));
+        drawPosition = new U.Vector(J.$mul$n(position.x, t1), J.$mul$n(position.y, t1));
+        this.tfLine1.from = new U.Vector(0, drawPosition.y);
+        this.tfLine1.to = new U.Vector(J.$mul$n(this.world.size.y, t1), drawPosition.y);
+        this.tfLine2.from = new U.Vector(0, J.$add$ns(drawPosition.y, t1));
+        this.tfLine2.to = new U.Vector(J.$mul$n(this.world.size.y, t1), J.$add$ns(drawPosition.y, t1));
+        this.tfLine3.from = new U.Vector(drawPosition.x, 0);
+        this.tfLine3.to = new U.Vector(drawPosition.x, J.$mul$n(this.world.size.y, t1));
+        this.tfLine4.from = new U.Vector(J.$add$ns(drawPosition.x, t1), 0);
+        this.tfLine4.to = new U.Vector(J.$add$ns(drawPosition.x, t1), J.$mul$n(this.world.size.y, t1));
         this.tfLine1.visible = true;
         this.tfLine2.visible = true;
         this.tfLine3.visible = true;
         this.tfLine4.visible = true;
+        this.tfNumber.visible = true;
+        this.tfNumber.position = new U.Vector(J.$mul$n(position.x, t1), J.$mul$n(position.y, t1));
       } else {
         this.tfLine1.visible = false;
         this.tfLine2.visible = false;
         this.tfLine3.visible = false;
         this.tfLine4.visible = false;
+        this.tfNumber.visible = false;
       }
       t1 = this.tileSize;
       t1 = new U.Vector(J.$mul$n(position.x, t1), J.$mul$n(position.y, t1));
@@ -6644,12 +6771,13 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy<,terraformingHeight,cre
       this.tfLine2.visible = false;
       this.tfLine3.visible = false;
       this.tfLine4.visible = false;
+      this.tfNumber.visible = false;
     }
   },
   drawPositionInfo$0: function() {
-    var t1, context, t2, end, delta, distance, buildingDistance, times, i, newX, newY, position, allowedDistance, allowedDistance0, t3, j, t4, positionScrolled, drawPosition, positionScrolledCenter, t5, t6, t7, t8, center, drawCenter, allowedDistance1, lineToTarget, k;
+    var t1, context, t2, end, delta, distance, buildingDistance, times, i, newX, newY, position, allowedDistance, allowedDistance0, t3, positionScrolled, drawPosition, ghostICenter, t4, t5, t6, t7, j, buildingCenter, allowedDistance1, ghostKCenter, ghostJCenter;
     if ($.UISymbol_activeSymbol != null) {
-      t1 = $.engine.canvas;
+      t1 = $.engine.renderer;
       context = t1.$index(t1, "buffer").get$context();
       this.ghosts = P.List_List(null, null);
       t1 = $.engine.mouse;
@@ -6681,126 +6809,188 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy<,terraformingHeight,cre
         if (t1.contains$1(t1, position))
           this.ghosts.push(position);
       }
-      for (t1 = this.tileSize, t2 = t1 / 2 * 3, allowedDistance = 10 * t1, allowedDistance0 = 20 * t1, t3 = J.getInterceptor$x(context), j = 0; t4 = this.ghosts, j < t4.length; ++j) {
-        t4 = t4[j];
-        positionScrolled = new U.Vector(t4.x, t4.y);
+      for (t1 = this.tileSize, allowedDistance = 10 * t1, allowedDistance0 = 20 * t1, t2 = J.getInterceptor$x(context), i = 0; t3 = this.ghosts, i < t3.length; ++i) {
+        t3 = t3[i];
+        positionScrolled = new U.Vector(t3.x, t3.y);
         drawPosition = positionScrolled.tiled2screen$0();
-        positionScrolledCenter = new U.Vector(J.$add$ns(J.$mul$n(positionScrolled.x, t1), 8), J.$add$ns(J.$mul$n(positionScrolled.y, t1), 8));
-        t4 = $.UISymbol_activeSymbol;
-        this.drawRangeBoxes$4(positionScrolled, t4.imageID, t4.radius, t4.size);
-        t4 = this.world;
-        if (t4.contains$1(t4, positionScrolled)) {
-          t3.save$0(context);
+        t3 = this.zoom;
+        if (typeof t3 !== "number")
+          throw H.iae(t3);
+        t3 = 8 * t3;
+        t3 = new U.Vector(t3, t3);
+        ghostICenter = new U.Vector(J.$add$ns(drawPosition.x, t3.x), J.$add$ns(drawPosition.y, t3.y));
+        t3 = $.UISymbol_activeSymbol;
+        this.drawRangeBoxes$4(positionScrolled, t3.imageID, t3.radius, t3.size);
+        t3 = this.world;
+        if (t3.contains$1(t3, positionScrolled)) {
+          t2.save$0(context);
           context.globalAlpha = 0.5;
-          t4 = $.engine.images;
-          t4 = t4.$index(t4, $.UISymbol_activeSymbol.imageID);
-          t5 = J.$sub$n(drawPosition.x, 16);
-          t6 = J.$sub$n(drawPosition.y, 16);
-          t7 = $.UISymbol_activeSymbol.size;
-          t8 = this.zoom;
-          if (typeof t8 !== "number")
-            throw H.iae(t8);
-          t8 = t7 * t1 * t8;
-          context.drawImage(t4, t5, t6, t8, t8);
+          t3 = $.engine.images;
+          t3 = t3.$index(t3, $.UISymbol_activeSymbol.imageID);
+          t4 = drawPosition.x;
+          t5 = this.zoom;
+          if (typeof t5 !== "number")
+            throw H.iae(t5);
+          t5 = J.$sub$n(t4, t1 * t5);
+          t4 = drawPosition.y;
+          t6 = this.zoom;
+          if (typeof t6 !== "number")
+            throw H.iae(t6);
+          t6 = J.$sub$n(t4, t1 * t6);
+          t4 = $.UISymbol_activeSymbol.size;
+          t7 = this.zoom;
+          if (typeof t7 !== "number")
+            throw H.iae(t7);
+          t7 = t4 * t1 * t7;
+          context.drawImage(t3, t5, t6, t7, t7);
           if ($.UISymbol_activeSymbol.imageID === "cannon") {
-            t4 = $.engine.images;
-            t4 = t4.$index(t4, "cannongun");
-            t5 = J.$sub$n(drawPosition.x, 16);
-            t6 = J.$sub$n(drawPosition.y, 16);
-            t7 = this.zoom;
-            if (typeof t7 !== "number")
-              throw H.iae(t7);
-            t7 = 48 * t7;
-            context.drawImage(t4, t5, t6, t7, t7);
+            t3 = $.engine.images;
+            t3 = t3.$index(t3, "cannongun");
+            t4 = drawPosition.x;
+            t5 = this.zoom;
+            if (typeof t5 !== "number")
+              throw H.iae(t5);
+            t5 = J.$sub$n(t4, t1 * t5);
+            t4 = drawPosition.y;
+            t6 = this.zoom;
+            if (typeof t6 !== "number")
+              throw H.iae(t6);
+            t6 = J.$sub$n(t4, t1 * t6);
+            t4 = this.zoom;
+            if (typeof t4 !== "number")
+              throw H.iae(t4);
+            t4 = 48 * t4;
+            context.drawImage(t3, t5, t6, t4, t4);
           }
           if (this.canBePlaced$3(positionScrolled, $.UISymbol_activeSymbol.size, null))
             context.strokeStyle = "#0f0";
           else
             context.strokeStyle = "#f00";
+          t3 = this.zoom;
+          if (typeof t3 !== "number")
+            throw H.iae(t3);
+          context.lineWidth = 4 * t3;
+          t3 = drawPosition.x;
           t4 = this.zoom;
           if (typeof t4 !== "number")
             throw H.iae(t4);
-          context.lineWidth = 4 * t4;
-          t4 = J.$sub$n(drawPosition.x, 16);
-          t5 = J.$sub$n(drawPosition.y, 16);
-          t6 = $.UISymbol_activeSymbol.size;
-          t7 = this.zoom;
-          if (typeof t7 !== "number")
-            throw H.iae(t7);
-          t7 = t1 * t6 * t7;
-          context.strokeRect(t4, t5, t7, t7);
+          t4 = J.$sub$n(t3, t1 * t4);
+          t3 = drawPosition.y;
+          t5 = this.zoom;
+          if (typeof t5 !== "number")
+            throw H.iae(t5);
+          t5 = J.$sub$n(t3, t1 * t5);
+          t3 = $.UISymbol_activeSymbol.size;
+          t6 = this.zoom;
+          if (typeof t6 !== "number")
+            throw H.iae(t6);
+          t6 = t1 * t3 * t6;
+          context.strokeRect(t4, t5, t6, t6);
           context.restore();
-          for (i = 0; i < $.get$Building_buildings().length; ++i) {
-            t4 = $.get$Building_buildings();
-            if (i >= t4.length)
-              throw H.ioore(t4, i);
-            center = J.get$position$x(t4[i]);
-            drawCenter = center.real2screen$0();
-            t4 = $.get$Building_buildings();
-            if (i >= t4.length)
-              throw H.ioore(t4, i);
-            allowedDistance1 = J.get$type$x(t4[i]) === "relay" && $.UISymbol_activeSymbol.imageID === "relay" ? allowedDistance0 : allowedDistance;
-            t4 = J.$sub$n(center.x, positionScrolledCenter.x);
-            if (typeof t4 !== "number")
-              H.throwExpression(new P.ArgumentError(t4));
-            t4 = Math.pow(t4, 2);
-            t5 = J.$sub$n(center.y, positionScrolledCenter.y);
-            if (typeof t5 !== "number")
-              H.throwExpression(new P.ArgumentError(t5));
-            t5 = Math.pow(t5, 2);
-            if (t4 + t5 <= Math.pow(allowedDistance1, 2)) {
-              lineToTarget = positionScrolledCenter.real2screen$0();
-              context.strokeStyle = "#000";
-              t4 = $.game.zoom;
-              if (typeof t4 !== "number")
-                throw H.iae(t4);
-              context.lineWidth = 3 * t4;
-              context.beginPath();
-              context.moveTo(drawCenter.x, drawCenter.y);
-              context.lineTo(lineToTarget.x, lineToTarget.y);
-              context.stroke();
-              context.strokeStyle = "#0f0";
-              t4 = $.game.zoom;
-              if (typeof t4 !== "number")
-                throw H.iae(t4);
-              context.lineWidth = 2 * t4;
-              context.beginPath();
-              context.moveTo(drawCenter.x, drawCenter.y);
-              context.lineTo(lineToTarget.x, lineToTarget.y);
-              context.stroke();
-            }
-          }
-          for (k = 0; t4 = this.ghosts, k < t4.length; ++k)
-            if (k !== j) {
-              t4 = J.$add$ns(J.$mul$n(t4[k].x, t1), t2);
-              t5 = this.ghosts;
-              if (k >= t5.length)
-                throw H.ioore(t5, k);
-              center = new U.Vector(t4, J.$add$ns(J.$mul$n(t5[k].y, t1), t2));
-              drawCenter = center.real2screen$0();
-              allowedDistance1 = $.UISymbol_activeSymbol.imageID === "relay" ? allowedDistance0 : allowedDistance;
-              t4 = J.$sub$n(center.x, positionScrolledCenter.x);
+          for (j = 0; j < $.get$Building_buildings().length; ++j) {
+            t3 = $.get$Building_buildings();
+            if (j >= t3.length)
+              throw H.ioore(t3, j);
+            if (J.get$type$x(t3[j]) !== "collector") {
+              t3 = $.get$Building_buildings();
+              if (j >= t3.length)
+                throw H.ioore(t3, j);
+              if (J.get$type$x(t3[j]) !== "relay") {
+                t3 = $.get$Building_buildings();
+                if (j >= t3.length)
+                  throw H.ioore(t3, j);
+                t3 = J.get$type$x(t3[j]) === "base";
+              } else
+                t3 = true;
+            } else
+              t3 = true;
+            if (t3) {
+              t3 = $.get$Building_buildings();
+              if (j >= t3.length)
+                throw H.ioore(t3, j);
+              buildingCenter = J.get$position$x(t3[j]).real2screen$0();
+              t3 = $.get$Building_buildings();
+              if (j >= t3.length)
+                throw H.ioore(t3, j);
+              allowedDistance1 = J.get$type$x(t3[j]) === "relay" && $.UISymbol_activeSymbol.imageID === "relay" ? allowedDistance0 : allowedDistance;
+              t3 = J.$sub$n(buildingCenter.x, ghostICenter.x);
+              if (typeof t3 !== "number")
+                H.throwExpression(new P.ArgumentError(t3));
+              t3 = Math.pow(t3, 2);
+              t4 = J.$sub$n(buildingCenter.y, ghostICenter.y);
               if (typeof t4 !== "number")
                 H.throwExpression(new P.ArgumentError(t4));
               t4 = Math.pow(t4, 2);
-              t5 = J.$sub$n(center.y, positionScrolledCenter.y);
-              if (typeof t5 !== "number")
-                H.throwExpression(new P.ArgumentError(t5));
-              t5 = Math.pow(t5, 2);
-              if (t4 + t5 <= Math.pow(allowedDistance1, 2)) {
-                lineToTarget = positionScrolledCenter.real2screen$0();
+              t3 = Math.sqrt(t3 + t4);
+              t4 = this.zoom;
+              if (typeof t4 !== "number")
+                throw H.iae(t4);
+              if (t3 <= allowedDistance1 * t4) {
                 context.strokeStyle = "#000";
-                context.lineWidth = 2;
+                t3 = $.game.zoom;
+                if (typeof t3 !== "number")
+                  throw H.iae(t3);
+                context.lineWidth = 3 * t3;
                 context.beginPath();
-                context.moveTo(drawCenter.x, drawCenter.y);
-                context.lineTo(lineToTarget.x, lineToTarget.y);
+                context.moveTo(buildingCenter.x, buildingCenter.y);
+                context.lineTo(ghostICenter.x, ghostICenter.y);
                 context.stroke();
-                context.strokeStyle = "#fff";
-                context.lineWidth = 1;
+                context.strokeStyle = "#0f0";
+                t3 = $.game.zoom;
+                if (typeof t3 !== "number")
+                  throw H.iae(t3);
+                context.lineWidth = 2 * t3;
                 context.beginPath();
-                context.moveTo(drawCenter.x, drawCenter.y);
-                context.lineTo(lineToTarget.x, lineToTarget.y);
+                context.moveTo(buildingCenter.x, buildingCenter.y);
+                context.lineTo(ghostICenter.x, ghostICenter.y);
                 context.stroke();
+              }
+            }
+          }
+          for (j = 0; t3 = this.ghosts, j < t3.length; ++j)
+            if (j !== i) {
+              t4 = $.UISymbol_activeSymbol.imageID;
+              if (t4 === "collector" || t4 === "relay") {
+                t3 = t3[j].tiled2screen$0();
+                t4 = $.game.zoom;
+                if (typeof t4 !== "number")
+                  throw H.iae(t4);
+                t4 = 8 * t4;
+                t4 = new U.Vector(t4, t4);
+                ghostKCenter = new U.Vector(J.$add$ns(t3.x, t4.x), J.$add$ns(t3.y, t4.y));
+                allowedDistance1 = $.UISymbol_activeSymbol.imageID === "relay" ? allowedDistance0 : allowedDistance;
+                t3 = $.game.zoom;
+                if (typeof t3 !== "number")
+                  throw H.iae(t3);
+                t3 = 8 * t3;
+                t3 = new U.Vector(t3, t3);
+                ghostJCenter = new U.Vector(J.$add$ns(drawPosition.x, t3.x), J.$add$ns(drawPosition.y, t3.y));
+                t3 = J.$sub$n(ghostKCenter.x, ghostJCenter.x);
+                if (typeof t3 !== "number")
+                  H.throwExpression(new P.ArgumentError(t3));
+                t3 = Math.pow(t3, 2);
+                t4 = J.$sub$n(ghostKCenter.y, ghostJCenter.y);
+                if (typeof t4 !== "number")
+                  H.throwExpression(new P.ArgumentError(t4));
+                t4 = Math.pow(t4, 2);
+                t3 = Math.sqrt(t3 + t4);
+                t4 = this.zoom;
+                if (typeof t4 !== "number")
+                  throw H.iae(t4);
+                if (t3 <= allowedDistance1 * t4) {
+                  context.strokeStyle = "#000";
+                  context.lineWidth = 2;
+                  context.beginPath();
+                  context.moveTo(ghostKCenter.x, ghostKCenter.y);
+                  context.lineTo(ghostJCenter.x, ghostJCenter.y);
+                  context.stroke();
+                  context.strokeStyle = "#fff";
+                  context.lineWidth = 1;
+                  context.beginPath();
+                  context.moveTo(ghostKCenter.x, ghostKCenter.y);
+                  context.lineTo(ghostJCenter.x, ghostJCenter.y);
+                  context.stroke();
+                }
               }
             }
         }
@@ -6809,10 +6999,10 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy<,terraformingHeight,cre
   },
   drawGUI$0: function() {
     var t1, context, position, i, t2, total;
-    t1 = $.engine.canvas;
+    t1 = $.engine.renderer;
     context = t1.$index(t1, "gui").get$context();
     position = this.getHoveredTilePosition$0();
-    t1 = $.engine.canvas;
+    t1 = $.engine.renderer;
     J.clear$0$ax(t1.$index(t1, "gui"));
     for (i = 0; i < $.get$UISymbol_symbols().length; ++i) {
       t1 = $.get$UISymbol_symbols();
@@ -6865,43 +7055,28 @@ Game: {"": "Object;tileSize,seed,currentEnergy,maxEnergy<,terraformingHeight,cre
     }
   },
   draw$1: function(_) {
-    var t1, context, drawPosition, t2, t3, t4, t5, t6;
-    t1 = $.engine.canvas;
-    context = t1.$index(t1, "buffer").get$context();
-    t1 = $.engine.canvas;
-    J.clear$0$ax(t1.$index(t1, "buffer"));
-    t1 = $.engine.canvas;
-    J.clear$0$ax(t1.$index(t1, "main"));
+    var t1, t2;
+    t1 = $.engine.renderer;
+    t1.$index(t1, "buffer").get$context();
     this.drawGUI$0();
-    $.game.world.drawTerraformNumbers$0();
-    t1 = $.engine.canvas;
+    t1 = $.engine.renderer;
+    J.clear$0$ax(t1.$index(t1, "buffer"));
+    t1 = $.engine.renderer;
     t1.$index(t1, "buffer").draw$0();
     U.Building_draw();
-    if ($.engine.mouse.active) {
-      U.Building_drawRepositionInfo();
-      this.drawPositionInfo$0();
-      if (this.mode === "TERRAFORM") {
-        drawPosition = this.getHoveredTilePosition$0().tiled2screen$0();
-        t1 = $.engine.images;
-        t1 = t1.$index(t1, "numbers");
-        t2 = this.terraformingHeight;
-        t3 = this.tileSize;
-        t4 = drawPosition.x;
-        t5 = drawPosition.y;
-        t6 = this.zoom;
-        if (typeof t6 !== "number")
-          throw H.iae(t6);
-        t6 = t3 * t6;
-        J.drawImageScaledFromSource$9$x(context, t1, t2 * t3, 0, t3, t3, t4, t5, t6, t6);
-      }
-    }
     if (this.creeperDirty) {
       this.drawCreeper$0();
       this.creeperDirty = false;
     }
-    t1 = $.engine.canvas;
+    if ($.engine.mouse.active) {
+      U.Building_drawRepositionInfo();
+      this.drawPositionInfo$0();
+    }
+    t1 = $.engine.renderer;
+    J.clear$0$ax(t1.$index(t1, "main"));
+    t1 = $.engine.renderer;
     t1 = t1.$index(t1, "main").get$context();
-    t2 = $.engine.canvas;
+    t2 = $.engine.renderer;
     J.drawImage$3$x(t1, J.get$view$x(t2.$index(t2, "buffer")), 0, 0);
     t2 = window;
     t1 = this.get$draw();
@@ -7168,7 +7343,7 @@ main_closure: {"": "Closure;",
   call$1: function(results) {
     var t1 = P.List_List(null, U.Vector);
     H.setRuntimeTypeInfo(t1, [U.Vector]);
-    t1 = new U.Game(16, 4613, 0, 0, 0, 0, 0, 1, 1, null, null, false, false, false, false, false, true, t1, null, new U.Vector(0, 0), null, new P.Stopwatch(null, null), null, null, null, null, null, null);
+    t1 = new U.Game(16, 4613, 0, 0, 0, 1, 0, 1, null, null, false, false, false, false, false, true, t1, null, new U.Vector(0, 0), null, new P.Stopwatch(null, null), null, null, null, null, null, null);
     t1.init$0();
     $.game = t1;
     return t1;
@@ -7176,19 +7351,17 @@ main_closure: {"": "Closure;",
   $is_args1: true
 },
 
-Packet: {"": "Object;speed,type>,remove,speedMultiplier,target,currentTarget,sprite<",
+Packet: {"": "Object;speed,type>,remove,speedMultiplier,target,currentTarget,sprite",
   remove$0: function($receiver) {
     return this.remove.call$0();
   },
   move$0: function() {
-    var t1, centerTarget, t2, t3, ship;
+    var t1, t2, t3;
     this.calculateVector$0();
     t1 = this.sprite;
-    t1.position = J.$add$ns(t1.position, this.speed);
-    centerTarget = J.get$position$x(this.currentTarget);
-    t1 = J.getInterceptor$x(centerTarget);
-    if (J.$gt$n(J.get$x$x(this.sprite.position), J.$sub$n(t1.get$x(centerTarget), 1)) && J.$lt$n(J.get$x$x(this.sprite.position), J.$add$ns(t1.get$x(centerTarget), 1)) && J.$gt$n(J.get$y$x(this.sprite.position), J.$sub$n(t1.get$y(centerTarget), 1)) && J.$lt$n(J.get$y$x(this.sprite.position), J.$add$ns(t1.get$y(centerTarget), 1))) {
-      this.sprite.position = centerTarget;
+    t2 = t1.position;
+    t1.position = t2.$add(t2, this.speed);
+    if (J.$eq(this.sprite.position, J.get$position$x(this.currentTarget)))
       if (J.$eq(this.currentTarget, this.target)) {
         this.remove = true;
         t1 = this.type;
@@ -7225,9 +7398,7 @@ Packet: {"": "Object;speed,type>,remove,speedMultiplier,target,currentTarget,spr
                 $.Packet_baseSpeed = $.Packet_baseSpeed * 1.01;
               if (t2 === "bomber") {
                 t2 = t1.position;
-                ship = U.Ship$(new U.Vector(t2.x, t2.y), "bombership", "Bomber", t1);
-                this.target.ship = ship;
-                $.get$Ship_ships().push(ship);
+                t1.ship = U.Ship_add(new U.Vector(t2.x, t2.y), "bombership", "Bomber", t1);
               }
             }
           }
@@ -7252,23 +7423,21 @@ Packet: {"": "Object;speed,type>,remove,speedMultiplier,target,currentTarget,spr
         }
       } else
         this.findRoute$0();
-    }
   },
   calculateVector$0: function() {
-    var targetPosition, delta, distance, t1;
+    var targetPosition, delta, distance;
     targetPosition = J.get$position$x(this.currentTarget);
     delta = J.$sub$n(targetPosition, this.sprite.position);
     distance = this.sprite.position.distanceTo$1(targetPosition);
-    t1 = J.getInterceptor$x(delta);
-    this.speed.x = J.$mul$n(J.$mul$n(J.$mul$n(J.$div$n(t1.get$x(delta), distance), $.Packet_baseSpeed), $.game.speed), this.speedMultiplier);
-    this.speed.y = J.$mul$n(J.$mul$n(J.$mul$n(J.$div$n(t1.get$y(delta), distance), $.Packet_baseSpeed), $.game.speed), this.speedMultiplier);
-    if (J.abs$0$n(this.speed.x) > J.abs$0$n(t1.get$x(delta)))
-      this.speed.x = t1.get$x(delta);
-    if (J.abs$0$n(this.speed.y) > J.abs$0$n(t1.get$y(delta)))
-      this.speed.y = t1.get$y(delta);
+    this.speed.x = J.$mul$n(J.$mul$n(J.$mul$n(J.$div$n(J.get$x$x(delta), distance), $.Packet_baseSpeed), $.game.speed), this.speedMultiplier);
+    this.speed.y = J.$mul$n(J.$mul$n(J.$mul$n(J.$div$n(delta.y, distance), $.Packet_baseSpeed), $.game.speed), this.speedMultiplier);
+    if (J.abs$0$n(this.speed.x) > J.abs$0$n(delta.x))
+      this.speed.x = delta.x;
+    if (J.abs$0$n(this.speed.y) > J.abs$0$n(delta.y))
+      this.speed.y = delta.y;
   },
   findRoute$0: function() {
-    var routes, t1, route, t2, t3, oldRoute, lastNode, neighbours, newRoutes, i, newRoute, centerA, centerB, j, t4;
+    var routes, t1, route, t2, t3, oldRoute, neighbours, newRoutes, i, newRoute, centerA, centerB, centerC, j, t4;
     routes = P.List_List(null, U.Route);
     H.setRuntimeTypeInfo(routes, [U.Route]);
     t1 = P.List_List(null, U.Building);
@@ -7290,8 +7459,7 @@ Packet: {"": "Object;speed,type>,remove,speedMultiplier,target,currentTarget,spr
       t3 = t2 - 1;
       if (t3 < 0)
         throw H.ioore(t1, t3);
-      lastNode = t1[t3];
-      neighbours = $.game.getNeighbours$2(lastNode, this.target);
+      neighbours = t1[t3].getNeighbours$1(this.target);
       for (newRoutes = 0, i = 0; i < neighbours.length; ++i)
         if (!oldRoute.contains$1(oldRoute, neighbours[i])) {
           ++newRoutes;
@@ -7311,7 +7479,16 @@ Packet: {"": "Object;speed,type>,remove,speedMultiplier,target,currentTarget,spr
             throw H.ioore(t1, t2);
           centerB = J.get$position$x(t1[t2]);
           newRoute.distanceTravelled = newRoute.distanceTravelled + centerA.distanceTo$1(centerB);
-          newRoute.distanceRemaining = centerA.distanceTo$1(this.target.position);
+          centerC = this.target.position;
+          t2 = J.$sub$n(centerA.x, centerC.x);
+          if (typeof t2 !== "number")
+            H.throwExpression(new P.ArgumentError(t2));
+          t1 = Math.pow(t2, 2);
+          t2 = J.$sub$n(centerA.y, centerC.y);
+          if (typeof t2 !== "number")
+            H.throwExpression(new P.ArgumentError(t2));
+          t2 = Math.pow(t2, 2);
+          newRoute.distanceRemaining = Math.sqrt(t1 + t2);
           routes.push(newRoute);
         }
       for (i = 0; t1 = routes.length, i < t1; ++i)
@@ -7398,11 +7575,11 @@ Packet: {"": "Object;speed,type>,remove,speedMultiplier,target,currentTarget,spr
   },
   Packet$3: function(position, imageID, type) {
     var t1 = $.engine.images;
-    this.sprite = U.Sprite$(20, t1.$index(t1, imageID), position, 16, 16);
+    this.sprite = U.Sprite$(C.Layer_6, t1.$index(t1, imageID), position, 16, 16);
     this.sprite.anchor = new U.Vector(0.5, 0.5);
     if (this.type === "collection")
       this.sprite.scale = new U.Vector(1.5, 1.5);
-    t1 = $.engine.canvas;
+    t1 = $.engine.renderer;
     t1.$index(t1, "buffer").addDisplayObject$1(this.sprite);
   },
   static: {
@@ -7420,7 +7597,7 @@ Packet_update: function() {
     if (i >= t1.length)
       throw H.ioore(t1, i);
     if (t1[i].remove) {
-      t1 = $.engine.canvas;
+      t1 = $.engine.renderer;
       t1 = t1.$index(t1, "buffer");
       t2 = $.get$Packet_packets();
       if (i >= t2.length)
@@ -7460,8 +7637,12 @@ Packet_removeWithTarget: function(building) {
       t1 = t1[i].target === building;
     } else
       t1 = true;
-    if (t1)
-      J.removeAt$1$ax($.get$Packet_packets(), i);
+    if (t1) {
+      t1 = $.get$Packet_packets();
+      if (i >= t1.length)
+        throw H.ioore(t1, i);
+      t1[i].remove = true;
+    }
   }
   for (i = $.get$Packet_queue().length - 1; i >= 0; --i) {
     t1 = $.get$Packet_queue();
@@ -7474,8 +7655,12 @@ Packet_removeWithTarget: function(building) {
       t1 = t1[i].target === building;
     } else
       t1 = true;
-    if (t1)
-      J.removeAt$1$ax($.get$Packet_queue(), i);
+    if (t1) {
+      t1 = $.get$Packet_queue();
+      if (i >= t1.length)
+        throw H.ioore(t1, i);
+      t1[i].remove = true;
+    }
   }
 },
 
@@ -7496,7 +7681,7 @@ Packet_queuePacket: function(target, type) {
     }
     $.get$Packet_queue().push(packet);
   } else {
-    t1 = $.engine.canvas;
+    t1 = $.engine.renderer;
     t1.$index(t1, "buffer").removeDisplayObject$1(packet.sprite);
   }
 }}
@@ -7510,7 +7695,7 @@ Packet_findRoute_closure: {"": "Closure;",
   $is_args2: true
 },
 
-Projectile: {"": "Object;targetPosition,speed,remove,sprite<",
+Projectile: {"": "Object;targetPosition,speed,remove,sprite",
   remove$0: function($receiver) {
     return this.remove.call$0();
   },
@@ -7527,58 +7712,62 @@ Projectile: {"": "Object;targetPosition,speed,remove,sprite<",
       this.speed.y = delta.y;
   },
   move$0: function() {
-    var t1, tiledPosition, t2;
+    var t1, t2, targetPositionTiled, i, j, tilePosition, t3, tile;
     this.calculateVector$0();
     t1 = this.sprite;
-    t1.position = J.$add$ns(t1.position, this.speed);
-    if (J.$gt$n(J.get$x$x(this.sprite.position), J.$sub$n(this.targetPosition.x, 2)) && J.$lt$n(J.get$x$x(this.sprite.position), J.$add$ns(this.targetPosition.x, 2)) && J.$gt$n(J.get$y$x(this.sprite.position), J.$sub$n(this.targetPosition.y, 2)) && J.$lt$n(J.get$y$x(this.sprite.position), J.$add$ns(this.targetPosition.y, 2))) {
+    t2 = t1.position;
+    t1.position = t2.$add(t2, this.speed);
+    if (J.$eq(this.sprite.position, this.targetPosition)) {
       this.remove = true;
-      t1 = U.Smoke$(this.targetPosition);
-      $.get$Smoke_smokes().push(t1);
-      tiledPosition = this.targetPosition.real2tiled$0();
-      t1 = $.game.world.tiles;
-      t2 = tiledPosition.x;
-      if (t2 >>> 0 !== t2 || t2 >= t1.length)
-        throw H.ioore(t1, t2);
-      t2 = J.$index$asx(t1[t2], tiledPosition.y);
-      t2.creep = t2.get$creep() - 1;
-      t1 = $.game.world.tiles;
-      t2 = tiledPosition.x;
-      if (t2 >>> 0 !== t2 || t2 >= t1.length)
-        throw H.ioore(t1, t2);
-      if (J.$index$asx(t1[t2], tiledPosition.y).get$creep() < 0) {
-        t1 = $.game.world.tiles;
-        t2 = tiledPosition.x;
-        if (t2 >>> 0 !== t2 || t2 >= t1.length)
-          throw H.ioore(t1, t2);
-        J.$index$asx(t1[t2], tiledPosition.y).set$creep(0);
-      }
-      t1 = $.game.world.tiles;
-      t2 = tiledPosition.x;
-      if (t2 >>> 0 !== t2 || t2 >= t1.length)
-        throw H.ioore(t1, t2);
-      t2 = J.$index$asx(t1[t2], tiledPosition.y);
-      t2.newcreep = t2.get$newcreep() - 1;
-      t1 = $.game.world.tiles;
-      t2 = tiledPosition.x;
-      if (t2 >>> 0 !== t2 || t2 >= t1.length)
-        throw H.ioore(t1, t2);
-      if (J.$index$asx(t1[t2], tiledPosition.y).get$newcreep() < 0) {
-        t1 = $.game.world.tiles;
-        t2 = tiledPosition.x;
-        if (t2 >>> 0 !== t2 || t2 >= t1.length)
-          throw H.ioore(t1, t2);
-        J.$index$asx(t1[t2], tiledPosition.y).set$newcreep(0);
-      }
-      $.game.creeperDirty = true;
+      targetPositionTiled = this.targetPosition.real2tiled$0();
+      U.Smoke_add(this.targetPosition);
+      for (i = -1; i <= 1; ++i)
+        for (j = -1; j <= 1; ++j) {
+          t1 = new U.Vector(i, j);
+          tilePosition = new U.Vector(J.$add$ns(targetPositionTiled.x, t1.x), J.$add$ns(targetPositionTiled.y, t1.y));
+          t1 = $.game.world;
+          if (t1.contains$1(t1, tilePosition)) {
+            t1 = $.game.tileSize;
+            t1 = new U.Vector(J.$mul$n(tilePosition.x, t1), J.$mul$n(tilePosition.y, t1));
+            t2 = new U.Vector(8, 8);
+            t2 = new U.Vector(J.$add$ns(t1.x, t2.x), J.$add$ns(t1.y, t2.y));
+            t1 = this.targetPosition;
+            t3 = J.$sub$n(t2.x, t1.x);
+            if (typeof t3 !== "number")
+              H.throwExpression(new P.ArgumentError(t3));
+            t3 = Math.pow(t3, 2);
+            t1 = J.$sub$n(t2.y, t1.y);
+            if (typeof t1 !== "number")
+              H.throwExpression(new P.ArgumentError(t1));
+            t1 = Math.pow(t1, 2);
+            t1 = Math.sqrt(t3 + t1);
+            t2 = $.game;
+            t3 = t2.tileSize;
+            if (t1 <= t3 * 4) {
+              t1 = new U.Vector(J.$mul$n(tilePosition.x, t3), J.$mul$n(tilePosition.y, t3));
+              t2 = t2.world.tiles;
+              t3 = J.$tdiv$n(t1.x, 16);
+              if (t3 >>> 0 !== t3 || t3 >= t2.length)
+                throw H.ioore(t2, t3);
+              tile = J.$index$asx(t2[t3], J.$tdiv$n(t1.y, 16));
+              tile.creep = tile.get$creep() - 1;
+              if (tile.creep < 0)
+                tile.creep = 0;
+              tile.newcreep = tile.newcreep - 1;
+              if (tile.newcreep < 0)
+                tile.newcreep = 0;
+              $.game.creeperDirty = true;
+            }
+          }
+        }
     }
   },
   Projectile$3: function(position, targetPosition, rotation) {
     var t1 = $.engine.images;
-    this.sprite = U.Sprite$(1, t1.$index(t1, "projectile"), position, 16, 16);
+    this.sprite = U.Sprite$(C.Layer_4, t1.$index(t1, "projectile"), position, 16, 16);
     this.sprite.anchor = new U.Vector(0.5, 0.5);
     this.sprite.rotation = rotation;
-    t1 = $.engine.canvas;
+    t1 = $.engine.renderer;
     t1.$index(t1, "buffer").addDisplayObject$1(this.sprite);
   },
   static: {
@@ -7589,6 +7778,12 @@ Projectile$: function(position, targetPosition, rotation) {
   return t1;
 },
 
+Projectile_add: function(position, targetPosition, rotation) {
+  var projectile = U.Projectile$(position, targetPosition, rotation);
+  $.get$Projectile_projectiles().push(projectile);
+  return projectile;
+},
+
 Projectile_update: function() {
   var i, t1, t2;
   for (i = $.get$Projectile_projectiles().length - 1; i >= 0; --i) {
@@ -7596,7 +7791,7 @@ Projectile_update: function() {
     if (i >= t1.length)
       throw H.ioore(t1, i);
     if (t1[i].remove) {
-      t1 = $.engine.canvas;
+      t1 = $.engine.renderer;
       t1 = t1.$index(t1, "buffer");
       t2 = $.get$Projectile_projectiles();
       if (i >= t2.length)
@@ -7614,7 +7809,7 @@ Projectile_update: function() {
 
 },
 
-Renderer: {"": "Object;view>,context<,top',left',bottom',right',displayObjects",
+Renderer: {"": "Object;view>,context<,top',left',bottom',right',layers",
   clear$0: function(_) {
     var t1, t2;
     t1 = this.view;
@@ -7645,17 +7840,35 @@ Renderer: {"": "Object;view>,context<,top',left',bottom',right',displayObjects",
     this.right = J.$add$ns(t3.left, t1.width);
   },
   addDisplayObject$1: function(displayObject) {
-    var t1 = this.displayObjects;
-    t1.push(displayObject);
-    H.IterableMixinWorkaround_sortList(t1, new U.Renderer_addDisplayObject_closure());
+    var t1, t2;
+    t1 = this.layers;
+    t2 = displayObject.layer._value;
+    if (t2 < 0 || t2 >= 20)
+      throw H.ioore(t1, t2);
+    t1[t2].push(displayObject);
   },
   removeDisplayObject$1: function(displayObject) {
-    var t1 = this.displayObjects;
-    C.JSArray_methods.removeAt$1(t1, H.Arrays_indexOf(t1, displayObject, 0, t1.length));
+    var t1, t2;
+    t1 = this.layers;
+    t2 = displayObject.layer._value;
+    if (t2 < 0 || t2 >= 20)
+      throw H.ioore(t1, t2);
+    t2 = t1[t2];
+    J.removeAt$1$ax(t2, H.Arrays_indexOf(t2, displayObject, 0, t2.length));
+  },
+  switchLayer$2: function(displayObject, layer) {
+    var t1, t2;
+    this.removeDisplayObject$1(displayObject);
+    displayObject.layer = layer;
+    t1 = this.layers;
+    t2 = displayObject.layer._value;
+    if (t2 < 0 || t2 >= 20)
+      throw H.ioore(t1, t2);
+    t1[t2].push(displayObject);
   },
   isVisible$2: function(position, size) {
     var object, t1, t2, myview;
-    object = new P.Rectangle(position.x, position.y, size.x, size.y);
+    object = new P.Rectangle(J.$sub$n(position.x, J.$div$n(J.$mul$n(J.$mul$n(size.x, $.game.tileSize), $.game.zoom), 2)), J.$sub$n(position.y, J.$div$n(J.$mul$n(J.$mul$n(size.y, $.game.tileSize), $.game.zoom), 2)), J.$mul$n(J.$mul$n(size.x, $.game.tileSize), $.game.zoom), J.$mul$n(J.$mul$n(size.y, $.game.tileSize), $.game.zoom));
     object.$builtinTypeInfo = [null];
     t1 = this.view;
     t2 = J.getInterceptor$x(t1);
@@ -7664,154 +7877,135 @@ Renderer: {"": "Object;view>,context<,top',left',bottom',right',displayObjects",
     return myview.intersects$1(myview, object);
   },
   draw$0: function() {
-    var t1, displayObject, realPosition, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, realPositionFrom, realPositionTo;
-    J.save$0$x(this.context);
-    J.set$shadowBlur$x(this.context, 5);
-    J.set$shadowColor$x(this.context, "#222");
-    J.set$shadowOffsetX$x(this.context, 5);
-    J.set$shadowOffsetY$x(this.context, 5);
-    for (t1 = this.displayObjects, t1 = new H.ListIterator(t1, t1.length, 0, null); t1.moveNext$0();) {
-      displayObject = t1._current;
-      if (displayObject.get$visible())
-        if (typeof displayObject === "object" && displayObject !== null && !!displayObject.$isSprite) {
-          realPosition = displayObject.position.real2screen$0();
-          if (this.isVisible$2(realPosition, new U.Vector(J.$mul$n(displayObject.size.x, $.game.zoom), J.$mul$n(displayObject.size.y, $.game.zoom)))) {
-            t2 = displayObject.alpha;
-            if (t2 !== 1)
-              J.set$globalAlpha$x(this.context, t2);
-            if (displayObject.rotation !== 0) {
-              J.save$0$x(this.context);
-              J.translate$2$x(this.context, realPosition.x, realPosition.y);
-              t2 = this.context;
-              t3 = $.engine;
-              t4 = displayObject.rotation;
-              t3.toString;
-              if (typeof t4 !== "number")
-                throw t4.$mul();
-              J.rotate$1$x(t2, t4 * 0.017453292519943295);
-              t2 = displayObject.animated;
-              t3 = displayObject.image;
-              t4 = this.context;
-              t5 = $.game;
-              t6 = displayObject.anchor;
-              t7 = displayObject.size;
-              t8 = displayObject.scale;
-              if (t2) {
-                t2 = displayObject.frame;
-                t9 = C.JSInt_methods.$mod(t2, 8);
-                t10 = t7.x;
-                if (typeof t10 !== "number")
-                  throw H.iae(t10);
-                t2 = C.JSInt_methods.$tdiv(t2, 8);
-                t7 = t7.y;
+    var t1, t2, t3, t4, displayObject, realPosition, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14, t15, t16, myview, realPositionFrom, realPositionTo;
+    for (t1 = new H.ListIterator(this.layers, 20, 0, null), t2 = this.view, t3 = J.getInterceptor$x(t2); t1.moveNext$0();)
+      for (t4 = J.get$iterator$ax(t1._current); t4.moveNext$0();) {
+        displayObject = t4.get$current();
+        if (displayObject.get$visible())
+          if (typeof displayObject === "object" && displayObject !== null && !!displayObject.$isSprite) {
+            realPosition = displayObject.position.real2screen$0();
+            if (this.isVisible$2(realPosition, displayObject.size)) {
+              t5 = displayObject.alpha;
+              if (t5 !== 1)
+                J.set$globalAlpha$x(this.context, t5);
+              if (displayObject.rotation !== 0) {
+                J.save$0$x(this.context);
+                J.translate$2$x(this.context, realPosition.x, realPosition.y);
+                t5 = this.context;
+                t6 = $.engine;
+                t7 = displayObject.rotation;
+                t6.toString;
                 if (typeof t7 !== "number")
-                  throw H.iae(t7);
-                t11 = t6.x;
-                if (typeof t11 !== "number")
-                  throw H.iae(t11);
-                t12 = t8.x;
-                if (typeof t12 !== "number")
-                  throw H.iae(t12);
-                t5 = t5.zoom;
-                if (typeof t5 !== "number")
-                  throw H.iae(t5);
-                t6 = t6.y;
-                if (typeof t6 !== "number")
-                  throw H.iae(t6);
-                t8 = t8.y;
-                if (typeof t8 !== "number")
-                  throw H.iae(t8);
-                t13 = $.game.zoom;
-                if (typeof t13 !== "number")
-                  throw H.iae(t13);
-                J.drawImageScaledFromSource$9$x(t4, t3, t9 * t10, t2 * t7, t10, t7, -t10 * t11 * t12 * t5, -t7 * t6 * t8 * t5, t10 * t12 * t13, J.$mul$n(J.$mul$n(displayObject.size.y, displayObject.scale.y), $.game.zoom));
+                  throw t7.$mul();
+                J.rotate$1$x(t5, t7 * 0.017453292519943295);
+                t5 = displayObject.animated;
+                t6 = this.context;
+                t7 = displayObject.image;
+                t8 = $.game;
+                t9 = displayObject.anchor;
+                t10 = displayObject.size;
+                t11 = displayObject.scale;
+                if (t5) {
+                  t5 = displayObject.frame;
+                  t12 = C.JSNumber_methods.$mod(t5, 8);
+                  t13 = t10.x;
+                  if (typeof t13 !== "number")
+                    throw H.iae(t13);
+                  t5 = C.JSNumber_methods.$tdiv(t5, 8);
+                  t10 = t10.y;
+                  if (typeof t10 !== "number")
+                    throw H.iae(t10);
+                  t14 = t9.x;
+                  if (typeof t14 !== "number")
+                    throw H.iae(t14);
+                  t15 = t11.x;
+                  if (typeof t15 !== "number")
+                    throw H.iae(t15);
+                  t8 = t8.zoom;
+                  if (typeof t8 !== "number")
+                    throw H.iae(t8);
+                  t9 = t9.y;
+                  if (typeof t9 !== "number")
+                    throw H.iae(t9);
+                  t11 = t11.y;
+                  if (typeof t11 !== "number")
+                    throw H.iae(t11);
+                  t16 = $.game.zoom;
+                  if (typeof t16 !== "number")
+                    throw H.iae(t16);
+                  J.drawImageScaledFromSource$9$x(t6, t7, t12 * t13, t5 * t10, t13, t10, -t13 * t14 * t15 * t8, -t10 * t9 * t11 * t8, t13 * t15 * t16, J.$mul$n(J.$mul$n(displayObject.size.y, displayObject.scale.y), $.game.zoom));
+                } else {
+                  t5 = t10.x;
+                  if (typeof t5 !== "number")
+                    throw t5.$negate();
+                  t12 = t9.x;
+                  if (typeof t12 !== "number")
+                    throw H.iae(t12);
+                  t13 = t11.x;
+                  if (typeof t13 !== "number")
+                    throw H.iae(t13);
+                  t8 = t8.zoom;
+                  if (typeof t8 !== "number")
+                    throw H.iae(t8);
+                  t10 = t10.y;
+                  if (typeof t10 !== "number")
+                    throw t10.$negate();
+                  t9 = t9.y;
+                  if (typeof t9 !== "number")
+                    throw H.iae(t9);
+                  t11 = t11.y;
+                  if (typeof t11 !== "number")
+                    throw H.iae(t11);
+                  t14 = $.game.zoom;
+                  if (typeof t14 !== "number")
+                    throw H.iae(t14);
+                  J.drawImageScaled$5$x(t6, t7, -t5 * t12 * t13 * t8, -t10 * t9 * t11 * t8, t5 * t13 * t14, J.$mul$n(J.$mul$n(displayObject.size.y, displayObject.scale.y), $.game.zoom));
+                }
+                J.restore$0$x(this.context);
               } else {
-                t2 = t7.x;
-                if (typeof t2 !== "number")
-                  throw t2.$negate();
-                t9 = t6.x;
-                if (typeof t9 !== "number")
-                  throw H.iae(t9);
-                t10 = t8.x;
-                if (typeof t10 !== "number")
-                  throw H.iae(t10);
-                t5 = t5.zoom;
-                if (typeof t5 !== "number")
-                  throw H.iae(t5);
-                t7 = t7.y;
-                if (typeof t7 !== "number")
-                  throw t7.$negate();
-                t6 = t6.y;
-                if (typeof t6 !== "number")
-                  throw H.iae(t6);
-                t8 = t8.y;
-                if (typeof t8 !== "number")
-                  throw H.iae(t8);
-                t11 = $.game.zoom;
-                if (typeof t11 !== "number")
-                  throw H.iae(t11);
-                J.drawImageScaled$5$x(t4, t3, -t2 * t9 * t10 * t5, -t7 * t6 * t8 * t5, t2 * t10 * t11, J.$mul$n(J.$mul$n(displayObject.size.y, displayObject.scale.y), $.game.zoom));
+                t5 = displayObject.animated;
+                t6 = this.context;
+                t7 = realPosition.x;
+                t8 = displayObject.image;
+                t9 = displayObject.size;
+                t10 = displayObject.anchor;
+                if (t5) {
+                  t5 = displayObject.frame;
+                  t11 = C.JSNumber_methods.$mod(t5, 8);
+                  t12 = t9.x;
+                  if (typeof t12 !== "number")
+                    throw H.iae(t12);
+                  t5 = C.JSNumber_methods.$tdiv(t5, 8);
+                  t9 = t9.y;
+                  if (typeof t9 !== "number")
+                    throw H.iae(t9);
+                  t10 = t10.x;
+                  if (typeof t10 !== "number")
+                    throw H.iae(t10);
+                  t13 = displayObject.scale.x;
+                  if (typeof t13 !== "number")
+                    throw H.iae(t13);
+                  t14 = $.game.zoom;
+                  if (typeof t14 !== "number")
+                    throw H.iae(t14);
+                  J.drawImageScaledFromSource$9$x(t6, t8, t11 * t12, t5 * t9, t12, t9, J.$sub$n(t7, t12 * t10 * t13 * t14), J.$sub$n(realPosition.y, J.$mul$n(J.$mul$n(J.$mul$n(displayObject.size.y, displayObject.anchor.y), displayObject.scale.y), $.game.zoom)), J.$mul$n(J.$mul$n(displayObject.size.x, displayObject.scale.x), $.game.zoom), J.$mul$n(J.$mul$n(displayObject.size.y, displayObject.scale.y), $.game.zoom));
+                } else
+                  J.drawImageScaled$5$x(t6, t8, J.$sub$n(t7, J.$mul$n(J.$mul$n(J.$mul$n(t9.x, t10.x), displayObject.scale.x), $.game.zoom)), J.$sub$n(realPosition.y, J.$mul$n(J.$mul$n(J.$mul$n(displayObject.size.y, displayObject.anchor.y), displayObject.scale.y), $.game.zoom)), J.$mul$n(J.$mul$n(displayObject.size.x, displayObject.scale.x), $.game.zoom), J.$mul$n(J.$mul$n(displayObject.size.y, displayObject.scale.y), $.game.zoom));
               }
-              J.restore$0$x(this.context);
-            } else {
-              t2 = displayObject.animated;
-              t3 = displayObject.image;
-              t4 = this.context;
-              t5 = realPosition.x;
-              t6 = displayObject.size;
-              t7 = displayObject.anchor;
-              if (t2) {
-                t2 = displayObject.frame;
-                t8 = C.JSInt_methods.$mod(t2, 8);
-                t9 = t6.x;
-                if (typeof t9 !== "number")
-                  throw H.iae(t9);
-                t2 = C.JSInt_methods.$tdiv(t2, 8);
-                t6 = t6.y;
-                if (typeof t6 !== "number")
-                  throw H.iae(t6);
-                t7 = t7.x;
-                if (typeof t7 !== "number")
-                  throw H.iae(t7);
-                t10 = displayObject.scale.x;
-                if (typeof t10 !== "number")
-                  throw H.iae(t10);
-                t11 = $.game.zoom;
-                if (typeof t11 !== "number")
-                  throw H.iae(t11);
-                J.drawImageScaledFromSource$9$x(t4, t3, t8 * t9, t2 * t6, t9, t6, J.$sub$n(t5, t9 * t7 * t10 * t11), J.$sub$n(realPosition.y, J.$mul$n(J.$mul$n(J.$mul$n(displayObject.size.y, displayObject.anchor.y), displayObject.scale.y), $.game.zoom)), J.$mul$n(J.$mul$n(displayObject.size.x, displayObject.scale.x), $.game.zoom), J.$mul$n(J.$mul$n(displayObject.size.y, displayObject.scale.y), $.game.zoom));
-              } else
-                J.drawImageScaled$5$x(t4, t3, J.$sub$n(t5, J.$mul$n(J.$mul$n(J.$mul$n(t6.x, t7.x), displayObject.scale.x), $.game.zoom)), J.$sub$n(realPosition.y, J.$mul$n(J.$mul$n(J.$mul$n(displayObject.size.y, displayObject.anchor.y), displayObject.scale.y), $.game.zoom)), J.$mul$n(J.$mul$n(displayObject.size.x, displayObject.scale.x), $.game.zoom), J.$mul$n(J.$mul$n(displayObject.size.y, displayObject.scale.y), $.game.zoom));
+              if (displayObject.alpha !== 1)
+                J.set$globalAlpha$x(this.context, 1);
             }
-            if (displayObject.alpha !== 1)
-              J.set$globalAlpha$x(this.context, 1);
-          }
-        } else if (typeof displayObject === "object" && displayObject !== null && !!displayObject.$isRect) {
-          realPosition = displayObject.position.real2screen$0();
-          t2 = displayObject.size;
-          t3 = $.game.zoom;
-          if (this.isVisible$2(realPosition, new U.Vector(J.$mul$n(t2.x, t3), J.$mul$n(t2.y, t3)))) {
-            J.set$lineWidth$x(this.context, displayObject.lineWidth);
-            J.set$fillStyle$x(this.context, displayObject.color);
-            J.fillRect$4$x(this.context, J.$sub$n(realPosition.x, J.$mul$n(J.$mul$n(displayObject.size.x, displayObject.anchor.x), $.game.zoom)), J.$sub$n(realPosition.y, J.$mul$n(J.$mul$n(displayObject.size.y, displayObject.anchor.y), $.game.zoom)), J.$mul$n(displayObject.size.x, $.game.zoom), J.$mul$n(displayObject.size.y, $.game.zoom));
-          }
-        } else if (typeof displayObject === "object" && displayObject !== null && !!displayObject.$isCircle) {
-          realPosition = displayObject.position.real2screen$0();
-          t2 = displayObject.radius;
-          t3 = displayObject.scale;
-          if (typeof t3 !== "number")
-            throw H.iae(t3);
-          t4 = $.game.zoom;
-          if (typeof t4 !== "number")
-            throw H.iae(t4);
-          t4 = t2 * t3 * t4;
-          if (this.isVisible$2(realPosition, new U.Vector(t4, t4))) {
-            J.set$lineWidth$x(this.context, displayObject.lineWidth);
-            J.set$strokeStyle$x(this.context, displayObject.color);
-            J.beginPath$0$x(this.context);
-            t2 = this.context;
-            t3 = realPosition.x;
-            t4 = realPosition.y;
+          } else if (typeof displayObject === "object" && displayObject !== null && !!displayObject.$isRect) {
+            realPosition = displayObject.position.real2screen$0();
+            t5 = displayObject.size;
+            t6 = $.game.zoom;
+            if (this.isVisible$2(realPosition, new U.Vector(J.$mul$n(t5.x, t6), J.$mul$n(t5.y, t6)))) {
+              J.set$lineWidth$x(this.context, displayObject.lineWidth);
+              J.set$fillStyle$x(this.context, displayObject.color);
+              J.fillRect$4$x(this.context, J.$sub$n(realPosition.x, J.$mul$n(J.$mul$n(displayObject.size.x, displayObject.anchor.x), $.game.zoom)), J.$sub$n(realPosition.y, J.$mul$n(J.$mul$n(displayObject.size.y, displayObject.anchor.y), $.game.zoom)), J.$mul$n(displayObject.size.x, $.game.zoom), J.$mul$n(displayObject.size.y, $.game.zoom));
+            }
+          } else if (typeof displayObject === "object" && displayObject !== null && !!displayObject.$isCircle) {
+            realPosition = displayObject.position.real2screen$0();
             t5 = displayObject.radius;
             t6 = displayObject.scale;
             if (typeof t6 !== "number")
@@ -7819,34 +8013,70 @@ Renderer: {"": "Object;view>,context<,top',left',bottom',right',displayObjects",
             t7 = $.game.zoom;
             if (typeof t7 !== "number")
               throw H.iae(t7);
-            J.arc$6$x(t2, t3, t4, t5 * t6 * t7, 0, 6.283185307179586, true);
-            J.closePath$0$x(this.context);
-            J.stroke$0$x(this.context);
+            t7 = t5 * t6 * t7;
+            if (this.isVisible$2(realPosition, new U.Vector(t7, t7))) {
+              t5 = this.context;
+              t6 = displayObject.lineWidth;
+              t7 = $.game.zoom;
+              if (typeof t7 !== "number")
+                throw H.iae(t7);
+              J.set$lineWidth$x(t5, t6 * t7);
+              J.set$strokeStyle$x(this.context, displayObject.color);
+              J.beginPath$0$x(this.context);
+              t7 = this.context;
+              t6 = realPosition.x;
+              t5 = realPosition.y;
+              t8 = displayObject.radius;
+              t9 = displayObject.scale;
+              if (typeof t9 !== "number")
+                throw H.iae(t9);
+              t10 = $.game.zoom;
+              if (typeof t10 !== "number")
+                throw H.iae(t10);
+              J.arc$6$x(t7, t6, t5, t8 * t9 * t10, 0, 6.283185307179586, true);
+              J.closePath$0$x(this.context);
+              J.stroke$0$x(this.context);
+            }
+          } else if (typeof displayObject === "object" && displayObject !== null && !!displayObject.$isLine) {
+            myview = new P.Rectangle(0, 0, t3.get$width(t2), t3.get$height(t2));
+            myview.$builtinTypeInfo = [null];
+            realPositionFrom = displayObject.from.real2screen$0();
+            realPositionTo = displayObject.to.real2screen$0();
+            t5 = new P.Point(realPositionFrom.x, realPositionFrom.y);
+            t5.$builtinTypeInfo = [null];
+            if (!myview.containsPoint$1(myview, t5)) {
+              t5 = new P.Point(realPositionTo.x, realPositionTo.y);
+              t5.$builtinTypeInfo = [null];
+              t5 = myview.containsPoint$1(myview, t5);
+            } else
+              t5 = true;
+            if (t5) {
+              J.set$lineWidth$x(this.context, displayObject.lineWidth);
+              J.set$strokeStyle$x(this.context, displayObject.color);
+              J.beginPath$0$x(this.context);
+              J.moveTo$2$x(this.context, realPositionFrom.x, realPositionFrom.y);
+              J.lineTo$2$x(this.context, realPositionTo.x, realPositionTo.y);
+              J.stroke$0$x(this.context);
+            }
           }
-        } else if (typeof displayObject === "object" && displayObject !== null && !!displayObject.$isLine) {
-          realPositionFrom = displayObject.from.real2screen$0();
-          realPositionTo = displayObject.to.real2screen$0();
-          J.set$lineWidth$x(this.context, displayObject.lineWidth);
-          J.set$strokeStyle$x(this.context, displayObject.color);
-          J.beginPath$0$x(this.context);
-          J.moveTo$2$x(this.context, realPositionFrom.x, realPositionFrom.y);
-          J.lineTo$2$x(this.context, realPositionTo.x, realPositionTo.y);
-          J.stroke$0$x(this.context);
-        }
-    }
-    J.restore$0$x(this.context);
+      }
   },
   Renderer$3: function(view, width, height) {
-    var t1;
+    var t1, i, t2;
     this.updateRect$2(width, height);
     t1 = this.view;
     J.set$position$x(t1.style, "absolute");
     this.context = J.getContext$1$x(t1, "2d");
+    for (t1 = this.layers, i = 0; i < 20; ++i) {
+      t2 = P.List_List(null, U.DisplayObject);
+      t2.$builtinTypeInfo = [U.DisplayObject];
+      t1[i] = t2;
+    }
   },
   static: {
 Renderer$: function(view, width, height) {
-  var t1 = P.List_List(null, U.DisplayObject);
-  H.setRuntimeTypeInfo(t1, [U.DisplayObject]);
+  var t1 = P.List_List(20, [J.JSArray, U.DisplayObject]);
+  H.setRuntimeTypeInfo(t1, [[J.JSArray, U.DisplayObject]]);
   t1 = new U.Renderer(view, null, null, null, null, null, t1);
   t1.Renderer$3(view, width, height);
   return t1;
@@ -7854,14 +8084,35 @@ Renderer$: function(view, width, height) {
 
 },
 
-Renderer_addDisplayObject_closure: {"": "Closure;",
-  call$2: function(a, b) {
-    return J.$sub$n(J.get$layer$x(a), J.get$layer$x(b));
+Route: {"": "Object;distanceTravelled<,distanceRemaining,nodes>,remove",
+  remove$0: function($receiver) {
+    return this.remove.call$0();
   },
-  $is_args2: true
+  clone$0: function(_) {
+    var t1, route, t2, i;
+    t1 = P.List_List(null, U.Building);
+    H.setRuntimeTypeInfo(t1, [U.Building]);
+    route = new U.Route(0, 0, t1, false);
+    route.distanceTravelled = this.distanceTravelled;
+    route.distanceRemaining = this.distanceRemaining;
+    for (t1 = this.nodes, t2 = route.nodes, i = 0; i < t1.length; ++i)
+      t2.push(t1[i]);
+    return route;
+  },
+  contains$1: function(_, node) {
+    var t1, t2, i, t3;
+    for (t1 = this.nodes, t2 = J.getInterceptor$x(node), i = 0; i < t1.length; ++i) {
+      t3 = t2.get$position(node);
+      if (i >= t1.length)
+        throw H.ioore(t1, i);
+      if (J.$eq(t3, J.get$position$x(t1[i])))
+        return true;
+    }
+    return false;
+  }
 },
 
-Shell: {"": "Object;targetPosition,speed,remove,trailCounter,sprite<",
+Shell: {"": "Object;targetPosition,speed,remove,trailCounter,sprite",
   remove$0: function($receiver) {
     return this.remove.call$0();
   },
@@ -7878,15 +8129,13 @@ Shell: {"": "Object;targetPosition,speed,remove,trailCounter,sprite<",
       this.speed.y = delta.y;
   },
   move$0: function() {
-    var t1, t2, i, j, t3;
+    var t1, t2, targetPositionTiled, i, j, tilePosition, t3, tile;
     this.calculateVector$0();
     this.trailCounter = this.trailCounter + 1;
     if (this.trailCounter === 10) {
       this.trailCounter = 0;
       t1 = this.sprite.position;
-      t2 = J.getInterceptor$x(t1);
-      t1 = U.Smoke$(new U.Vector(t2.get$x(t1), J.$sub$n(t2.get$y(t1), 16)));
-      $.get$Smoke_smokes().push(t1);
+      U.Smoke_add(new U.Vector(t1.x, J.$sub$n(t1.y, 16)));
     }
     t1 = this.sprite;
     t2 = t1.rotation;
@@ -7900,56 +8149,48 @@ Shell: {"": "Object;targetPosition,speed,remove,trailCounter,sprite<",
     if (t2 > 359)
       t1.rotation = t2 - 359;
     t1 = this.sprite;
-    t1.position = J.$add$ns(t1.position, this.speed);
-    if (J.$gt$n(J.get$x$x(this.sprite.position), J.$sub$n(this.targetPosition.x, 2)) && J.$lt$n(J.get$x$x(this.sprite.position), J.$add$ns(this.targetPosition.x, 2)) && J.$gt$n(J.get$y$x(this.sprite.position), J.$sub$n(this.targetPosition.y, 2)) && J.$lt$n(J.get$y$x(this.sprite.position), J.$add$ns(this.targetPosition.y, 2))) {
+    t2 = t1.position;
+    t1.position = t2.$add(t2, this.speed);
+    if (J.$eq(this.sprite.position, this.targetPosition)) {
       this.remove = true;
-      t1 = U.Explosion$(this.targetPosition);
-      $.get$Explosion_explosions().push(t1);
-      $.engine.playSound$2("explosion", this.targetPosition.real2tiled$0());
-      for (i = J.floor$0$n(J.$div$n(this.targetPosition.x, $.game.tileSize)) - 4; i < J.floor$0$n(J.$div$n(this.targetPosition.x, $.game.tileSize)) + 5; ++i)
-        for (j = J.floor$0$n(J.$div$n(this.targetPosition.y, $.game.tileSize)) - 4; j < J.floor$0$n(J.$div$n(this.targetPosition.y, $.game.tileSize)) + 5; ++j) {
+      targetPositionTiled = this.targetPosition.real2tiled$0();
+      U.Explosion_add(this.targetPosition);
+      $.engine.playSound$2("explosion", targetPositionTiled);
+      for (i = -4; i <= 4; ++i)
+        for (j = -4; j <= 4; ++j) {
+          t1 = new U.Vector(i, j);
+          tilePosition = new U.Vector(J.$add$ns(targetPositionTiled.x, t1.x), J.$add$ns(targetPositionTiled.y, t1.y));
           t1 = $.game.world;
-          if (t1.contains$1(t1, new U.Vector(i, j))) {
+          if (t1.contains$1(t1, tilePosition)) {
             t1 = $.game.tileSize;
-            t2 = this.targetPosition.x;
-            if (typeof t2 !== "number")
-              throw H.iae(t2);
-            t1 = Math.pow(i * t1 + t1 / 2 - t2, 2);
-            t2 = $.game.tileSize;
-            t3 = this.targetPosition.y;
+            t1 = new U.Vector(J.$mul$n(tilePosition.x, t1), J.$mul$n(tilePosition.y, t1));
+            t2 = new U.Vector(8, 8);
+            t2 = new U.Vector(J.$add$ns(t1.x, t2.x), J.$add$ns(t1.y, t2.y));
+            t1 = this.targetPosition;
+            t3 = J.$sub$n(t2.x, t1.x);
             if (typeof t3 !== "number")
-              throw H.iae(t3);
-            t2 = Math.pow(j * t2 + t2 / 2 - t3, 2);
-            t3 = $.game.tileSize;
-            if (t1 + t2 < Math.pow(t3 * 4, 2)) {
-              t1 = $.game.world.tiles;
-              if (i < 0 || i >= t1.length)
-                throw H.ioore(t1, i);
-              t1 = J.$index$asx(t1[i], j);
-              t1.creep = t1.get$creep() - 10;
-              t1 = $.game.world.tiles;
-              if (i >= t1.length)
-                throw H.ioore(t1, i);
-              if (J.$index$asx(t1[i], j).get$creep() < 0) {
-                t1 = $.game.world.tiles;
-                if (i >= t1.length)
-                  throw H.ioore(t1, i);
-                J.$index$asx(t1[i], j).set$creep(0);
-              }
-              t1 = $.game.world.tiles;
-              if (i >= t1.length)
-                throw H.ioore(t1, i);
-              t1 = J.$index$asx(t1[i], j);
-              t1.newcreep = t1.get$newcreep() - 10;
-              t1 = $.game.world.tiles;
-              if (i >= t1.length)
-                throw H.ioore(t1, i);
-              if (J.$index$asx(t1[i], j).get$newcreep() < 0) {
-                t1 = $.game.world.tiles;
-                if (i >= t1.length)
-                  throw H.ioore(t1, i);
-                J.$index$asx(t1[i], j).set$newcreep(0);
-              }
+              H.throwExpression(new P.ArgumentError(t3));
+            t3 = Math.pow(t3, 2);
+            t1 = J.$sub$n(t2.y, t1.y);
+            if (typeof t1 !== "number")
+              H.throwExpression(new P.ArgumentError(t1));
+            t1 = Math.pow(t1, 2);
+            t1 = Math.sqrt(t3 + t1);
+            t2 = $.game;
+            t3 = t2.tileSize;
+            if (t1 <= t3 * 4) {
+              t1 = new U.Vector(J.$mul$n(tilePosition.x, t3), J.$mul$n(tilePosition.y, t3));
+              t2 = t2.world.tiles;
+              t3 = J.$tdiv$n(t1.x, 16);
+              if (t3 >>> 0 !== t3 || t3 >= t2.length)
+                throw H.ioore(t2, t3);
+              tile = J.$index$asx(t2[t3], J.$tdiv$n(t1.y, 16));
+              tile.creep = tile.get$creep() - 10;
+              if (tile.creep < 0)
+                tile.creep = 0;
+              tile.newcreep = tile.newcreep - 10;
+              if (tile.newcreep < 0)
+                tile.newcreep = 0;
               $.game.creeperDirty = true;
             }
           }
@@ -7958,9 +8199,9 @@ Shell: {"": "Object;targetPosition,speed,remove,trailCounter,sprite<",
   },
   Shell$2: function(position, targetPosition) {
     var t1 = $.engine.images;
-    this.sprite = U.Sprite$(2, t1.$index(t1, "shell"), position, 16, 16);
+    this.sprite = U.Sprite$(C.Layer_8, t1.$index(t1, "shell"), position, 16, 16);
     this.sprite.anchor = new U.Vector(0.5, 0.5);
-    t1 = $.engine.canvas;
+    t1 = $.engine.renderer;
     t1.$index(t1, "buffer").addDisplayObject$1(this.sprite);
   },
   static: {
@@ -7971,6 +8212,12 @@ Shell$: function(position, targetPosition) {
   return t1;
 },
 
+Shell_add: function(position, targetPosition) {
+  var shell = U.Shell$(position, targetPosition);
+  $.get$Shell_shells().push(shell);
+  return shell;
+},
+
 Shell_update: function() {
   var i, t1, t2;
   for (i = $.get$Shell_shells().length - 1; i >= 0; --i) {
@@ -7978,7 +8225,7 @@ Shell_update: function() {
     if (i >= t1.length)
       throw H.ioore(t1, i);
     if (t1[i].remove) {
-      t1 = $.engine.canvas;
+      t1 = $.engine.renderer;
       t1 = t1.$index(t1, "buffer");
       t2 = $.get$Shell_shells();
       if (i >= t2.length)
@@ -7996,22 +8243,22 @@ Shell_update: function() {
 
 },
 
-Ship: {"": "Object;speed,targetPosition,type>,status*,remove,hovered@,selected*,maxEnergy<,energy<,trailCounter,weaponCounter,flightCounter,home,sprite<,targetSymbol<,hoverCircle,selectedCircle<",
+Ship: {"": "Object;speed,targetPosition,type>,status*,remove,hovered@,selected*,maxEnergy<,energy<,trailCounter,weaponCounter,flightCounter,home,sprite,targetSymbol<,selectedCircle<",
   remove$0: function($receiver) {
     return this.remove.call$0();
   },
   turnToTarget$0: function() {
-    var delta, t1, t2, t3, angleToTarget, absoluteDelta, turnRate;
-    delta = J.$sub$n(this.targetPosition, this.sprite.position);
+    var t1, delta, t2, t3, angleToTarget, absoluteDelta, turnRate;
+    t1 = this.targetPosition;
+    delta = t1.$sub(t1, this.sprite.position);
     t1 = $.engine;
-    t2 = J.getInterceptor$x(delta);
-    t3 = t2.get$y(delta);
-    t2 = t2.get$x(delta);
-    if (typeof t3 !== "number")
-      H.throwExpression(new P.ArgumentError(t3));
+    t2 = delta.y;
+    t3 = delta.x;
     if (typeof t2 !== "number")
       H.throwExpression(new P.ArgumentError(t2));
-    t2 = Math.atan2(t3, t2);
+    if (typeof t3 !== "number")
+      H.throwExpression(new P.ArgumentError(t3));
+    t2 = Math.atan2(t2, t3);
     t1.toString;
     angleToTarget = t2 * 57.29577951308232;
     t2 = this.sprite.rotation;
@@ -8071,16 +8318,14 @@ Ship: {"": "Object;speed,targetPosition,type>,status*,remove,hovered@,selected*,
     this.speed.y = y * 1 * t2.speed;
   },
   move$0: function() {
-    var t1, t2, i, j, t3;
+    var t1, t2, targetPositionTiled, i, j, tilePosition, t3, tile;
     t1 = this.status;
     if (t1 === "ATTACKING" || t1 === "RETURNING") {
       this.trailCounter = this.trailCounter + 1;
       if (this.trailCounter === 10) {
         this.trailCounter = 0;
         t1 = this.sprite.position;
-        t2 = J.getInterceptor$x(t1);
-        t1 = U.Smoke$(new U.Vector(t2.get$x(t1), J.$sub$n(t2.get$y(t1), 16)));
-        $.get$Smoke_smokes().push(t1);
+        U.Smoke_add(new U.Vector(t1.x, J.$sub$n(t1.y, 16)));
       }
     }
     t1 = this.status;
@@ -8091,8 +8336,6 @@ Ship: {"": "Object;speed,targetPosition,type>,status*,remove,hovered@,selected*,
         t1 = this.sprite;
         t2 = t1.scale;
         t1.scale = new U.Vector(J.$mul$n(t2.x, 1.01), J.$mul$n(t2.y, 1.01));
-        t2 = this.hoverCircle;
-        t2.scale = J.$mul$n(t2.scale, 1.01);
         t2 = this.selectedCircle;
         t2.scale = J.$mul$n(t2.scale, 1.01);
       }
@@ -8105,18 +8348,13 @@ Ship: {"": "Object;speed,targetPosition,type>,status*,remove,hovered@,selected*,
         t1 = this.sprite;
         t2 = t1.scale;
         t1.scale = new U.Vector(J.$div$n(t2.x, 1.01), J.$div$n(t2.y, 1.01));
-        t2 = this.hoverCircle;
-        t2.scale = J.$div$n(t2.scale, 1.01);
         t2 = this.selectedCircle;
         t2.scale = J.$div$n(t2.scale, 1.01);
       }
       if (this.flightCounter === 0) {
         this.status = "IDLE";
-        J.set$x$x(this.targetPosition, 0);
-        J.set$y$x(this.targetPosition, 0);
-        this.energy = 5;
+        this.targetPosition = new U.Vector(0, 0);
         this.sprite.scale = new U.Vector(1, 1);
-        this.hoverCircle.scale = 1;
         this.selectedCircle.scale = 1;
       }
     } else if (t1 === "ATTACKING") {
@@ -8124,84 +8362,73 @@ Ship: {"": "Object;speed,targetPosition,type>,status*,remove,hovered@,selected*,
       this.turnToTarget$0();
       this.calculateVector$0();
       t1 = this.sprite;
-      t1.position = J.$add$ns(t1.position, this.speed);
-      t1 = this.hoverCircle;
       t2 = t1.position;
       t1.position = t2.$add(t2, this.speed);
       t2 = this.selectedCircle;
       t1 = t2.position;
       t2.position = t1.$add(t1, this.speed);
-      if (J.$gt$n(J.get$x$x(this.sprite.position), J.$sub$n(J.get$x$x(this.targetPosition), 2)) && J.$lt$n(J.get$x$x(this.sprite.position), J.$add$ns(J.get$x$x(this.targetPosition), 2)) && J.$gt$n(J.get$y$x(this.sprite.position), J.$sub$n(J.get$y$x(this.targetPosition), 2)) && J.$lt$n(J.get$y$x(this.sprite.position), J.$add$ns(J.get$y$x(this.targetPosition), 2)))
+      if (J.$gt$n(this.sprite.position.x, J.$sub$n(this.targetPosition.x, 2)) && J.$lt$n(this.sprite.position.x, J.$add$ns(this.targetPosition.x, 2)) && J.$gt$n(this.sprite.position.y, J.$sub$n(this.targetPosition.y, 2)) && J.$lt$n(this.sprite.position.y, J.$add$ns(this.targetPosition.y, 2)))
         if (this.weaponCounter >= 10) {
           this.weaponCounter = 0;
-          t1 = U.Explosion$(this.targetPosition);
-          $.get$Explosion_explosions().push(t1);
           this.energy = this.energy - 1;
-          for (i = J.floor$0$n(J.$div$n(J.get$x$x(this.targetPosition), $.game.tileSize)) - 3; i < J.floor$0$n(J.$div$n(J.get$x$x(this.targetPosition), $.game.tileSize)) + 5; ++i)
-            for (j = J.floor$0$n(J.$div$n(J.get$y$x(this.targetPosition), $.game.tileSize)) - 3; j < J.floor$0$n(J.$div$n(J.get$y$x(this.targetPosition), $.game.tileSize)) + 5; ++j) {
+          targetPositionTiled = this.targetPosition.real2tiled$0();
+          U.Explosion_add(this.targetPosition);
+          $.engine.playSound$2("explosion", targetPositionTiled);
+          for (i = -3; i <= 3; ++i)
+            for (j = -3; j <= 3; ++j) {
+              t1 = new U.Vector(i, j);
+              tilePosition = new U.Vector(J.$add$ns(targetPositionTiled.x, t1.x), J.$add$ns(targetPositionTiled.y, t1.y));
               t1 = $.game.world;
-              if (t1.contains$1(t1, new U.Vector(i, j))) {
+              if (t1.contains$1(t1, tilePosition)) {
                 t1 = $.game.tileSize;
-                t2 = J.$add$ns(J.get$x$x(this.targetPosition), t1);
-                if (typeof t2 !== "number")
-                  throw H.iae(t2);
-                t1 = Math.pow(i * t1 + t1 / 2 - t2, 2);
-                t2 = $.game.tileSize;
-                t3 = J.$add$ns(J.get$y$x(this.targetPosition), t2);
+                t1 = new U.Vector(J.$mul$n(tilePosition.x, t1), J.$mul$n(tilePosition.y, t1));
+                t2 = new U.Vector(8, 8);
+                t2 = new U.Vector(J.$add$ns(t1.x, t2.x), J.$add$ns(t1.y, t2.y));
+                t1 = this.targetPosition;
+                t3 = J.$sub$n(t2.x, t1.x);
                 if (typeof t3 !== "number")
-                  throw H.iae(t3);
-                t2 = Math.pow(j * t2 + t2 / 2 - t3, 2);
-                t3 = $.game.tileSize;
-                if (t1 + t2 < Math.pow(t3 * 3, 2)) {
-                  t1 = $.game.world.tiles;
-                  if (i < 0 || i >= t1.length)
-                    throw H.ioore(t1, i);
-                  t1 = J.$index$asx(t1[i], j);
-                  t1.creep = t1.get$creep() - 5;
-                  t1 = $.game.world.tiles;
-                  if (i >= t1.length)
-                    throw H.ioore(t1, i);
-                  if (J.$index$asx(t1[i], j).get$creep() < 0) {
-                    t1 = $.game.world.tiles;
-                    if (i >= t1.length)
-                      throw H.ioore(t1, i);
-                    J.$index$asx(t1[i], j).set$creep(0);
-                  }
-                  t1 = $.game.world.tiles;
-                  if (i >= t1.length)
-                    throw H.ioore(t1, i);
-                  t1 = J.$index$asx(t1[i], j);
-                  t1.newcreep = t1.get$newcreep() - 5;
-                  t1 = $.game.world.tiles;
-                  if (i >= t1.length)
-                    throw H.ioore(t1, i);
-                  if (J.$index$asx(t1[i], j).get$newcreep() < 0) {
-                    t1 = $.game.world.tiles;
-                    if (i >= t1.length)
-                      throw H.ioore(t1, i);
-                    J.$index$asx(t1[i], j).set$newcreep(0);
-                  }
+                  H.throwExpression(new P.ArgumentError(t3));
+                t3 = Math.pow(t3, 2);
+                t1 = J.$sub$n(t2.y, t1.y);
+                if (typeof t1 !== "number")
+                  H.throwExpression(new P.ArgumentError(t1));
+                t1 = Math.pow(t1, 2);
+                t1 = Math.sqrt(t3 + t1);
+                t2 = $.game;
+                t3 = t2.tileSize;
+                if (t1 <= t3 * 3) {
+                  t1 = new U.Vector(J.$mul$n(tilePosition.x, t3), J.$mul$n(tilePosition.y, t3));
+                  t2 = t2.world.tiles;
+                  t3 = J.$tdiv$n(t1.x, 16);
+                  if (t3 >>> 0 !== t3 || t3 >= t2.length)
+                    throw H.ioore(t2, t3);
+                  tile = J.$index$asx(t2[t3], J.$tdiv$n(t1.y, 16));
+                  tile.creep = tile.get$creep() - 5;
+                  if (tile.creep < 0)
+                    tile.creep = 0;
+                  tile.newcreep = tile.newcreep - 5;
+                  if (tile.newcreep < 0)
+                    tile.newcreep = 0;
+                  $.game.creeperDirty = true;
                 }
               }
             }
           if (this.energy === 0) {
             this.status = "RETURNING";
-            this.targetPosition = this.home.sprite.position;
+            this.targetPosition = this.home.position;
           }
         }
     } else if (t1 === "RETURNING") {
       this.turnToTarget$0();
       this.calculateVector$0();
       t1 = this.sprite;
-      t1.position = J.$add$ns(t1.position, this.speed);
-      t1 = this.hoverCircle;
       t2 = t1.position;
       t1.position = t2.$add(t2, this.speed);
       t2 = this.selectedCircle;
       t1 = t2.position;
       t2.position = t1.$add(t1, this.speed);
-      if (J.$gt$n(J.get$x$x(this.sprite.position), J.$sub$n(J.get$x$x(this.targetPosition), 2)) && J.$lt$n(J.get$x$x(this.sprite.position), J.$add$ns(J.get$x$x(this.targetPosition), 2)) && J.$gt$n(J.get$y$x(this.sprite.position), J.$sub$n(J.get$y$x(this.targetPosition), 2)) && J.$lt$n(J.get$y$x(this.sprite.position), J.$add$ns(J.get$y$x(this.targetPosition), 2))) {
-        this.sprite.position = this.home.sprite.position;
+      if (J.$gt$n(this.sprite.position.x, J.$sub$n(this.targetPosition.x, 2)) && J.$lt$n(this.sprite.position.x, J.$add$ns(this.targetPosition.x, 2)) && J.$gt$n(this.sprite.position.y, J.$sub$n(this.targetPosition.y, 2)) && J.$lt$n(this.sprite.position.y, J.$add$ns(this.targetPosition.y, 2))) {
+        this.sprite.position = this.home.position;
         this.status = "FALLING";
       }
     }
@@ -8211,37 +8438,37 @@ Ship: {"": "Object;speed,targetPosition,type>,status*,remove,hovered@,selected*,
   },
   Ship$4: function(position, imageID, type, $home) {
     var t1 = $.engine.images;
-    this.sprite = U.Sprite$(4, t1.$index(t1, imageID), position, 48, 48);
+    this.sprite = U.Sprite$(C.Layer_8, t1.$index(t1, imageID), position, 48, 48);
     this.sprite.anchor = new U.Vector(0.5, 0.5);
-    t1 = $.engine.canvas;
+    t1 = $.engine.renderer;
     t1.$index(t1, "buffer").addDisplayObject$1(this.sprite);
-    t1 = new U.Circle(position, 24, 2, "#f00", null, 0, true);
-    t1.layer = 5;
-    t1.scale = 1;
-    this.hoverCircle = t1;
-    t1 = $.engine.canvas;
-    t1.$index(t1, "buffer").addDisplayObject$1(this.hoverCircle);
-    t1 = new U.Circle(position, 24, 2, "#fff", null, 0, true);
-    t1.layer = 5;
+    t1 = new U.Circle(position, 24, 2, "#fff", null, null, true);
+    t1.layer = C.Layer_0;
     t1.scale = 1;
     this.selectedCircle = t1;
     this.selectedCircle.visible = false;
-    t1 = $.engine.canvas;
+    t1 = $.engine.renderer;
     t1.$index(t1, "buffer").addDisplayObject$1(this.selectedCircle);
     t1 = $.engine.images;
-    this.targetSymbol = U.Sprite$(0, t1.$index(t1, "targetcursor"), position, 48, 48);
+    this.targetSymbol = U.Sprite$(C.Layer_0, t1.$index(t1, "targetcursor"), position, 48, 48);
     this.targetSymbol.anchor = new U.Vector(0.5, 0.5);
     this.targetSymbol.alpha = 0.5;
     this.targetSymbol.visible = false;
-    t1 = $.engine.canvas;
+    t1 = $.engine.renderer;
     t1.$index(t1, "buffer").addDisplayObject$1(this.targetSymbol);
   },
   static: {
 "": "Ship_baseSpeed,Ship_ships",
 Ship$: function(position, imageID, type, $home) {
-  var t1 = new U.Ship(new U.Vector(0, 0), new U.Vector(0, 0), type, "IDLE", false, false, false, 15, 0, 0, 0, 0, $home, null, null, null, null);
+  var t1 = new U.Ship(new U.Vector(0, 0), new U.Vector(0, 0), type, "IDLE", false, false, false, 15, 0, 0, 0, 0, $home, null, null, null);
   t1.Ship$4(position, imageID, type, $home);
   return t1;
+},
+
+Ship_add: function(position, imageID, type, $home) {
+  var ship = U.Ship$(position, imageID, type, $home);
+  $.get$Ship_ships().push(ship);
+  return ship;
 },
 
 Ship_update: function() {
@@ -8286,7 +8513,7 @@ Ship_deselect: function() {
 },
 
 Ship_updateHoverState: function() {
-  var i, t1, realPosition, t2;
+  var i, t1, realPosition;
   for (i = 0; i < $.get$Ship_ships().length; ++i) {
     t1 = $.get$Ship_ships();
     if (i >= t1.length)
@@ -8297,19 +8524,11 @@ Ship_updateHoverState: function() {
       throw H.ioore(t1, i);
     t1 = t1[i];
     t1.hovered = J.$gt$n($.engine.mouse.position.x, J.$sub$n(realPosition.x, 24)) && J.$lt$n($.engine.mouse.position.x, J.$add$ns(realPosition.x, 24)) && J.$gt$n($.engine.mouse.position.y, J.$sub$n(realPosition.y, 24)) && J.$lt$n($.engine.mouse.position.y, J.$add$ns(realPosition.y, 24));
-    t1 = $.get$Ship_ships();
-    if (i >= t1.length)
-      throw H.ioore(t1, i);
-    t1 = t1[i].hoverCircle;
-    t2 = $.get$Ship_ships();
-    if (i >= t2.length)
-      throw H.ioore(t2, i);
-    t1.visible = t2[i].hovered;
   }
 },
 
 Ship_control: function(position) {
-  var t1, i, t2;
+  var t1, i, t2, delta, t3;
   t1 = $.game.tileSize;
   position = new U.Vector(J.$mul$n(position.x, t1), J.$mul$n(position.y, t1));
   position = position.$add(position, new U.Vector(8, 8));
@@ -8339,35 +8558,60 @@ Ship_control: function(position) {
         t1 = $.get$Ship_ships();
         if (i >= t1.length)
           throw H.ioore(t1, i);
-        if (!position.$eq(position, t1[i].home.sprite.position)) {
+        if (!position.$eq(position, t1[i].home.position)) {
           t1 = $.get$Ship_ships();
           if (i >= t1.length)
             throw H.ioore(t1, i);
-          t1 = t1[i];
+          t1 = t1[i].maxEnergy;
           t2 = $.get$Ship_ships();
           if (i >= t2.length)
             throw H.ioore(t2, i);
-          t1.energy = t2[i].home.energy;
-          t2 = $.get$Ship_ships();
-          if (i >= t2.length)
-            throw H.ioore(t2, i);
-          t2[i].home.energy = 0;
-          t2 = $.get$Ship_ships();
-          if (i >= t2.length)
-            throw H.ioore(t2, i);
-          t2[i].targetPosition = position;
-          t2 = $.get$Ship_ships();
-          if (i >= t2.length)
-            throw H.ioore(t2, i);
-          t2 = t2[i].targetSymbol;
+          delta = t1 - t2[i].energy;
           t1 = $.get$Ship_ships();
           if (i >= t1.length)
             throw H.ioore(t1, i);
-          t2.position = t1[i].targetPosition;
+          if (t1[i].home.energy >= delta) {
+            t1 = $.get$Ship_ships();
+            if (i >= t1.length)
+              throw H.ioore(t1, i);
+            t1 = t1[i];
+            t1.energy = t1.energy + delta;
+            t1 = $.get$Ship_ships();
+            if (i >= t1.length)
+              throw H.ioore(t1, i);
+            t1 = t1[i].home;
+            t1.energy = t1.energy - delta;
+          } else {
+            t1 = $.get$Ship_ships();
+            if (i >= t1.length)
+              throw H.ioore(t1, i);
+            t1 = t1[i];
+            t2 = t1.energy;
+            t3 = $.get$Ship_ships();
+            if (i >= t3.length)
+              throw H.ioore(t3, i);
+            t1.energy = t2 + t3[i].home.energy;
+            t3 = $.get$Ship_ships();
+            if (i >= t3.length)
+              throw H.ioore(t3, i);
+            t3[i].home.energy = 0;
+          }
           t1 = $.get$Ship_ships();
           if (i >= t1.length)
             throw H.ioore(t1, i);
-          t1[i].status = "RISING";
+          t1[i].targetPosition = position;
+          t1 = $.get$Ship_ships();
+          if (i >= t1.length)
+            throw H.ioore(t1, i);
+          t1 = t1[i].targetSymbol;
+          t2 = $.get$Ship_ships();
+          if (i >= t2.length)
+            throw H.ioore(t2, i);
+          t1.position = t2[i].targetPosition;
+          t2 = $.get$Ship_ships();
+          if (i >= t2.length)
+            throw H.ioore(t2, i);
+          t2[i].status = "RISING";
         }
       }
       t1 = $.get$Ship_ships();
@@ -8384,7 +8628,7 @@ Ship_control: function(position) {
         t1 = $.get$Ship_ships();
         if (i >= t1.length)
           throw H.ioore(t1, i);
-        if (position.$eq(position, t1[i].home.sprite.position)) {
+        if (position.$eq(position, t1[i].home.position)) {
           t1 = $.get$Ship_ships();
           if (i >= t1.length)
             throw H.ioore(t1, i);
@@ -8418,14 +8662,14 @@ Ship_control: function(position) {
 
 },
 
-Smoke: {"": "Object;sprite<",
+Smoke: {"": "Object;sprite",
   Smoke$1: function(position) {
     var t1 = $.engine.images;
-    this.sprite = U.Sprite$(1, t1.$index(t1, "smoke"), position, 128, 128);
+    this.sprite = U.Sprite$(C.Layer_7, t1.$index(t1, "smoke"), position, 128, 128);
     this.sprite.animated = true;
     this.sprite.anchor = new U.Vector(0.5, 0.5);
     this.sprite.scale = new U.Vector(0.5, 0.5);
-    t1 = $.engine.canvas;
+    t1 = $.engine.renderer;
     t1.$index(t1, "buffer").addDisplayObject$1(this.sprite);
   },
   static: {
@@ -8436,17 +8680,24 @@ Smoke$: function(position) {
   return t1;
 },
 
+Smoke_add: function(position) {
+  var smoke = U.Smoke$(position);
+  $.get$Smoke_smokes().push(smoke);
+  return smoke;
+},
+
 Smoke_update: function() {
-  var i, t1, t2;
+  var t1, i, t2;
   $.Smoke_counter = $.Smoke_counter + 1;
-  if ($.Smoke_counter > 3) {
-    $.Smoke_counter = 0;
+  t1 = $.Smoke_counter;
+  if (t1 >= 3) {
+    $.Smoke_counter = t1 - 3;
     for (i = $.get$Smoke_smokes().length - 1; i >= 0; --i) {
       t1 = $.get$Smoke_smokes();
       if (i >= t1.length)
         throw H.ioore(t1, i);
       if (t1[i].sprite.frame === 36) {
-        t1 = $.engine.canvas;
+        t1 = $.engine.renderer;
         t1 = t1.$index(t1, "buffer");
         t2 = $.get$Smoke_smokes();
         if (i >= t2.length)
@@ -8466,32 +8717,30 @@ Smoke_update: function() {
 
 },
 
-Spore: {"": "Object;targetPosition,speed,remove,health<,trailCounter,sprite<",
+Spore: {"": "Object;targetPosition,speed,remove,health<,trailCounter,sprite",
   remove$0: function($receiver) {
     return this.remove.call$0();
   },
   calculateVector$0: function() {
-    var delta, distance, t1;
-    delta = J.$sub$n(this.targetPosition, this.sprite.position);
+    var t1, delta, distance;
+    t1 = this.targetPosition;
+    delta = t1.$sub(t1, this.sprite.position);
     distance = this.sprite.position.distanceTo$1(this.targetPosition);
-    t1 = J.getInterceptor$x(delta);
-    this.speed.x = J.$mul$n(J.$mul$n(J.$div$n(t1.get$x(delta), distance), 1), $.game.speed);
-    this.speed.y = J.$mul$n(J.$mul$n(J.$div$n(t1.get$y(delta), distance), 1), $.game.speed);
-    if (J.abs$0$n(this.speed.x) > J.abs$0$n(t1.get$x(delta)))
-      this.speed.x = t1.get$x(delta);
-    if (J.abs$0$n(this.speed.y) > J.abs$0$n(t1.get$y(delta)))
-      this.speed.y = t1.get$y(delta);
+    this.speed.x = J.$mul$n(J.$mul$n(J.$div$n(delta.x, distance), 1), $.game.speed);
+    this.speed.y = J.$mul$n(J.$mul$n(J.$div$n(delta.y, distance), 1), $.game.speed);
+    if (J.abs$0$n(this.speed.x) > J.abs$0$n(delta.x))
+      this.speed.x = delta.x;
+    if (J.abs$0$n(this.speed.y) > J.abs$0$n(delta.y))
+      this.speed.y = delta.y;
   },
   move$0: function() {
-    var t1, t2, i, j, t3, t4, t5;
+    var t1, t2, targetPositionTiled, i, j, tilePosition, t3, tile;
     this.calculateVector$0();
     this.trailCounter = this.trailCounter + 1;
     if (this.trailCounter === 10) {
       this.trailCounter = 0;
       t1 = this.sprite.position;
-      t2 = J.getInterceptor$x(t1);
-      t1 = U.Smoke$(new U.Vector(t2.get$x(t1), J.$sub$n(t2.get$y(t1), 16)));
-      $.get$Smoke_smokes().push(t1);
+      U.Smoke_add(new U.Vector(t1.x, J.$sub$n(t1.y, 16)));
     }
     t1 = this.sprite;
     t2 = t1.rotation;
@@ -8505,48 +8754,68 @@ Spore: {"": "Object;targetPosition,speed,remove,health<,trailCounter,sprite<",
     if (t2 > 359)
       t1.rotation = t2 - 359;
     t1 = this.sprite;
-    t1.position = J.$add$ns(t1.position, this.speed);
-    if (J.$gt$n(J.get$x$x(this.sprite.position), J.$sub$n(J.get$x$x(this.targetPosition), 2)) && J.$lt$n(J.get$x$x(this.sprite.position), J.$add$ns(J.get$x$x(this.targetPosition), 2)) && J.$gt$n(J.get$y$x(this.sprite.position), J.$sub$n(J.get$y$x(this.targetPosition), 2)) && J.$lt$n(J.get$y$x(this.sprite.position), J.$add$ns(J.get$y$x(this.targetPosition), 2))) {
+    t2 = t1.position;
+    t1.position = t2.$add(t2, this.speed);
+    if (J.$eq(this.sprite.position, this.targetPosition)) {
       this.remove = true;
+      targetPositionTiled = this.targetPosition.real2tiled$0();
       $.engine.playSound$2("explosion", this.targetPosition.real2tiled$0());
-      for (i = J.$sub$n(J.$tdiv$n(J.get$x$x(this.targetPosition), $.game.tileSize), 2); t1 = J.getInterceptor$n(i), t1.$lt(i, J.$add$ns(J.$tdiv$n(J.get$x$x(this.targetPosition), $.game.tileSize), 2)); i = t1.$add(i, 1))
-        for (j = J.$sub$n(J.$tdiv$n(J.get$y$x(this.targetPosition), $.game.tileSize), 2); t2 = J.getInterceptor$n(j), t2.$lt(j, J.$add$ns(J.$tdiv$n(J.get$y$x(this.targetPosition), $.game.tileSize), 2)); j = t2.$add(j, 1)) {
-          t3 = $.game.world;
-          if (t3.contains$1(t3, new U.Vector(i, j))) {
-            t3 = J.$sub$n(J.$add$ns(t1.$mul(i, $.game.tileSize), $.game.tileSize / 2), J.$add$ns(J.get$x$x(this.targetPosition), $.game.tileSize));
+      for (i = -2; i <= 2; ++i)
+        for (j = -2; j <= 2; ++j) {
+          t1 = new U.Vector(i, j);
+          tilePosition = new U.Vector(J.$add$ns(targetPositionTiled.x, t1.x), J.$add$ns(targetPositionTiled.y, t1.y));
+          t1 = $.game.world;
+          if (t1.contains$1(t1, tilePosition)) {
+            t1 = $.game.tileSize;
+            t1 = new U.Vector(J.$mul$n(tilePosition.x, t1), J.$mul$n(tilePosition.y, t1));
+            t2 = new U.Vector(8, 8);
+            t2 = new U.Vector(J.$add$ns(t1.x, t2.x), J.$add$ns(t1.y, t2.y));
+            t1 = this.targetPosition;
+            t3 = J.$sub$n(t2.x, t1.x);
             if (typeof t3 !== "number")
               H.throwExpression(new P.ArgumentError(t3));
             t3 = Math.pow(t3, 2);
-            t4 = J.$sub$n(J.$add$ns(t2.$mul(j, $.game.tileSize), $.game.tileSize / 2), J.$add$ns(J.get$y$x(this.targetPosition), $.game.tileSize));
-            if (typeof t4 !== "number")
-              H.throwExpression(new P.ArgumentError(t4));
-            t4 = Math.pow(t4, 2);
-            t5 = $.game.tileSize;
-            if (t3 + t4 < Math.pow(t5, 2)) {
-              t3 = $.game.world.tiles;
-              if (i >>> 0 !== i || i >= t3.length)
-                throw H.ioore(t3, i);
-              t3 = J.$index$asx(t3[i], j);
-              t3.creep = t3.get$creep() + 0.5;
-              $.game.creeperDirty = true;
+            t1 = J.$sub$n(t2.y, t1.y);
+            if (typeof t1 !== "number")
+              H.throwExpression(new P.ArgumentError(t1));
+            t1 = Math.pow(t1, 2);
+            t1 = Math.sqrt(t3 + t1);
+            t2 = $.game;
+            t3 = t2.tileSize;
+            if (t1 <= t3 * 2) {
+              t1 = new U.Vector(J.$mul$n(tilePosition.x, t3), J.$mul$n(tilePosition.y, t3));
+              t2 = t2.world.tiles;
+              t3 = J.$tdiv$n(t1.x, 16);
+              if (t3 >>> 0 !== t3 || t3 >= t2.length)
+                throw H.ioore(t2, t3);
+              tile = J.$index$asx(t2[t3], J.$tdiv$n(t1.y, 16));
+              tile.creep = tile.get$creep() + 0.5;
+              tile.newcreep = tile.newcreep + 0.5;
             }
           }
         }
+      $.game.creeperDirty = true;
     }
   },
   Spore$2: function(position, targetPosition) {
     var t1 = $.engine.images;
-    this.sprite = U.Sprite$(2, t1.$index(t1, "spore"), position, 32, 32);
+    this.sprite = U.Sprite$(C.Layer_8, t1.$index(t1, "spore"), position, 32, 32);
     this.sprite.anchor = new U.Vector(0.5, 0.5);
-    t1 = $.engine.canvas;
+    t1 = $.engine.renderer;
     t1.$index(t1, "buffer").addDisplayObject$1(this.sprite);
   },
   static: {
 "": "Spore_baseSpeed,Spore_spores",
 Spore$: function(position, targetPosition) {
-  var t1 = new U.Spore(targetPosition, new U.Vector(0, 0), false, 100, 0, null);
+  var t1 = new U.Spore(targetPosition, new U.Vector(0, 0), false, 500, 0, null);
   t1.Spore$2(position, targetPosition);
   return t1;
+},
+
+Spore_add: function(position, targetPosition) {
+  var spore = U.Spore$(position, targetPosition);
+  $.get$Spore_spores().push(spore);
+  return spore;
 },
 
 Spore_update: function() {
@@ -8556,7 +8825,7 @@ Spore_update: function() {
     if (i >= t1.length)
       throw H.ioore(t1, i);
     if (t1[i].remove) {
-      t1 = $.engine.canvas;
+      t1 = $.engine.renderer;
       t1 = t1.$index(t1, "buffer");
       t2 = $.get$Spore_spores();
       if (i >= t2.length)
@@ -8573,48 +8842,48 @@ Spore_update: function() {
 },
 
 Spore_damage: function(building) {
-  var center, t1, i, t2, sporeCenter, t3, t4, t5;
+  var center, i, t1, sporeCenter, t2, t3, t4, explosion;
   center = building.sprite.position;
-  for (t1 = J.getInterceptor$x(center), i = 0; i < $.get$Spore_spores().length; ++i) {
-    t2 = $.get$Spore_spores();
-    if (i >= t2.length)
-      throw H.ioore(t2, i);
-    sporeCenter = t2[i].sprite.position;
-    t2 = J.getInterceptor$x(sporeCenter);
-    t3 = J.$sub$n(t2.get$x(sporeCenter), t1.get$x(center));
-    if (typeof t3 !== "number")
-      H.throwExpression(new P.ArgumentError(t3));
-    t3 = Math.pow(t3, 2);
-    t2 = J.$sub$n(t2.get$y(sporeCenter), t1.get$y(center));
+  for (i = 0; i < $.get$Spore_spores().length; ++i) {
+    t1 = $.get$Spore_spores();
+    if (i >= t1.length)
+      throw H.ioore(t1, i);
+    sporeCenter = t1[i].sprite.position;
+    t1 = J.$sub$n(sporeCenter.x, center.x);
+    if (typeof t1 !== "number")
+      H.throwExpression(new P.ArgumentError(t1));
+    t1 = Math.pow(t1, 2);
+    t2 = J.$sub$n(sporeCenter.y, center.y);
     if (typeof t2 !== "number")
       H.throwExpression(new P.ArgumentError(t2));
     t2 = Math.pow(t2, 2);
-    t4 = building.weaponRadius;
-    t5 = $.game.tileSize;
-    if (t3 + t2 <= Math.pow(t4 * t5, 2)) {
+    t3 = building.weaponRadius;
+    t4 = $.game.tileSize;
+    if (t1 + t2 <= Math.pow(t3 * t4, 2)) {
       building.weaponTargetPosition = sporeCenter;
       building.energy = building.energy - 0.1;
       building.operating = true;
-      t2 = $.get$Spore_spores();
-      if (i >= t2.length)
-        throw H.ioore(t2, i);
-      t2 = t2[i];
-      t2.health = t2.health - 2;
-      t2 = $.get$Spore_spores();
-      if (i >= t2.length)
-        throw H.ioore(t2, i);
-      if (t2[i].health <= 0) {
+      t1 = $.get$Spore_spores();
+      if (i >= t1.length)
+        throw H.ioore(t1, i);
+      t1 = t1[i];
+      t1.health = t1.health - 2;
+      t1 = $.get$Spore_spores();
+      if (i >= t1.length)
+        throw H.ioore(t1, i);
+      if (t1[i].health <= 0) {
+        t1 = $.get$Spore_spores();
+        if (i >= t1.length)
+          throw H.ioore(t1, i);
+        t1[i].remove = true;
+        t1 = $.engine;
         t2 = $.get$Spore_spores();
         if (i >= t2.length)
           throw H.ioore(t2, i);
-        t2[i].remove = true;
-        t2 = $.engine;
-        t3 = $.get$Spore_spores();
-        if (i >= t3.length)
-          throw H.ioore(t3, i);
-        t2.playSound$2("explosion", t3[i].sprite.position.real2tiled$0());
-        t3 = U.Explosion$(sporeCenter);
-        $.get$Explosion_explosions().push(t3);
+        t2 = t2[i].sprite.position;
+        t1.playSound$2("explosion", new U.Vector(J.$tdiv$n(t2.x, $.game.tileSize), J.$tdiv$n(t2.y, $.game.tileSize)));
+        explosion = U.Explosion$(sporeCenter);
+        $.get$Explosion_explosions().push(explosion);
       }
     }
   }
@@ -8622,7 +8891,7 @@ Spore_damage: function(building) {
 
 },
 
-Sporetower: {"": "Object;sprite<,sporeCounter",
+Sporetower: {"": "Object;sprite,sporeCounter",
   spawn$0: function() {
     var t1, t2, t3, max, target;
     do {
@@ -8638,14 +8907,13 @@ Sporetower: {"": "Object;sprite<,sporeCounter",
         throw H.ioore(t1, t2);
       target = t1[t2];
     } while (!target.get$built());
-    t1 = U.Spore$(this.sprite.position, target.sprite.position);
-    $.get$Spore_spores().push(t1);
+    U.Spore_add(this.sprite.position, target.sprite.position);
   },
   Sporetower$1: function(position) {
     var t1 = $.engine.images;
-    this.sprite = U.Sprite$(0, t1.$index(t1, "sporetower"), position, 48, 48);
+    this.sprite = U.Sprite$(C.Layer_3, t1.$index(t1, "sporetower"), position, 48, 48);
     this.sprite.anchor = new U.Vector(0.5, 0.5);
-    t1 = $.engine.canvas;
+    t1 = $.engine.renderer;
     t1.$index(t1, "buffer").addDisplayObject$1(this.sprite);
     this.sporeCounter = $.engine.randomInt$2(7500, 12500);
   },
@@ -8688,7 +8956,7 @@ Sporetower_update: function() {
 UISymbol: {"": "Object;rectangle,imageID,size>,packets,radius,keyCode>,active@,hovered@",
   draw$0: function() {
     var t1, context, t2, t3;
-    t1 = $.engine.canvas;
+    t1 = $.engine.renderer;
     context = t1.$index(t1, "gui").get$context();
     if (this.active)
       J.set$fillStyle$x(context, "#696");
@@ -8732,12 +9000,22 @@ UISymbol: {"": "Object;rectangle,imageID,size>,packets,radius,keyCode>,active@,h
 UISymbol_reset: function() {
   $.UISymbol_activeSymbol = null;
   U.UISymbol_deselect();
-  var t1 = $.engine.canvas;
+  var t1 = $.engine.renderer;
   J.set$cursor$x(J.get$style$x(J.get$view$x(t1.$index(t1, "main"))), "url('images/Normal.cur') 2 2, pointer");
 },
 
-UISymbol_checkHovered: function() {
-  var i, t1, t2, t3;
+UISymbol_checkHovered: function(evt) {
+  var t1, t2, t3, mousePosition, i;
+  t1 = J.getInterceptor$x(evt);
+  t2 = t1.get$client(evt);
+  t2 = t2.get$x(t2);
+  t3 = $.engine.renderer;
+  t3 = J.$sub$n(t2, J.get$left$x(J.getBoundingClientRect$0$x(J.get$view$x(t3.$index(t3, "gui")))));
+  t1 = t1.get$client(evt);
+  t1 = t1.get$y(t1);
+  t2 = $.engine.renderer;
+  mousePosition = new P.Point(t3, J.$sub$n(t1, J.get$top$x(J.getBoundingClientRect$0$x(J.get$view$x(t2.$index(t2, "gui"))))));
+  H.setRuntimeTypeInfo(mousePosition, [null]);
   for (i = 0; i < $.get$UISymbol_symbols().length; ++i) {
     t1 = $.get$UISymbol_symbols();
     if (i >= t1.length)
@@ -8747,10 +9025,7 @@ UISymbol_checkHovered: function() {
     if (i >= t2.length)
       throw H.ioore(t2, i);
     t2 = t2[i].rectangle;
-    t3 = $.engine.mouseGUI.position;
-    t3 = new P.Point(t3.x, t3.y);
-    t3.$builtinTypeInfo = [null];
-    t1.hovered = t2.containsPoint$1(t2, t3);
+    t1.hovered = t2.containsPoint$1(t2, mousePosition);
   }
 },
 
@@ -8774,7 +9049,7 @@ UISymbol_select: function(evt) {
       if (i >= t2.length)
         throw H.ioore(t2, i);
       t2[i].active = true;
-      t2 = $.engine.canvas;
+      t2 = $.engine.renderer;
       J.set$cursor$x(J.get$style$x(J.get$view$x(t2.$index(t2, "main"))), "none");
     }
   }
@@ -8814,14 +9089,14 @@ UISymbol_setActive: function() {
     }
   }
   if ($.UISymbol_activeSymbol != null) {
-    t1 = $.engine.canvas;
+    t1 = $.engine.renderer;
     J.set$cursor$x(J.get$style$x(J.get$view$x(t1.$index(t1, "main"))), "none");
   }
 }}
 
 },
 
-Vector: {"": "Object;x*,y*",
+Vector: {"": "Object;x>,y>",
   $add: function(_, other) {
     var t1 = J.getInterceptor$x(other);
     return new U.Vector(J.$add$ns(this.x, t1.get$x(other)), J.$add$ns(this.y, t1.get$y(other)));
@@ -8848,16 +9123,15 @@ Vector: {"": "Object;x*,y*",
   },
   distanceTo$1: function(other) {
     var t1, t2;
-    t1 = J.getInterceptor$x(other);
-    t2 = J.$sub$n(this.x, t1.get$x(other));
-    if (typeof t2 !== "number")
-      H.throwExpression(new P.ArgumentError(t2));
-    t2 = Math.pow(t2, 2);
-    t1 = J.$sub$n(this.y, t1.get$y(other));
+    t1 = J.$sub$n(this.x, J.get$x$x(other));
     if (typeof t1 !== "number")
       H.throwExpression(new P.ArgumentError(t1));
     t1 = Math.pow(t1, 2);
-    return Math.sqrt(t2 + t1);
+    t2 = J.$sub$n(this.y, other.y);
+    if (typeof t2 !== "number")
+      H.throwExpression(new P.ArgumentError(t2));
+    t2 = Math.pow(t2, 2);
+    return Math.sqrt(t1 + t2);
   },
   tiled2screen$0: function() {
     var t1, t2, t3, t4;
@@ -8892,7 +9166,7 @@ Vector: {"": "Object;x*,y*",
   }
 },
 
-Vector3: {"": "Object;x*,y*,z>",
+Vector3: {"": "Object;x>,y>,z>",
   $add: function(_, other) {
     var t1 = J.getInterceptor$x(other);
     return new U.Vector3(J.$add$ns(this.x, t1.get$x(other)), J.$add$ns(this.y, t1.get$y(other)), J.$add$ns(this.z, t1.get$z(other)));
@@ -8904,66 +9178,12 @@ World: {"": "Object;tiles,size>",
     return J.$gt$n(position.x, -1) && J.$lt$n(position.x, this.size.x) && J.$gt$n(position.y, -1) && J.$lt$n(position.y, this.size.y);
   },
   getTile$1: function(position) {
-    var t1, t2, t3;
+    var t1, t2;
     t1 = this.tiles;
-    t2 = J.getInterceptor$x(position);
-    t3 = J.$tdiv$n(t2.get$x(position), 16);
-    if (t3 >>> 0 !== t3 || t3 >= t1.length)
-      throw H.ioore(t1, t3);
-    return J.$index$asx(t1[t3], J.$tdiv$n(t2.get$y(position), 16));
-  },
-  drawTerraformNumbers$0: function() {
-    var t1, t2, t3, timesX, timesY, i, j, j0, iS, jS, t4, t5, t6, t7, t8;
-    t1 = $.engine.halfWidth;
-    t2 = $.game;
-    t3 = t2.tileSize;
-    t2 = t2.zoom;
-    if (typeof t2 !== "number")
-      throw H.iae(t2);
-    timesX = C.JSNumber_methods.toInt$0(Math.floor(t1 / t3 / t2));
-    t2 = $.engine.halfHeight;
-    t3 = $.game;
-    t1 = t3.tileSize;
-    t3 = t3.zoom;
-    if (typeof t3 !== "number")
-      throw H.iae(t3);
-    timesY = C.JSNumber_methods.toInt$0(Math.floor(t2 / t1 / t3));
-    for (i = -timesX, j = -timesY; i <= timesX; ++i)
-      for (j0 = j; j0 <= timesY; ++j0) {
-        t1 = $.game.scroll;
-        t2 = t1.x;
-        if (typeof t2 !== "number")
-          throw H.iae(t2);
-        iS = i + t2;
-        t1 = t1.y;
-        if (typeof t1 !== "number")
-          throw H.iae(t1);
-        jS = j0 + t1;
-        if (this.contains$1(this, new U.Vector(iS, jS))) {
-          t1 = this.tiles;
-          if (iS >>> 0 !== iS || iS >= t1.length)
-            throw H.ioore(t1, iS);
-          if (J.$index$asx(t1[iS], jS).get$terraformTarget() > -1) {
-            t1 = $.engine.canvas;
-            t1 = t1.$index(t1, "buffer").get$context();
-            t2 = $.engine.images;
-            t2 = t2.$index(t2, "numbers");
-            t3 = this.tiles;
-            if (iS >= t3.length)
-              throw H.ioore(t3, iS);
-            t3 = J.$index$asx(t3[iS], jS).get$terraformTarget();
-            t4 = $.game;
-            t5 = t4.tileSize;
-            t6 = $.engine;
-            t7 = t6.halfWidth;
-            t4 = t4.zoom;
-            if (typeof t4 !== "number")
-              throw H.iae(t4);
-            t8 = t5 * t4;
-            J.drawImageScaledFromSource$9$x(t1, t2, t3 * 16, 0, t5, t5, t7 + i * t5 * t4, t6.halfHeight + j0 * t5 * t4, t8, t8);
-          }
-        }
-      }
+    t2 = J.$tdiv$n(J.get$x$x(position), 16);
+    if (t2 >>> 0 !== t2 || t2 >= t1.length)
+      throw H.ioore(t1, t2);
+    return J.$index$asx(t1[t2], J.$tdiv$n(position.y, 16));
   },
   World$1: function(seed) {
     this.size = new U.Vector($.engine.randomInt$3(64, 127, seed), $.engine.randomInt$3(64, 127, seed));
@@ -8977,7 +9197,33 @@ World$: function(seed) {
 
 },
 
-Tile: {"": "Object;creep@,newcreep@,collector@,height*,index*,terraformTarget@,terraformProgress@",
+Tile: {"": "Object;creep@,newcreep@,collector@,height*,index*,terraformTarget<,terraformProgress<,terraformNumber",
+  flagTerraform$1: function(position) {
+    var t1;
+    if (!J.$eq(this.height, $.game.terraformingHeight)) {
+      this.terraformTarget = $.game.terraformingHeight;
+      this.terraformProgress = 0;
+      t1 = this.terraformNumber;
+      if (t1 == null) {
+        t1 = $.engine.images;
+        this.terraformNumber = U.Sprite$(C.Layer_0, t1.$index(t1, "numbers"), position, 16, 16);
+        this.terraformNumber.animated = true;
+        this.terraformNumber.frame = this.terraformTarget;
+        t1 = $.engine.renderer;
+        t1.$index(t1, "buffer").addDisplayObject$1(this.terraformNumber);
+      } else
+        t1.frame = this.terraformTarget;
+    }
+  },
+  unflagTerraform$0: function() {
+    this.terraformProgress = 0;
+    this.terraformTarget = -1;
+    if (this.terraformNumber != null) {
+      var t1 = $.engine.renderer;
+      t1.$index(t1, "buffer").removeDisplayObject$1(this.terraformNumber);
+      this.terraformNumber = null;
+    }
+  },
   Tile$0: function() {
     this.index = -1;
     this.creep = 0;
@@ -8985,38 +9231,15 @@ Tile: {"": "Object;creep@,newcreep@,collector@,height*,index*,terraformTarget@,t
     this.collector = null;
     this.terraformTarget = -1;
     this.terraformProgress = 0;
+    this.terraformNumber = null;
   },
   static: {
 Tile$: function() {
-  var t1 = new U.Tile(null, null, null, null, null, null, null);
+  var t1 = new U.Tile(null, null, null, null, null, null, null, null);
   t1.Tile$0();
   return t1;
 }}
 
-},
-
-Route: {"": "Object;distanceTravelled<,distanceRemaining,nodes>,remove",
-  remove$0: function($receiver) {
-    return this.remove.call$0();
-  },
-  clone$0: function(_) {
-    var t1, route, t2, i;
-    t1 = P.List_List(null, U.Building);
-    H.setRuntimeTypeInfo(t1, [U.Building]);
-    route = new U.Route(0, 0, t1, false);
-    route.distanceTravelled = this.distanceTravelled;
-    route.distanceRemaining = this.distanceRemaining;
-    for (t1 = this.nodes, t2 = route.nodes, i = 0; i < t1.length; ++i)
-      t2.push(t1[i]);
-    return route;
-  },
-  contains$1: function(_, node) {
-    var t1, i;
-    for (t1 = this.nodes, i = 0; i < t1.length; ++i)
-      if (J.$eq(node.get$sprite().position, t1[i].get$sprite().position))
-        return true;
-    return false;
-  }
 }},
 1],
 ["dart._collection.dev", "dart:_collection-dev", , H, {
@@ -9087,10 +9310,6 @@ IterableMixinWorkaround_toStringIterable: function(iterable, leftDelimiter, righ
     t1.pop();
   }
   return result.get$_contents();
-},
-
-IterableMixinWorkaround_sortList: function(list, compare) {
-  H.Sort__doSort(list, 0, list.length - 1, compare);
 },
 
 IterableMixinWorkaround_shuffleList: function(list, random) {
@@ -9837,7 +10056,7 @@ _Future: {"": "Object;_state,_zone<,_resultOrListeners,_nextListener<,_onValueCa
     this._addListener$1(result);
     return result;
   },
-  get$_value: function() {
+  get$_async$_value: function() {
     return this._resultOrListeners;
   },
   get$_error: function() {
@@ -10121,7 +10340,7 @@ _Future__propagateToListeners_closure0: {"": "Closure;box_2,box_1,hasError_4,lis
     try {
       t2 = this.box_2;
       if (!this.hasError_4) {
-        value = t2.source_4.get$_value();
+        value = t2.source_4.get$_async$_value();
         t2 = this.listener_5;
         t3 = t2._state === 2 ? null : t2._onValueCallback;
         t4 = this.box_1;
@@ -12868,7 +13087,7 @@ CanvasElement: {"": "HtmlElement;height%,width%",
 
 CanvasRenderingContext: {"": "Interceptor;", "%": "WebGLRenderingContext;CanvasRenderingContext"},
 
-CanvasRenderingContext2D: {"": "CanvasRenderingContext;fillStyle},globalAlpha},globalCompositeOperation},lineWidth},shadowBlur},shadowColor},shadowOffsetX},shadowOffsetY},strokeStyle}",
+CanvasRenderingContext2D: {"": "CanvasRenderingContext;fillStyle},globalAlpha},globalCompositeOperation},lineWidth},strokeStyle}",
   beginPath$0: function(receiver) {
     return receiver.beginPath();
   },
@@ -13400,11 +13619,6 @@ TrackElement: {"": "HtmlElement;src}", "%": "HTMLTrackElement"},
 UIEvent: {"": "Event;which=",
   get$view: function(receiver) {
     return W._convertNativeToDart_Window(receiver.view);
-  },
-  get$layer: function(receiver) {
-    var t1 = new P.Point(receiver.layerX, receiver.layerY);
-    H.setRuntimeTypeInfo(t1, [null]);
-    return t1;
   },
   "%": "CompositionEvent|FocusEvent|SVGZoomEvent|TextEvent|TouchEvent;UIEvent"
 },
@@ -14394,16 +14608,6 @@ Point: {"": "Object;x>,y>",
     H.setRuntimeTypeInfo(t2, [H.getRuntimeTypeArgument(this, "Point", 0)]);
     return t2;
   },
-  distanceTo$1: function(other) {
-    var t1, dx, dy;
-    t1 = J.getInterceptor$x(other);
-    dx = J.$sub$n(this.x, t1.get$x(other));
-    dy = J.$sub$n(this.y, t1.get$y(other));
-    t1 = J.$add$ns(J.$mul$n(dx, dx), J.$mul$n(dy, dy));
-    if (typeof t1 !== "number")
-      H.throwExpression(new P.ArgumentError(t1));
-    return Math.sqrt(t1);
-  },
   $isPoint: true
 },
 
@@ -14649,16 +14853,16 @@ W.WheelEvent.$isObject = true;
 U.Connection.$isObject = true;
 U.Route.$isRoute = true;
 U.Route.$isObject = true;
+U.Tile.$isObject = true;
 W.NodeValidator.$isObject = true;
-U.DisplayObject.$isDisplayObject = true;
+J.JSArray.$isIterable = true;
+J.JSArray.$isObject = true;
 U.DisplayObject.$isObject = true;
 P.ReceivePort.$isStream = true;
 P.ReceivePort.$asStream = [null];
 P.ReceivePort.$isObject = true;
 H._IsolateEvent.$isObject = true;
 H._IsolateContext.$isObject = true;
-J.JSArray.$isIterable = true;
-J.JSArray.$isObject = true;
 P.Timer.$isTimer = true;
 P.Timer.$isObject = true;
 P.Symbol.$isSymbol = true;
@@ -14907,6 +15111,16 @@ C.JS_CONST_rD3 = function(hooks) {
   hooks.getTag = getTagIE;
   hooks.prototypeForTag = prototypeForTagIE;
 };
+C.Layer_0 = new U.Layer(0);
+C.Layer_1 = new U.Layer(1);
+C.Layer_2 = new U.Layer(2);
+C.Layer_3 = new U.Layer(3);
+C.Layer_4 = new U.Layer(4);
+C.Layer_5 = new U.Layer(5);
+C.Layer_6 = new U.Layer(6);
+C.Layer_7 = new U.Layer(7);
+C.Layer_8 = new U.Layer(8);
+C.Layer_9 = new U.Layer(9);
 Isolate.makeConstantList = function(list) {
   list.immutable$list = true;
   list.fixed$length = true;
@@ -14931,12 +15145,13 @@ $.dispatchRecordsForInstanceTags = null;
 $.interceptorsForUncacheableTags = null;
 $.initNativeDispatchFlag = null;
 $.Building_damageCounter = 0;
+$.Building_collectCounter = 0;
 $.Emitter_counter = null;
 $.Explosion_counter = 0;
 $.engine = null;
 $.game = null;
 $.Packet_baseSpeed = 3;
-$.Projectile_baseSpeed = 5;
+$.Projectile_baseSpeed = 7;
 $.Smoke_counter = 0;
 $.UISymbol_activeSymbol = null;
 $.printToZone = null;
@@ -15103,9 +15318,6 @@ J.get$iterator$ax = function(receiver) {
 J.get$lastChild$x = function(receiver) {
   return J.getInterceptor$x(receiver).get$lastChild(receiver);
 };
-J.get$layer$x = function(receiver) {
-  return J.getInterceptor$x(receiver).get$layer(receiver);
-};
 J.get$left$x = function(receiver) {
   return J.getInterceptor$x(receiver).get$left(receiver);
 };
@@ -15265,18 +15477,6 @@ J.set$right$x = function(receiver, value) {
 J.set$selected$x = function(receiver, value) {
   return J.getInterceptor$x(receiver).set$selected(receiver, value);
 };
-J.set$shadowBlur$x = function(receiver, value) {
-  return J.getInterceptor$x(receiver).set$shadowBlur(receiver, value);
-};
-J.set$shadowColor$x = function(receiver, value) {
-  return J.getInterceptor$x(receiver).set$shadowColor(receiver, value);
-};
-J.set$shadowOffsetX$x = function(receiver, value) {
-  return J.getInterceptor$x(receiver).set$shadowOffsetX(receiver, value);
-};
-J.set$shadowOffsetY$x = function(receiver, value) {
-  return J.getInterceptor$x(receiver).set$shadowOffsetY(receiver, value);
-};
 J.set$src$x = function(receiver, value) {
   return J.getInterceptor$x(receiver).set$src(receiver, value);
 };
@@ -15294,12 +15494,6 @@ J.set$volume$x = function(receiver, value) {
 };
 J.set$width$x = function(receiver, value) {
   return J.getInterceptor$x(receiver).set$width(receiver, value);
-};
-J.set$x$x = function(receiver, value) {
-  return J.getInterceptor$x(receiver).set$x(receiver, value);
-};
-J.set$y$x = function(receiver, value) {
-  return J.getInterceptor$x(receiver).set$y(receiver, value);
 };
 J.set$zIndex$x = function(receiver, value) {
   return J.getInterceptor$x(receiver).set$zIndex(receiver, value);
