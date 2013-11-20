@@ -661,29 +661,30 @@ class Building {
 
             int height = game.world.getTile(position).height;
 
+            num closestDistance = 1000;
             List targets = new List();
+            
             // find closest random target
-            for (int r = 0; r < weaponRadius + 1; r++) {
-              int radius = r * game.tileSize;
-              var tiledPosition = position.real2tiled();
-              for (int i = tiledPosition.x - weaponRadius; i <= tiledPosition.x + weaponRadius; i++) {
-                for (int j = tiledPosition.y - weaponRadius; j <= tiledPosition.y + weaponRadius; j++) {
+            var targetPositionTiled = position.real2tiled();
+            for (int i = -weaponRadius; i <= weaponRadius; i++) {
+              for (int j = -weaponRadius; j <= weaponRadius; j++) {
+                
+                Vector tilePosition = targetPositionTiled + new Vector(i, j);
 
-                  // cannons can only shoot at tiles not higher than themselves
-                  if (game.world.contains(new Vector(i, j))) {
-                    int tileHeight = game.world.tiles[i][j].height;
-                    if (tileHeight <= height) {
-                      var distance = pow((i * game.tileSize + game.tileSize / 2) - position.x, 2) + pow((j * game.tileSize + game.tileSize / 2) - position.y, 2);
+                // cannons can only shoot at tiles not higher than themselves
+                if (game.world.contains(tilePosition) && game.world.tiles[tilePosition.x][tilePosition.y].creep > 0) {
+                  int tileHeight = game.world.tiles[tilePosition.x][tilePosition.y].height;
+                  if (tileHeight <= height) {
+                    
+                    num distance = (tilePosition * game.tileSize + new Vector(8, 8)).distanceTo(position);
 
-                      if (distance <= pow(radius, 2) && game.world.tiles[i][j].creep > 0) {
-                        targets.add(new Vector(i, j));
-                      }
+                    if (distance <= pow(weaponRadius * game.tileSize, 2) && distance <= closestDistance) {
+                      closestDistance = distance;
+                      targets.add(tilePosition);
                     }
                   }
                 }
               }
-              if (targets.length > 0)
-                break;
             }
 
             if (targets.length > 0) {
