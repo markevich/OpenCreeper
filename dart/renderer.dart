@@ -53,13 +53,7 @@ class Renderer {
     return myview.intersects(object);
   }
 
-  void draw() {
-    
-    context.save();
-    context.shadowBlur = 5;
-    context.shadowColor = "#222";
-    context.shadowOffsetX = 5;
-    context.shadowOffsetY = 5;
+  void draw() {   
     
     for (var displayObject in displayObjects) {
       if (displayObject.visible) {
@@ -168,6 +162,5 @@ class Renderer {
       }
     }
     
-    context.restore();
   }
 }
