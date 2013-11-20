@@ -15,7 +15,7 @@ void onMouseMove(MouseEvent evt) {
     Vector hoveredTilePosition = game.getHoveredTilePosition();   
     if (game.mode == "TERRAFORM") {
       if (game.world.contains(hoveredTilePosition)) {
-        if (game.world.tiles[hoveredTilePosition.x][hoveredTilePosition.y].terraformTarget != game.terraformingHeight) {
+        if (game.world.tiles[hoveredTilePosition.x][hoveredTilePosition.y].height != game.terraformingHeight) {
           game.world.tiles[hoveredTilePosition.x][hoveredTilePosition.y].terraformTarget = game.terraformingHeight;
           game.world.tiles[hoveredTilePosition.x][hoveredTilePosition.y].terraformProgress = 0;
         }
@@ -214,7 +214,7 @@ void onMouseDown(MouseEvent evt) {
     // flag for terraforming 
     if (game.mode == "TERRAFORM") {
       if (game.world.contains(hoveredTilePosition)) {
-        if (game.world.tiles[hoveredTilePosition.x][hoveredTilePosition.y].terraformTarget != game.terraformingHeight) {
+        if (game.world.tiles[hoveredTilePosition.x][hoveredTilePosition.y].height != game.terraformingHeight) {          
           game.world.tiles[hoveredTilePosition.x][hoveredTilePosition.y].terraformTarget = game.terraformingHeight;
           game.world.tiles[hoveredTilePosition.x][hoveredTilePosition.y].terraformProgress = 0;
         }
