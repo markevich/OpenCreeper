@@ -37,6 +37,12 @@ class Renderer {
     layers[displayObject.layer._value].removeAt(layers[displayObject.layer._value].indexOf(displayObject));
   }
   
+  void switchLayer(DisplayObject displayObject, Layer layer) {
+    removeDisplayObject(displayObject);
+    displayObject.layer = layer;
+    addDisplayObject(displayObject);
+  }
+  
   /**
    * Checks if an object with a given [position] and [size]
    * is visible in the renderer view. Returns true or false.

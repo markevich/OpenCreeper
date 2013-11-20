@@ -336,10 +336,9 @@ class Building {
       if (flightCounter >= 25) {
         flightCounter = 25;
         status = "MOVING";
-        sprite.layer = Layer.BUILDINGFLYING;
+        engine.renderer["buffer"].switchLayer(sprite, Layer.BUILDINGFLYING);
         if (cannon != null)
-          cannon.layer = Layer.BUILDINGGUNFLYING;
-        engine.renderer["buffer"].sortDisplayObjects();
+          engine.renderer["buffer"].switchLayer(cannon, Layer.BUILDINGGUNFLYING);
       }
     }
     
@@ -356,8 +355,9 @@ class Building {
         targetSymbol.visible = false;
         updateDisplayObjects();
         Connection.add(this);
-        sprite.layer = Layer.BUILDING;
-        engine.renderer["buffer"].sortDisplayObjects();
+        engine.renderer["buffer"].switchLayer(sprite, Layer.BUILDING);
+        if (cannon != null)
+          engine.renderer["buffer"].switchLayer(cannon, Layer.BUILDINGGUN);
       }
     }
 
