@@ -122,7 +122,7 @@ class Building {
    * Adds a building of a given [type] at the given [position].
    */
   static Building add(Vector position, String type) {
-    position = position * 16 + new Vector(8, 8);
+    position = position * game.tileSize + new Vector(8, 8);
     Building building = new Building(position, type);
     buildings.add(building);
     return building;

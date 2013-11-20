@@ -259,7 +259,7 @@ class Game {
           engine.randomInt(0, world.size.x - 3, seed + engine.randomInt(1, 1000, seed + l)),
           engine.randomInt(0, world.size.y - 3, seed + engine.randomInt(1, 1000, seed + 1 + l)));
   
-      Emitter emitter = Emitter.add(new Vector(randomPosition.x * 16 + 24, randomPosition.y * 16 + 24), 25);
+      Emitter emitter = Emitter.add(new Vector(randomPosition.x * tileSize + 24, randomPosition.y * tileSize + 24), 25);
   
       height = world.getTile(emitter.sprite.position).height; //this.world.tiles[emitter.sprite.position.x + 1][emitter.sprite.position.y + 1].height;
       if (height < 0)
@@ -278,7 +278,7 @@ class Game {
           engine.randomInt(0, world.size.x - 3, seed + 3 + engine.randomInt(1, 1000, seed + 2 + l)),
           engine.randomInt(0, world.size.y - 3, seed + 3 + engine.randomInt(1, 1000, seed + 3 + l)));
   
-      Sporetower sporetower = Sporetower.add(new Vector(randomPosition.x * 16 + 24, randomPosition.y * 16 + 24));
+      Sporetower sporetower = Sporetower.add(new Vector(randomPosition.x * tileSize + 24, randomPosition.y * tileSize + 24));
   
       height = world.getTile(sporetower.sprite.position).height; //this.world.tiles[sporetower.position.x + 1][sporetower.position.y + 1].height;
       if (height < 0)
@@ -588,8 +588,8 @@ class Game {
             Building.buildings[i].position.y - Building.buildings[i].size * tileSize / 2,
             Building.buildings[i].size * tileSize - 1,
             Building.buildings[i].size * tileSize - 1);
-        Rectangle currentRect = new Rectangle(position.x * tileSize - 16,
-                                              position.y * tileSize - 16,
+        Rectangle currentRect = new Rectangle(position.x * tileSize - tileSize,
+                                              position.y * tileSize - tileSize,
                                               size * tileSize - 1,
                                               size * tileSize - 1);       
         if (currentRect.intersects(buildingRect)) {
@@ -773,7 +773,7 @@ class Game {
     
     if (canBePlaced(position, size, null) && (type == "collector" || type == "cannon" || type == "mortar" || type == "shield" || type == "beam" || type == "terp" || type == "analyzer")) {
 
-      Vector positionCenter = new Vector(position.x * tileSize + 8, position.y * tileSize + 8);
+      Vector positionCenter = new Vector(position.x * tileSize + (tileSize / 2), position.y * tileSize + (tileSize / 2));
       int positionHeight = game.world.tiles[position.x][position.y].height;
       
       context.save();
@@ -1032,9 +1032,9 @@ class Game {
           context.globalAlpha = .5;
   
           // draw building
-          context.drawImageScaled(engine.images[UISymbol.activeSymbol.imageID], drawPosition.x - 16 * zoom, drawPosition.y - 16 * zoom, UISymbol.activeSymbol.size * tileSize * zoom, UISymbol.activeSymbol.size * tileSize * zoom);
+          context.drawImageScaled(engine.images[UISymbol.activeSymbol.imageID], drawPosition.x - tileSize * zoom, drawPosition.y - tileSize * zoom, UISymbol.activeSymbol.size * tileSize * zoom, UISymbol.activeSymbol.size * tileSize * zoom);
           if (UISymbol.activeSymbol.imageID == "cannon")
-            context.drawImageScaled(engine.images["cannongun"], drawPosition.x - 16 * zoom, drawPosition.y - 16 * zoom, 48 * zoom, 48 * zoom);
+            context.drawImageScaled(engine.images["cannongun"], drawPosition.x - tileSize * zoom, drawPosition.y - tileSize * zoom, 48 * zoom, 48 * zoom);
   
           // draw green or red box
           // make sure there isn't a building on this tile yet
@@ -1044,7 +1044,7 @@ class Game {
             context.strokeStyle = "#f00";
           }
           context.lineWidth = 4 * zoom;
-          context.strokeRect(drawPosition.x - 16 * zoom, drawPosition.y - 16 * zoom, tileSize * UISymbol.activeSymbol.size * zoom, tileSize * UISymbol.activeSymbol.size * zoom);
+          context.strokeRect(drawPosition.x - tileSize * zoom, drawPosition.y - tileSize * zoom, tileSize * UISymbol.activeSymbol.size * zoom, tileSize * UISymbol.activeSymbol.size * zoom);
   
           context.restore();
   
@@ -1165,10 +1165,12 @@ class Game {
     drawGUI();
     
     engine.renderer["buffer"].clear();
-    engine.renderer["main"].clear();
-
     engine.renderer["buffer"].draw();
     Building.draw();
+    if (creeperDirty) {
+      drawCreeper();
+      creeperDirty = false;
+    }
 
     if (engine.mouse.active) {
 
@@ -1179,14 +1181,10 @@ class Game {
       /*Vector tp = game.getHoveredTilePosition();
       Vector tp2 = tp.tiled2screen();
       engine.renderer["buffer"].context.strokeStyle = '#f0f';
-      engine.renderer["buffer"].context.strokeRect(tp2.x, tp2.y, 16 * zoom, 16 * zoom);*/
-    } 
-    
-    if (creeperDirty) {
-      drawCreeper();
-      creeperDirty = false;
+      engine.renderer["buffer"].context.strokeRect(tp2.x, tp2.y, tileSize * zoom, tileSize * zoom);*/
     }
 
+    engine.renderer["main"].clear();
     engine.renderer["main"].context.drawImage(engine.renderer["buffer"].view, 0, 0);
 
     window.requestAnimationFrame(draw);
