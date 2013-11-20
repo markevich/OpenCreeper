@@ -148,16 +148,22 @@ class Renderer {
 
         // render line
         else if (displayObject is Line) {
+          Rectangle myview = new Rectangle(0, 0, view.width, view.height);   
+          
           Vector realPositionFrom = displayObject.from.real2screen();
           Vector realPositionTo = displayObject.to.real2screen();
-
-          context.lineWidth = displayObject.lineWidth * game.zoom;
-          context.strokeStyle = displayObject.color;
-
-          context.beginPath();
-          context.moveTo(realPositionFrom.x, realPositionFrom.y);
-          context.lineTo(realPositionTo.x, realPositionTo.y);
-          context.stroke();
+          
+          // check if line is visible
+          if (myview.containsPoint(new Point(realPositionFrom.x, realPositionFrom.y)) ||
+              myview.containsPoint(new Point(realPositionTo.x, realPositionTo.y))) {
+            context.lineWidth = displayObject.lineWidth;
+            context.strokeStyle = displayObject.color;
+  
+            context.beginPath();
+            context.moveTo(realPositionFrom.x, realPositionFrom.y);
+            context.lineTo(realPositionTo.x, realPositionTo.y);
+            context.stroke();
+          }
         }
       }
     }
