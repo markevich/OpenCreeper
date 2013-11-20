@@ -18,39 +18,13 @@ class World {
   Tile getTile(Vector position) {
     return tiles[position.x ~/ 16][position.y ~/ 16];
   }  
-  
-  void drawTerraformNumbers() {
-    int timesX = (engine.halfWidth / game.tileSize / game.zoom).floor();
-    int timesY = (engine.halfHeight / game.tileSize / game.zoom).floor();
-
-    for (int i = -timesX; i <= timesX; i++) {
-      for (int j = -timesY; j <= timesY; j++) {
-
-        int iS = i + game.scroll.x;
-        int jS = j + game.scroll.y;
-
-        if (contains(new Vector(iS, jS))) {
-          if (tiles[iS][jS].terraformTarget > -1) {
-            engine.renderer["buffer"].context.drawImageScaledFromSource(engine.images["numbers"],
-                                                                      tiles[iS][jS].terraformTarget * 16,
-                                                                      0,
-                                                                      game.tileSize,
-                                                                      game.tileSize,
-                                                                      engine.halfWidth + i * game.tileSize * game.zoom,
-                                                                      engine.halfHeight + j * game.tileSize * game.zoom,
-                                                                      game.tileSize * game.zoom,
-                                                                      game.tileSize * game.zoom);
-          }
-        }
-      }
-    }
-  }
 }
 
 class Tile {
   num creep, newcreep;
   Building collector;
   int height, index, terraformTarget, terraformProgress;
+  Sprite terraformNumber;
 
   Tile() {
     index = -1; // TODO: unused, maybe remove
@@ -59,5 +33,31 @@ class Tile {
     collector = null;
     terraformTarget = -1;
     terraformProgress = 0;
+    terraformNumber = null;
+  }
+  
+  void flagTerraform(Vector position) {   
+    if (height != game.terraformingHeight) {
+      terraformTarget = game.terraformingHeight;
+      terraformProgress = 0;
+      
+      if (terraformNumber == null) {
+        terraformNumber = new Sprite(Layer.TERRAFORM, engine.images["numbers"], position, 16, 16);
+        terraformNumber.animated = true;
+        terraformNumber.frame = terraformTarget;
+        engine.renderer["buffer"].addDisplayObject(terraformNumber);
+      } else {
+        terraformNumber.frame = terraformTarget;
+      }
+    }
+  }
+  
+  void unflagTerraform() {    
+    terraformProgress = 0;
+    terraformTarget = -1;
+    if (terraformNumber != null) {
+      engine.renderer["buffer"].removeDisplayObject(terraformNumber); // alternatively it could just be set to 'visible = false'
+      terraformNumber = null;
+    }
   }
 }

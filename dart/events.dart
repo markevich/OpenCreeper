@@ -15,10 +15,7 @@ void onMouseMove(MouseEvent evt) {
     Vector hoveredTilePosition = game.getHoveredTilePosition();   
     if (game.mode == "TERRAFORM") {
       if (game.world.contains(hoveredTilePosition)) {
-        if (game.world.tiles[hoveredTilePosition.x][hoveredTilePosition.y].height != game.terraformingHeight) {
-          game.world.tiles[hoveredTilePosition.x][hoveredTilePosition.y].terraformTarget = game.terraformingHeight;
-          game.world.tiles[hoveredTilePosition.x][hoveredTilePosition.y].terraformProgress = 0;
-        }
+        game.world.tiles[hoveredTilePosition.x][hoveredTilePosition.y].flagTerraform(hoveredTilePosition * game.tileSize);
       }
     }
   }
@@ -152,15 +149,16 @@ void onKeyDown(KeyboardEvent evt) {
 
     // remove terraform
     if (evt.keyCode == KeyCode.DELETE) {
-      game.world.tiles[position.x][position.y].terraformTarget = -1;
-      game.world.tiles[position.x][position.y].terraformProgress = 0;
+      game.world.tiles[position.x][position.y].unflagTerraform();
     }
 
     // set terraform value
     if (evt.keyCode >= 48 && evt.keyCode <= 57) {
       game.terraformingHeight = evt.keyCode - 49;
-      if (game.terraformingHeight == -1)
+      if (game.terraformingHeight == -1) {
         game.terraformingHeight = 9;
+      }
+      game.tfNumber.frame = game.terraformingHeight;
     }
 
   }
@@ -214,10 +212,7 @@ void onMouseDown(MouseEvent evt) {
     // flag for terraforming 
     if (game.mode == "TERRAFORM") {
       if (game.world.contains(hoveredTilePosition)) {
-        if (game.world.tiles[hoveredTilePosition.x][hoveredTilePosition.y].height != game.terraformingHeight) {          
-          game.world.tiles[hoveredTilePosition.x][hoveredTilePosition.y].terraformTarget = game.terraformingHeight;
-          game.world.tiles[hoveredTilePosition.x][hoveredTilePosition.y].terraformProgress = 0;
-        }
+        game.world.tiles[hoveredTilePosition.x][hoveredTilePosition.y].flagTerraform(hoveredTilePosition * game.tileSize);
       }
     }
   }

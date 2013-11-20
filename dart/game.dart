@@ -13,7 +13,7 @@ class Game {
   Building base;
   Stopwatch stopwatch = new Stopwatch();
   Line tfLine1, tfLine2, tfLine3, tfLine4;
-  Sprite tfNumber; // TODO
+  Sprite tfNumber;
   Sprite targetCursor;
 
   Game() {
@@ -50,6 +50,12 @@ class Game {
     tfLine4 = new Line(Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff");
     tfLine4.visible = false;
     engine.renderer["buffer"].addDisplayObject(tfLine4);
+    
+    tfNumber = new Sprite(Layer.TERRAFORM, engine.images["numbers"], new Vector.empty(), 16, 16);
+    tfNumber.visible = false;
+    tfNumber.animated = true;
+    tfNumber.frame = terraformingHeight;
+    engine.renderer["buffer"].addDisplayObject(tfNumber);
     
     targetCursor = new Sprite(Layer.TARGETSYMBOL, engine.images["targetcursor"], new Vector.empty(), 48, 48);
     targetCursor.anchor = new Vector(0.5, 0.5);
@@ -151,9 +157,11 @@ class Game {
     if (mode == "TERRAFORM") {
       mode = "DEFAULT";
       querySelector("#terraform").attributes['value'] = "Terraform Off";
+      tfNumber.visible = false;
     } else {
       mode = "TERRAFORM";
       querySelector("#terraform").attributes['value'] = "Terraform On";
+      tfNumber.visible = true;
     }
   }
 
@@ -206,8 +214,8 @@ class Game {
    */
   void createWorld() {
     world.tiles = new List(world.size.x);
-    for (int i = 0; i < world. size.x; i++) {
-      world.tiles[i] = new List(world.size.y);
+    for (int i = 0; i < world.size.x; i++) {
+      world.tiles[i] = new List<Tile>(world.size.y);
       for (int j = 0; j < world.size.y; j++) {
         world.tiles[i][j] = new Tile();
       }
@@ -929,7 +937,7 @@ class Game {
     Vector position = getHoveredTilePosition();
     if (world.contains(position)) {   
       if (mode == "TERRAFORM") {
-        Vector drawPosition = position *= tileSize;
+        Vector drawPosition = position * tileSize;
         tfLine1.from = new Vector(0, drawPosition.y);
         tfLine1.to = new Vector(world.size.y * tileSize, drawPosition.y);
         tfLine2.from = new Vector(0, drawPosition.y + tileSize);
@@ -942,11 +950,14 @@ class Game {
         tfLine2.visible = true;
         tfLine3.visible = true;
         tfLine4.visible = true;
+        tfNumber.visible = true;
+        tfNumber.position = position * tileSize;
       } else {
         tfLine1.visible = false;
         tfLine2.visible = false;
         tfLine3.visible = false;
         tfLine4.visible = false;
+        tfNumber.visible = false;
       }
       
       targetCursor.position = (position * tileSize) + new Vector(8, 8);
@@ -955,6 +966,7 @@ class Game {
       tfLine2.visible = false;
       tfLine3.visible = false;
       tfLine4.visible = false;
+      tfNumber.visible = false;
     }
   }
 
@@ -1151,11 +1163,10 @@ class Game {
   void draw(num _) {
     CanvasRenderingContext2D context = engine.renderer["buffer"].context;
     
+    drawGUI();
+    
     engine.renderer["buffer"].clear();
     engine.renderer["main"].clear();
-    
-    drawGUI();
-    game.world.drawTerraformNumbers();
 
     engine.renderer["buffer"].draw();
     Building.draw();
@@ -1165,14 +1176,7 @@ class Game {
       // if a building is built and selected draw a green box and a line to the mouse position as the reposition target
       Building.drawRepositionInfo();
       drawPositionInfo();
-
-      // draw terraform number
-      if (mode == "TERRAFORM") {
-        Vector positionScrolled = getHoveredTilePosition();
-        Vector drawPosition = positionScrolled.tiled2screen();
-        context.drawImageScaledFromSource(engine.images["numbers"], terraformingHeight * tileSize, 0, tileSize, tileSize, drawPosition.x, drawPosition.y, tileSize * zoom, tileSize * zoom);
-      }
-      
+     
       /*Vector tp = game.getHoveredTilePosition();
       Vector tp2 = tp.tiled2screen();
       engine.renderer["buffer"].context.strokeStyle = '#f0f';

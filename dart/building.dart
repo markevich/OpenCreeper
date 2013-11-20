@@ -631,10 +631,8 @@ class Building {
 
             game.redrawTerrain(tilesToRedraw);
 
-            height = game.world.tiles[weaponTargetPosition.x][weaponTargetPosition.y].height;
-            if (height == terraformElement.terraformTarget) {
-              game.world.tiles[weaponTargetPosition.x][weaponTargetPosition.y].terraformProgress = 0;
-              game.world.tiles[weaponTargetPosition.x][weaponTargetPosition.y].terraformTarget = -1;
+            if (height == game.world.tiles[weaponTargetPosition.x][weaponTargetPosition.y].terraformTarget) {
+              game.world.tiles[weaponTargetPosition.x][weaponTargetPosition.y].unflagTerraform();
             }
 
             weaponTargetPosition = null;
