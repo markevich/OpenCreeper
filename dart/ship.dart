@@ -120,10 +120,17 @@ class Ship {
         game.mode = "SHIP_SELECTED";
   
         if (ships[i].status == "IDLE") {
-          if (position != ships[i].home.sprite.position) {         
+          if (position != ships[i].home.position) {         
             // leave home
-            ships[i].energy = ships[i].home.energy;
-            ships[i].home.energy = 0;
+            // get energy from home
+            int delta = ships[i].maxEnergy - ships[i].energy;
+            if (ships[i].home.energy >= delta) {
+              ships[i].energy += delta;
+              ships[i].home.energy -= delta;
+            } else {
+              ships[i].energy += ships[i].home.energy;
+              ships[i].home.energy = 0;
+            }
             ships[i].targetPosition = position;
             ships[i].targetSymbol.position = ships[i].targetPosition;
             ships[i].status = "RISING";
@@ -131,7 +138,7 @@ class Ship {
         }
         
         if (ships[i].status == "ATTACKING" || ships[i].status == "RETURNING") {      
-          if (position == ships[i].home.sprite.position) {
+          if (position == ships[i].home.position) {
             // return home
             ships[i].targetPosition = position;
             ships[i].status = "RETURNING";
@@ -176,9 +183,7 @@ class Ship {
       }
       if (flightCounter == 0) {
         status = "IDLE";
-        targetPosition.x = 0;
-        targetPosition.y = 0;
-        energy = 5;
+        targetPosition = new Vector.empty();
         sprite.scale = new Vector(1.0, 1.0);
         selectedCircle.scale = 1.0;
       }
@@ -226,7 +231,7 @@ class Ship {
           if (energy == 0) {
             // return to base
             status = "RETURNING";
-            targetPosition = home.sprite.position;
+            targetPosition = home.position;
           }
         }
       }
@@ -240,7 +245,7 @@ class Ship {
       selectedCircle.position += speed;
 
       if (sprite.position.x > targetPosition.x - 2 && sprite.position.x < targetPosition.x + 2 && sprite.position.y > targetPosition.y - 2 && sprite.position.y < targetPosition.y + 2) {
-        sprite.position = home.sprite.position;
+        sprite.position = home.position;
         status = "FALLING";
       }
     }
