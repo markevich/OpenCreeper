@@ -170,8 +170,6 @@ class Game {
     //query('#faster').style.display = 'none';
     if (speed < 2) {
       speed *= 2;
-      //stop();
-      //run();
       updateSpeedElement();
     }
   }
@@ -181,8 +179,6 @@ class Game {
     //query('#faster').style.display = 'inline';
     if (speed > 1) {
       speed = speed ~/ 2;
-      //stop();
-      //run();
       updateSpeedElement();
     }
   }

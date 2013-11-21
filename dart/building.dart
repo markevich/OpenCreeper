@@ -259,8 +259,20 @@ class Building {
   
   static void deactivate() {
     for (int i = 0; i < buildings.length; i++) {
-      if (buildings[i].selected)
+      if (buildings[i].selected) {
         buildings[i].active = false;
+        
+        if (buildings[i].type == "analyzer") {
+          for (int j = 0; j < Emitter.emitters.length; j++) {
+            if (buildings[i].weaponTargetPosition == Emitter.emitters[j].sprite.position) {
+              Emitter.emitters[j].analyzer = null;
+              buildings[i].weaponTargetPosition = null;
+              break;
+            }
+          }
+        }
+        
+      }
     }
   }
   
@@ -567,7 +579,7 @@ class Building {
 
   void checkOperating() {
     operating = false;
-    if (needsEnergy && active && status == "IDLE" && energy > 0) {
+    if (needsEnergy && active && status == "IDLE") {
 
       energyCounter += 1 * game.speed;
 
@@ -575,7 +587,7 @@ class Building {
         Emitter.find(this);
       }
 
-      if (type == "terp") {
+      if (type == "terp" && energy > 0) {
         // find lowest tile
         if (weaponTargetPosition == null) {
           int lowestTile = 10;
@@ -641,7 +653,7 @@ class Building {
         }
       }
 
-      else if (type == "shield") {
+      else if (type == "shield" && energy > 0) {
         if (energyCounter >= 20) {
           energyCounter -= 20;
           energy -= 1;
@@ -649,120 +661,120 @@ class Building {
         operating = true;
       }
 
-      else if (type == "cannon" && energyCounter >= 10) {
-          if (!rotating) {
+      else if (type == "cannon" && energy > 0 && energyCounter >= 10) {
+        if (!rotating) {
 
-            energyCounter -= 10;
+          energyCounter -= 10;
 
-            int height = game.world.getTile(position).height;
+          int height = game.world.getTile(position).height;
 
-            num closestDistance = 1000;
-            List targets = new List();
-            
-            // find closest random target
-            var targetPositionTiled = position.real2tiled();
-            for (int i = -weaponRadius; i <= weaponRadius; i++) {
-              for (int j = -weaponRadius; j <= weaponRadius; j++) {
-                
-                Vector tilePosition = targetPositionTiled + new Vector(i, j);
+          num closestDistance = 1000;
+          List targets = new List();
 
-                // cannons can only shoot at tiles not higher than themselves
-                if (game.world.contains(tilePosition) && game.world.tiles[tilePosition.x][tilePosition.y].creep > 0) {
-                  int tileHeight = game.world.tiles[tilePosition.x][tilePosition.y].height;
-                  if (tileHeight <= height) {
-                    
-                    num distance = (tilePosition * game.tileSize + new Vector(8, 8)).distanceTo(position);
+          // find closest random target
+          var targetPositionTiled = position.real2tiled();
+          for (int i = -weaponRadius; i <= weaponRadius; i++) {
+            for (int j = -weaponRadius; j <= weaponRadius; j++) {
 
-                    if (distance <= pow(weaponRadius * game.tileSize, 2) && distance <= closestDistance) {
-                      closestDistance = distance;
-                      targets.add(tilePosition);
-                    }
+              Vector tilePosition = targetPositionTiled + new Vector(i, j);
+
+              // cannons can only shoot at tiles not higher than themselves
+              if (game.world.contains(tilePosition) && game.world.tiles[tilePosition.x][tilePosition.y].creep > 0) {
+                int tileHeight = game.world.tiles[tilePosition.x][tilePosition.y].height;
+                if (tileHeight <= height) {
+
+                  num distance = (tilePosition * game.tileSize + new Vector(8, 8)).distanceTo(position);
+
+                  if (distance <= pow(weaponRadius * game.tileSize, 2) && distance <= closestDistance) {
+                    closestDistance = distance;
+                    targets.add(tilePosition);
                   }
                 }
               }
             }
+          }
 
-            if (targets.length > 0) {
-              targets.shuffle();
+          if (targets.length > 0) {
+            targets.shuffle();
 
-              var dx = targets[0].x * game.tileSize + game.tileSize / 2 - position.x;
-              var dy = targets[0].y * game.tileSize + game.tileSize / 2 - position.y;
+            var dx = targets[0].x * game.tileSize + game.tileSize / 2 - position.x;
+            var dy = targets[0].y * game.tileSize + game.tileSize / 2 - position.y;
 
-              targetAngle = engine.rad2deg(atan2(dy, dx)).floor();
-              weaponTargetPosition = new Vector(targets[0].x, targets[0].y);
-              rotating = true;
-            }
+            targetAngle = engine.rad2deg(atan2(dy, dx)).floor();
+            weaponTargetPosition = new Vector(targets[0].x, targets[0].y);
+            rotating = true;
+          }
+        }
+        else {
+          if (rotation != targetAngle) {
+            // rotate to target
+            int turnRate = 5;
+            int absoluteDelta = (targetAngle - rotation).abs();
+
+            if (absoluteDelta < turnRate)
+              turnRate = absoluteDelta;
+
+            if (absoluteDelta <= 180)
+              if (targetAngle < rotation)
+                rotation -= turnRate;
+              else
+                rotation += turnRate;
+            else
+              if (targetAngle < rotation)
+                rotation += turnRate;
+              else
+                rotation -= turnRate;
+
+            if (rotation > 180)
+              rotation -= 360;
+            if (rotation < -180)
+              rotation += 360;
+
+            if (cannon != null)
+              cannon.rotation = rotation;
           }
           else {
-            if (rotation != targetAngle) {
-              // rotate to target
-              int turnRate = 5;
-              int absoluteDelta = (targetAngle - rotation).abs();
+            // fire projectile
+            rotating = false;
+            energy -= 1;
+            operating = true;
+            Projectile.add(position, new Vector(weaponTargetPosition.x * game.tileSize + game.tileSize / 2, weaponTargetPosition.y * game.tileSize + game.tileSize / 2), targetAngle);
+            engine.playSound("laser", position.real2tiled());
+          }
+        }
+      }
 
-              if (absoluteDelta < turnRate)
-                turnRate = absoluteDelta;
+      else if (type == "mortar" && energy > 0 && energyCounter >= 200) {
+        energyCounter =- 200;
 
-              if (absoluteDelta <= 180)
-                if (targetAngle < rotation)
-                  rotation -= turnRate;
-                else
-                  rotation += turnRate;
-              else
-                if (targetAngle < rotation)
-                  rotation += turnRate;
-                else
-                  rotation -= turnRate;
+          // find most creep in range
+          Vector target = null;
+          var highestCreep = 0;
+          var tiledPosition = position.real2tiled();
+          for (int i = tiledPosition.x - weaponRadius; i <= tiledPosition.x + weaponRadius; i++) {
+            for (int j = tiledPosition.y - weaponRadius; j <= tiledPosition.y + weaponRadius; j++) {
+              if (game.world.contains(new Vector(i, j))) {
+                var distance = pow((i * game.tileSize + game.tileSize / 2) - position.x, 2) + pow((j * game.tileSize + game.tileSize / 2) - position.y, 2);
 
-              if (rotation > 180)
-                rotation -= 360;
-              if (rotation < -180)
-                rotation += 360;
-              
-              if (cannon != null)
-                cannon.rotation = rotation;
+                if (distance <= pow(weaponRadius * game.tileSize, 2) && game.world.tiles[i][j].creep > 0 && game.world.tiles[i][j].creep >= highestCreep) {
+                  highestCreep = game.world.tiles[i][j].creep;
+                  target = new Vector(i, j);
+                }
+              }
             }
-            else {
-              // fire projectile
-              rotating = false;
-              energy -= 1;
-              operating = true;
-              Projectile.add(position, new Vector(weaponTargetPosition.x * game.tileSize + game.tileSize / 2, weaponTargetPosition.y * game.tileSize + game.tileSize / 2), targetAngle);
-              engine.playSound("laser", position.real2tiled());
-            }
+          }
+          if (target != null) {
+            engine.playSound("shot", position.real2tiled());
+            Shell.add(position, new Vector(target.x * game.tileSize + game.tileSize / 2, target.y * game.tileSize + game.tileSize / 2));
+            energy -= 1;
           }
         }
 
-        else if (type == "mortar" && energyCounter >= 200) {
-          energyCounter =- 200;
+      else if (type == "beam" && energy > 0 && energyCounter > 0) {
+        energyCounter = 0;
 
-            // find most creep in range
-            Vector target = null;
-            var highestCreep = 0;
-            var tiledPosition = position.real2tiled();
-            for (int i = tiledPosition.x - weaponRadius; i <= tiledPosition.x + weaponRadius; i++) {
-              for (int j = tiledPosition.y - weaponRadius; j <= tiledPosition.y + weaponRadius; j++) {
-                if (game.world.contains(new Vector(i, j))) {
-                  var distance = pow((i * game.tileSize + game.tileSize / 2) - position.x, 2) + pow((j * game.tileSize + game.tileSize / 2) - position.y, 2);
-
-                  if (distance <= pow(weaponRadius * game.tileSize, 2) && game.world.tiles[i][j].creep > 0 && game.world.tiles[i][j].creep >= highestCreep) {
-                    highestCreep = game.world.tiles[i][j].creep;
-                    target = new Vector(i, j);
-                  }
-                }
-              }
-            }
-            if (target != null) {
-              engine.playSound("shot", position.real2tiled());
-              Shell.add(position, new Vector(target.x * game.tileSize + game.tileSize / 2, target.y * game.tileSize + game.tileSize / 2));             
-              energy -= 1;
-            }
-          }
-
-          else if (type == "beam" && energyCounter > 0) {
-            energyCounter = 0;
-
-            Spore.damage(this);
-          }
+        Spore.damage(this);
+      }
     }
   }
   

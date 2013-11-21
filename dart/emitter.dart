@@ -59,12 +59,22 @@ class Emitter {
       }
     }
     else {
-      if (building.energyCounter > 20) {
-        building.energyCounter = 0;
-        building.energy -= 1;
+      if (building.energy > 0) {
+        if (building.energyCounter > 20) {
+          building.energyCounter = 0;
+          building.energy -= 1;
+        }
+        building.operating = true;
+      } else {
+        building.operating = false;
+        for (int i = 0; i < emitters.length; i++) {
+          if (building.weaponTargetPosition == emitters[i].sprite.position) {
+            emitters[i].analyzer = null;
+            building.weaponTargetPosition = null;
+            break;
+          }
+        }
       }
-
-      building.operating = true;
     }
   }
   
