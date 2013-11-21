@@ -46,7 +46,7 @@ class Spore {
   
       if (distance <= pow(building.weaponRadius * game.tileSize, 2)) {
         building.weaponTargetPosition = sporeCenter;
-        building.energy -= .1;
+        building.energy -= .05;
         building.operating = true;
         spores[i].health -= 2;
         if (spores[i].health <= 0) {
