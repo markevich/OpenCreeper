@@ -1019,7 +1019,9 @@ class Game {
   
           // draw green or red box
           // make sure there isn't a building on this tile yet
-          if (canBePlaced(positionScrolled, UISymbol.activeSymbol.size, null)) {
+          bool ghostCanBePlaced = canBePlaced(positionScrolled, UISymbol.activeSymbol.size, null);
+
+          if (ghostCanBePlaced) {
             context.strokeStyle = "#0f0";
           } else {
             context.strokeStyle = "#f00";
@@ -1028,64 +1030,66 @@ class Game {
           context.strokeRect(drawPosition.x - tileSize * zoom, drawPosition.y - tileSize * zoom, tileSize * UISymbol.activeSymbol.size * zoom, tileSize * UISymbol.activeSymbol.size * zoom);
   
           context.restore();
-  
-          // draw lines to other buildings
-          for (int j = 0; j < Building.buildings.length; j++) {
-            if (Building.buildings[j].type == "collector" || Building.buildings[j].type == "relay" || Building.buildings[j].type == "base") {
-              Vector buildingCenter = Building.buildings[j].position.real2screen();
-    
-              int allowedDistance = 10 * tileSize;
-              if (Building.buildings[j].type == "relay" && UISymbol.activeSymbol.imageID == "relay") {
-                allowedDistance = 20 * tileSize;
-              }
-  
-              if (buildingCenter.distanceTo(ghostICenter) <= allowedDistance * zoom) {
-                context
-                  ..strokeStyle = '#000'
-                  ..lineWidth = 3 * game.zoom
-                  ..beginPath()
-                  ..moveTo(buildingCenter.x, buildingCenter.y)
-                  ..lineTo(ghostICenter.x, ghostICenter.y)
-                  ..stroke();
-    
-                context
-                  ..strokeStyle = '#0f0'
-                  ..lineWidth = 2 * game.zoom
-                  ..beginPath()
-                  ..moveTo(buildingCenter.x, buildingCenter.y)
-                  ..lineTo(ghostICenter.x, ghostICenter.y)
-                  ..stroke();
-              }
-            }
-          }
-          // draw lines to other ghosts
-          for (int j = 0; j < ghosts.length; j++) {
-            if (j != i) {
-              if (UISymbol.activeSymbol.imageID == "collector" || UISymbol.activeSymbol.imageID == "relay") {
-                Vector ghostKCenter = ghosts[j].tiled2screen() + new Vector(8 * game.zoom, 8 * game.zoom);
-    
+
+          if (ghostCanBePlaced) {
+            // draw lines to other buildings
+            for (int j = 0; j < Building.buildings.length; j++) {
+              if (Building.buildings[j].type == "collector" || Building.buildings[j].type == "relay" || Building.buildings[j].type == "base") {
+                Vector buildingCenter = Building.buildings[j].position.real2screen();
+
                 int allowedDistance = 10 * tileSize;
-                if (UISymbol.activeSymbol.imageID == "relay") {
+                if (Building.buildings[j].type == "relay" && UISymbol.activeSymbol.imageID == "relay") {
                   allowedDistance = 20 * tileSize;
                 }
-    
-                Vector ghostJCenter = drawPosition + new Vector(8 * game.zoom, 8 * game.zoom);
-                if (ghostKCenter.distanceTo(ghostJCenter) <= allowedDistance * zoom) {                 
+
+                if (buildingCenter.distanceTo(ghostICenter) <= allowedDistance * zoom) {
                   context
                     ..strokeStyle = '#000'
-                    ..lineWidth = 2
+                    ..lineWidth = 3 * game.zoom
                     ..beginPath()
-                    ..moveTo(ghostKCenter.x, ghostKCenter.y)
-                    ..lineTo(ghostJCenter.x, ghostJCenter.y)
+                    ..moveTo(buildingCenter.x, buildingCenter.y)
+                    ..lineTo(ghostICenter.x, ghostICenter.y)
                     ..stroke();
-    
+
                   context
-                    ..strokeStyle = '#fff'
-                    ..lineWidth = 1
+                    ..strokeStyle = '#0f0'
+                    ..lineWidth = 2 * game.zoom
                     ..beginPath()
-                    ..moveTo(ghostKCenter.x, ghostKCenter.y)
-                    ..lineTo(ghostJCenter.x, ghostJCenter.y)
+                    ..moveTo(buildingCenter.x, buildingCenter.y)
+                    ..lineTo(ghostICenter.x, ghostICenter.y)
                     ..stroke();
+                }
+              }
+            }
+            // draw lines to other ghosts
+            for (int j = 0; j < ghosts.length; j++) {
+              if (j != i) {
+                if (UISymbol.activeSymbol.imageID == "collector" || UISymbol.activeSymbol.imageID == "relay") {
+                  Vector ghostKCenter = ghosts[j].tiled2screen() + new Vector(8 * game.zoom, 8 * game.zoom);
+
+                  int allowedDistance = 10 * tileSize;
+                  if (UISymbol.activeSymbol.imageID == "relay") {
+                    allowedDistance = 20 * tileSize;
+                  }
+
+                  Vector ghostJCenter = drawPosition + new Vector(8 * game.zoom, 8 * game.zoom);
+                  if (ghostKCenter.distanceTo(ghostJCenter) <= allowedDistance * zoom) {
+                    context
+                      ..strokeStyle = '#000'
+                      ..lineWidth = 2
+                      ..beginPath()
+                      ..moveTo(ghostKCenter.x, ghostKCenter.y)
+                      ..lineTo(ghostJCenter.x, ghostJCenter.y)
+                      ..stroke();
+
+                    context
+                      ..strokeStyle = '#fff'
+                      ..lineWidth = 1
+                      ..beginPath()
+                      ..moveTo(ghostKCenter.x, ghostKCenter.y)
+                      ..lineTo(ghostJCenter.x, ghostJCenter.y)
+                      ..stroke();
+                  }
                 }
               }
             }

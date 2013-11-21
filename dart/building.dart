@@ -792,7 +792,9 @@ class Building {
    
         game.drawRangeBoxes(hoveredTilePosition, buildings[i].type, buildings[i].weaponRadius, buildings[i].size);
   
-        if (game.canBePlaced(hoveredTilePosition, buildings[i].size, buildings[i]))
+        bool canBePlaced = game.canBePlaced(hoveredTilePosition, buildings[i].size, buildings[i]);
+
+        if (canBePlaced)
           context.fillStyle = "rgba(0,255,0,0.5)";
         else
           context.fillStyle = "rgba(255,0,0,0.5)";
@@ -802,40 +804,41 @@ class Building {
                          positionI.y - game.tileSize * buildings[i].size * game.zoom / 2,
                          game.tileSize * buildings[i].size * game.zoom,
                          game.tileSize * buildings[i].size * game.zoom);
-        
-        // draw lines to other buildings
-        for (int j = 0; j < buildings.length; j++) {
-          if (i != j) {
-            if (buildings[j].type == "collector" || buildings[j].type == "relay" || buildings[j].type == "base") {
-              Vector positionJ = buildings[j].position.real2screen();
-              
-              int allowedDistance = 10 * game.tileSize;
-              if (buildings[j].type == "relay" && buildings[i].type == "relay") {
-                allowedDistance = 20 * game.tileSize;
-              }
-              
-              if (positionJ.distanceTo(positionI) <= allowedDistance) {
-                context
-                  ..strokeStyle = '#000'
-                  ..lineWidth = 3 * game.zoom
-                  ..beginPath()
-                  ..moveTo(positionJ.x, positionJ.y)
-                  ..lineTo(positionI.x, positionI.y)
-                  ..stroke();
-      
-                context
-                  ..strokeStyle = '#0f0'
-                  ..lineWidth = 2 * game.zoom
-                  ..beginPath()
-                  ..moveTo(positionJ.x, positionJ.y)
-                  ..lineTo(positionI.x, positionI.y)
-                  ..stroke();
+
+        if (canBePlaced) {
+          // draw lines to other buildings
+          for (int j = 0; j < buildings.length; j++) {
+            if (i != j) {
+              if (buildings[j].type == "collector" || buildings[j].type == "relay" || buildings[j].type == "base") {
+                Vector positionJ = buildings[j].position.real2screen();
+
+                int allowedDistance = 10 * game.tileSize;
+                if (buildings[j].type == "relay" && buildings[i].type == "relay") {
+                  allowedDistance = 20 * game.tileSize;
+                }
+
+                if (positionJ.distanceTo(positionI) <= allowedDistance) {
+                  context
+                    ..strokeStyle = '#000'
+                    ..lineWidth = 3 * game.zoom
+                    ..beginPath()
+                    ..moveTo(positionJ.x, positionJ.y)
+                    ..lineTo(positionI.x, positionI.y)
+                    ..stroke();
+
+                  context
+                    ..strokeStyle = '#0f0'
+                    ..lineWidth = 2 * game.zoom
+                    ..beginPath()
+                    ..moveTo(positionJ.x, positionJ.y)
+                    ..lineTo(positionI.x, positionI.y)
+                    ..stroke();
+                }
               }
             }
           }
         }
-        
-        //break;
+
       }
     }
   }
