@@ -6,10 +6,10 @@ class Game {
   double zoom = 1.0;
   Timer running;
   String mode;
-  bool paused = false, scrollingUp = false, scrollingDown = false, scrollingLeft = false, scrollingRight = false, creeperDirty = true;
+  bool paused = false, creeperDirty = true;
   List<Vector> ghosts = new List<Vector>();
   World world;
-  Vector scroll = new Vector(0, 0);
+  Vector scroll = new Vector.empty(), mouseScrolling = new Vector.empty(), keyScrolling = new Vector.empty();
   Building base;
   Stopwatch stopwatch = new Stopwatch();
   Line tfLine1, tfLine2, tfLine3, tfLine4;
@@ -731,32 +731,17 @@ class Game {
       Sporetower.update();
     }
 
-    // scroll left
-    if (scrollingLeft) {
-      if (scroll.x > 0)
-        scroll.x -= 1;
-    }
+    // scroll left or right   
+    scroll.x += mouseScrolling.x + keyScrolling.x;
+    if (scroll.x < 0) scroll.x = 0;
+    else if (scroll.x > world.size.x) scroll.x = world.size.x;
 
-    // scroll right 
-    else if (scrollingRight) {
-      if (scroll.x < world.size.x)
-        scroll.x += 1;
-    }
+    // scroll up or down
+    scroll.y += mouseScrolling.y + keyScrolling.y;
+    if (scroll.y < 0) scroll.y = 0;
+    else if (scroll.y > world.size.y) scroll.y = world.size.y;
 
-    // scroll up
-    if (scrollingUp) {
-      if (scroll.y > 0)
-        scroll.y -= 1;
-    }
-
-    // scroll down
-    else if (scrollingDown) {
-      if (scroll.y < world.size.y)
-        scroll.y += 1;
-
-    }
-
-    if (scrollingLeft || scrollingRight || scrollingUp || scrollingDown) {
+    if (mouseScrolling.x != 0 || mouseScrolling.y != 0 || keyScrolling.x != 0 || keyScrolling.y != 0) {
       copyTerrain();
       drawCollection();
       updateTerraformInfo();

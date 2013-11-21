@@ -4,10 +4,11 @@ void onMouseMove(MouseEvent evt) {
   engine.updateMouse(evt);
   
   if (game != null) {
-    game.scrollingLeft = (engine.mouse.position.x == 0);
-    game.scrollingRight = (engine.mouse.position.x == engine.width -1);  
-    game.scrollingUp = (engine.mouse.position.y == 0);
-    game.scrollingDown = (engine.mouse.position.y == engine.height -1);
+    game.mouseScrolling = new Vector.empty();
+    if (engine.mouse.position.x == 0) game.mouseScrolling.x = -1;
+    else if (engine.mouse.position.x == engine.width - 1) game.mouseScrolling.x = 1;   
+    if (engine.mouse.position.y == 0) game.mouseScrolling.y = -1;
+    else if (engine.mouse.position.y == engine.height - 1) game.mouseScrolling.y = 1;
   }
   
   // flag for terraforming
@@ -63,13 +64,13 @@ void onKeyDown(KeyboardEvent evt) {
   }
 
   if (evt.keyCode == KeyCode.LEFT)
-    game.scrollingLeft = true;
+    game.keyScrolling.x = -1;
   if (evt.keyCode == KeyCode.UP)
-    game.scrollingUp = true;
+    game.keyScrolling.y = -1;
   if (evt.keyCode == KeyCode.RIGHT)
-    game.scrollingRight = true;
+    game.keyScrolling.x = 1;
   if (evt.keyCode == KeyCode.DOWN)
-    game.scrollingDown = true;
+    game.keyScrolling.y = 1;
 
   Vector position = game.getHoveredTilePosition();
 
@@ -166,14 +167,10 @@ void onKeyDown(KeyboardEvent evt) {
 }
 
 void onKeyUp(KeyboardEvent evt) {
-  if (evt.keyCode == KeyCode.LEFT)
-    game.scrollingLeft = false;
-  if (evt.keyCode == KeyCode.UP)
-    game.scrollingUp = false;
-  if (evt.keyCode == KeyCode.RIGHT)
-    game.scrollingRight = false;
-  if (evt.keyCode == KeyCode.DOWN)
-    game.scrollingDown = false;
+  if (evt.keyCode == KeyCode.LEFT || evt.keyCode == KeyCode.RIGHT)
+    game.keyScrolling.x = 0;
+  if (evt.keyCode == KeyCode.UP || evt.keyCode == KeyCode.DOWN)
+    game.keyScrolling.y = 0;
 }
 
 void onEnter(evt) {
