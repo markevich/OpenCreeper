@@ -154,7 +154,7 @@ class Renderer {
             // check if line is visible
             if (myview.containsPoint(new Point(realPositionFrom.x, realPositionFrom.y)) ||
                 myview.containsPoint(new Point(realPositionTo.x, realPositionTo.y))) {
-              context.lineWidth = displayObject.lineWidth;
+              context.lineWidth = displayObject.lineWidth * game.zoom;
               context.strokeStyle = displayObject.color;
     
               context.beginPath();

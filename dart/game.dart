@@ -1076,7 +1076,7 @@ class Game {
                   if (ghostKCenter.distanceTo(ghostJCenter) <= allowedDistance * zoom) {
                     context
                       ..strokeStyle = '#000'
-                      ..lineWidth = 2
+                      ..lineWidth = 2 * game.zoom
                       ..beginPath()
                       ..moveTo(ghostKCenter.x, ghostKCenter.y)
                       ..lineTo(ghostJCenter.x, ghostJCenter.y)
@@ -1084,7 +1084,7 @@ class Game {
 
                     context
                       ..strokeStyle = '#fff'
-                      ..lineWidth = 1
+                      ..lineWidth = 1 * game.zoom
                       ..beginPath()
                       ..moveTo(ghostKCenter.x, ghostKCenter.y)
                       ..lineTo(ghostJCenter.x, ghostJCenter.y)

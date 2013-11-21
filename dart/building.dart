@@ -867,7 +867,7 @@ class Building {
         // draw inactive sign
         if (!buildings[i].active) {
           context.strokeStyle = "#F00";
-          context.lineWidth = 2;
+          context.lineWidth = 2 * game.zoom;
   
           context.beginPath();
           context.arc(center.x, center.y, (game.tileSize / 2) * buildings[i].size, 0, PI * 2, true);
