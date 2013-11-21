@@ -89,6 +89,7 @@ class Building {
       weaponRadius = 10;
       canMove = true;
       needsEnergy = true;
+      energyCounter = 10;
       
       cannon = new Sprite(Layer.BUILDINGGUN, engine.images["cannongun"], position, 48, 48);
       cannon.anchor = new Vector(0.5, 0.5);
@@ -101,6 +102,7 @@ class Building {
       weaponRadius = 14;
       canMove = true;
       needsEnergy = true;
+      energyCounter = 200;
     }
     else if (type == "beam") {
       maxHealth = 1; // 20
