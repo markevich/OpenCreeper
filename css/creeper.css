@@ -18,11 +18,12 @@ input, select {
 #info {
     padding: 10px;
     position: absolute;
-    left: 0;
-    top: 0;
-    width: 300px;
-    height: 110px;
-    font-size: 12px;
+    left: 50%;
+    margin-left: 205px;
+    bottom: 0;
+    width: 200px;
+    height: 70px;
+    font-size: 11px;
 }
 
 #buttons {

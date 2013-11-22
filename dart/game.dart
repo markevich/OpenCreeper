@@ -84,9 +84,6 @@ class Game {
     creeperCounter = 0;
     speed = 1;
     
-    updateEnergyElement();
-    updateSpeedElement();
-    updateZoomElement();
     createWorld();
     
     stopwatch.reset();
@@ -95,6 +92,9 @@ class Game {
     new Timer.periodic(oneSecond, updateTime);
     querySelector('#lose').style.display = 'none';
     querySelector('#win').style.display = 'none';
+    updateEnergyElement();
+    updateSpeedElement();
+    querySelector('#time').innerHtml = 'Time: 00:00';
   }
   
   void updateTime(Timer _) {
@@ -186,7 +186,6 @@ class Game {
       zoom = double.parse(zoom.toStringAsFixed(2));
       copyTerrain();
       drawCollection();
-      updateZoomElement();
       creeperDirty = true;
     }
   }
@@ -197,7 +196,6 @@ class Game {
       zoom = double.parse(zoom.toStringAsFixed(2));
       copyTerrain();
       drawCollection();
-      updateZoomElement();
       creeperDirty = true;
     }
   }
@@ -675,10 +673,6 @@ class Game {
 
   void updateSpeedElement() {
     querySelector("#speed").innerHtml = "Speed: ${speed.toString()}x";
-  }
-
-  void updateZoomElement() {
-    querySelector("#speed").innerHtml = "Zoom: ${zoom.toString()}x";
   }
 
   /**
