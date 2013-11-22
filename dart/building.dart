@@ -600,7 +600,7 @@ class Building {
 
               Vector tilePosition = positionTiled + new Vector(i, j);
               
-              if (game.world.contains(tilePosition) && game.world.tiles[tilePosition.x][tilePosition.y].terraformTarget > -1) {
+              if (game.world.contains(tilePosition) && game.world.tiles[tilePosition.x][tilePosition.y].terraformTarget > -1 && game.world.tiles[tilePosition.x][tilePosition.y].creep == 0) {
                 int tileHeight = game.world.tiles[tilePosition.x][tilePosition.y].height;
                 
                 if (tileHeight <= lowestTile && (tilePosition * game.tileSize + new Vector(8, 8)).distanceTo(position) <= weaponRadius * game.tileSize) {
