@@ -45,6 +45,8 @@ class Building {
       built = true;
       size = 9;
       canMove = true;
+      energy = 20;
+      maxEnergy = 20;
     }   
     else if (type == "analyzer") {
       maxHealth = 1; // 80
@@ -153,7 +155,7 @@ class Building {
         building.updateCollection("remove");
     }
     if (building.type == "storage") {
-      game.maxEnergy -= 10;
+      Building.base.maxEnergy -= 10;
       game.updateEnergyElement();
     }
     if (building.type == "speed") {
@@ -519,9 +521,9 @@ class Building {
           engine.renderer["buffer"].removeDisplayObject(packet.sprite);
       }
       if (type == "reactor") {
-        game.currentEnergy += 1;
-        if (game.currentEnergy > game.maxEnergy)
-          game.currentEnergy = game.maxEnergy;
+        Building.base.energy += 1;
+        if (Building.base.energy > Building.base.maxEnergy)
+          Building.base.energy = Building.base.maxEnergy;
         game.updateEnergyElement();
       }
     }

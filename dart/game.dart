@@ -2,7 +2,7 @@ part of creeper;
 
 class Game {
   final int tileSize = 16;
-  int seed, currentEnergy = 0, maxEnergy = 0, terraformingHeight = 0, speed = 1, creeperCounter = 0;
+  int seed, terraformingHeight = 0, speed = 1, creeperCounter = 0;
   double zoom = 1.0;
   Timer running;
   String mode;
@@ -68,13 +68,6 @@ class Game {
   }
 
   void reset() {
-    stopwatch.reset();
-    stopwatch.start();
-    var oneSecond = new Duration(seconds:1);
-    new Timer.periodic(oneSecond, updateTime);
-    querySelector('#lose').style.display = 'none';
-    querySelector('#win').style.display = 'none';
-
     Building.clear();
     Packet.clear();
     Shell.clear();
@@ -88,8 +81,6 @@ class Game {
     UISymbol.reset();
 
     mode = "DEFAULT";
-    maxEnergy = 20;
-    currentEnergy = 20;
     creeperCounter = 0;
     speed = 1;
     
@@ -97,6 +88,13 @@ class Game {
     updateSpeedElement();
     updateZoomElement();
     createWorld();
+    
+    stopwatch.reset();
+    stopwatch.start();
+    var oneSecond = new Duration(seconds:1);
+    new Timer.periodic(oneSecond, updateTime);
+    querySelector('#lose').style.display = 'none';
+    querySelector('#win').style.display = 'none';
   }
   
   void updateTime(Timer _) {
@@ -704,7 +702,8 @@ class Game {
   }
   
   void updateEnergyElement() {
-    querySelector('#energy').innerHtml = "Energy: ${currentEnergy.toString()}/${maxEnergy.toString()}";
+    if (Building.base != null)
+      querySelector('#energy').innerHtml = "Energy: ${Building.base.energy.toString()}/${Building.base.maxEnergy.toString()}";
   }
 
   void updateSpeedElement() {

@@ -51,8 +51,8 @@ class Packet {
      * the queue and sent to its target (FIFO).
      */
     for (int i = queue.length - 1; i >= 0; i--) {
-      if (game.currentEnergy > 0) {
-        game.currentEnergy--;
+      if (Building.base.energy > 0) {
+        Building.base.energy--;
         game.updateEnergyElement();
         Packet packet = queue.removeAt(0);
         Packet.add(packet);
@@ -118,7 +118,7 @@ class Packet {
                 engine.playSound("energy", target.position.real2tiled());
               }
               if (target.type == "storage")
-                game.maxEnergy += 20;
+                Building.base.maxEnergy += 20;
               if (target.type == "speed")
                 Packet.baseSpeed *= 1.01;
               if (target.type == "bomber") {
@@ -132,9 +132,9 @@ class Packet {
           if (target.energy > target.maxEnergy)
             target.energy = target.maxEnergy;
         } else if (type == "collection") {
-          game.currentEnergy += 1;
-          if (game.currentEnergy > game.maxEnergy)
-            game.currentEnergy = game.maxEnergy;
+          Building.base.energy += 1;
+          if (Building.base.energy > Building.base.maxEnergy)
+            Building.base.energy = Building.base.maxEnergy;
           game.updateEnergyElement();
         }
       } else {
