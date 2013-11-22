@@ -13,10 +13,21 @@ void onMouseMove(MouseEvent evt) {
   
   // flag for terraforming
   if (engine.mouse.buttonPressed == 1) {
-    Vector hoveredTilePosition = game.getHoveredTilePosition();   
     if (game.mode == "TERRAFORM") {
+      Vector hoveredTilePosition = game.getHoveredTilePosition();   
       if (game.world.contains(hoveredTilePosition)) {
-        game.world.tiles[hoveredTilePosition.x][hoveredTilePosition.y].flagTerraform(hoveredTilePosition * game.tileSize);
+        
+        Rectangle currentRect = new Rectangle(hoveredTilePosition.x * game.tileSize,
+                                              hoveredTilePosition.y * game.tileSize,
+                                              game.tileSize - 1,
+                                              game.tileSize - 1); 
+        
+        // check for building/emitter/sporetower on that position
+        if (!Building.collision(currentRect) &&
+            !Emitter.collision(currentRect) &&
+            !Sporetower.collision(currentRect)) {
+          game.world.tiles[hoveredTilePosition.x][hoveredTilePosition.y].flagTerraform(hoveredTilePosition * game.tileSize);
+        }
       }
     }
   }
@@ -209,7 +220,18 @@ void onMouseDown(MouseEvent evt) {
     // flag for terraforming 
     if (game.mode == "TERRAFORM") {
       if (game.world.contains(hoveredTilePosition)) {
-        game.world.tiles[hoveredTilePosition.x][hoveredTilePosition.y].flagTerraform(hoveredTilePosition * game.tileSize);
+        
+        Rectangle currentRect = new Rectangle(hoveredTilePosition.x * game.tileSize,
+                                              hoveredTilePosition.y * game.tileSize,
+                                              game.tileSize - 1,
+                                              game.tileSize - 1); 
+        
+        // check for building/emitter/sporetower on that position
+        if (!Building.collision(currentRect) &&
+            !Emitter.collision(currentRect) &&
+            !Sporetower.collision(currentRect)) {
+          game.world.tiles[hoveredTilePosition.x][hoveredTilePosition.y].flagTerraform(hoveredTilePosition * game.tileSize);
+        }
       }
     }
   }

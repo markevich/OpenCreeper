@@ -43,4 +43,18 @@ class Sporetower {
     } while (!target.built);
     Spore.add(sprite.position, target.sprite.position);
   }
+  
+  
+  static bool collision(Rectangle rectangle) { 
+    for (int i = 0; i < sporetowers.length; i++) {
+      Rectangle sporetowerRect = new Rectangle(sporetowers[i].sprite.position.x - 3 * game.tileSize / 2,
+                                               sporetowers[i].sprite.position.y - 3 * game.tileSize / 2,
+                                               3 * game.tileSize - 1,
+                                               3 * game.tileSize - 1);     
+      if (rectangle.intersects(sporetowerRect)) {
+        return true;
+      }
+    }
+    return false;
+  }
 }

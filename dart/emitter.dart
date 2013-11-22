@@ -91,4 +91,17 @@ class Emitter {
       game.stop();
     } 
   }
+  
+  static bool collision(Rectangle rectangle) {  
+    for (int i = 0; i < emitters.length; i++) {
+      Rectangle emitterRect = new Rectangle(emitters[i].sprite.position.x - 3 * game.tileSize / 2,
+                                            emitters[i].sprite.position.y - 3 * game.tileSize / 2,
+                                            3 * game.tileSize - 1,
+                                            3 * game.tileSize - 1);        
+      if (rectangle.intersects(emitterRect)) {
+        return true;
+      }
+    }
+    return false;
+  }
 }

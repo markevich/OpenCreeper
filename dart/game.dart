@@ -14,7 +14,7 @@ class Game {
   Line tfLine1, tfLine2, tfLine3, tfLine4;
   Sprite tfNumber;
   Sprite targetCursor;
-
+  
   Game() {
     init();
   }
@@ -565,51 +565,18 @@ class Game {
    */
   bool canBePlaced(Vector position, num size, [Building building]) {
 
-    if (position.x > 0 && position.x < world.size.x - 1 && position.y > 0 && position.y < world.size.y - 1) {
+    if (game.world.contains(position)) {
       int height = game.world.tiles[position.x][position.y].height;
       
-      Rectangle currentRect = new Rectangle(position.x * tileSize - tileSize,
-                                            position.y * tileSize - tileSize,
+      Rectangle currentRect = new Rectangle(position.x * tileSize + 8 - size * tileSize / 2,
+                                            position.y * tileSize + 8 - size * tileSize / 2,
                                             size * tileSize - 1,
-                                            size * tileSize - 1); 
-      
-      // check for collision with another building
-      for (int i = 0; i < Building.buildings.length; i++) {
-        if (Building.buildings[i].status != "IDLE")
-          return false;
-        if (building != null && building == Building.buildings[i])
-          return false;
-        Rectangle buildingRect = new Rectangle(Building.buildings[i].position.x - Building.buildings[i].size * tileSize / 2,
-                                               Building.buildings[i].position.y - Building.buildings[i].size * tileSize / 2,
-                                               Building.buildings[i].size * tileSize - 1,
-                                               Building.buildings[i].size * tileSize - 1);     
-        if (currentRect.intersects(buildingRect)) {
-          return false;
-        }
-      }
-      
-      // check for collision with emitters
-      for (int i = 0; i < Emitter.emitters.length; i++) {
-        Rectangle emitterRect = new Rectangle(Emitter.emitters[i].sprite.position.x - 3 * tileSize / 2,
-                                              Emitter.emitters[i].sprite.position.y - 3 * tileSize / 2,
-                                              3 * tileSize - 1,
-                                              3 * tileSize - 1);     
-        if (currentRect.intersects(emitterRect)) {
-          return false;
-        }
-      }
-      
-      // check for collision with sporetowers
-      for (int i = 0; i < Sporetower.sporetowers.length; i++) {
-        Rectangle sporetowerRect = new Rectangle(Sporetower.sporetowers[i].sprite.position.x - 3 * tileSize / 2,
-                                                 Sporetower.sporetowers[i].sprite.position.y - 3 * tileSize / 2,
-                                                 3 * tileSize - 1,
-                                                 3 * tileSize - 1);     
-        if (currentRect.intersects(sporetowerRect)) {
-          return false;
-        }
-      }
-
+                                            size * tileSize - 1);  
+          
+      if (Building.collision(currentRect, building) ||
+          Emitter.collision(currentRect) ||
+          Sporetower.collision(currentRect)) return false;
+           
       // check if all tiles have the same height and are not corners
       for (int i = position.x - 1; i <= position.x + 1; i++) {
         for (int j = position.y - 1; j <= position.y + 1; j++) {
@@ -1171,7 +1138,7 @@ class Game {
       // if a building is built and selected draw a green box and a line to the mouse position as the reposition target
       Building.drawRepositionInfo();
       drawPositionInfo();
-     
+          
       /*Vector tp = game.getHoveredTilePosition();
       Vector tp2 = tp.tiled2screen();
       engine.renderer["buffer"].context.strokeStyle = '#f0f';

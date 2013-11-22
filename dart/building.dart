@@ -301,6 +301,23 @@ class Building {
     }
   }
   
+  static bool collision(Rectangle rectangle, [Building building]) {  
+    for (int i = 0; i < buildings.length; i++) {
+      if (buildings[i].status != "IDLE")
+        continue;
+      if (building != null && building == buildings[i])
+        continue;
+      Rectangle buildingRect = new Rectangle(buildings[i].position.x - buildings[i].size * game.tileSize / 2,
+                                             buildings[i].position.y - buildings[i].size * game.tileSize / 2,
+                                             buildings[i].size * game.tileSize - 1,
+                                             buildings[i].size * game.tileSize - 1);     
+      if (rectangle.intersects(buildingRect)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  
   /**
    * Used for A*, finds all neighbouring buildings.
    * The [target] node is also passed as it is a valid neighbour.
