@@ -576,8 +576,8 @@ class Game {
           Sporetower.collision(currentRect)) return false;
            
       // check if all tiles have the same height and are not corners
-      for (int i = position.x - 1; i <= position.x + 1; i++) {
-        for (int j = position.y - 1; j <= position.y + 1; j++) {
+      for (int i = position.x - (size ~/ 2); i <= position.x + (size ~/ 2); i++) {
+        for (int j = position.y - (size ~/ 2); j <= position.y + (size ~/ 2); j++) {
           if (world.contains(new Vector(i, j))) {
             int tileHeight = game.world.tiles[i][j].height;
             if (tileHeight < 0 || tileHeight != height) {
@@ -586,6 +586,8 @@ class Game {
             if (!(world.tiles[i][j].index == 7 || world.tiles[i][j].index == 11 || world.tiles[i][j].index == 13 || world.tiles[i][j].index == 14 || world.tiles[i][j].index == 15)) {
               return false;
             }
+          } else {
+            return false;
           }
         }
       }
