@@ -552,7 +552,6 @@ class Building {
    */
   void updateCollection(String action) {
     int height = game.world.getTile(position).height;
-    Vector centerBuilding = position;
 
     for (int i = -5; i < 7; i++) {
       for (int j = -5; j < 7; j++) {
@@ -564,26 +563,24 @@ class Building {
           Vector positionCurrentCenter = new Vector(positionCurrent.x * game.tileSize + (game.tileSize / 2), positionCurrent.y * game.tileSize + (game.tileSize / 2));
           int tileHeight = game.world.tiles[positionCurrent.x][positionCurrent.y].height;
 
-          if (action == "add") {
-            if (pow(positionCurrentCenter.x - centerBuilding.x, 2) + pow(positionCurrentCenter.y - centerBuilding.y, 2) < pow(game.tileSize * 6, 2)) {
-              if (tileHeight == height) {
+          if (position.distanceTo(positionCurrentCenter) < game.tileSize * 6) {
+            if (tileHeight == height) {
+              if (action == "add") {
                 game.world.tiles[positionCurrent.x][positionCurrent.y].collector = this;
-              }
-            }
-          } else if (action == "remove") {
-            if (pow(positionCurrentCenter.x - centerBuilding.x, 2) + pow(positionCurrentCenter.y - centerBuilding.y, 2) < pow(game.tileSize * 6, 2)) {
-              if (tileHeight == height) {
+              } else if (action == "remove") {
                 game.world.tiles[positionCurrent.x][positionCurrent.y].collector = null;
-              }
-            }
 
-            for (int k = 0; k < Building.buildings.length; k++) {
-              if (Building.buildings[k] != this && Building.buildings[k].type == "collector") {
-                int heightK = game.world.getTile(Building.buildings[k].position).height;
-                Vector centerBuildingK = Building.buildings[k].position;
-                if (pow(positionCurrentCenter.x - centerBuildingK.x, 2) + pow(positionCurrentCenter.y - centerBuildingK.y, 2) < pow(game.tileSize * 6, 2)) {
-                  if (tileHeight == heightK) {
-                    game.world.tiles[positionCurrent.x][positionCurrent.y].collector = Building.buildings[k];
+                // check if another collector can take this tile
+                for (int k = 0; k < buildings.length; k++) {
+                  if (buildings[k] != this && buildings[k].type == "collector") {
+                    int heightK = game.world.getTile(buildings[k].position).height;
+                    Vector centerBuildingK = buildings[k].position;
+                    if (centerBuildingK.distanceTo(positionCurrentCenter) < game.tileSize * 6) {
+                      if (tileHeight == heightK) {
+                        game.world.tiles[positionCurrent.x][positionCurrent.y].collector = buildings[k];
+                        break;
+                      }
+                    }
                   }
                 }
               }
