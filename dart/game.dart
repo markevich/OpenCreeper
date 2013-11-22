@@ -568,59 +568,71 @@ class Game {
    * Checks if a [building] with its [size] can be placed on a given [position]. // tileposition
    */
   bool canBePlaced(Vector position, num size, [Building building]) {
-    bool collision = false;
 
     if (position.x > 0 && position.x < world.size.x - 1 && position.y > 0 && position.y < world.size.y - 1) {
       int height = game.world.tiles[position.x][position.y].height;
-
-      // 1. check for collision with another building
+      
+      Rectangle currentRect = new Rectangle(position.x * tileSize - tileSize,
+                                            position.y * tileSize - tileSize,
+                                            size * tileSize - 1,
+                                            size * tileSize - 1); 
+      
+      // check for collision with another building
       for (int i = 0; i < Building.buildings.length; i++) {
-        // don't check for collision with moving buildings
         if (Building.buildings[i].status != "IDLE")
-          continue;
+          return false;
         if (building != null && building == Building.buildings[i])
-          continue;
+          return false;
         Rectangle buildingRect = new Rectangle(Building.buildings[i].position.x - Building.buildings[i].size * tileSize / 2,
-            Building.buildings[i].position.y - Building.buildings[i].size * tileSize / 2,
-            Building.buildings[i].size * tileSize - 1,
-            Building.buildings[i].size * tileSize - 1);
-        Rectangle currentRect = new Rectangle(position.x * tileSize - tileSize,
-                                              position.y * tileSize - tileSize,
-                                              size * tileSize - 1,
-                                              size * tileSize - 1);       
+                                               Building.buildings[i].position.y - Building.buildings[i].size * tileSize / 2,
+                                               Building.buildings[i].size * tileSize - 1,
+                                               Building.buildings[i].size * tileSize - 1);     
         if (currentRect.intersects(buildingRect)) {
-          collision = true;
-          break;
+          return false;
+        }
+      }
+      
+      // check for collision with emitters
+      for (int i = 0; i < Emitter.emitters.length; i++) {
+        Rectangle emitterRect = new Rectangle(Emitter.emitters[i].sprite.position.x - 3 * tileSize / 2,
+                                              Emitter.emitters[i].sprite.position.y - 3 * tileSize / 2,
+                                              3 * tileSize - 1,
+                                              3 * tileSize - 1);     
+        if (currentRect.intersects(emitterRect)) {
+          return false;
+        }
+      }
+      
+      // check for collision with sporetowers
+      for (int i = 0; i < Sporetower.sporetowers.length; i++) {
+        Rectangle sporetowerRect = new Rectangle(Sporetower.sporetowers[i].sprite.position.x - 3 * tileSize / 2,
+                                                 Sporetower.sporetowers[i].sprite.position.y - 3 * tileSize / 2,
+                                                 3 * tileSize - 1,
+                                                 3 * tileSize - 1);     
+        if (currentRect.intersects(sporetowerRect)) {
+          return false;
         }
       }
 
-      // 2. check if all tiles have the same height and are not corners
-      if (!collision) {
-        for (int i = position.x - 1; i <= position.x + 1; i++) {
-          for (int j = position.y - 1; j <= position.y + 1; j++) {
-            if (world.contains(new Vector(i, j))) {
-              int tileHeight = game.world.tiles[i][j].height;
-              if (tileHeight < 0) {
-                collision = true;
-                break;
-              }
-              if (tileHeight != height) {
-                collision = true;
-                break;
-              }
-              if (!(world.tiles[i][j].index == 7 || world.tiles[i][j].index == 11 || world.tiles[i][j].index == 13 || world.tiles[i][j].index == 14 || world.tiles[i][j].index == 15)) {
-                collision = true;
-                break;
-              }
+      // check if all tiles have the same height and are not corners
+      for (int i = position.x - 1; i <= position.x + 1; i++) {
+        for (int j = position.y - 1; j <= position.y + 1; j++) {
+          if (world.contains(new Vector(i, j))) {
+            int tileHeight = game.world.tiles[i][j].height;
+            if (tileHeight < 0 || tileHeight != height) {
+              return false;
+            }
+            if (!(world.tiles[i][j].index == 7 || world.tiles[i][j].index == 11 || world.tiles[i][j].index == 13 || world.tiles[i][j].index == 14 || world.tiles[i][j].index == 15)) {
+              return false;
             }
           }
         }
       }
+      
+      return true;      
     } else {
-      collision = true;
+      return false;
     }
-
-    return (!collision);
   }
   
   void updateCreeper() {
