@@ -13,6 +13,7 @@ class Building {
   static final double baseSpeed = .5;
   static int damageCounter = 0, collectCounter = 0;
   static List<Building> buildings = new List<Building>();
+  static Building base;
 
   Building(position, imageID) {
     type = imageID;
@@ -126,6 +127,7 @@ class Building {
   static Building add(Vector position, String type) {
     position = position * 16 + new Vector(8, 8);
     Building building = new Building(position, type);
+    if (type == "base") base = building;
     buildings.add(building);
     return building;
   }
@@ -510,9 +512,7 @@ class Building {
     if (collectedEnergy >= 100) {
       collectedEnergy -= 100;
       if (type == "collector") {
-        Packet packet = new Packet(position, "packet_collection", "collection");
-        packet.target = game.base;
-        packet.currentTarget = this;
+        Packet packet = new Packet(this, Building.base, "packet_collection", "collection");
         if (packet.findRoute())
           Packet.add(packet);
         else

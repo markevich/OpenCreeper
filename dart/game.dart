@@ -10,7 +10,6 @@ class Game {
   List<Vector> ghosts = new List<Vector>();
   World world;
   Vector scroll = new Vector.empty(), mouseScrolling = new Vector.empty(), keyScrolling = new Vector.empty();
-  Building base;
   Stopwatch stopwatch = new Stopwatch();
   Line tfLine1, tfLine2, tfLine3, tfLine4;
   Sprite tfNumber;
@@ -237,7 +236,6 @@ class Game {
     scroll = randomPosition;
 
     Building building = Building.add(randomPosition, "base");
-    base = building;   
 
     int height = this.world.getTile(building.position).height;
     if (height < 0)

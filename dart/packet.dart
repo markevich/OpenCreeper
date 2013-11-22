@@ -11,8 +11,8 @@ class Packet {
   static List<Packet> packets = new List<Packet>();
   static List<Packet> queue = new List<Packet>();
 
-  Packet(position, imageID, this.type) {
-    sprite = new Sprite(Layer.PACKET, engine.images[imageID], position, 16, 16);
+  Packet(this.currentTarget, this.target, imageID, this.type) {
+    sprite = new Sprite(Layer.PACKET, engine.images[imageID], currentTarget.position, 16, 16);
     sprite.anchor = new Vector(0.5, 0.5);
 
     if (type == "collection")
@@ -79,10 +79,7 @@ class Packet {
    */
   static void queuePacket(Building target, String type) {
     String img = "packet_" + type;
-    Vector center = game.base.position;
-    Packet packet = new Packet(center, img, type);
-    packet.target = target;
-    packet.currentTarget = game.base;
+    Packet packet = new Packet(Building.base, target, img, type);
     if (packet.findRoute()) {
       if (packet.type == "health")
         packet.target.healthRequests++;
