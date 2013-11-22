@@ -722,11 +722,11 @@ class Game {
    * Is called by a periodic timer.
    */ 
   void update() {
-    Emitter.checkWinningCondition();   
     Building.updateHoverState();
     Ship.updateHoverState();
 
     if (!paused) {
+      Emitter.checkWinningCondition(); 
       Spore.update();
       Shell.update();
       updateCreeper();      
