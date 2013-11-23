@@ -302,15 +302,26 @@ class Building {
   }
   
   static bool collision(Rectangle rectangle, [Building building]) {  
+    // check stationary buildings
     for (int i = 0; i < buildings.length; i++) {
-      if (buildings[i].status != "IDLE")
-        continue;
       if (building != null && building == buildings[i])
         continue;
-      Rectangle buildingRect = new Rectangle(buildings[i].position.x - buildings[i].size * game.tileSize / 2,
-                                             buildings[i].position.y - buildings[i].size * game.tileSize / 2,
-                                             buildings[i].size * game.tileSize - 1,
-                                             buildings[i].size * game.tileSize - 1);     
+      
+      Rectangle buildingRect = null;
+      // check flying buildings
+      if (buildings[i].status != "IDLE") {
+        buildingRect = new Rectangle(buildings[i].moveTargetPosition.x - buildings[i].size * game.tileSize / 2,
+                                     buildings[i].moveTargetPosition.y - buildings[i].size * game.tileSize / 2,
+                                     buildings[i].size * game.tileSize - 1,
+                                     buildings[i].size * game.tileSize - 1);  
+      } 
+      // check stationary buildings
+      else { 
+        buildingRect = new Rectangle(buildings[i].position.x - buildings[i].size * game.tileSize / 2,
+                                     buildings[i].position.y - buildings[i].size * game.tileSize / 2,
+                                     buildings[i].size * game.tileSize - 1,
+                                     buildings[i].size * game.tileSize - 1);  
+      }
       if (rectangle.intersects(buildingRect)) {
         return true;
       }
