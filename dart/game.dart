@@ -16,6 +16,7 @@ class Game {
   Sprite targetCursor;
   
   Game() {
+    seed = engine.randomInt(0, 10000);
     init();
   }
 
@@ -884,7 +885,7 @@ class Game {
   
               int index = (8 * down) + (4 * left) + (2 * up) + right;
               if (index != 0)
-                engine.renderer["creeperbuffer"].context.drawImageScaledFromSource(engine.images["creeper"], index * tileSize, 0, tileSize, tileSize, engine.halfWidth + i * tileSize * zoom, engine.halfHeight + j * tileSize * zoom, tileSize * zoom, tileSize * zoom);            
+                engine.renderer["creeperbuffer"].context.drawImageScaledFromSource(engine.images["creeper"], index * tileSize, 0, tileSize, tileSize, engine.halfWidth + i * tileSize * zoom, engine.halfHeight + j * tileSize * zoom, tileSize * zoom, tileSize * zoom);
             }
           }
         }

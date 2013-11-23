@@ -31,5 +31,5 @@ Game game;
 
 void main() {
   engine = new Engine();
-  engine.loadImages().then((results) => game = new Game.withSeed(4613)); // use Game() to start with random seed
+  engine.loadImages().then((results) => game = new Game()); // use Game() to start with random seed
 }
