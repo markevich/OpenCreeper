@@ -6,7 +6,7 @@ class Game {
   double zoom = 1.0;
   Timer running;
   String mode;
-  bool paused = false, creeperDirty = true;
+  bool paused = false, creeperDirty = true, won = false;
   List<Vector> ghosts = new List<Vector>();
   World world;
   Vector scroll = new Vector.empty(), mouseScrolling = new Vector.empty(), keyScrolling = new Vector.empty();
@@ -83,6 +83,7 @@ class Game {
     mode = "DEFAULT";
     creeperCounter = 0;
     speed = 1;
+    won = false;
     
     createWorld();
     
@@ -90,7 +91,7 @@ class Game {
     stopwatch.start();
     var oneSecond = new Duration(seconds:1);
     new Timer.periodic(oneSecond, updateTime);
-    querySelector('#lose').style.display = 'none';
+    //querySelector('#lose').style.display = 'none';
     querySelector('#win').style.display = 'none';
     updateEnergyElement();
     updateSpeedElement();
@@ -125,6 +126,7 @@ class Game {
 
   void resume() {
     querySelector('#paused').style.display = 'none';
+    querySelector('#win').style.display = 'none';
     paused = false;
     stopwatch.start();
   }
@@ -143,6 +145,7 @@ class Game {
   }
 
   void restart() {
+    querySelector('#lose').style.display = 'none';
     stop();
     reset();
     drawTerrain();

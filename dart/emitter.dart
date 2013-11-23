@@ -79,17 +79,21 @@ class Emitter {
   }
   
   static void checkWinningCondition() {
-    int emittersChecked = 0;
-    for (int i = 0; i < emitters.length; i++) {
-      if (emitters[i].analyzer != null)
-        emittersChecked++;
+    if (!game.won) {
+      int emittersChecked = 0;
+      for (int i = 0; i < emitters.length; i++) {
+        if (emitters[i].analyzer != null)
+          emittersChecked++;
+      }
+      if (emittersChecked == emitters.length) {
+        // TODO: 10 seconds countdown
+        querySelector('#win').style.display = "block";
+        game.stopwatch.stop();
+        //game.stop();
+        game.paused = true;
+        game.won = true;
+      } 
     }
-    if (emittersChecked == emitters.length) {
-      // TODO: 10 seconds countdown
-      querySelector('#win').style.display = "block";
-      game.stopwatch.stop();
-      game.stop();
-    } 
   }
   
   static bool collision(Rectangle rectangle) {  

@@ -69,8 +69,9 @@ class Engine {
     //query('#slower').onClick.listen((event) => game.slower());
     //query('#faster').onClick.listen((event) => game.faster());
     //query('#pause').onClick.listen((event) => game.pause());
-    //query('#resume').onClick.listen((event) => game.resume());
+    querySelector('#continue').onClick.listen((event) => game.resume());
     querySelector('#restart').onClick.listen((event) => game.restart());
+    querySelector('#restart2').onClick.listen((event) => game.restart());
     querySelector('#deactivate').onClick.listen((event) => Building.deactivate());
     querySelector('#activate').onClick.listen((event) => Building.activate());
 
