@@ -849,7 +849,7 @@ class Building {
                   allowedDistance = 20 * game.tileSize;
                 }
 
-                if (positionJ.distanceTo(positionI) <= allowedDistance) {
+                if (positionJ.distanceTo(positionI) <= allowedDistance * game.zoom) {
                   context
                     ..strokeStyle = '#000'
                     ..lineWidth = 3 * game.zoom
