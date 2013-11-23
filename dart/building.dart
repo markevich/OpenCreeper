@@ -540,6 +540,10 @@ class Building {
     if (type == "reactor" && built) {
       collectedEnergy += 50;
     }
+    
+    if (type == "base") {
+      collectedEnergy += 100;
+    }
 
     if (collectedEnergy >= 100) {
       collectedEnergy -= 100;
@@ -550,7 +554,7 @@ class Building {
         else
           engine.renderer["buffer"].removeDisplayObject(packet.sprite);
       }
-      if (type == "reactor") {
+      if (type == "reactor" || type == "base") {
         Building.base.energy += 1;
         if (Building.base.energy > Building.base.maxEnergy)
           Building.base.energy = Building.base.maxEnergy;
@@ -692,10 +696,10 @@ class Building {
         operating = true;
       }
 
-      else if (type == "cannon" && energy > 0 && energyCounter >= 10) {
+      else if (type == "cannon" && energy > 0 && energyCounter >= 20) {
         if (!rotating) {
 
-          energyCounter -= 10;
+          energyCounter -= 20;
 
           int height = game.world.getTile(position).height;
 

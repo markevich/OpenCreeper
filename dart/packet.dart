@@ -14,6 +14,7 @@ class Packet {
   Packet(this.currentTarget, this.target, imageID, this.type) {
     sprite = new Sprite(Layer.PACKET, engine.images[imageID], currentTarget.position, 16, 16);
     sprite.anchor = new Vector(0.5, 0.5);
+    sprite.visible = false;
 
     if (type == "collection")
       sprite.scale = new Vector(1.5, 1.5);
@@ -27,6 +28,7 @@ class Packet {
   }
   
   static void add(Packet packet) {
+    packet.sprite.visible = true;
     packets.add(packet);
   }
   
@@ -83,7 +85,7 @@ class Packet {
     if (packet.findRoute()) {
       if (packet.type == "health")
         packet.target.healthRequests++;
-      if (packet.type == "energy")
+      else if (packet.type == "energy")
         packet.target.energyRequests += 4;
       Packet.addQueue(packet);
     } else {
