@@ -1,5 +1,7 @@
 # Open Creeper
 
+![](screenshot/screenshot.png)
+
 ## How to play
 
 Open Creeper can be played right here: http://alexanderzeillinger.github.com/OpenCreeper/
