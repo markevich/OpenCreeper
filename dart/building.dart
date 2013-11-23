@@ -50,45 +50,45 @@ class Building {
       needsEnergy = true;
     }   
     else if (type == "analyzer") {
-      maxHealth = 1; // 80
+      maxHealth = 80;
       maxEnergy = 20;
       canMove = true;
       needsEnergy = true;
       weaponRadius = 10;
     }
     else if (type == "terp") {
-      maxHealth = 1; // 60
+      maxHealth = 60;
       maxEnergy = 20;
       canMove = true;
       needsEnergy = true;
       weaponRadius = 20;
     }
     else if (type == "shield") {
-      maxHealth = 1; // 75
+      maxHealth = 75;
       maxEnergy = 20;
       canMove = true;
       needsEnergy = true;
       weaponRadius = 10;
     }
     else if (type == "bomber") {
-      maxHealth = 1; // 75
+      maxHealth = 75;
       maxEnergy = 15;
       needsEnergy = true;
     }
     else if (type == "storage") {
-      maxHealth = 1; // 8
+      maxHealth = 8;
     }
     else if (type == "reactor") {
-      maxHealth = 1; // 50
+      maxHealth = 50;
     }
     else if (type == "collector") {
-      maxHealth = 1; // 50
+      maxHealth = 5;
     }
     else if (type == "relay") {
-      maxHealth = 1; // 10
+      maxHealth = 10;
     }
     else if (type == "cannon") {
-      maxHealth = 1; // 25
+      maxHealth = 25;
       maxEnergy = 40;
       weaponRadius = 10;
       canMove = true;
@@ -101,7 +101,7 @@ class Building {
       engine.renderer["buffer"].addDisplayObject(cannon);
     }
     else if (type == "mortar") {
-      maxHealth = 1; //40
+      maxHealth = 40;
       maxEnergy = 20;
       weaponRadius = 14;
       canMove = true;
@@ -109,7 +109,7 @@ class Building {
       energyCounter = 200;
     }
     else if (type == "beam") {
-      maxHealth = 1; // 20
+      maxHealth = 20;
       maxEnergy = 10;
       weaponRadius = 20;
       canMove = true;
@@ -194,6 +194,8 @@ class Building {
         if (buildings[i].selected) {
           buildingSelected = buildings[i];
           buildings[i].selectedCircle.visible = true;
+        } else {
+          buildings[i].selectedCircle.visible = false;
         }
       }
       if (buildingSelected != null) {
