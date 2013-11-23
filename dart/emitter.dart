@@ -42,7 +42,7 @@ class Emitter {
   static void find(Building building) {
     Vector center = building.sprite.position;
     
-    if (building.weaponTargetPosition == null) {
+    if (building.weaponTargetPosition == null && building.energy > 0) {
       for (int i = 0; i < emitters.length; i++) {
         Vector emitterCenter = emitters[i].sprite.position;
 
