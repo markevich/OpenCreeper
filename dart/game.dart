@@ -1009,7 +1009,8 @@ class Game {
           if (ghostCanBePlaced) {
             // draw lines to other buildings
             for (int j = 0; j < Building.buildings.length; j++) {
-              if (Building.buildings[j].type == "collector" || Building.buildings[j].type == "relay" || Building.buildings[j].type == "base") {
+              if (UISymbol.activeSymbol.imageID == "collector" || UISymbol.activeSymbol.imageID == "relay" ||
+                  Building.buildings[j].type == "collector" || Building.buildings[j].type == "relay" || Building.buildings[j].type == "base") {
                 Vector buildingCenter = Building.buildings[j].position.real2screen();
 
                 int allowedDistance = 10 * tileSize;

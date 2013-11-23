@@ -23,7 +23,8 @@ class Connection {
   
   static void add(Building building) {  
     for (int i = 0; i < Building.buildings.length; i++) {
-      if (Building.buildings[i] != building && Building.buildings[i].status == "IDLE" && (Building.buildings[i].type == "collector" || Building.buildings[i].type == "relay" || Building.buildings[i].type == "base")) {
+      if (Building.buildings[i] != building && Building.buildings[i].status == "IDLE" &&
+          (building.type == "collector" || building.type == "relay" || Building.buildings[i].type == "collector" || Building.buildings[i].type == "relay" || Building.buildings[i].type == "base")) {
 
         num allowedDistance = 10 * game.tileSize;
         if (Building.buildings[i].type == "relay" && building.type == "relay") {

@@ -836,7 +836,7 @@ class Building {
           // draw lines to other buildings
           for (int j = 0; j < buildings.length; j++) {
             if (i != j) {
-              if (buildings[j].type == "collector" || buildings[j].type == "relay" || buildings[j].type == "base") {
+              if (buildings[i].type == "base" || buildings[j].type == "collector" || buildings[j].type == "relay" || buildings[j].type == "base") {
                 Vector positionJ = buildings[j].position.real2screen();
 
                 int allowedDistance = 10 * game.tileSize;
