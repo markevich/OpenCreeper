@@ -47,6 +47,7 @@ class Building {
       canMove = true;
       energy = 20;
       maxEnergy = 20;
+      needsEnergy = true;
     }   
     else if (type == "analyzer") {
       maxHealth = 1; // 80
@@ -92,7 +93,7 @@ class Building {
       weaponRadius = 10;
       canMove = true;
       needsEnergy = true;
-      energyCounter = 10;
+      energyCounter = 15;
       
       cannon = new Sprite(Layer.BUILDINGGUN, engine.images["cannongun"], position, 48, 48);
       cannon.anchor = new Vector(0.5, 0.5);
@@ -489,16 +490,14 @@ class Building {
   }
 
   void requestPacket() {
-    if (active && status == "IDLE") {
+    if (active && status == "IDLE" && type != "base") {
       requestCounter += 1 * game.speed;
       if (requestCounter >= 50) {
         // request health
-        if (type != "base") {
-          num healthAndRequestDelta = maxHealth - health - healthRequests;
-          if (healthAndRequestDelta > 0) {
-            requestCounter -= 50;
-            Packet.queuePacket(this, "health");
-          }
+        num healthAndRequestDelta = maxHealth - health - healthRequests;
+        if (healthAndRequestDelta > 0) {
+          requestCounter -= 50;
+          Packet.queuePacket(this, "health");
         }
         // request energy
         if (needsEnergy && built) {
@@ -614,7 +613,7 @@ class Building {
 
   void checkOperating() {
     operating = false;
-    if (needsEnergy && active && status == "IDLE") {
+    if (built && needsEnergy && active && status == "IDLE") {
 
       energyCounter += 1 * game.speed;
 
@@ -696,10 +695,10 @@ class Building {
         operating = true;
       }
 
-      else if (type == "cannon" && energy > 0 && energyCounter >= 20) {
+      else if (type == "cannon" && energy > 0 && energyCounter >= 15) {
         if (!rotating) {
 
-          energyCounter -= 20;
+          energyCounter = 0;
 
           int height = game.world.getTile(position).height;
 
@@ -888,13 +887,19 @@ class Building {
         // draw energy bar
         if (buildings[i].needsEnergy) {
           context.fillStyle = '#f00';
-          context.fillRect(realPosition.x - 22 * game.zoom, realPosition.y - 21 * game.zoom, (44 * game.zoom / buildings[i].maxEnergy) * buildings[i].energy, 3);
+          context.fillRect(realPosition.x - (buildings[i].size * game.tileSize / 2 - 2) * game.zoom,
+                           realPosition.y - (buildings[i].size * game.tileSize / 2 - 4) * game.zoom,
+                           ((buildings[i].size * game.tileSize * game.zoom - 4) / buildings[i].maxEnergy) * buildings[i].energy,
+                           3 * game.zoom);
         }
   
         // draw health bar (only if health is below maxHealth)
         if (buildings[i].health < buildings[i].maxHealth) {
           context.fillStyle = '#0f0';
-          context.fillRect(realPosition.x - 22 * game.zoom, realPosition.y - 22 + game.tileSize * game.zoom * buildings[i].size - 3, ((game.tileSize * game.zoom * buildings[i].size - 8) / buildings[i].maxHealth) * buildings[i].health, 3);
+          context.fillRect(realPosition.x - (buildings[i].size * game.tileSize / 2 - 2) * game.zoom,
+                           realPosition.y + (buildings[i].size * game.tileSize / 2 - 4) * game.zoom,
+                           ((buildings[i].size * game.tileSize * game.zoom - 4) / buildings[i].maxHealth) * buildings[i].health,
+                           3 * game.zoom);
         }
   
         // draw inactive sign
