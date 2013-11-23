@@ -138,7 +138,6 @@ void onKeyDown(KeyboardEvent evt) {
   if (evt.keyCode == KeyCode.X) {
     if (game.world.tiles[position.x][position.y].height > -1) {
       game.world.tiles[position.x][position.y].creep++;
-      game.world.tiles[position.x][position.y].newcreep++;
       game.creeperDirty = true;
     }
   }
@@ -149,9 +148,6 @@ void onKeyDown(KeyboardEvent evt) {
       game.world.tiles[position.x][position.y].creep--;
       if (game.world.tiles[position.x][position.y].creep < 0)
         game.world.tiles[position.x][position.y].creep = 0;
-      game.world.tiles[position.x][position.y].newcreep--;
-      if (game.world.tiles[position.x][position.y].newcreep < 0)
-        game.world.tiles[position.x][position.y].newcreep = 0;
       game.creeperDirty = true;
     }
   }

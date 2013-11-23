@@ -608,6 +608,13 @@ class Game {
     if (creeperCounter >= 25) {
       creeperCounter -= 25;
       creeperDirty = true;
+      
+      // synchronize new creep with old creep
+      for (int i = 0; i < world.size.x; i++) {
+        for (int j = 0; j < world.size.y; j++) {
+          world.tiles[i][j].newcreep = world.tiles[i][j].creep;
+        }
+      }
 
       for (int i = 0; i < world.size.x; i++) {
         for (int j = 0; j < world.size.y; j++) {

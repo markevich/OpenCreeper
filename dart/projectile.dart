@@ -72,9 +72,6 @@ class Projectile {
               tile.creep -= 1;
               if (tile.creep < 0)
                 tile.creep = 0;
-              tile.newcreep -= 1;
-              if (tile.newcreep < 0)
-                tile.newcreep = 0;
               game.creeperDirty = true;
             }
           }

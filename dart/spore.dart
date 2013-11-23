@@ -101,7 +101,6 @@ class Spore {
               Tile tile = game.world.getTile(tilePosition * game.tileSize);
               
               tile.creep += .5;
-              tile.newcreep += .5;
             }
           }
         }
