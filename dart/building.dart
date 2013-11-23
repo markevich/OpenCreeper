@@ -445,11 +445,14 @@ class Building {
     // buildings can only be damaged while not moving
     if (status == "IDLE") {
 
-      for (int i = 0; i < size; i++) {
-        for (int j = 0; j < size; j++) {
-          Tile tile = game.world.getTile(position + new Vector(i * game.tileSize, j * game.tileSize));
-          if (tile.creep > 0) {
-            health -= tile.creep / 10;
+      for (int i = -(size ~/ 2); i <= (size ~/ 2); i++) {
+        for (int j = -(size ~/ 2); j <= -(size ~/ 2); j++) {
+          Vector tilePosition = position.real2tiled() + new Vector(i, j);
+          if (game.world.contains(tilePosition)) {
+            Tile tile = game.world.getTile(position + new Vector(i * game.tileSize, j * game.tileSize));
+            if (tile.creep > 0) {
+              health -= tile.creep / 10;
+            }
           }
         }
       }
@@ -467,7 +470,6 @@ class Building {
 
       for (int i = tiledPosition.x - weaponRadius; i <= tiledPosition.x + weaponRadius; i++) {
         for (int j = tiledPosition.y - weaponRadius; j <= tiledPosition.y + weaponRadius; j++) {
-          //if (game.withinWorld(i, j)) {
           if (game.world.contains(new Vector(i, j))) {  
             num distance = pow((i * game.tileSize + game.tileSize / 2) - center.x, 2) + pow((j * game.tileSize + game.tileSize / 2) - center.y, 2);
             if (distance < pow(game.tileSize * 10, 2)) {
