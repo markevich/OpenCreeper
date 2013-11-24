@@ -5,6 +5,7 @@ import 'dart:math';
 import 'dart:async';
 
 part 'world.dart';
+part 'tile.dart';
 part 'game.dart';
 part 'engine.dart';
 part 'heightmap.dart';
