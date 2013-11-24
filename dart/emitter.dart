@@ -37,6 +37,8 @@ class Emitter {
         }
       }
     }
+    
+    checkWinningCondition();
   }
   
   static void find(Building building) {

@@ -603,8 +603,6 @@ class Game {
   }
   
   void updateCreeper() {
-    Emitter.update();
-
     creeperCounter += 1 * game.speed;
     if (creeperCounter >= 25) {
       creeperCounter -= 25;
@@ -697,7 +695,7 @@ class Game {
     Ship.updateHoverState();
 
     if (!paused) {
-      Emitter.checkWinningCondition(); 
+      Emitter.update();
       Spore.update();
       Shell.update();
       updateCreeper();      
