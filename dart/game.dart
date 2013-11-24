@@ -783,35 +783,31 @@ class Game {
     for (int i = -timesX; i <= timesX; i++) {
       for (int j = -timesY; j <= timesY; j++) {
 
-        int iS = i + scroll.x;
-        int jS = j + scroll.y;
+        Vector position = new Vector(i + scroll.x, j + scroll.y);
 
-        if (world.contains(new Vector(iS, jS))) {
+        if (world.contains(position)) {
+          if (world.tiles[position.x][position.y].collector != null) {
+            int up = 0, down = 0, left = 0, right = 0;
+            if (position.y - 1 < 0)
+              up = 0;
+            else
+              up = world.tiles[position.x][position.y - 1].collector != null ? 1 : 0;
+            if (position.y + 1 > world.size.y - 1)
+              down = 0;
+            else
+              down = world.tiles[position.x][position.y + 1].collector != null ? 1 : 0;
+            if (position.x - 1 < 0)
+              left = 0;
+            else
+              left = world.tiles[position.x - 1][position.y].collector != null ? 1 : 0;
+            if (position.x + 1 > world.size.x - 1)
+              right = 0;
+            else
+              right = world.tiles[position.x + 1][position.y].collector != null ? 1 : 0;
 
-          //for (int k = 0 ; k < 10; k++) {
-            if (world.tiles[iS][jS].collector != null) {
-              int up = 0, down = 0, left = 0, right = 0;
-              if (jS - 1 < 0)
-                up = 0;
-              else
-                up = world.tiles[iS][jS - 1].collector != null ? 1 : 0;
-              if (jS + 1 > world.size.y - 1)
-                down = 0;
-              else
-                down = world.tiles[iS][jS + 1].collector != null ? 1 : 0;
-              if (iS - 1 < 0)
-                left = 0;
-              else
-                left = world.tiles[iS - 1][jS].collector != null ? 1 : 0;
-              if (iS + 1 > world.size.x - 1)
-                right = 0;
-              else
-                right = world.tiles[iS + 1][jS].collector != null ? 1 : 0;
-
-              int index = (8 * down) + (4 * left) + (2 * up) + right;
-              engine.renderer["collection"].context.drawImageScaledFromSource(engine.images["mask"], index * (tileSize + 6) + 3, (tileSize + 6) + 3, tileSize, tileSize, engine.halfWidth + i * tileSize * zoom, engine.halfHeight + j * tileSize * zoom, tileSize * zoom, tileSize * zoom);
-            }
-          //}
+            int index = (8 * down) + (4 * left) + (2 * up) + right;
+            engine.renderer["collection"].context.drawImageScaledFromSource(engine.images["mask"], index * (tileSize + 6) + 3, (tileSize + 6) + 3, tileSize, tileSize, engine.halfWidth + i * tileSize * zoom, engine.halfHeight + j * tileSize * zoom, tileSize * zoom, tileSize * zoom);
+          }
         }
       }
     }
@@ -827,34 +823,33 @@ class Game {
     for (int i = -timesX; i <= timesX; i++) {
       for (int j = -timesY; j <= timesY; j++) {
 
-        int iS = i + scroll.x;
-        int jS = j + scroll.y;
-
-        if (world.contains(new Vector(iS, jS))) {
+        Vector position = new Vector(i + scroll.x, j + scroll.y);
+        
+        if (world.contains(position)) {
           
-          int height = world.tiles[iS][jS].height;
+          int height = world.tiles[position.x][position.y].height;
           
           // TODO: don't redraw everything each frame
           for (var t = 0; t <= 9; t++) {
 
-            if (world.tiles[iS][jS].creep > t) {
+            if (world.tiles[position.x][position.y].creep > t) {
               
               int up = 0, down = 0, left = 0, right = 0;
-              if (jS - 1 < 0)
+              if (position.y - 1 < 0)
                 up = 0;
-              else if (world.tiles[iS][jS - 1].creep > t || world.tiles[iS][jS - 1].height > height)
+              else if (world.tiles[position.x][position.y - 1].creep > t || world.tiles[position.x][position.y - 1].height > height)
                 up = 1;
-              if (jS + 1 > world.size.y - 1)
+              if (position.y + 1 > world.size.y - 1)
                 down = 0;
-              else if (world.tiles[iS][jS + 1].creep > t || world.tiles[iS][jS + 1].height > height)
+              else if (world.tiles[position.x][position.y + 1].creep > t || world.tiles[position.x][position.y + 1].height > height)
                 down = 1;
-              if (iS - 1 < 0)
+              if (position.x - 1 < 0)
                 left = 0;
-              else if (world.tiles[iS - 1][jS].creep > t || world.tiles[iS - 1][jS].height > height)
+              else if (world.tiles[position.x - 1][position.y].creep > t || world.tiles[position.x - 1][position.y].height > height)
                 left = 1;
-              if (iS + 1 > world.size.x - 1)
+              if (position.x + 1 > world.size.x - 1)
                 right = 0;
-              else if (world.tiles[iS + 1][jS].creep > t || world.tiles[iS + 1][jS].height > height)
+              else if (world.tiles[position.x + 1][position.y].creep > t || world.tiles[position.x + 1][position.y].height > height)
                 right = 1;
   
               int index = (8 * down) + (4 * left) + (2 * up) + right;
@@ -863,24 +858,24 @@ class Game {
             }
             
             if (t < 9) {
-              int ind = world.tiles[iS][jS].index;
+              int ind = world.tiles[position.x][position.y].index;
               bool indexOk = (ind != 5 && ind != 7 && ind != 10 && ind != 11 && ind != 13 && ind != 14 && ind != 14);
               int up = 0, down = 0, left = 0, right = 0;
-              if (jS - 1 < 0)
+              if (position.y - 1 < 0)
                 up = 0;
-              else if (world.tiles[iS][jS - 1].creep > t && indexOk && world.tiles[iS][jS - 1].height < height)
+              else if (world.tiles[position.x][position.y - 1].creep > t && indexOk && world.tiles[position.x][position.y - 1].height < height)
                 up = 1;
-              if (jS + 1 > world.size.y - 1)
+              if (position.y + 1 > world.size.y - 1)
                 down = 0;
-              else if (world.tiles[iS][jS + 1].creep > t && indexOk && world.tiles[iS][jS + 1].height < height)
+              else if (world.tiles[position.x][position.y + 1].creep > t && indexOk && world.tiles[position.x][position.y + 1].height < height)
                 down = 1;
-              if (iS - 1 < 0)
+              if (position.x - 1 < 0)
                 left = 0;
-              else if (world.tiles[iS - 1][jS].creep > t && indexOk && world.tiles[iS - 1][jS].height < height)
+              else if (world.tiles[position.x - 1][position.y].creep > t && indexOk && world.tiles[position.x - 1][position.y].height < height)
                 left = 1;
-              if (iS + 1 > world.size.x - 1)
+              if (position.x + 1 > world.size.x - 1)
                 right = 0;
-              else if (world.tiles[iS + 1][jS].creep > t && indexOk && world.tiles[iS + 1][jS].height < height)
+              else if (world.tiles[position.x + 1][position.y].creep > t && indexOk && world.tiles[position.x + 1][position.y].height < height)
                 right = 1;
   
               int index = (8 * down) + (4 * left) + (2 * up) + right;
