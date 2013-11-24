@@ -897,28 +897,32 @@ class Game {
     if (world.contains(position)) {   
       if (mode == "TERRAFORM") {
         Vector drawPosition = position * tileSize;
-        tfLine1.from = new Vector(0, drawPosition.y);
-        tfLine1.to = new Vector(world.size.y * tileSize, drawPosition.y);
-        tfLine2.from = new Vector(0, drawPosition.y + tileSize);
-        tfLine2.to = new Vector(world.size.y * tileSize, drawPosition.y + tileSize);
-        tfLine3.from = new Vector(drawPosition.x, 0);
-        tfLine3.to = new Vector(drawPosition.x, world.size.y * tileSize);
-        tfLine4.from = new Vector(drawPosition.x + tileSize, 0);
-        tfLine4.to = new Vector(drawPosition.x + tileSize, world.size.y * tileSize); 
-        tfLine1.visible = true;
-        tfLine2.visible = true;
-        tfLine3.visible = true;
-        tfLine4.visible = true;
-        tfNumber.visible = true;
-        tfNumber.position = position * tileSize;
+        tfLine1
+          ..from = new Vector(0, drawPosition.y)
+          ..to = new Vector(world.size.y * tileSize, drawPosition.y)
+          ..visible = true;
+        tfLine2
+          ..from = new Vector(0, drawPosition.y + tileSize)
+          ..to = new Vector(world.size.y * tileSize, drawPosition.y + tileSize)
+          ..visible = true;
+        tfLine3
+          ..from = new Vector(drawPosition.x, 0)
+          ..to = new Vector(drawPosition.x, world.size.y * tileSize)
+          ..visible = true;
+        tfLine4
+          ..from = new Vector(drawPosition.x + tileSize, 0)
+          ..to = new Vector(drawPosition.x + tileSize, world.size.y * tileSize)
+          ..visible = true;
+        tfNumber
+          ..position = position * tileSize
+          ..visible = true;       
       } else {
         tfLine1.visible = false;
         tfLine2.visible = false;
         tfLine3.visible = false;
         tfLine4.visible = false;
         tfNumber.visible = false;
-      }
-      
+      }      
       targetCursor.position = (position * tileSize) + new Vector(8, 8);
     } else {
       tfLine1.visible = false;
@@ -1097,22 +1101,24 @@ class Game {
       num total = world.tiles[position.x][position.y].creep;
 
       // draw height and creep meter
-      context.fillStyle = '#fff';
-      context.font = '9px';
-      context.textAlign = 'right';
-      context.strokeStyle = '#fff';
-      context.lineWidth = 1;
-      context.fillStyle = "rgba(205, 133, 63, 1)";
-      context.fillRect(555, 110, 25, -game.world.tiles[getHoveredTilePosition().x][getHoveredTilePosition().y].height * 10 - 10);
-      context.fillStyle = "rgba(100, 150, 255, 1)";
-      context.fillRect(555, 110 - game.world.tiles[getHoveredTilePosition().x][getHoveredTilePosition().y].height * 10 - 10, 25, -total * 10);
-      context.fillStyle = "rgba(255, 255, 255, 1)";
+      context
+        ..fillStyle = '#fff'
+        ..font = '9px'
+        ..textAlign = 'right'
+        ..strokeStyle = '#fff'
+        ..lineWidth = 1
+        ..fillStyle = "rgba(205, 133, 63, 1)"
+        ..fillRect(555, 110, 25, -game.world.tiles[getHoveredTilePosition().x][getHoveredTilePosition().y].height * 10 - 10)
+        ..fillStyle = "rgba(100, 150, 255, 1)"
+        ..fillRect(555, 110 - game.world.tiles[getHoveredTilePosition().x][getHoveredTilePosition().y].height * 10 - 10, 25, -total * 10)
+        ..fillStyle = "rgba(255, 255, 255, 1)";
       for (int i = 1; i < 11; i++) {
-        context.fillText(i.toString(), 550, 120 - i * 10);
-        context.beginPath();
-        context.moveTo(555, 120 - i * 10);
-        context.lineTo(580, 120 - i * 10);
-        context.stroke();
+        context
+          ..fillText(i.toString(), 550, 120 - i * 10)
+          ..beginPath()
+          ..moveTo(555, 120 - i * 10)
+          ..lineTo(580, 120 - i * 10)
+          ..stroke();
       }
       context.textAlign = 'left';
       context.fillText(total.toStringAsFixed(2), 605, 10);
