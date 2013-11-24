@@ -250,17 +250,17 @@ class Game {
     int number = engine.randomInt(2, 3, seed);
     for (var l = 0; l < number; l++) {    
       randomPosition = new Vector(
-          engine.randomInt(0, world.size.x - 3, seed + engine.randomInt(1, 1000, seed + l)),
-          engine.randomInt(0, world.size.y - 3, seed + engine.randomInt(1, 1000, seed + 1 + l)));
+          engine.randomInt(1, world.size.x - 2, seed + engine.randomInt(1, 1000, seed + l)) * tileSize + 8,
+          engine.randomInt(1, world.size.y - 2, seed + engine.randomInt(1, 1000, seed + 1 + l)) * tileSize + 8);
   
-      Emitter emitter = Emitter.add(new Vector(randomPosition.x * tileSize + 24, randomPosition.y * tileSize + 24), 25);
+      Emitter emitter = Emitter.add(randomPosition, 25);
   
-      height = world.getTile(emitter.sprite.position).height; //this.world.tiles[emitter.sprite.position.x + 1][emitter.sprite.position.y + 1].height;
+      height = world.getTile(emitter.sprite.position).height;
       if (height < 0)
         height = 0;
       for (int i = -1; i <= 1; i++) {
         for (int j = -1; j <= 1; j++) {
-          world.getTile(emitter.sprite.position + new Vector(i * tileSize, j * tileSize)).height = height; //world.tiles[emitter.sprite.position.x + i][emitter.sprite.position.y + j].height = height;
+          world.getTile(emitter.sprite.position + new Vector(i * tileSize, j * tileSize)).height = height;
         }
       }
     }
@@ -269,17 +269,17 @@ class Game {
     number = engine.randomInt(1, 2, seed + 1);
     for (var l = 0; l < number; l++) {
       randomPosition = new Vector(
-          engine.randomInt(0, world.size.x - 3, seed + 3 + engine.randomInt(1, 1000, seed + 2 + l)),
-          engine.randomInt(0, world.size.y - 3, seed + 3 + engine.randomInt(1, 1000, seed + 3 + l)));
+          engine.randomInt(1, world.size.x - 2, seed + 3 + engine.randomInt(1, 1000, seed + 2 + l)) * tileSize + 8,
+          engine.randomInt(1, world.size.y - 2, seed + 3 + engine.randomInt(1, 1000, seed + 3 + l)) * tileSize + 8);
   
-      Sporetower sporetower = Sporetower.add(new Vector(randomPosition.x * tileSize + 24, randomPosition.y * tileSize + 24));
+      Sporetower sporetower = Sporetower.add(randomPosition);
   
-      height = world.getTile(sporetower.sprite.position).height; //this.world.tiles[sporetower.position.x + 1][sporetower.position.y + 1].height;
+      height = world.getTile(sporetower.sprite.position).height;
       if (height < 0)
         height = 0;
       for (int i = -1; i <= 1; i++) {
         for (int j = -1; j <= 1; j++) {
-          world.getTile(sporetower.sprite.position + new Vector(i * tileSize, j * tileSize)).height = height; //world.tiles[sporetower.position.x + i][sporetower.position.y + j].height = height;
+          world.getTile(sporetower.sprite.position + new Vector(i * tileSize, j * tileSize)).height = height;
         }
       }
     }
