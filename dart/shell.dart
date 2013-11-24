@@ -83,7 +83,7 @@ class Shell {
               tile.creep -= 10;
               if (tile.creep < 0)
                 tile.creep = 0;
-              game.creeperDirty = true;
+              World.creeperDirty = true;
             }
           }
         }

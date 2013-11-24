@@ -481,7 +481,7 @@ class Building {
                 if (game.world.tiles[i][j].creep < 0) {
                   game.world.tiles[i][j].creep = 0;
                 }
-                game.creeperDirty = true;
+                World.creeperDirty = true;
               }
             }
           }

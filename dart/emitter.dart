@@ -33,7 +33,7 @@ class Emitter {
         // only spawn creeper if not targeted by an analyzer
         if (emitters[i].analyzer == null) {
           game.world.getTile(emitters[i].sprite.position).creep += emitters[i].strength; //game.world.tiles[sprite.position.x + 1][sprite.position.y + 1].creep += strength;
-          game.creeperDirty = true;
+          World.creeperDirty = true;
         }
       }
     }

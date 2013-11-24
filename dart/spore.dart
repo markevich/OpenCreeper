@@ -105,7 +105,7 @@ class Spore {
           }
         }
       }
-      game.creeperDirty = true;
+      World.creeperDirty = true;
     }
   }
 }

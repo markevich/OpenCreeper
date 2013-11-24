@@ -219,7 +219,7 @@ class Ship {
                   tile.creep -= 5;
                   if (tile.creep < 0)
                     tile.creep = 0;
-                  game.creeperDirty = true;
+                  World.creeperDirty = true;
                 }
               }
             }

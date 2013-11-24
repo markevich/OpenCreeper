@@ -72,7 +72,7 @@ class Projectile {
               tile.creep -= 1;
               if (tile.creep < 0)
                 tile.creep = 0;
-              game.creeperDirty = true;
+              World.creeperDirty = true;
             }
           }
         }

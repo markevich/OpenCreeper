@@ -2,11 +2,11 @@ part of creeper;
 
 class Game {
   final int tileSize = 16;
-  int seed, terraformingHeight = 0, speed = 1, creeperCounter = 0;
+  int seed, terraformingHeight = 0, speed = 1;
   double zoom = 1.0;
   Timer running;
   String mode;
-  bool paused = false, creeperDirty = true, won = false;
+  bool paused = false, won = false;
   List<Vector> ghosts = new List<Vector>();
   World world;
   Vector scroll = new Vector.empty(), mouseScrolling = new Vector.empty(), keyScrolling = new Vector.empty();
@@ -82,7 +82,6 @@ class Game {
     UISymbol.reset();
 
     mode = "DEFAULT";
-    creeperCounter = 0;
     speed = 1;
     won = false;
     
@@ -190,7 +189,7 @@ class Game {
       zoom = double.parse(zoom.toStringAsFixed(2));
       copyTerrain();
       drawCollection();
-      creeperDirty = true;
+      World.creeperDirty = true;
     }
   }
 
@@ -200,7 +199,7 @@ class Game {
       zoom = double.parse(zoom.toStringAsFixed(2));
       copyTerrain();
       drawCollection();
-      creeperDirty = true;
+      World.creeperDirty = true;
     }
   }
 
@@ -602,81 +601,6 @@ class Game {
     }
   }
   
-  void updateCreeper() {
-    creeperCounter += 1 * game.speed;
-    if (creeperCounter >= 25) {
-      creeperCounter -= 25;
-      creeperDirty = true;
-      
-      // synchronize new creep with old creep
-      for (int i = 0; i < world.size.x; i++) {
-        for (int j = 0; j < world.size.y; j++) {
-          world.tiles[i][j].newcreep = world.tiles[i][j].creep;
-        }
-      }
-
-      for (int i = 0; i < world.size.x; i++) {
-        for (int j = 0; j < world.size.y; j++) {
-
-          // right neighbour
-          if (i + 1 < world.size.x) {
-            transferCreeper(world.tiles[i][j], world.tiles[i + 1][j]);
-          }
-          // left neighbour
-          if (i - 1 > -1) {
-            transferCreeper(world.tiles[i][j], world.tiles[i - 1][j]);
-          }
-          // bottom neighbour
-          if (j + 1 < world.size.y) {
-            transferCreeper(world.tiles[i][j], world.tiles[i][j + 1]);
-          }
-          // top neighbour
-          if (j - 1 > -1) {
-            transferCreeper(world.tiles[i][j], world.tiles[i][j - 1]);
-          }
-
-        }
-      }
-      
-      // clamp creeper
-      for (int i = 0; i < world.size.x; i++) {
-        for (int j = 0; j < world.size.y; j++) {
-          if (world.tiles[i][j].newcreep > 10)
-            world.tiles[i][j].newcreep = 10;
-          else if (world.tiles[i][j].newcreep < .01)
-            world.tiles[i][j].newcreep = 0;
-          world.tiles[i][j].creep = world.tiles[i][j].newcreep;
-        }
-      }
-
-    }
-  }
-
-  /**
-   * Transfers creeper from one tile to another.
-   */ 
-  void transferCreeper(Tile source, Tile target) {
-    num transferRate = .2;
-
-    if (source.height > -1 && target.height > -1) {
-      num sourceCreeper = source.creep;     
-      //num targetCreeper = target.creep;
-      if (sourceCreeper > 0 /*|| targetCreeper > 0*/) {
-        num sourceTotal = source.height + source.creep;
-        num targetTotal = target.height + target.creep;
-        num delta = 0;
-        if (sourceTotal > targetTotal) {
-          delta = sourceTotal - targetTotal;
-          if (delta > sourceCreeper)
-            delta = sourceCreeper;
-          num adjustedDelta = delta * transferRate;
-          source.newcreep -= adjustedDelta;
-          target.newcreep += adjustedDelta;
-        }
-      }
-    }
-  }
-  
   void updateEnergyElement() {
     if (Building.base != null)
       querySelector('#energy').innerHtml = "Energy: ${Building.base.energy.toString()}/${Building.base.maxEnergy.toString()}";
@@ -698,7 +622,7 @@ class Game {
       Emitter.update();
       Spore.update();
       Shell.update();
-      updateCreeper();      
+      World.update();      
       Projectile.update();
       Building.update();
       Packet.update();
@@ -722,7 +646,7 @@ class Game {
       copyTerrain();
       drawCollection();
       updateTerraformInfo();
-      creeperDirty = true;
+      World.creeperDirty = true;
     }
   }
 
@@ -1135,9 +1059,9 @@ class Game {
     engine.renderer["buffer"].clear();
     engine.renderer["buffer"].draw();
     Building.draw();
-    if (creeperDirty) {
+    if (World.creeperDirty) {
       drawCreeper();
-      creeperDirty = false;
+      World.creeperDirty = false;
     }
 
     if (engine.mouse.active) {
