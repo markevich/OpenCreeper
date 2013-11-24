@@ -1,8 +1,6 @@
 // Terrain generation using the Diamond Square algorithm, thanks to https://github.com/baxter/csterrain
 // This file was ported from CoffeeScript to Dart with minor modifications from myself
 
-//import 'dart:math' as Math;
-
 part of creeper;
 
 class HeightMap {
@@ -134,16 +132,5 @@ class HeightMap {
           });
       }
   }
-
-  /*tile(x, y) {
-      return {
-          nw: this.get_cell(x, y),
-          ne: this.get_cell(x + 1, y),
-          sw: this.get_cell(x, y + 1),
-          se: this.get_cell(x + 1, y + 1)
-      };
-  }*/
-
-  //return HeightMap;
 
 }
