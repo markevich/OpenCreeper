@@ -10,10 +10,12 @@ class Rect extends DisplayObject {
   int lineWidth;
   String color;
   Vector anchor;
+  Vector scale;
 
   Rect(layer, this.position, this.size, this.lineWidth, this.color) {
     super.layer = layer;
     anchor = new Vector.empty();
+    scale = new Vector(1.0, 1.0);
   }
 }
 
@@ -62,6 +64,8 @@ class Layer {
 
   int operator -(Layer other) => _value - other._value;
 
+  static const ENERGYBAR = const Layer._internal(10);
+  
   static const BUILDINGGUNFLYING = const Layer._internal(9);
 
   static const SPORE = const Layer._internal(8);

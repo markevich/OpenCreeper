@@ -8,6 +8,7 @@ class Ship {
   Building home;
   Sprite sprite, targetSymbol;
   Circle selectedCircle;
+  Rect energyRect;
   static final int baseSpeed = 1;
   static List<Ship> ships = new List<Ship>();
 
@@ -25,6 +26,9 @@ class Ship {
     targetSymbol.alpha = 0.5;
     targetSymbol.visible = false;
     engine.renderer["buffer"].addDisplayObject(targetSymbol);
+    
+    energyRect = new Rect(Layer.ENERGYBAR, new Vector(position.x - 22, position.y - 20), new Vector(44 / maxEnergy * energy, 3), 1, '#f00');
+    engine.renderer["buffer"].addDisplayObject(energyRect);
   }
   
   static void clear() {
@@ -48,6 +52,7 @@ class Ship {
     for (int i = 0; i < ships.length; i++) {
       if (ships[i].hovered) {
         ships[i].selected = true;
+        ships[i].selectedCircle.visible = true;
       }
     }
     game.targetCursor.visible = true;
@@ -107,14 +112,10 @@ class Ship {
     position = position * game.tileSize;
     position += new Vector(8, 8);
     
+    select();
+    
     for (int i = 0; i < ships.length; i++) {
-      
-      // select ship
-      if (ships[i].hovered) {
-        ships[i].selected = true;
-        ships[i].selectedCircle.visible = true;
-      }
-      
+           
       // control if selected
       if (ships[i].selected) {
         game.mode = "SHIP_SELECTED";
@@ -156,6 +157,10 @@ class Ship {
   }
 
   void move() {
+    
+    // update energy rect
+    energyRect.size = new Vector(44 / maxEnergy * energy, 3);
+    
     if (status == "ATTACKING" || status == "RETURNING") {
       trailCounter++;
       if (trailCounter == 10) {
@@ -169,6 +174,7 @@ class Ship {
         flightCounter++;
         sprite.scale = sprite.scale * 1.01;
         selectedCircle.scale *= 1.01;
+        energyRect.scale *= 1.01;
       }
       if (flightCounter == 25) {
         status = "ATTACKING";
@@ -180,12 +186,14 @@ class Ship {
         flightCounter--;
         sprite.scale = sprite.scale / 1.01;
         selectedCircle.scale /= 1.01;
+        energyRect.scale /= 1.01;
       }
       if (flightCounter == 0) {
         status = "IDLE";
         targetPosition = new Vector.empty();
         sprite.scale = new Vector(1.0, 1.0);
         selectedCircle.scale = 1.0;
+        energyRect.scale = new Vector(1.0, 1.0);
       }
     }
     
@@ -197,6 +205,7 @@ class Ship {
 
       sprite.position += speed;
       selectedCircle.position += speed;
+      energyRect.position += speed;
 
       if (sprite.position.x > targetPosition.x - 2 && sprite.position.x < targetPosition.x + 2 && sprite.position.y > targetPosition.y - 2 && sprite.position.y < targetPosition.y + 2) {
         if (weaponCounter >= 10) {
@@ -240,6 +249,7 @@ class Ship {
 
       sprite.position += speed;
       selectedCircle.position += speed;
+      energyRect.position += speed;
 
       if (sprite.position.x > targetPosition.x - 2 && sprite.position.x < targetPosition.x + 2 && sprite.position.y > targetPosition.y - 2 && sprite.position.y < targetPosition.y + 2) {
         sprite.position = home.position;

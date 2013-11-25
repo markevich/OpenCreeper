@@ -124,7 +124,7 @@ class Packet {
               if (target.type == "speed")
                 Packet.baseSpeed *= 1.01;
               if (target.type == "bomber") {
-                target.ship = Ship.add(new Vector(target.position.x, target.position.y), "bombership", "Bomber", target);           
+                target.ship = Ship.add(target.position, "bombership", "Bomber", target);           
               }
             }
           }

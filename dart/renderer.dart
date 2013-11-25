@@ -121,12 +121,12 @@ class Renderer {
             Vector realPosition = displayObject.position.real2screen();
   
             if (isVisible(realPosition, displayObject.size * game.zoom)) {
-              context.lineWidth = displayObject.lineWidth;
+              //context.lineWidth = displayObject.lineWidth;
               context.fillStyle = displayObject.color;
-              context.fillRect(realPosition.x - displayObject.size.x * displayObject.anchor.x * game.zoom,
-                               realPosition.y - displayObject.size.y * displayObject.anchor.y * game.zoom,
-                               displayObject.size.x * game.zoom,
-                               displayObject.size.y * game.zoom);
+              context.fillRect(realPosition.x - displayObject.size.x * displayObject.anchor.x * displayObject.scale.x * game.zoom,
+                               realPosition.y - displayObject.size.y * displayObject.anchor.y * displayObject.scale.y * game.zoom,
+                               displayObject.size.x * displayObject.scale.x * game.zoom,
+                               displayObject.size.y * displayObject.scale.y * game.zoom);
             }
           }
   

@@ -141,7 +141,7 @@ class Building {
       weaponRadius = 10;
     }
     else if (type == "bomber") {
-      maxHealth = 75;
+      maxHealth = 1; // 75
       maxEnergy = 15;
       needsEnergy = true;
     }
