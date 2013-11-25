@@ -248,13 +248,13 @@ void onMouseUp(MouseEvent evt) {
 
     // when there is an active symbol place building
     if (UISymbol.activeSymbol != null) {
-      String type = UISymbol.activeSymbol.imageID.substring(0, 1).toUpperCase() + UISymbol.activeSymbol.imageID.substring(1);
+      String type = UISymbol.activeSymbol.building.type.substring(0, 1).toUpperCase() + UISymbol.activeSymbol.building.type.substring(1);
       
       // if at least one ghost can be placed play matching sound
       bool soundSuccess = false;
       for (int i = 0; i < game.ghosts.length; i++) {
-        if (game.canBePlaced(game.ghosts[i], UISymbol.activeSymbol.size, null)) {
-          Building.add(game.ghosts[i], UISymbol.activeSymbol.imageID);
+        if (game.canBePlaced(game.ghosts[i], UISymbol.activeSymbol.building)) {
+          Building.add(game.ghosts[i], UISymbol.activeSymbol.building.type);
           soundSuccess = true;
         }
       }

@@ -2,13 +2,13 @@ part of creeper;
 
 class UISymbol {
   Rectangle rectangle;
-  String imageID;
-  int size, packets, radius, keyCode;
+  int keyCode;
   bool active = false, hovered = false;
+  Building building;
   static UISymbol activeSymbol = null;
   static List<UISymbol> symbols = new List<UISymbol>();
 
-  UISymbol(position, this.imageID, this.keyCode, this.size, this.packets, this.radius) {
+  UISymbol(position, this.building, this.keyCode) {
     rectangle = new Rectangle(position.x, position.y, 80, 55);
   }
   
@@ -22,8 +22,8 @@ class UISymbol {
     engine.renderer["main"].view.style.cursor = "url('images/Normal.cur') 2 2, pointer";
   }
   
-  static UISymbol add(Vector position, String imageID, int keyCode, int size, int packets, int radius) {
-    UISymbol symbol = new UISymbol(position, imageID, keyCode, size, packets, radius);
+  static UISymbol add(Vector position, Building template, int keyCode) {
+    UISymbol symbol = new UISymbol(position, template, keyCode);
     symbols.add(symbol);
     return symbol;
   }
@@ -92,23 +92,23 @@ class UISymbol {
     }
     context.fillRect(rectangle.left + 1, rectangle.top + 1, rectangle.width, rectangle.height);
 
-    context.drawImageScaled(engine.images[imageID], rectangle.left + 24, rectangle.top + 20, 32, 32); // scale buildings to 32x32
+    context.drawImageScaled(engine.images[building.type], rectangle.left + 24, rectangle.top + 20, 32, 32); // scale buildings to 32x32
     
     // draw cannon gun and ships
-    if (imageID == "cannon")
+    if (building.type == "cannon")
       context.drawImageScaled(engine.images["cannongun"], rectangle.left + 24, rectangle.top + 20, 32, 32);
-    if (imageID == "bomber")
+    if (building.type == "bomber")
       context.drawImageScaled(engine.images["bombership"], rectangle.left + 24, rectangle.top + 20, 32, 32);
     
     context
       ..fillStyle = '#fff'
       ..font = '10px'
       ..textAlign = 'center'
-      ..fillText(imageID.substring(0, 1).toUpperCase() + imageID.substring(1), rectangle.left + (rectangle.width / 2), rectangle.top + 15)
+      ..fillText(building.type.substring(0, 1).toUpperCase() + building.type.substring(1), rectangle.left + (rectangle.width / 2), rectangle.top + 15)
       ..textAlign = 'left'
       ..fillText("(${new String.fromCharCode(keyCode)})", rectangle.left + 5, rectangle.top + 50)
       ..textAlign = 'right'
-      ..fillText(packets.toString(), rectangle.left + rectangle.width - 5, rectangle.top + 50);
+      ..fillText(building.maxHealth.toString(), rectangle.left + rectangle.width - 5, rectangle.top + 50);
   }
 
 }

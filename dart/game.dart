@@ -285,17 +285,17 @@ class Game {
   }
 
   void setupUI() {
-    UISymbol.add(new Vector(0, 0), "cannon", KeyCode.Q, 3, 25, 10);
-    UISymbol.add(new Vector(81, 0), "collector", KeyCode.W, 3, 5, 6);
-    UISymbol.add(new Vector(2 * 81, 0), "reactor", KeyCode.E, 3, 50, 0);
-    UISymbol.add(new Vector(3 * 81, 0), "storage", KeyCode.R, 3, 8, 0);
-    UISymbol.add(new Vector(4 * 81, 0), "shield", KeyCode.T, 3, 75, 10);
-    UISymbol.add(new Vector(5 * 81, 0), "analyzer", KeyCode.Z, 3, 80, 10);
-    UISymbol.add(new Vector(0, 56), "relay", KeyCode.A, 3, 10, 8);
-    UISymbol.add(new Vector(81, 56), "mortar", KeyCode.S, 3, 40, 14);
-    UISymbol.add(new Vector(2 * 81, 56), "beam", KeyCode.D, 3, 20, 20);
-    UISymbol.add(new Vector(3 * 81, 56), "bomber", KeyCode.F, 3, 75, 0);
-    UISymbol.add(new Vector(4 * 81, 56), "terp", KeyCode.G, 3, 60, 20);
+    UISymbol.add(new Vector(0, 0), new Building.template("cannon"), KeyCode.Q);
+    UISymbol.add(new Vector(81, 0), new Building.template("collector"), KeyCode.W);
+    UISymbol.add(new Vector(2 * 81, 0), new Building.template("reactor"), KeyCode.E);
+    UISymbol.add(new Vector(3 * 81, 0), new Building.template("storage"), KeyCode.R);
+    UISymbol.add(new Vector(4 * 81, 0), new Building.template("shield"), KeyCode.T);
+    UISymbol.add(new Vector(5 * 81, 0), new Building.template("analyzer"), KeyCode.Z);
+    UISymbol.add(new Vector(0, 56), new Building.template("relay"), KeyCode.A);
+    UISymbol.add(new Vector(81, 56), new Building.template("mortar"), KeyCode.S);
+    UISymbol.add(new Vector(2 * 81, 56), new Building.template("beam"), KeyCode.D);
+    UISymbol.add(new Vector(3 * 81, 56), new Building.template("bomber"), KeyCode.F);
+    UISymbol.add(new Vector(4 * 81, 56), new Building.template("terp"), KeyCode.G);
   }
 
   /**
@@ -562,25 +562,25 @@ class Game {
   }
 
   /**
-   * Checks if a [building] with its [size] can be placed on a given [position]. // tileposition
+   * Checks if a [building] can be placed on a given [position]. // tileposition
    */
-  bool canBePlaced(Vector position, num size, [Building building]) {
+  bool canBePlaced(Vector position, Building building) {
 
     if (game.world.contains(position)) {
       int height = game.world.tiles[position.x][position.y].height;
       
-      Rectangle currentRect = new Rectangle(position.x * tileSize + 8 - size * tileSize / 2,
-                                            position.y * tileSize + 8 - size * tileSize / 2,
-                                            size * tileSize - 1,
-                                            size * tileSize - 1);  
+      Rectangle currentRect = new Rectangle(position.x * tileSize + 8 - building.size * tileSize / 2,
+                                            position.y * tileSize + 8 - building.size * tileSize / 2,
+                                            building.size * tileSize - 1,
+                                            building.size * tileSize - 1);  
           
       if (Building.collision(currentRect, building) ||
           Emitter.collision(currentRect) ||
           Sporetower.collision(currentRect)) return false;
            
       // check if all tiles have the same height and are not corners
-      for (int i = position.x - (size ~/ 2); i <= position.x + (size ~/ 2); i++) {
-        for (int j = position.y - (size ~/ 2); j <= position.y + (size ~/ 2); j++) {
+      for (int i = position.x - (building.size ~/ 2); i <= position.x + (building.size ~/ 2); i++) {
+        for (int j = position.y - (building.size ~/ 2); j <= position.y + (building.size ~/ 2); j++) {
           if (world.contains(new Vector(i, j))) {
             int tileHeight = game.world.tiles[i][j].height;
             if (tileHeight < 0 || tileHeight != height) {
@@ -651,13 +651,12 @@ class Game {
   }
 
   /**
-   * Draws the range boxes around the [position] of a building
-   * with a given [type], [radius] and [size].
+   * Draws the range boxes around the [position] of a building.
    */
-  void drawRangeBoxes(Vector position, String type, num radius, num size) {
+  void drawRangeBoxes(Vector position, Building building) {
     CanvasRenderingContext2D context = engine.renderer["buffer"].context;
     
-    if (canBePlaced(position, size, null) && (type == "collector" || type == "cannon" || type == "mortar" || type == "shield" || type == "beam" || type == "terp" || type == "analyzer")) {
+    if (canBePlaced(position, building) && (building.type == "collector" || building.type == "cannon" || building.type == "mortar" || building.type == "shield" || building.type == "beam" || building.type == "terp" || building.type == "analyzer")) {
 
       Vector positionCenter = new Vector(position.x * tileSize + (tileSize / 2), position.y * tileSize + (tileSize / 2));
       int positionHeight = game.world.tiles[position.x][position.y].height;
@@ -665,8 +664,8 @@ class Game {
       context.save();
       context.globalAlpha = .35;
 
-      for (int i = -radius; i <= radius; i++) {
-        for (int j = -radius; j <= radius; j++) {
+      for (int i = -building.weaponRadius; i <= building.weaponRadius; i++) {
+        for (int j = -building.weaponRadius; j <= building.weaponRadius; j++) {
 
           Vector positionCurrent = position + new Vector(i, j);
 
@@ -676,10 +675,10 @@ class Game {
             
             int positionCurrentHeight = game.world.tiles[positionCurrent.x][positionCurrent.y].height;
 
-            if (positionCenter.distanceTo(positionCurrentCenter) < radius * tileSize) {
+            if (positionCenter.distanceTo(positionCurrentCenter) < building.weaponRadius * tileSize) {
               context.fillStyle = "#fff";
-              if ((type == "collector" && positionCurrentHeight != positionHeight) ||
-                  (type == "cannon" && positionCurrentHeight > positionHeight))
+              if ((building.type == "collector" && positionCurrentHeight != positionHeight) ||
+                  (building.type == "cannon" && positionCurrentHeight > positionHeight))
                 context.fillStyle = "#f00";
               context.fillRect(drawPositionCurrent.x, drawPositionCurrent.y, tileSize * zoom, tileSize * zoom);
             }
@@ -875,9 +874,9 @@ class Game {
         num distance = start.distanceTo(end);
         
         num buildingDistance = 3;
-        if (UISymbol.activeSymbol.imageID == "collector")
+        if (UISymbol.activeSymbol.building.type == "collector")
           buildingDistance = 9;
-        else if (UISymbol.activeSymbol.imageID == "relay")
+        else if (UISymbol.activeSymbol.building.type == "relay")
           buildingDistance = 18;
       
         num times = (distance / buildingDistance).floor() + 1;
@@ -908,22 +907,22 @@ class Game {
       for (int i = 0; i < ghosts.length; i++) {
         Vector positionScrolled = new Vector(ghosts[i].x, ghosts[i].y);
         Vector drawPosition = positionScrolled.tiled2screen();
-        Vector ghostICenter = drawPosition + new Vector(8 * zoom, 8 * zoom); //new Vector(positionScrolled.x * tileSize + 8 * zoom, positionScrolled.y * tileSize + 8 * zoom);
+        Vector ghostICenter = drawPosition + new Vector(8 * zoom, 8 * zoom);
   
-        drawRangeBoxes(positionScrolled, UISymbol.activeSymbol.imageID, UISymbol.activeSymbol.radius, UISymbol.activeSymbol.size);
+        drawRangeBoxes(positionScrolled, UISymbol.activeSymbol.building);
   
         if (world.contains(positionScrolled)) {
           context.save();
           context.globalAlpha = .5;
   
           // draw building
-          context.drawImageScaled(engine.images[UISymbol.activeSymbol.imageID], drawPosition.x - tileSize * zoom, drawPosition.y - tileSize * zoom, UISymbol.activeSymbol.size * tileSize * zoom, UISymbol.activeSymbol.size * tileSize * zoom);
-          if (UISymbol.activeSymbol.imageID == "cannon")
+          context.drawImageScaled(engine.images[UISymbol.activeSymbol.building.type], drawPosition.x - tileSize * zoom, drawPosition.y - tileSize * zoom, UISymbol.activeSymbol.building.size * tileSize * zoom, UISymbol.activeSymbol.building.size * tileSize * zoom);
+          if (UISymbol.activeSymbol.building.type == "cannon")
             context.drawImageScaled(engine.images["cannongun"], drawPosition.x - tileSize * zoom, drawPosition.y - tileSize * zoom, 48 * zoom, 48 * zoom);
   
           // draw green or red box
           // make sure there isn't a building on this tile yet
-          bool ghostCanBePlaced = canBePlaced(positionScrolled, UISymbol.activeSymbol.size, null);
+          bool ghostCanBePlaced = canBePlaced(positionScrolled, UISymbol.activeSymbol.building);
 
           if (ghostCanBePlaced) {
             context.strokeStyle = "#0f0";
@@ -931,19 +930,19 @@ class Game {
             context.strokeStyle = "#f00";
           }
           context.lineWidth = 4 * zoom;
-          context.strokeRect(drawPosition.x - tileSize * zoom, drawPosition.y - tileSize * zoom, tileSize * UISymbol.activeSymbol.size * zoom, tileSize * UISymbol.activeSymbol.size * zoom);
+          context.strokeRect(drawPosition.x - tileSize * zoom, drawPosition.y - tileSize * zoom, tileSize * UISymbol.activeSymbol.building.size * zoom, tileSize * UISymbol.activeSymbol.building.size * zoom);
   
           context.restore();
 
           if (ghostCanBePlaced) {
             // draw lines to other buildings
             for (int j = 0; j < Building.buildings.length; j++) {
-              if (UISymbol.activeSymbol.imageID == "collector" || UISymbol.activeSymbol.imageID == "relay" ||
+              if (UISymbol.activeSymbol.building.type == "collector" || UISymbol.activeSymbol.building.type == "relay" ||
                   Building.buildings[j].type == "collector" || Building.buildings[j].type == "relay" || Building.buildings[j].type == "base") {
                 Vector buildingCenter = Building.buildings[j].position.real2screen();
 
                 int allowedDistance = 10 * tileSize;
-                if (Building.buildings[j].type == "relay" && UISymbol.activeSymbol.imageID == "relay") {
+                if (Building.buildings[j].type == "relay" && UISymbol.activeSymbol.building.type == "relay") {
                   allowedDistance = 20 * tileSize;
                 }
 
@@ -969,11 +968,11 @@ class Game {
             // draw lines to other ghosts
             for (int j = 0; j < ghosts.length; j++) {
               if (j != i) {
-                if (UISymbol.activeSymbol.imageID == "collector" || UISymbol.activeSymbol.imageID == "relay") {
+                if (UISymbol.activeSymbol.building.type == "collector" || UISymbol.activeSymbol.building.type == "relay") {
                   Vector ghostKCenter = ghosts[j].tiled2screen() + new Vector(8 * game.zoom, 8 * game.zoom);
 
                   int allowedDistance = 10 * tileSize;
-                  if (UISymbol.activeSymbol.imageID == "relay") {
+                  if (UISymbol.activeSymbol.building.type == "relay") {
                     allowedDistance = 20 * tileSize;
                   }
 
