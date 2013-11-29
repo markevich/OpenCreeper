@@ -1,9 +1,9 @@
 name: OpenCreeper
-version: 1.3.4
+version: 1.0.0
 author: Alexander Zeillinger <alexanderzeillinger@gmail.com>
 description: An open source Creeper World like game.
 homepage: http://alexanderzeillinger.github.com/OpenCreeper/
 environment:
   sdk: '>=0.8.10+6 <2.0.0'
 dependencies:
-  browser: any
+  browser: ">=0.9.0 <0.9.1"
