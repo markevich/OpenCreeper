@@ -53,9 +53,9 @@ class Ship {
       if (ships[i].hovered) {
         ships[i].selected = true;
         ships[i].selectedCircle.visible = true;
+        game.targetCursor.visible = true;
       }
     }
-    game.targetCursor.visible = true;
   }
   
   static void deselect() {
