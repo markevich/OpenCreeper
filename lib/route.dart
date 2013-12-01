@@ -5,7 +5,7 @@ part of creeper;
  */
 
 class Route {
-  num distanceTravelled = 0, distanceRemaining = 0;
+  double distanceTravelled = 0.0, distanceRemaining = 0.0;
   List<Building> nodes = new List<Building>();
   bool remove = false;
   
