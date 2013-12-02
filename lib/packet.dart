@@ -246,7 +246,7 @@ class Packet {
 
       // sort routes by total underestimate so that the possibly shortest route gets checked first
       routes.sort((Route a, Route b) {
-        return ((a.distanceTravelled + a.distanceRemaining) - (b.distanceTravelled + b.distanceRemaining)).toInt();
+        return ((a.distanceTravelled + a.distanceRemaining) - (b.distanceTravelled + b.distanceRemaining)).compareTo(0);
       });
     }
 
