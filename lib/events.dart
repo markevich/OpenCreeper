@@ -13,12 +13,11 @@ void onMouseMove(MouseEvent evt) {
   
   // flag for terraforming
   if (engine.mouse.buttonPressed == 1) {
-    if (game.mode == "TERRAFORM") {
-      Vector hoveredTilePosition = game.getHoveredTilePosition();   
-      if (game.world.contains(hoveredTilePosition)) {
+    if (game.mode == "TERRAFORM") { 
+      if (game.world.contains(game.hoveredTile)) {
         
-        Rectangle currentRect = new Rectangle(hoveredTilePosition.x * game.tileSize,
-                                              hoveredTilePosition.y * game.tileSize,
+        Rectangle currentRect = new Rectangle(game.hoveredTile.x * game.tileSize,
+                                              game.hoveredTile.y * game.tileSize,
                                               game.tileSize - 1,
                                               game.tileSize - 1); 
         
@@ -26,7 +25,7 @@ void onMouseMove(MouseEvent evt) {
         if (!Building.collision(currentRect) &&
             !Emitter.collision(currentRect) &&
             !Sporetower.collision(currentRect)) {
-          game.world.tiles[hoveredTilePosition.x][hoveredTilePosition.y].flagTerraform(hoveredTilePosition * game.tileSize);
+          game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].flagTerraform(game.hoveredTile * game.tileSize);
         }
       }
     }
@@ -83,71 +82,69 @@ void onKeyDown(KeyboardEvent evt) {
   if (evt.keyCode == KeyCode.DOWN)
     game.keyScrolling.y = 1;
 
-  Vector position = game.getHoveredTilePosition();
-
   // DEBUG: add explosion
   if (evt.keyCode == KeyCode.V) {
-    Explosion.add(new Vector(position.x * game.tileSize + 8, position.y * game.tileSize + 8));
-    engine.playSound("explosion", position);
+    Explosion.add(new Vector(game.hoveredTile.x * game.tileSize + 8, game.hoveredTile.y * game.tileSize + 8));
+    engine.playSound("explosion", game.hoveredTile);
   }
   
   // DEBUG: lower terrain
   if (evt.keyCode == KeyCode.N) {
-    if (game.world.tiles[position.x][position.y].height > -1) {
-      game.world.tiles[position.x][position.y].height--;
+    if (game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].height > -1) {
+      game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].height--;
       List tilesToRedraw = new List();
       tilesToRedraw
-        ..add(new Vector(position.x, position.y))
-        ..add(new Vector(position.x - 1, position.y))
-        ..add(new Vector(position.x, position.y - 1))
-        ..add(new Vector(position.x + 1, position.y))
-        ..add(new Vector(position.x, position.y + 1));
+        ..add(new Vector(game.hoveredTile.x, game.hoveredTile.y))
+        ..add(new Vector(game.hoveredTile.x - 1, game.hoveredTile.y))
+        ..add(new Vector(game.hoveredTile.x, game.hoveredTile.y - 1))
+        ..add(new Vector(game.hoveredTile.x + 1, game.hoveredTile.y))
+        ..add(new Vector(game.hoveredTile.x, game.hoveredTile.y + 1));
       game.redrawTerrain(tilesToRedraw);
     }
   }
 
   // DEBUG: raise terrain
   if (evt.keyCode == KeyCode.M) {
-    if (game.world.tiles[position.x][position.y].height < 9) {
-      game.world.tiles[position.x][position.y].height++;
+    if (game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].height < 9) {
+      game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].height++;
       List tilesToRedraw = new List();
       tilesToRedraw
-        ..add(new Vector(position.x, position.y))
-        ..add(new Vector(position.x - 1, position.y))
-        ..add(new Vector(position.x, position.y - 1))
-        ..add(new Vector(position.x + 1, position.y))
-        ..add(new Vector(position.x, position.y + 1));
+        ..add(new Vector(game.hoveredTile.x, game.hoveredTile.y))
+        ..add(new Vector(game.hoveredTile.x - 1, game.hoveredTile.y))
+        ..add(new Vector(game.hoveredTile.x, game.hoveredTile.y - 1))
+        ..add(new Vector(game.hoveredTile.x + 1, game.hoveredTile.y))
+        ..add(new Vector(game.hoveredTile.x, game.hoveredTile.y + 1));
       game.redrawTerrain(tilesToRedraw);
     }
   }
 
   // DEBUG: clear terrain
   if (evt.keyCode == KeyCode.B) {
-    game.world.tiles[position.x][position.y].height = -1;
+    game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].height = -1;
     List tilesToRedraw = new List();
     tilesToRedraw
-      ..add(new Vector(position.x, position.y))
-      ..add(new Vector(position.x - 1, position.y))
-      ..add(new Vector(position.x, position.y - 1))
-      ..add(new Vector(position.x + 1, position.y))
-      ..add(new Vector(position.x, position.y + 1));
+      ..add(new Vector(game.hoveredTile.x, game.hoveredTile.y))
+      ..add(new Vector(game.hoveredTile.x - 1, game.hoveredTile.y))
+      ..add(new Vector(game.hoveredTile.x, game.hoveredTile.y - 1))
+      ..add(new Vector(game.hoveredTile.x + 1, game.hoveredTile.y))
+      ..add(new Vector(game.hoveredTile.x, game.hoveredTile.y + 1));
     game.redrawTerrain(tilesToRedraw);
   }
 
   // DEBUG: add creeper
   if (evt.keyCode == KeyCode.X) {
-    if (game.world.tiles[position.x][position.y].height > -1) {
-      game.world.tiles[position.x][position.y].creep++;
+    if (game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].height > -1) {
+      game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].creep++;
       World.creeperDirty = true;
     }
   }
 
   // DEBUG: remove creeper
   if (evt.keyCode == KeyCode.C) {
-    if (game.world.tiles[position.x][position.y].creep > 0) {
-      game.world.tiles[position.x][position.y].creep--;
-      if (game.world.tiles[position.x][position.y].creep < 0)
-        game.world.tiles[position.x][position.y].creep = 0;
+    if (game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].creep > 0) {
+      game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].creep--;
+      if (game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].creep < 0)
+        game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].creep = 0;
       World.creeperDirty = true;
     }
   }
@@ -157,7 +154,7 @@ void onKeyDown(KeyboardEvent evt) {
 
     // remove terraform
     if (evt.keyCode == KeyCode.DELETE) {
-      game.world.tiles[position.x][position.y].unflagTerraform();
+      game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].unflagTerraform();
     }
 
     // set terraform value
@@ -207,18 +204,17 @@ void onMouseDown(MouseEvent evt) {
   engine.mouse.buttonPressed = evt.which;
   
   if (evt.which == 1) {   
-    Vector hoveredTilePosition = game.getHoveredTilePosition();
     
     if (engine.mouse.dragStart == null) {
-      engine.mouse.dragStart = hoveredTilePosition;
+      engine.mouse.dragStart = game.hoveredTile;
     }  
     
     // flag for terraforming 
     if (game.mode == "TERRAFORM") {
-      if (game.world.contains(hoveredTilePosition)) {
+      if (game.world.contains(game.hoveredTile)) {
         
-        Rectangle currentRect = new Rectangle(hoveredTilePosition.x * game.tileSize,
-                                              hoveredTilePosition.y * game.tileSize,
+        Rectangle currentRect = new Rectangle(game.hoveredTile.x * game.tileSize,
+            game.hoveredTile.y * game.tileSize,
                                               game.tileSize - 1,
                                               game.tileSize - 1); 
         
@@ -226,7 +222,7 @@ void onMouseDown(MouseEvent evt) {
         if (!Building.collision(currentRect) &&
             !Emitter.collision(currentRect) &&
             !Sporetower.collision(currentRect)) {
-          game.world.tiles[hoveredTilePosition.x][hoveredTilePosition.y].flagTerraform(hoveredTilePosition * game.tileSize);
+          game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].flagTerraform(game.hoveredTile * game.tileSize);
         }
       }
     }
@@ -238,10 +234,8 @@ void onMouseUp(MouseEvent evt) {
   
   if (evt.which == 1) {
 
-    Vector hoveredTilePosition = game.getHoveredTilePosition();
-
-    Ship.control(hoveredTilePosition);
-    Building.reposition(hoveredTilePosition);
+    Ship.control(game.hoveredTile);
+    Building.reposition(game.hoveredTile);
     Building.select();
 
     engine.mouse.dragStart = null;

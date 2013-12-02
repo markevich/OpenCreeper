@@ -4,7 +4,7 @@ class Mouse {
   Vector position = new Vector.empty();
   bool active = true;
   int buttonPressed = 0;
-  Vector dragStart, dragEnd;
+  Vector dragStart;
   
   Mouse();
   
@@ -165,7 +165,10 @@ class Engine {
     mouse.position.x = (evt.client.x - renderer["main"].view.getBoundingClientRect().left).toInt();
     mouse.position.y = (evt.client.y - renderer["main"].view.getBoundingClientRect().top).toInt();
     if (game != null) {
-      mouse.dragEnd = game.getHoveredTilePosition();
+      game.oldHoveredTile = game.hoveredTile;
+      game.hoveredTile = new Vector(
+            ((mouse.position.x - halfWidth) / (game.tileSize * game.zoom)).floor() + game.scroll.x,
+            ((mouse.position.y - halfHeight) / (game.tileSize * game.zoom)).floor() + game.scroll.y);
       game.updateTerraformInfo();   
     }
   }

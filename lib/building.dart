@@ -891,12 +891,11 @@ class Building {
       if (buildings[i].built && buildings[i].selected && buildings[i].canMove) {
         engine.renderer["main"].view.style.cursor = "none";
         
-        Vector hoveredTilePosition = game.getHoveredTilePosition();
-        Vector positionI = hoveredTilePosition.tiled2screen() + new Vector(8 * game.zoom, 8 * game.zoom);
+        Vector positionI = game.hoveredTile.tiled2screen() + new Vector(8 * game.zoom, 8 * game.zoom);
    
-        game.drawRangeBoxes(hoveredTilePosition, buildings[i]);
+        game.drawRangeBoxes(game.hoveredTile, buildings[i]);
   
-        bool canBePlaced = game.canBePlaced(hoveredTilePosition, buildings[i]);
+        bool canBePlaced = game.canBePlaced(game.hoveredTile, buildings[i]);
 
         if (canBePlaced)
           context.fillStyle = "rgba(0,255,0,0.5)";
@@ -928,14 +927,9 @@ class Building {
                     ..beginPath()
                     ..moveTo(positionJ.x, positionJ.y)
                     ..lineTo(positionI.x, positionI.y)
-                    ..stroke();
-
-                  context
+                    ..stroke()
                     ..strokeStyle = '#0f0'
                     ..lineWidth = 2 * game.zoom
-                    ..beginPath()
-                    ..moveTo(positionJ.x, positionJ.y)
-                    ..lineTo(positionI.x, positionI.y)
                     ..stroke();
                 }
               }

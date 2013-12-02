@@ -9,7 +9,7 @@ class Game {
   bool paused = false, won = false;
   List<Vector> ghosts = new List<Vector>();
   World world;
-  Vector scroll = new Vector.empty(), mouseScrolling = new Vector.empty(), keyScrolling = new Vector.empty();
+  Vector scroll = new Vector.empty(), mouseScrolling = new Vector.empty(), keyScrolling = new Vector.empty(), oldHoveredTile = new Vector.empty(), hoveredTile = new Vector.empty();
   Stopwatch stopwatch = new Stopwatch();
   Line tfLine1, tfLine2, tfLine3, tfLine4;
   Sprite tfNumber;
@@ -107,15 +107,6 @@ class Game {
     String minute = (m <= 9) ? '0$m' : '$m';
     String second = (s <= 9) ? '0$s' : '$s';
     querySelector('#time').innerHtml = 'Time: $minute:$second';
-  }
-
-  /**
-   *  Returns the position of the tile the mouse is hovering above
-   */
-  Vector getHoveredTilePosition() {
-    return new Vector(
-        ((engine.mouse.position.x - engine.halfWidth) / (tileSize * zoom)).floor() + scroll.x,
-        ((engine.mouse.position.y - engine.halfHeight) / (tileSize * zoom)).floor() + scroll.y);
   }
 
   void pause() {
@@ -574,6 +565,7 @@ class Game {
                                             building.size * tileSize - 1,
                                             building.size * tileSize - 1);  
           
+      // TODO: check for ghost collision
       if (Building.collision(currentRect, building) ||
           Emitter.collision(currentRect) ||
           Sporetower.collision(currentRect)) return false;
@@ -814,43 +806,44 @@ class Game {
   }
   
   void updateTerraformInfo() {
-    Vector position = getHoveredTilePosition();
-    if (world.contains(position)) {   
-      if (mode == "TERRAFORM") {
-        Vector drawPosition = position * tileSize;
-        tfLine1
-          ..from = new Vector(0, drawPosition.y)
-          ..to = new Vector(world.size.y * tileSize, drawPosition.y)
-          ..visible = true;
-        tfLine2
-          ..from = new Vector(0, drawPosition.y + tileSize)
-          ..to = new Vector(world.size.y * tileSize, drawPosition.y + tileSize)
-          ..visible = true;
-        tfLine3
-          ..from = new Vector(drawPosition.x, 0)
-          ..to = new Vector(drawPosition.x, world.size.y * tileSize)
-          ..visible = true;
-        tfLine4
-          ..from = new Vector(drawPosition.x + tileSize, 0)
-          ..to = new Vector(drawPosition.x + tileSize, world.size.y * tileSize)
-          ..visible = true;
-        tfNumber
-          ..position = position * tileSize
-          ..visible = true;       
+    if (hoveredTile != oldHoveredTile) {
+      if (world.contains(hoveredTile)) {   
+        if (mode == "TERRAFORM") {
+          Vector drawPosition = hoveredTile * tileSize;
+          tfLine1
+            ..from = new Vector(0, drawPosition.y)
+            ..to = new Vector(world.size.y * tileSize, drawPosition.y)
+            ..visible = true;
+          tfLine2
+            ..from = new Vector(0, drawPosition.y + tileSize)
+            ..to = new Vector(world.size.y * tileSize, drawPosition.y + tileSize)
+            ..visible = true;
+          tfLine3
+            ..from = new Vector(drawPosition.x, 0)
+            ..to = new Vector(drawPosition.x, world.size.y * tileSize)
+            ..visible = true;
+          tfLine4
+            ..from = new Vector(drawPosition.x + tileSize, 0)
+            ..to = new Vector(drawPosition.x + tileSize, world.size.y * tileSize)
+            ..visible = true;
+          tfNumber
+            ..position = hoveredTile * tileSize
+            ..visible = true;       
+        } else {
+          tfLine1.visible = false;
+          tfLine2.visible = false;
+          tfLine3.visible = false;
+          tfLine4.visible = false;
+          tfNumber.visible = false;
+        }      
+        targetCursor.position = (hoveredTile * tileSize) + new Vector(8, 8);
       } else {
         tfLine1.visible = false;
         tfLine2.visible = false;
         tfLine3.visible = false;
         tfLine4.visible = false;
         tfNumber.visible = false;
-      }      
-      targetCursor.position = (position * tileSize) + new Vector(8, 8);
-    } else {
-      tfLine1.visible = false;
-      tfLine2.visible = false;
-      tfLine3.visible = false;
-      tfLine4.visible = false;
-      tfNumber.visible = false;
+      }
     }
   }
 
@@ -863,43 +856,46 @@ class Game {
     if (UISymbol.activeSymbol != null) {
       CanvasRenderingContext2D context = engine.renderer["buffer"].context;
       
-      ghosts = new List(); // ghosts are all the placeholders to build
-      
-      // calculate multiple ghosts when dragging
-      if (engine.mouse.dragStart != null) {
-  
-        Vector start = engine.mouse.dragStart;
-        Vector end = engine.mouse.dragEnd;
-        Vector delta = end - start;
-        num distance = start.distanceTo(end);
+      // only recalculate ghosts when the hovered tile has changed
+      if (game.hoveredTile != game.oldHoveredTile) {
         
-        num buildingDistance = 3;
-        if (UISymbol.activeSymbol.building.type == "collector")
-          buildingDistance = 9;
-        else if (UISymbol.activeSymbol.building.type == "relay")
-          buildingDistance = 18;
-      
-        num times = (distance / buildingDistance).floor() + 1;
-  
-        ghosts.add(start);
-  
-        for (int i = 1; i < times; i++) {
-          num newX = (start.x + (delta.x / distance) * i * buildingDistance).floor();
-          num newY = (start.y + (delta.y / distance) * i * buildingDistance).floor();
-  
-          if (world.contains(new Vector(newX, newY))) {
-            Vector ghost = new Vector(newX, newY);
-            ghosts.add(ghost);
+        ghosts = new List(); // ghosts are all the placeholders to build
+        
+        // calculate multiple ghosts when dragging
+        if (engine.mouse.dragStart != null) {
+    
+          Vector start = engine.mouse.dragStart;
+          Vector end = hoveredTile;
+          Vector delta = end - start;
+          num distance = start.distanceTo(end);
+          
+          num buildingDistance = 3;
+          if (UISymbol.activeSymbol.building.type == "collector")
+            buildingDistance = 9;
+          else if (UISymbol.activeSymbol.building.type == "relay")
+            buildingDistance = 18;
+        
+          num times = distance ~/ buildingDistance + 1;
+    
+          ghosts.add(start);
+    
+          for (int i = 1; i < times; i++) {
+            num newX = (start.x + (delta.x / distance) * i * buildingDistance).floor();
+            num newY = (start.y + (delta.y / distance) * i * buildingDistance).floor();
+    
+            if (world.contains(new Vector(newX, newY))) {
+              Vector ghost = new Vector(newX, newY);
+              ghosts.add(ghost);
+            }
           }
-        }
-        if (world.contains(end)) {
-          ghosts.add(end);
-        }
-      } else { // single ghost at cursor position
-        if (engine.mouse.active) {
-          Vector position = getHoveredTilePosition();
-          if (world.contains(position)) {
-            ghosts.add(position);
+          if (world.contains(end)) {
+            ghosts.add(end);
+          }
+        } else { // single ghost at cursor position
+          if (engine.mouse.active) {
+            if (world.contains(game.hoveredTile)) {
+              ghosts.add(game.hoveredTile);
+            }
           }
         }
       }
@@ -953,14 +949,9 @@ class Game {
                     ..beginPath()
                     ..moveTo(buildingCenter.x, buildingCenter.y)
                     ..lineTo(ghostICenter.x, ghostICenter.y)
-                    ..stroke();
-
-                  context
+                    ..stroke()
                     ..strokeStyle = '#0f0'
                     ..lineWidth = 2 * game.zoom
-                    ..beginPath()
-                    ..moveTo(buildingCenter.x, buildingCenter.y)
-                    ..lineTo(ghostICenter.x, ghostICenter.y)
                     ..stroke();
                 }
               }
@@ -984,14 +975,9 @@ class Game {
                       ..beginPath()
                       ..moveTo(ghostKCenter.x, ghostKCenter.y)
                       ..lineTo(ghostJCenter.x, ghostJCenter.y)
-                      ..stroke();
-
-                    context
+                      ..stroke()
                       ..strokeStyle = '#fff'
                       ..lineWidth = 1 * game.zoom
-                      ..beginPath()
-                      ..moveTo(ghostKCenter.x, ghostKCenter.y)
-                      ..lineTo(ghostJCenter.x, ghostJCenter.y)
                       ..stroke();
                   }
                 }
@@ -1010,16 +996,14 @@ class Game {
   void drawGUI() {
     CanvasRenderingContext2D context = engine.renderer["gui"].context;
     
-    Vector position = getHoveredTilePosition();
-
     engine.renderer["gui"].clear();
     for (int i = 0; i < UISymbol.symbols.length; i++) {
       UISymbol.symbols[i].draw();
     }
 
-    if (world.contains(position)) {
+    if (world.contains(game.hoveredTile)) {
 
-      num total = world.tiles[position.x][position.y].creep;
+      num total = world.tiles[game.hoveredTile.x][game.hoveredTile.y].creep;
 
       // draw height and creep meter
       context
@@ -1029,9 +1013,9 @@ class Game {
         ..strokeStyle = '#fff'
         ..lineWidth = 1
         ..fillStyle = "rgba(205, 133, 63, 1)"
-        ..fillRect(555, 110, 25, -game.world.tiles[getHoveredTilePosition().x][getHoveredTilePosition().y].height * 10 - 10)
+        ..fillRect(555, 110, 25, -game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].height * 10 - 10)
         ..fillStyle = "rgba(100, 150, 255, 1)"
-        ..fillRect(555, 110 - game.world.tiles[getHoveredTilePosition().x][getHoveredTilePosition().y].height * 10 - 10, 25, -total * 10)
+        ..fillRect(555, 110 - game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].height * 10 - 10, 25, -total * 10)
         ..fillStyle = "rgba(255, 255, 255, 1)";
       for (int i = 1; i < 11; i++) {
         context
@@ -1065,7 +1049,6 @@ class Game {
 
     if (engine.mouse.active) {
 
-      // if a building is built and selected draw a green box and a line to the mouse position as the reposition target
       Building.drawRepositionInfo();
       drawPositionInfo();
           
