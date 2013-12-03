@@ -900,13 +900,12 @@ class Game {
       CanvasRenderingContext2D context = engine.renderer["buffer"].context;
        
       for (int i = 0; i < ghosts.length; i++) {
-        Vector positionScrolled = new Vector(ghosts[i].x, ghosts[i].y);
-        Vector drawPosition = positionScrolled.tiled2screen();
+        Vector drawPosition = ghosts[i].tiled2screen();
         Vector ghostICenter = drawPosition + new Vector(8 * zoom, 8 * zoom);
   
-        drawRangeBoxes(positionScrolled, UISymbol.activeSymbol.building);
+        drawRangeBoxes(ghosts[i], UISymbol.activeSymbol.building);
   
-        if (world.contains(positionScrolled)) {
+        if (world.contains(ghosts[i])) {
           context.save();
           context.globalAlpha = .5;
   
@@ -917,7 +916,7 @@ class Game {
   
           // draw green or red box
           // make sure there isn't a building on this tile yet
-          bool ghostCanBePlaced = canBePlaced(positionScrolled, UISymbol.activeSymbol.building);
+          bool ghostCanBePlaced = canBePlaced(ghosts[i], UISymbol.activeSymbol.building);
 
           if (ghostCanBePlaced) {
             context.strokeStyle = "#0f0";
