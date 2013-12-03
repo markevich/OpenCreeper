@@ -169,7 +169,7 @@ class Engine {
       game.hoveredTile = new Vector(
             ((mouse.position.x - halfWidth) / (game.tileSize * game.zoom)).floor() + game.scroll.x,
             ((mouse.position.y - halfHeight) / (game.tileSize * game.zoom)).floor() + game.scroll.y);
-      game.updateTerraformInfo();   
+      game.updateVariousInfo();   
     }
   }
  

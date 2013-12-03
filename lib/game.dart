@@ -637,7 +637,7 @@ class Game {
     if (mouseScrolling.x != 0 || mouseScrolling.y != 0 || keyScrolling.x != 0 || keyScrolling.y != 0) {
       copyTerrain();
       drawCollection();
-      updateTerraformInfo();
+      updateVariousInfo();
       World.creeperDirty = true;
     }
   }
@@ -805,8 +805,10 @@ class Game {
     engine.renderer["creeper"].context.drawImage(engine.renderer["creeperbuffer"].view, 0, 0);
   }
   
-  void updateTerraformInfo() {
+  void updateVariousInfo() {
     if (hoveredTile != oldHoveredTile) {
+      
+      // update terraform info
       if (world.contains(hoveredTile)) {   
         if (mode == "TERRAFORM") {
           Vector drawPosition = hoveredTile * tileSize;
@@ -844,6 +846,47 @@ class Game {
         tfLine4.visible = false;
         tfNumber.visible = false;
       }
+      
+      // recalculate ghosts (semi-transparent building when placing a new building)
+      ghosts.clear(); // ghosts are all the placeholders to build
+      
+      // calculate multiple ghosts when dragging
+      if (engine.mouse.dragStart != null) {
+        
+        Vector start = engine.mouse.dragStart;
+        Vector end = hoveredTile;
+        Vector delta = end - start;
+        num distance = start.distanceTo(end);
+        
+        num buildingDistance = 3;
+        if (UISymbol.activeSymbol.building.type == "collector")
+          buildingDistance = 9;
+        else if (UISymbol.activeSymbol.building.type == "relay")
+          buildingDistance = 18;
+        
+        num times = distance ~/ buildingDistance + 1;
+        
+        ghosts.add(start);
+        
+        for (int i = 1; i < times; i++) {
+          Vector ghostPosition = new Vector(
+              (start.x + (delta.x / distance) * i * buildingDistance).floor(),
+              (start.y + (delta.y / distance) * i * buildingDistance).floor());
+          
+          if (world.contains(ghostPosition)) {
+            ghosts.add(ghostPosition);
+          }
+        }
+        if (world.contains(end)) {
+          ghosts.add(end);
+        }
+      } else { // single ghost at cursor position
+        if (engine.mouse.active) {
+          if (world.contains(game.hoveredTile)) {
+            ghosts.add(game.hoveredTile);
+          }
+        }
+      }
     }
   }
 
@@ -852,54 +895,10 @@ class Game {
    * whether it can be build on the current tile, the range as
    * white boxes and connections to other buildings
    */
-  void drawPositionInfo() {
+  void drawGhosts() {
     if (UISymbol.activeSymbol != null) {
       CanvasRenderingContext2D context = engine.renderer["buffer"].context;
-      
-      // only recalculate ghosts when the hovered tile has changed
-      if (game.hoveredTile != game.oldHoveredTile) {
-        
-        ghosts = new List(); // ghosts are all the placeholders to build
-        
-        // calculate multiple ghosts when dragging
-        if (engine.mouse.dragStart != null) {
-    
-          Vector start = engine.mouse.dragStart;
-          Vector end = hoveredTile;
-          Vector delta = end - start;
-          num distance = start.distanceTo(end);
-          
-          num buildingDistance = 3;
-          if (UISymbol.activeSymbol.building.type == "collector")
-            buildingDistance = 9;
-          else if (UISymbol.activeSymbol.building.type == "relay")
-            buildingDistance = 18;
-        
-          num times = distance ~/ buildingDistance + 1;
-    
-          ghosts.add(start);
-    
-          for (int i = 1; i < times; i++) {
-            num newX = (start.x + (delta.x / distance) * i * buildingDistance).floor();
-            num newY = (start.y + (delta.y / distance) * i * buildingDistance).floor();
-    
-            if (world.contains(new Vector(newX, newY))) {
-              Vector ghost = new Vector(newX, newY);
-              ghosts.add(ghost);
-            }
-          }
-          if (world.contains(end)) {
-            ghosts.add(end);
-          }
-        } else { // single ghost at cursor position
-          if (engine.mouse.active) {
-            if (world.contains(game.hoveredTile)) {
-              ghosts.add(game.hoveredTile);
-            }
-          }
-        }
-      }
-  
+       
       for (int i = 0; i < ghosts.length; i++) {
         Vector positionScrolled = new Vector(ghosts[i].x, ghosts[i].y);
         Vector drawPosition = positionScrolled.tiled2screen();
@@ -1050,7 +1049,7 @@ class Game {
     if (engine.mouse.active) {
 
       Building.drawRepositionInfo();
-      drawPositionInfo();
+      drawGhosts();
           
       /*Vector tp = game.getHoveredTilePosition();
       Vector tp2 = tp.tiled2screen();
