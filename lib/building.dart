@@ -942,12 +942,10 @@ class Building {
   }
 
   static void draw() {
-    //drawNodeConnections();
     CanvasRenderingContext2D context = engine.renderer["buffer"].context;
     
     for (int i = 0; i < buildings.length; i++) {
       Vector realPosition = buildings[i].position.real2screen();
-      Vector center = buildings[i].position.real2screen();
   
       if (engine.renderer["buffer"].isVisible(realPosition, new Vector(engine.images[buildings[i].type].width * game.zoom, engine.images[buildings[i].type].height * game.zoom))) { 
         // draw energy bar
@@ -974,7 +972,7 @@ class Building {
           context.lineWidth = 2 * game.zoom;
   
           context.beginPath();
-          context.arc(center.x, center.y, (game.tileSize / 2) * buildings[i].size, 0, PI * 2, true);
+          context.arc(realPosition.x, realPosition.y, (game.tileSize / 2) * buildings[i].size, 0, PI * 2, true);
           context.closePath();
           context.stroke();
   
@@ -993,16 +991,11 @@ class Building {
             ..strokeStyle = '#00f'
             ..lineWidth = 5 * game.zoom
             ..beginPath()
-            ..moveTo(center.x, center.y)
+            ..moveTo(realPosition.x, realPosition.y)
             ..lineTo(targetPosition.x, targetPosition.y)
-            ..stroke();
-  
-          context
+            ..stroke()
             ..strokeStyle = '#fff'
             ..lineWidth = 3 * game.zoom
-            ..beginPath()
-            ..moveTo(center.x, center.y)
-            ..lineTo(targetPosition.x, targetPosition.y)
             ..stroke();
         }
         else if (buildings[i].type == "beam") {
@@ -1011,23 +1004,18 @@ class Building {
             ..strokeStyle = '#f00'
             ..lineWidth = 5 * game.zoom
             ..beginPath()
-            ..moveTo(center.x, center.y)
+            ..moveTo(realPosition.x, realPosition.y)
             ..lineTo(targetPosition.x, targetPosition.y)
-            ..stroke();
-  
-          context
+            ..stroke()
             ..strokeStyle = '#fff'
             ..lineWidth = 3 * game.zoom
-            ..beginPath()
-            ..moveTo(center.x, center.y)
-            ..lineTo(targetPosition.x, targetPosition.y)
             ..stroke();
         }
         else if (buildings[i].type == "shield") {
           context
             ..save()
             ..globalAlpha = .5
-            ..drawImageScaled(engine.images["forcefield"], center.x - 168 * game.zoom, center.y - 168 * game.zoom, 336 * game.zoom, 336 * game.zoom)
+            ..drawImageScaled(engine.images["forcefield"], realPosition.x - 168 * game.zoom, realPosition.y - 168 * game.zoom, 336 * game.zoom, 336 * game.zoom)
             ..restore();
         }
         else if (buildings[i].type == "terp") {
@@ -1037,16 +1025,11 @@ class Building {
             ..strokeStyle = '#f00'
             ..lineWidth = 4 * game.zoom
             ..beginPath()
-            ..moveTo(center.x, center.y)
+            ..moveTo(realPosition.x, realPosition.y)
             ..lineTo(targetPosition.x + 8, targetPosition.y + 8)
-            ..stroke();
-  
-          context
+            ..stroke()
             ..strokeStyle = '#fff'
             ..lineWidth = 2 * game.zoom
-            ..beginPath()
-            ..moveTo(center.x, center.y)
-            ..lineTo(targetPosition.x + 8, targetPosition.y + 8)
             ..stroke();
         }
       }
