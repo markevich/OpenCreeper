@@ -37,6 +37,12 @@ class Renderer {
     layers[displayObject.layer._value].removeAt(layers[displayObject.layer._value].indexOf(displayObject));
   }
   
+  void removeAllDisplayObjects() {
+    for (int i = 0; i < layers.length; i++) {
+      layers[i].clear();
+    }
+  }
+  
   void switchLayer(DisplayObject displayObject, Layer layer) {
     removeDisplayObject(displayObject);
     displayObject.layer = layer;

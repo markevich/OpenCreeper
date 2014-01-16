@@ -80,12 +80,14 @@ class Game {
     Sporetower.clear();
     Projectile.clear();
     UISymbol.reset();
-
+    engine.renderer["buffer"].removeAllDisplayObjects();
+    
     mode = "DEFAULT";
     speed = 1;
     won = false;
     
     createWorld();
+    drawCollection();
     
     stopwatch.reset();
     stopwatch.start();
