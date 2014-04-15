@@ -14,8 +14,8 @@ class Mouse {
     if (game != null) {
       game.oldHoveredTile = game.hoveredTile;
       game.hoveredTile = new Vector(
-            ((position.x - game.engine.halfWidth) / (game.tileSize * game.zoom)).floor() + game.scroll.x,
-            ((position.y - game.engine.halfHeight) / (game.tileSize * game.zoom)).floor() + game.scroll.y);
+            ((position.x - game.engine.renderer["main"].view.width / 2) / (game.tileSize * game.zoom)).floor() + game.scroll.x,
+            ((position.y - game.engine.renderer["main"].view.height / 2) / (game.tileSize * game.zoom)).floor() + game.scroll.y);
       game.updateVariousInfo();   
     }
   }

@@ -58,6 +58,11 @@ class Sprite extends DisplayObject {
 }
 
 // Layer Enum: http://stackoverflow.com/questions/15854549/how-can-i-build-an-enum-with-dart
+
+/**
+ * These layers define the order in which displayobjects are drawn.
+ * -- Change this for every project --
+ */
 class Layer {
   final int _value;
   const Layer._internal(this._value);

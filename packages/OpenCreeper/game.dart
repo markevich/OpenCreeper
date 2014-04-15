@@ -15,6 +15,8 @@ class Game {
   Sprite tfNumber;
   Sprite targetCursor;
   Engine engine;
+  UserInterface ui;
+  List zoomableRenderers;
   
   Game() {
     engine = new Engine(TPS: 60);
@@ -37,17 +39,39 @@ class Game {
   void init() {  
     querySelector("#seed").innerHtml = "Seed: $seed";
 
-    world = new World(seed);
-
-    reset();
-    setupUI();
+    // create renderer
+    int width = window.innerWidth;
+    int height = window.innerHeight;
     
+    engine.createRenderer("main", width, height, "#canvasContainer");
+    engine.renderer["main"].view.style.zIndex = "1";   
+    engine.createRenderer("buffer", width, height);
+    
+    for (int i = 0; i < 10; i++) {
+      engine.createRenderer("level$i", 128 * 16, 128 * 16);
+    }
+    engine.createRenderer("levelbuffer", 128 * 16, 128 * 16);
+    engine.createRenderer("levelfinal", width, height, "#canvasContainer");
+    
+    engine.createRenderer("collection", width, height, "#canvasContainer");
+    
+    engine.createRenderer("creeperbuffer", width, height);
+    engine.createRenderer("creeper", width, height, "#canvasContainer");
+    
+    // renderes affected when zooming
+    zoomableRenderers = ["buffer", "collection", "creeperbuffer"];
+    
+    // create UI
+    ui = new UserInterface();
+    
+    world = new World(seed);
+  
     var music = new AudioElement("sounds/music.ogg");
     music.loop = true;
     music.volume = 0.25;
-    music.onCanPlay.listen((event) => music.play());
-
-    // create terraform lines
+    music.onCanPlay.listen((event) => music.play()); // TODO: find out why this is not working
+  
+    // create terraform lines and number used when terraforming is enabled
     tfLine1 = new Line(Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff");
     tfLine1.visible = false;
     engine.renderer["buffer"].addDisplayObject(tfLine1);
@@ -67,15 +91,51 @@ class Game {
     tfNumber.frame = terraformingHeight;
     engine.renderer["buffer"].addDisplayObject(tfNumber);
     
+    // create target cursor used when a ship is selected
     targetCursor = new Sprite(Layer.TARGETSYMBOL, engine.images["targetcursor"], new Vector.empty(), 48, 48);
     targetCursor.anchor = new Vector(0.5, 0.5);
     targetCursor.visible = false;
     engine.renderer["buffer"].addDisplayObject(targetCursor);
     
+    reset();
     drawTerrain();
     copyTerrain();
-    engine.setupEventHandler();
+    setupEventHandler();
     run();
+  }
+  
+  void setupEventHandler() {
+    querySelector('#terraform').onClick.listen((event) => game.toggleTerraform());
+    //query('#slower').onClick.listen((event) => game.slower());
+    //query('#faster').onClick.listen((event) => game.faster());
+    //query('#pause').onClick.listen((event) => game.pause());
+    querySelector('#continue').onClick.listen((event) => game.resume());
+    querySelector('#restart').onClick.listen((event) => game.restart());
+    querySelector('#restart2').onClick.listen((event) => game.restart());
+    querySelector('#deactivate').onClick.listen((event) => Building.deactivate());
+    querySelector('#activate').onClick.listen((event) => Building.activate());
+
+    game.engine.renderer["main"].view
+      ..onMouseMove.listen((event) => onMouseMove(event))
+      ..onDoubleClick.listen((event) => onDoubleClick(event))
+      ..onMouseDown.listen((event) => onMouseDown(event))
+      ..onMouseUp.listen((event) => onMouseUp(event))
+      ..onMouseWheel.listen((event) => onMouseScroll(event))
+      ..onMouseEnter.listen((event) => onEnter(event))
+      ..onMouseLeave.listen((event) => onLeave(event));
+
+    game.engine.renderer["gui"].view
+      ..onMouseMove.listen((event) => onMouseMoveGUI(event))
+      ..onClick.listen((event) => onClickGUI(event))
+      ..onMouseLeave.listen((event) => onLeaveGUI);
+
+    document
+      ..onKeyDown.listen((event) => onKeyDown(event))
+      ..onKeyUp.listen((event) => onKeyUp(event))
+      ..onContextMenu.listen((event) => event.preventDefault());
+
+    window
+      ..onResize.listen((event) => onResize(event));
   }
 
   void reset() {
@@ -190,6 +250,10 @@ class Game {
     if (zoom < 1.6) {
       zoom += .2;
       zoom = double.parse(zoom.toStringAsFixed(2));
+      
+      for (var renderer in zoomableRenderers) {
+        engine.renderer[renderer].updateZoom(zoom);
+      }
       copyTerrain();
       drawCollection();
       World.creeperDirty = true;
@@ -200,6 +264,9 @@ class Game {
     if (zoom > .4) {
       zoom -= .2;
       zoom = double.parse(zoom.toStringAsFixed(2));
+      for (var renderer in zoomableRenderers) {
+        engine.renderer[renderer].updateZoom(zoom);
+      }
       copyTerrain();
       drawCollection();
       World.creeperDirty = true;
@@ -210,27 +277,9 @@ class Game {
    * Creates a random world with base, emitters and sporetowers.
    */
   void createWorld() {
-    world.tiles = new List(world.size.x);
-    for (int i = 0; i < world.size.x; i++) {
-      world.tiles[i] = new List<Tile>(world.size.y);
-      for (int j = 0; j < world.size.y; j++) {
-        world.tiles[i][j] = new Tile();
-      }
-    }
+    world.createRandomLandscape();
 
-    var heightmap = new HeightMap(seed, 129, 0, 90);
-    heightmap.run();
-
-    for (int i = 0; i < world.size.x; i++) {
-      for (int j = 0; j < world.size.y; j++) {
-        int height = (heightmap.map[i][j] / 10).round();
-        if (height > 10)
-          height = 10;
-        world.tiles[i][j].height = height;
-      }
-    }
-
-    // create base
+    // create random base
     Vector randomPosition = new Vector(
         engine.randomInt(4, world.size.x - 5, seed + 1),
         engine.randomInt(4, world.size.y - 5, seed + 1));
@@ -248,7 +297,7 @@ class Game {
       }
     }
 
-    // create emitters
+    // create random emitters
     int number = engine.randomInt(2, 3, seed);
     for (var l = 0; l < number; l++) {    
       randomPosition = new Vector(
@@ -267,7 +316,7 @@ class Game {
       }
     }
 
-    // create sporetowers
+    // create random sporetowers
     number = engine.randomInt(1, 2, seed + 1);
     for (var l = 0; l < number; l++) {
       randomPosition = new Vector(
@@ -285,20 +334,6 @@ class Game {
         }
       }
     }
-  }
-
-  void setupUI() {
-    UISymbol.add(new Vector(0, 0), new Building.template("cannon"), KeyCode.Q);
-    UISymbol.add(new Vector(81, 0), new Building.template("collector"), KeyCode.W);
-    UISymbol.add(new Vector(2 * 81, 0), new Building.template("reactor"), KeyCode.E);
-    UISymbol.add(new Vector(3 * 81, 0), new Building.template("storage"), KeyCode.R);
-    UISymbol.add(new Vector(4 * 81, 0), new Building.template("shield"), KeyCode.T);
-    UISymbol.add(new Vector(5 * 81, 0), new Building.template("analyzer"), KeyCode.Z);
-    UISymbol.add(new Vector(0, 56), new Building.template("relay"), KeyCode.A);
-    UISymbol.add(new Vector(81, 56), new Building.template("mortar"), KeyCode.S);
-    UISymbol.add(new Vector(2 * 81, 56), new Building.template("beam"), KeyCode.D);
-    UISymbol.add(new Vector(3 * 81, 56), new Building.template("bomber"), KeyCode.F);
-    UISymbol.add(new Vector(4 * 81, 56), new Building.template("terp"), KeyCode.G);
   }
 
   /**
@@ -432,8 +467,8 @@ class Game {
 
     var targetLeft = 0;
     var targetTop = 0;
-    var sourceLeft = scroll.x * tileSize - engine.halfWidth / zoom;
-    var sourceTop = scroll.y * tileSize - engine.halfHeight / zoom;
+    var sourceLeft = scroll.x * tileSize - engine.renderer["main"].view.width / 2 / zoom;
+    var sourceTop = scroll.y * tileSize - engine.renderer["main"].view.height / 2 / zoom;
     if (sourceLeft < 0) {
       targetLeft = -sourceLeft * zoom;
       sourceLeft = 0;
@@ -443,10 +478,10 @@ class Game {
       sourceTop = 0;
     }
 
-    var targetWidth = engine.width;
-    var targetHeight = engine.height;
-    var sourceWidth = engine.width / zoom;
-    var sourceHeight = engine.height / zoom;
+    var targetWidth = engine.renderer["main"].view.width;
+    var targetHeight = engine.renderer["main"].view.height;
+    var sourceWidth = engine.renderer["main"].view.width / zoom;
+    var sourceHeight = engine.renderer["main"].view.height / zoom;
     if (sourceLeft + sourceWidth > world.size.x * tileSize) {
       targetWidth -= (sourceLeft + sourceWidth - world.size.x * tileSize) * zoom;
       sourceWidth = world.size.x * tileSize - sourceLeft;
@@ -702,8 +737,8 @@ class Game {
     engine.renderer["collection"].context.save();
     engine.renderer["collection"].context.globalAlpha = .5;
 
-    int timesX = (engine.halfWidth / tileSize / zoom).ceil();
-    int timesY = (engine.halfHeight / tileSize / zoom).ceil();
+    int timesX = (engine.renderer["main"].view.width / 2 / tileSize / zoom).ceil();
+    int timesY = (engine.renderer["main"].view.height / 2 / tileSize / zoom).ceil();
 
     for (int i = -timesX; i <= timesX; i++) {
       for (int j = -timesY; j <= timesY; j++) {
@@ -731,7 +766,7 @@ class Game {
               right = world.tiles[position.x + 1][position.y].collector != null ? 1 : 0;
 
             int index = (8 * down) + (4 * left) + (2 * up) + right;
-            engine.renderer["collection"].context.drawImageScaledFromSource(engine.images["mask"], index * (tileSize + 6) + 3, (tileSize + 6) + 3, tileSize, tileSize, engine.halfWidth + i * tileSize * zoom, engine.halfHeight + j * tileSize * zoom, tileSize * zoom, tileSize * zoom);
+            engine.renderer["collection"].context.drawImageScaledFromSource(engine.images["mask"], index * (tileSize + 6) + 3, (tileSize + 6) + 3, tileSize, tileSize, engine.renderer["main"].view.width / 2 + i * tileSize * zoom, engine.renderer["main"].view.height / 2 + j * tileSize * zoom, tileSize * zoom, tileSize * zoom);
           }
         }
       }
@@ -742,8 +777,8 @@ class Game {
   void drawCreeper() {
     engine.renderer["creeperbuffer"].clear();
 
-    int timesX = (engine.halfWidth / tileSize / zoom).ceil();
-    int timesY = (engine.halfHeight / tileSize / zoom).ceil();
+    int timesX = (engine.renderer["main"].view.width / 2 / tileSize / zoom).ceil();
+    int timesY = (engine.renderer["main"].view.height / 2 / tileSize / zoom).ceil();
 
     for (int i = -timesX; i <= timesX; i++) {
       for (int j = -timesY; j <= timesY; j++) {
@@ -778,7 +813,7 @@ class Game {
                 right = 1;
   
               int index = (8 * down) + (4 * left) + (2 * up) + right;
-              engine.renderer["creeperbuffer"].context.drawImageScaledFromSource(engine.images["creeper"], index * tileSize, 0, tileSize, tileSize, engine.halfWidth + i * tileSize * zoom, engine.halfHeight + j * tileSize * zoom, tileSize * zoom, tileSize * zoom);
+              engine.renderer["creeperbuffer"].context.drawImageScaledFromSource(engine.images["creeper"], index * tileSize, 0, tileSize, tileSize, engine.renderer["main"].view.width / 2 + i * tileSize * zoom, engine.renderer["main"].view.height / 2 + j * tileSize * zoom, tileSize * zoom, tileSize * zoom);
               continue;
             }
             
@@ -805,7 +840,7 @@ class Game {
   
               int index = (8 * down) + (4 * left) + (2 * up) + right;
               if (index != 0)
-                engine.renderer["creeperbuffer"].context.drawImageScaledFromSource(engine.images["creeper"], index * tileSize, 0, tileSize, tileSize, engine.halfWidth + i * tileSize * zoom, engine.halfHeight + j * tileSize * zoom, tileSize * zoom, tileSize * zoom);
+                engine.renderer["creeperbuffer"].context.drawImageScaledFromSource(engine.images["creeper"], index * tileSize, 0, tileSize, tileSize, engine.renderer["main"].view.width / 2 + i * tileSize * zoom, engine.renderer["main"].view.height / 2 + j * tileSize * zoom, tileSize * zoom, tileSize * zoom);
             }
           }
         }
@@ -999,46 +1034,6 @@ class Game {
     }
 
   }
-
-  /**
-   * Draws the GUI with symbols, height and creep meter.
-   */
-  void drawGUI() {
-    CanvasRenderingContext2D context = engine.renderer["gui"].context;
-    
-    engine.renderer["gui"].clear();
-    for (int i = 0; i < UISymbol.symbols.length; i++) {
-      UISymbol.symbols[i].draw();
-    }
-
-    if (world.contains(game.hoveredTile)) {
-
-      num total = world.tiles[game.hoveredTile.x][game.hoveredTile.y].creep;
-
-      // draw height and creep meter
-      context
-        ..fillStyle = '#fff'
-        ..font = '9px'
-        ..textAlign = 'right'
-        ..strokeStyle = '#fff'
-        ..lineWidth = 1
-        ..fillStyle = "rgba(205, 133, 63, 1)"
-        ..fillRect(555, 110, 25, -game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].height * 10 - 10)
-        ..fillStyle = "rgba(100, 150, 255, 1)"
-        ..fillRect(555, 110 - game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].height * 10 - 10, 25, -total * 10)
-        ..fillStyle = "rgba(255, 255, 255, 1)";
-      for (int i = 1; i < 11; i++) {
-        context
-          ..fillText(i.toString(), 550, 120 - i * 10)
-          ..beginPath()
-          ..moveTo(555, 120 - i * 10)
-          ..lineTo(580, 120 - i * 10)
-          ..stroke();
-      }
-      context.textAlign = 'left';
-      context.fillText(total.toStringAsFixed(2), 605, 10);
-    }
-  }
   
   /**
    * Main drawing function which calls all other drawing functions.
@@ -1047,7 +1042,7 @@ class Game {
   void draw(num _) {
     CanvasRenderingContext2D context = engine.renderer["buffer"].context;
     
-    drawGUI();
+    ui.draw();
     
     engine.renderer["buffer"].clear();
     engine.renderer["buffer"].draw();

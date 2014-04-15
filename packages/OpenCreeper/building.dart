@@ -1,6 +1,6 @@
 part of creeper;
 
-class Building {
+class Building implements Node {
   Vector position, scale = new Vector(1, 1), moveTargetPosition, weaponTargetPosition, speed = new Vector(0, 0);
   String type, status = "IDLE"; // MOVING, RISING, FALLING
   bool operating = false, selected = false, hovered = false, built = false, active = true, canMove = false, needsEnergy = false, rotating = false;

@@ -11,6 +11,28 @@ class World {
     creeperCounter = 0;
   }
   
+  void createRandomLandscape() {
+    tiles = new List(size.x);
+    for (int i = 0; i < size.x; i++) {
+      tiles[i] = new List<Tile>(size.y);
+      for (int j = 0; j < size.y; j++) {
+        tiles[i][j] = new Tile();
+      }
+    }
+
+    var heightmap = new HeightMap(game.seed, 129, 0, 90);
+    heightmap.run();
+
+    for (int i = 0; i < size.x; i++) {
+      for (int j = 0; j < size.y; j++) {
+        int height = (heightmap.map[i][j] / 10).round();
+        if (height > 10)
+          height = 10;
+        tiles[i][j].height = height;
+      }
+    }
+  }
+  
   /**
    * Checks if a given [position] in world coordinates is contained within the world
    */
@@ -19,7 +41,7 @@ class World {
   }
   
   Tile getTile(Vector position) {
-    return tiles[position.x ~/ 16][position.y ~/ 16];
+    return tiles[position.x ~/ game.tileSize][position.y ~/ game.tileSize];
   }  
   
   static void update() {

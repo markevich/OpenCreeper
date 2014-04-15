@@ -2,94 +2,30 @@ part of creeper;
 
 class Engine {
   num animationRequest, TPS; // TPS = ticks per second
-  int width, height, halfWidth, halfHeight;
   Mouse mouse = new Mouse();
   Map renderer = new Map(), sounds = new Map(), images = new Map();
   Timer resizeTimer;
+  var game;
 
   Engine({int TPS: 60}) {
     this.TPS = TPS;
-    width = window.innerWidth;
-    height = window.innerHeight;
-    halfWidth = (width / 2).floor();
-    halfHeight = (height / 2).floor();
-
-    // main
-    renderer["main"] = new Renderer(new CanvasElement(), width, height);
-    querySelector('#canvasContainer').children.add(renderer["main"].view);
-    renderer["main"].top = renderer["main"].view.offsetTop;
-    renderer["main"].left = renderer["main"].view.offsetLeft;
-    renderer["main"].right = renderer["main"].view.offset.right;
-    renderer["main"].bottom = renderer["main"].view.offset.bottom;
-    renderer["main"].view.style.zIndex = "1";
-
-    // buffer
-    renderer["buffer"] = new Renderer(new CanvasElement(), width, height);
-
-    // gui
-    renderer["gui"] = new Renderer(new CanvasElement(), 780, 110);
-    querySelector('#gui').children.add(renderer["gui"].view);
-    renderer["gui"].top = renderer["gui"].view.offsetTop;
-    renderer["gui"].left = renderer["gui"].view.offsetLeft;
-
-    for (int i = 0; i < 10; i++) {
-      renderer["level$i"] = new Renderer(new CanvasElement(), 128 * 16, 128 * 16);
-    }
-
-    renderer["levelbuffer"] = new Renderer(new CanvasElement(), 128 * 16, 128 * 16);
-    renderer["levelfinal"] = new Renderer(new CanvasElement(), width, height);
-    querySelector('#canvasContainer').children.add(renderer["levelfinal"].view);
-
-    // collection
-    renderer["collection"] = new Renderer(new CanvasElement(), width, height);
-    querySelector('#canvasContainer').children.add(renderer["collection"].view);
-
-    // creeper
-    renderer["creeperbuffer"] = new Renderer(new CanvasElement(), width, height);
-    renderer["creeper"] = new Renderer(new CanvasElement(), width, height);
-    querySelector('#canvasContainer').children.add(renderer["creeper"].view);
   }
   
-  void setupEventHandler() {
-    querySelector('#terraform').onClick.listen((event) => game.toggleTerraform());
-    //query('#slower').onClick.listen((event) => game.slower());
-    //query('#faster').onClick.listen((event) => game.faster());
-    //query('#pause').onClick.listen((event) => game.pause());
-    querySelector('#continue').onClick.listen((event) => game.resume());
-    querySelector('#restart').onClick.listen((event) => game.restart());
-    querySelector('#restart2').onClick.listen((event) => game.restart());
-    querySelector('#deactivate').onClick.listen((event) => Building.deactivate());
-    querySelector('#activate').onClick.listen((event) => Building.activate());
-
-    renderer["main"].view
-      ..onMouseMove.listen((event) => onMouseMove(event))
-      ..onDoubleClick.listen((event) => onDoubleClick(event))
-      ..onMouseDown.listen((event) => onMouseDown(event))
-      ..onMouseUp.listen((event) => onMouseUp(event))
-      ..onMouseWheel.listen((event) => onMouseScroll(event))
-      ..onMouseEnter.listen((event) => onEnter(event))
-      ..onMouseLeave.listen((event) => onLeave(event));
-
-    renderer["gui"].view
-      ..onMouseMove.listen((event) => onMouseMoveGUI(event))
-      ..onClick.listen((event) => onClickGUI(event))
-      ..onMouseLeave.listen((event) => onLeaveGUI);
-
-    document
-      ..onKeyDown.listen((event) => onKeyDown(event))
-      ..onKeyUp.listen((event) => onKeyUp(event))
-      ..onContextMenu.listen((event) => event.preventDefault());
-
-    window
-      ..onResize.listen((event) => onResize(event));
+  /**
+   * Creates a renderer with a [name], [width], [height] and optionally adds it to a [container] in the DOM
+   */
+  void createRenderer(String name, int width, int height, [String container]) {
+    renderer[name] = new Renderer(new CanvasElement(), width, height);
+    if (container != null)
+      querySelector(container).children.add(renderer[name].view);
+    renderer[name].updateRect(width, height);
   }
-
+  
   /**
    * Loads all images.
    *
    * Uses a future to indicate when all images have been loaded.
    */
-
   Future loadImages(List filenames) {
     var completer = new Completer();
      
@@ -117,9 +53,9 @@ class Engine {
   }
 
   void playSound(String name, [Vector position]) {
-    // adjust sound volume based on the current zoom as well as the position
-
     num volume = 1;
+    
+    // given a position adjust sound volume based on it and the current zoom
     if (position != null) {
       Vector screenCenter = new Vector(game.scroll.x, game.scroll.y);
       /*Vector screenCenter = new Vector(

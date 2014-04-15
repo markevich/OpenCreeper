@@ -6,9 +6,9 @@ void onMouseMove(MouseEvent evt) {
   if (game != null) {
     game.mouseScrolling = new Vector.empty();
     if (game.engine.mouse.position.x == 0) game.mouseScrolling.x = -1;
-    else if (game.engine.mouse.position.x == game.engine.width - 1) game.mouseScrolling.x = 1;   
+    else if (game.engine.mouse.position.x == game.engine.renderer["main"].view.width - 1) game.mouseScrolling.x = 1;   
     if (game.engine.mouse.position.y == 0) game.mouseScrolling.y = -1;
-    else if (game.engine.mouse.position.y == game.engine.height - 1) game.mouseScrolling.y = 1;
+    else if (game.engine.mouse.position.y == game.engine.renderer["main"].view.height - 1) game.mouseScrolling.y = 1;
   }
   
   // flag for terraforming
@@ -288,14 +288,10 @@ void onResize(evt) {
 void doneResizing() {
   var width = window.innerWidth;
   var height = window.innerHeight;
-  game.engine.width = width;
-  game.engine.height = height;
-  game.engine.halfWidth = width ~/ 2;
-  game.engine.halfHeight = height ~/ 2;
 
   game.engine.renderer["main"].updateRect(width, height);
-  game.engine.renderer["levelfinal"].updateRect(width, height);
   game.engine.renderer["buffer"].updateRect(width, height);
+  game.engine.renderer["levelfinal"].updateRect(width, height);
   game.engine.renderer["collection"].updateRect(width, height);
   game.engine.renderer["creeperbuffer"].updateRect(width, height);
   game.engine.renderer["creeper"].updateRect(width, height);

@@ -8,12 +8,16 @@ part 'engine/engine.dart';
 part 'engine/renderer.dart';
 part 'engine/displayobject.dart';
 part 'engine/mouse.dart';
+part 'engine/userinterface.dart';
+part 'engine/uisymbol.dart';
+part 'engine/vector.dart';
+part 'engine/route.dart';
+part 'engine/node.dart';
 
 part 'world.dart';
 part 'tile.dart';
 part 'game.dart';
 part 'heightmap.dart';
-part 'uisymbol.dart';
 part 'building.dart';
 part 'packet.dart';
 part 'shell.dart';
@@ -25,9 +29,7 @@ part 'emitter.dart';
 part 'sporetower.dart';
 part 'smoke.dart';
 part 'explosion.dart';
-part 'vector.dart';
 part 'connection.dart';
-part 'route.dart';
 
 Game game;
 
