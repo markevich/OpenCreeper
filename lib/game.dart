@@ -883,7 +883,7 @@ class Game {
           ghosts.add(end);
         }
       } else { // single ghost at cursor position
-        if (engine.mouse.active) {
+        if (engine.mouse.overCanvas) {
           if (world.contains(game.hoveredTile)) {
             ghosts.add(game.hoveredTile);
           }
@@ -1047,7 +1047,7 @@ class Game {
       World.creeperDirty = false;
     }
 
-    if (engine.mouse.active) {
+    if (engine.mouse.overCanvas) {
 
       Building.drawRepositionInfo();
       drawGhosts();

@@ -178,11 +178,11 @@ void onKeyUp(KeyboardEvent evt) {
 }
 
 void onEnter(evt) {
-  engine.mouse.active = true;
+  engine.mouse.overCanvas = true;
 }
 
 void onLeave(evt) {
-  engine.mouse.active = false;
+  engine.mouse.overCanvas = false;
 }
 
 void onLeaveGUI(evt) {

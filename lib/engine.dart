@@ -2,7 +2,7 @@ part of creeper;
 
 class Mouse {
   Vector position = new Vector.empty();
-  bool active = true;
+  bool overCanvas = true;
   int buttonPressed = 0;
   Vector dragStart;
   
@@ -80,16 +80,14 @@ class Engine {
       ..onDoubleClick.listen((event) => onDoubleClick(event))
       ..onMouseDown.listen((event) => onMouseDown(event))
       ..onMouseUp.listen((event) => onMouseUp(event))
-      ..onMouseWheel.listen((event) => onMouseScroll(event));
-    // FIXME: will be implemented in M5: https://code.google.com/p/dart/issues/detail?id=9852
-    //mainCanvas
-    //  ..onMouseEnter.listen((event) => onEnter)
-    //  ..onMouseLeave.listen((event) => onLeave);
+      ..onMouseWheel.listen((event) => onMouseScroll(event))
+      ..onMouseEnter.listen((event) => onEnter(event))
+      ..onMouseLeave.listen((event) => onLeave(event));
 
     renderer["gui"].view
       ..onMouseMove.listen((event) => onMouseMoveGUI(event))
-      ..onClick.listen((event) => onClickGUI(event));
-      //..onMouseLeave.listen((event) => onLeaveGUI);
+      ..onClick.listen((event) => onClickGUI(event))
+      ..onMouseLeave.listen((event) => onLeaveGUI);
 
     document
       ..onKeyDown.listen((event) => onKeyDown(event))
