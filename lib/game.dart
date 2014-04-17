@@ -14,9 +14,12 @@ class Game {
   Line tfLine1, tfLine2, tfLine3, tfLine4;
   Sprite tfNumber;
   Sprite targetCursor;
+  Rect repositionRect;
   Engine engine;
   UserInterface ui;
   List zoomableRenderers;
+  Mouse mouse;
+  var debug = true;
   
   Game() {
     engine = new Engine(TPS: 60);
@@ -24,7 +27,7 @@ class Game {
 
   void start([int seed = null]) {
     if (seed == null)
-      this.seed = engine.randomInt(0, 10000);
+      this.seed = Engine.randomInt(0, 10000);
     else
       this.seed = seed;
     
@@ -45,6 +48,8 @@ class Game {
     
     engine.createRenderer("main", width, height, "#canvasContainer");
     engine.renderer["main"].view.style.zIndex = "1";   
+    mouse = new Mouse(engine.renderer["main"]);
+    
     engine.createRenderer("buffer", width, height);
     
     for (int i = 0; i < 10; i++) {
@@ -58,11 +63,13 @@ class Game {
     engine.createRenderer("creeperbuffer", width, height);
     engine.createRenderer("creeper", width, height, "#canvasContainer");
     
+    engine.createRenderer("gui", 780, 110, "#gui");
+    
     // renderes affected when zooming
     zoomableRenderers = ["buffer", "collection", "creeperbuffer"];
     
     // create UI
-    ui = new UserInterface();
+    ui = new UserInterface(engine.renderer["gui"]);
     
     world = new World(seed);
   
@@ -96,6 +103,11 @@ class Game {
     targetCursor.anchor = new Vector(0.5, 0.5);
     targetCursor.visible = false;
     engine.renderer["buffer"].addDisplayObject(targetCursor);
+    
+    // rectangle that is drawn when repositioning a building
+    repositionRect = new Rect(Layer.TARGETSYMBOL, new Vector(0, 0), new Vector(32, 32), 10, "#f00");
+    repositionRect.visible = false;
+    engine.renderer["buffer"].addDisplayObject(repositionRect);
     
     reset();
     drawTerrain();
@@ -139,18 +151,9 @@ class Game {
   }
 
   void reset() {
-    Building.clear();
+    engine.clear();
     Packet.clear();
-    Shell.clear();
-    Spore.clear();
-    Ship.clear();
-    Smoke.clear();
-    Explosion.clear();
-    Emitter.clear();
-    Sporetower.clear();
-    Projectile.clear();
     UISymbol.reset();
-    engine.renderer["buffer"].removeAllDisplayObjects();
     
     mode = "DEFAULT";
     speed = 1;
@@ -281,10 +284,13 @@ class Game {
 
     // create random base
     Vector randomPosition = new Vector(
-        engine.randomInt(4, world.size.x - 5, seed + 1),
-        engine.randomInt(4, world.size.y - 5, seed + 1));
+        Engine.randomInt(4, world.size.x - 5, seed + 1),
+        Engine.randomInt(4, world.size.y - 5, seed + 1));
 
     scroll = randomPosition;
+    for (var renderer in zoomableRenderers) {
+      engine.renderer[renderer].updateOffset(new Vector(scroll.x * tileSize, scroll.y * tileSize));
+    }
 
     Building building = Building.add(randomPosition, "base");
 
@@ -298,11 +304,11 @@ class Game {
     }
 
     // create random emitters
-    int number = engine.randomInt(2, 3, seed);
+    int number = Engine.randomInt(2, 3, seed);
     for (var l = 0; l < number; l++) {    
       randomPosition = new Vector(
-          engine.randomInt(1, world.size.x - 2, seed + engine.randomInt(1, 1000, seed + l)) * tileSize + 8,
-          engine.randomInt(1, world.size.y - 2, seed + engine.randomInt(1, 1000, seed + 1 + l)) * tileSize + 8);
+          Engine.randomInt(1, world.size.x - 2, seed + Engine.randomInt(1, 1000, seed + l)) * tileSize + 8,
+          Engine.randomInt(1, world.size.y - 2, seed + Engine.randomInt(1, 1000, seed + 1 + l)) * tileSize + 8);
   
       Emitter emitter = Emitter.add(randomPosition, 25);
   
@@ -317,11 +323,11 @@ class Game {
     }
 
     // create random sporetowers
-    number = engine.randomInt(1, 2, seed + 1);
+    number = Engine.randomInt(1, 2, seed + 1);
     for (var l = 0; l < number; l++) {
       randomPosition = new Vector(
-          engine.randomInt(1, world.size.x - 2, seed + 3 + engine.randomInt(1, 1000, seed + 2 + l)) * tileSize + 8,
-          engine.randomInt(1, world.size.y - 2, seed + 3 + engine.randomInt(1, 1000, seed + 3 + l)) * tileSize + 8);
+          Engine.randomInt(1, world.size.x - 2, seed + 3 + Engine.randomInt(1, 1000, seed + 2 + l)) * tileSize + 8,
+          Engine.randomInt(1, world.size.y - 2, seed + 3 + Engine.randomInt(1, 1000, seed + 3 + l)) * tileSize + 8);
   
       Sporetower sporetower = Sporetower.add(randomPosition);
   
@@ -613,9 +619,9 @@ class Game {
                                             building.size * tileSize - 1);  
           
       // TODO: check for ghost collision
-      if (Building.collision(currentRect, building) ||
-          Emitter.collision(currentRect) ||
-          Sporetower.collision(currentRect)) return false;
+      if (Building.intersect(currentRect, building) ||
+          Emitter.intersect(currentRect) ||
+          Sporetower.intersect(currentRect)) return false;
            
       // check if all tiles have the same height and are not corners
       for (int i = position.x - (building.size ~/ 2); i <= position.x + (building.size ~/ 2); i++) {
@@ -658,17 +664,10 @@ class Game {
     Ship.updateHoverState();
 
     if (!paused) {
-      Emitter.update();
-      Spore.update();
-      Shell.update();
-      World.update();      
-      Projectile.update();
-      Building.update();
+      engine.update(); 
       Packet.update();
-      Smoke.update();
-      Explosion.update();
-      Ship.update();
-      Sporetower.update();
+      game.world.update(); // FIXME: find out why this doesn't work automatically since the world is a gameobject
+      Emitter.checkWinningCondition();
     }
 
     // scroll left or right   
@@ -682,6 +681,9 @@ class Game {
     else if (scroll.y > world.size.y) scroll.y = world.size.y;
 
     if (mouseScrolling.x != 0 || mouseScrolling.y != 0 || keyScrolling.x != 0 || keyScrolling.y != 0) {
+      for (var renderer in zoomableRenderers) {
+        engine.renderer[renderer].updateOffset(new Vector(scroll.x * tileSize, scroll.y * tileSize));
+      }
       copyTerrain();
       drawCollection();
       updateVariousInfo();
@@ -710,7 +712,7 @@ class Game {
 
           if (world.contains(positionCurrent)) {
             Vector positionCurrentCenter = new Vector(positionCurrent.x * tileSize + (tileSize / 2), positionCurrent.y * tileSize + (tileSize / 2));
-            Vector drawPositionCurrent = positionCurrent.tiled2screen();
+            Vector drawPositionCurrent = game.tiled2screen(positionCurrent);
             
             int positionCurrentHeight = game.world.tiles[positionCurrent.x][positionCurrent.y].height;
 
@@ -855,6 +857,27 @@ class Game {
   void updateVariousInfo() {
     if (hoveredTile != oldHoveredTile) {
       
+      // set visibility of reposition rect
+      game.repositionRect.visible = false;
+      for (var building in game.engine.gameObjects) {
+        if (building is Building) {
+          if (building.built && building.selected && building.canMove) {
+            engine.renderer["main"].view.style.cursor = "none";
+            
+            bool canBePlaced = game.canBePlaced(game.hoveredTile, building);
+  
+            repositionRect.visible = true;
+             
+            repositionRect.position = new Vector(hoveredTile.x * tileSize + 8, hoveredTile.y * tileSize + 8);
+            repositionRect.size = new Vector(building.size, building.size);
+            if (canBePlaced)
+              repositionRect.color = "rgba(0, 255, 0, 0.5)";
+            else
+              repositionRect.color = "rgba(255, 0, 0, 0.5)";
+          }
+        }
+      }
+         
       // update terraform info
       if (world.contains(hoveredTile)) {   
         if (mode == "TERRAFORM") {
@@ -898,9 +921,9 @@ class Game {
       ghosts.clear(); // ghosts are all the placeholders to build
       
       // calculate multiple ghosts when dragging
-      if (engine.mouse.dragStart != null) {
+      if (mouse.dragStart != null) {
         
-        Vector start = engine.mouse.dragStart;
+        Vector start = mouse.dragStart;
         Vector end = hoveredTile;
         Vector delta = end - start;
         num distance = start.distanceTo(end);
@@ -928,7 +951,7 @@ class Game {
           ghosts.add(end);
         }
       } else { // single ghost at cursor position
-        if (engine.mouse.overCanvas) {
+        if (mouse.overCanvas) {
           if (world.contains(game.hoveredTile)) {
             ghosts.add(game.hoveredTile);
           }
@@ -947,7 +970,7 @@ class Game {
       CanvasRenderingContext2D context = engine.renderer["buffer"].context;
        
       for (int i = 0; i < ghosts.length; i++) {
-        Vector drawPosition = ghosts[i].tiled2screen();
+        Vector drawPosition = game.tiled2screen(ghosts[i]);
         Vector ghostICenter = drawPosition + new Vector(8 * zoom, 8 * zoom);
   
         drawRangeBoxes(ghosts[i], UISymbol.activeSymbol.building);
@@ -977,27 +1000,29 @@ class Game {
 
           if (ghostCanBePlaced) {
             // draw lines to other buildings
-            for (int j = 0; j < Building.buildings.length; j++) {
-              if (UISymbol.activeSymbol.building.type == "collector" || UISymbol.activeSymbol.building.type == "relay" ||
-                  Building.buildings[j].type == "collector" || Building.buildings[j].type == "relay" || Building.buildings[j].type == "base") {
-                Vector buildingCenter = Building.buildings[j].position.real2screen();
-
-                int allowedDistance = 10 * tileSize;
-                if (Building.buildings[j].type == "relay" && UISymbol.activeSymbol.building.type == "relay") {
-                  allowedDistance = 20 * tileSize;
-                }
-
-                if (buildingCenter.distanceTo(ghostICenter) <= allowedDistance * zoom) {
-                  context
-                    ..strokeStyle = '#000'
-                    ..lineWidth = 3 * game.zoom
-                    ..beginPath()
-                    ..moveTo(buildingCenter.x, buildingCenter.y)
-                    ..lineTo(ghostICenter.x, ghostICenter.y)
-                    ..stroke()
-                    ..strokeStyle = '#0f0'
-                    ..lineWidth = 2 * game.zoom
-                    ..stroke();
+            for (var building in game.engine.gameObjects) {
+              if (building is Building) {
+                if (UISymbol.activeSymbol.building.type == "collector" || UISymbol.activeSymbol.building.type == "relay" ||
+                    building.type == "collector" || building.type == "relay" || building.type == "base") {
+                  Vector buildingCenter = game.real2screen(building.position);
+  
+                  int allowedDistance = 10 * tileSize;
+                  if (building.type == "relay" && UISymbol.activeSymbol.building.type == "relay") {
+                    allowedDistance = 20 * tileSize;
+                  }
+  
+                  if (buildingCenter.distanceTo(ghostICenter) <= allowedDistance * zoom) {
+                    context
+                      ..strokeStyle = '#000'
+                      ..lineWidth = 3 * game.zoom
+                      ..beginPath()
+                      ..moveTo(buildingCenter.x, buildingCenter.y)
+                      ..lineTo(ghostICenter.x, ghostICenter.y)
+                      ..stroke()
+                      ..strokeStyle = '#0f0'
+                      ..lineWidth = 2 * game.zoom
+                      ..stroke();
+                  }
                 }
               }
             }
@@ -1005,7 +1030,7 @@ class Game {
             for (int j = 0; j < ghosts.length; j++) {
               if (j != i) {
                 if (UISymbol.activeSymbol.building.type == "collector" || UISymbol.activeSymbol.building.type == "relay") {
-                  Vector ghostKCenter = ghosts[j].tiled2screen() + new Vector(8 * game.zoom, 8 * game.zoom);
+                  Vector ghostKCenter = game.tiled2screen(ghosts[j]) + new Vector(8 * game.zoom, 8 * game.zoom);
 
                   int allowedDistance = 10 * tileSize;
                   if (UISymbol.activeSymbol.building.type == "relay") {
@@ -1039,33 +1064,47 @@ class Game {
    * Main drawing function which calls all other drawing functions.
    * Is called by requestAnimationFrame every frame.
    */
-  void draw(num _) {
-    CanvasRenderingContext2D context = engine.renderer["buffer"].context;
-    
+  void draw(num _) {   
     ui.draw();
     
     engine.renderer["buffer"].clear();
     engine.renderer["buffer"].draw();
     Building.draw();
+    
     if (World.creeperDirty) {
       drawCreeper();
       World.creeperDirty = false;
     }
 
-    if (engine.mouse.overCanvas) {
-
+    if (mouse.overCanvas) {
       Building.drawRepositionInfo();
       drawGhosts();
-          
-      /*Vector tp = game.getHoveredTilePosition();
-      Vector tp2 = tp.tiled2screen();
-      engine.renderer["buffer"].context.strokeStyle = '#f0f';
-      engine.renderer["buffer"].context.strokeRect(tp2.x, tp2.y, tileSize * zoom, tileSize * zoom);*/
     }
 
     engine.renderer["main"].clear();
     engine.renderer["main"].context.drawImage(engine.renderer["buffer"].view, 0, 0);
 
     window.requestAnimationFrame(draw);
+  }
+  
+  // converts tile coordinates to canvas coordinates, 5 usages
+  Vector tiled2screen(Vector vector) {
+   return new Vector(
+       game.engine.renderer["main"].view.width / 2 + (vector.x - game.scroll.x) * game.tileSize * game.zoom,
+       game.engine.renderer["main"].view.height / 2 + (vector.y - game.scroll.y) * game.tileSize * game.zoom);
+  }
+  
+  // converts full coordinates to canvas coordinates, 12 usages
+  Vector real2screen(Vector vector) {
+   return new Vector(
+       game.engine.renderer["main"].view.width / 2 + (vector.x - game.scroll.x * game.tileSize) * game.zoom,
+       game.engine.renderer["main"].view.height / 2 + (vector.y - game.scroll.y * game.tileSize) * game.zoom);
+  }
+  
+  // converts full coordinates to tile coordinates, 9 usages
+  Vector real2tiled(Vector vector) {
+   return new Vector(
+       vector.x ~/ game.tileSize,
+       vector.y ~/ game.tileSize);
   }
 }

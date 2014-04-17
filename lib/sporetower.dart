@@ -1,9 +1,8 @@
 part of creeper;
 
-class Sporetower {
+class Sporetower extends GameObject {
   Sprite sprite;
   int sporeCounter = 0;
-  static List<Sporetower> sporetowers = new List<Sporetower>();
 
   Sporetower(position) {
     sprite = new Sprite(Layer.SPORETOWER, game.engine.images["sporetower"], position, 48, 48);
@@ -11,48 +10,50 @@ class Sporetower {
     game.engine.renderer["buffer"].addDisplayObject(sprite);
     reset();
   }
-  
-  static void clear() {
-    sporetowers.clear();
-  }
-  
+   
   static Sporetower add(Vector position) {
     Sporetower sporetower = new Sporetower(position);
-    sporetowers.add(sporetower);
+    game.engine.gameObjects.add(sporetower);
     return sporetower;
   }
   
-  static void update() {
-    for (int i = sporetowers.length - 1; i >= 0; i--) {
-      sporetowers[i].sporeCounter -= 1;
-      if (sporetowers[i].sporeCounter <= 0) {
-        sporetowers[i].reset();
-        sporetowers[i].spawn();
-      }
+  void update() {
+    sporeCounter -= 1;
+    if (sporeCounter <= 0) {
+      reset();
+      spawn();
     }
   }
 
   void reset() {
-    sporeCounter = game.engine.randomInt(7500, 12500);
+    sporeCounter = Engine.randomInt(7500, 12500);
   }
 
   void spawn() {
     Building target = null;
+    List buildings = [];
+    for (var building in game.engine.gameObjects) {
+      if (building is Building) {
+        buildings.add(building);
+      }
+    }
     do {
-      target = Building.buildings[game.engine.randomInt(0, Building.buildings.length - 1)];
+      target = buildings[Engine.randomInt(0, buildings.length - 1)];
     } while (!target.built);
     Spore.add(sprite.position, target.sprite.position);
   }
   
   
-  static bool collision(Rectangle rectangle) { 
-    for (int i = 0; i < sporetowers.length; i++) {
-      Rectangle sporetowerRect = new Rectangle(sporetowers[i].sprite.position.x - 3 * game.tileSize / 2,
-                                               sporetowers[i].sprite.position.y - 3 * game.tileSize / 2,
-                                               3 * game.tileSize - 1,
-                                               3 * game.tileSize - 1);     
-      if (rectangle.intersects(sporetowerRect)) {
-        return true;
+  static bool intersect(Rectangle rectangle) { 
+    for (var sporetower in game.engine.gameObjects) {
+      if (sporetower is Sporetower) {
+        Rectangle sporetowerRect = new Rectangle(sporetower.sprite.position.x - 3 * game.tileSize / 2,
+                                                 sporetower.sprite.position.y - 3 * game.tileSize / 2,
+                                                 3 * game.tileSize - 1,
+                                                 3 * game.tileSize - 1);     
+        if (rectangle.intersects(sporetowerRect)) {
+          return true;
+        }
       }
     }
     return false;

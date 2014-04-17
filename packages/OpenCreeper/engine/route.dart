@@ -1,4 +1,4 @@
-part of creeper;
+part of zengine;
 
 /**
  * The Route class manages all logic related to A* pathfinding
@@ -24,7 +24,7 @@ class Route {
   /**
    * Check if a [node] is in the list of nodes.
    */
-  bool contains(Node node) {
+  bool contains(ZNode node) {
     for (int i = 0; i < nodes.length; i++) {
       if (node.position == nodes[i].position) {
         return true;
@@ -36,7 +36,7 @@ class Route {
   /**
    * Main function of A*, finds a path to the target node for the packet.
    */
-  static Route find(Node currentTarget, Node target) {
+  static Route find(ZNode currentTarget, ZNode target) {
     // A* using Branch and Bound with dynamic programming and underestimates, thanks to: http://ai-depot.com/Tutorial/PathFinding-Optimal.html
     
      // this holds all routes
@@ -63,7 +63,7 @@ class Route {
        Route oldRoute = routes.removeAt(0);
     
        // get the last node of the route
-       Node lastNode = oldRoute.nodes[oldRoute.nodes.length - 1];
+       ZNode lastNode = oldRoute.nodes[oldRoute.nodes.length - 1];
     
        // find all neighbours of this node
        List neighbours = lastNode.getNeighbours(target);

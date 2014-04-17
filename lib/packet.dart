@@ -93,10 +93,8 @@ class Packet {
     }
   }
 
-  void move() {
-    calculateVector();
-    
-    sprite.position += speed;
+  void move() {  
+    sprite.position += game.engine.calculateVelocity(sprite.position, currentTarget.position, Packet.baseSpeed * game.speed * speedMultiplier);
 
     if (sprite.position == currentTarget.position) {
       
@@ -117,7 +115,7 @@ class Packet {
                 target.cannon.alpha = 1.0;
               if (target.type == "collector") {
                 target.updateCollection("add");
-                game.engine.playSound("energy", target.position.real2tiled());
+                game.engine.playSound("energy", target.position, game.scroll, game.zoom);
               }
               if (target.type == "storage")
                 Building.base.maxEnergy += 20;
@@ -143,20 +141,6 @@ class Packet {
         findRoute();
       }
     }
-  }
-
-  void calculateVector() {
-    Vector targetPosition = currentTarget.position;
-    Vector delta = targetPosition - sprite.position;
-    num distance = sprite.position.distanceTo(targetPosition);
-
-    speed.x = (delta.x / distance) * Packet.baseSpeed * game.speed * speedMultiplier;
-    speed.y = (delta.y / distance) * Packet.baseSpeed * game.speed * speedMultiplier;
-
-    if (speed.x.abs() > delta.x.abs())
-      speed.x = delta.x;
-    if (speed.y.abs() > delta.y.abs())
-      speed.y = delta.y;
   }
 
   /**

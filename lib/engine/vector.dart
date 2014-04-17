@@ -1,4 +1,4 @@
-part of creeper;
+part of zengine;
 
 class Vector {
   num x, y;
@@ -18,27 +18,6 @@ class Vector {
 
   num distanceTo(Vector other) {
     return sqrt(pow(x - other.x, 2) + pow(y - other.y, 2));
-  }
-
-// converts tile coordinates to canvas coordinates
-  Vector tiled2screen() {
-    return new Vector(
-        game.engine.renderer["main"].view.width / 2 + (x - game.scroll.x) * game.tileSize * game.zoom,
-        game.engine.renderer["main"].view.height / 2 + (y - game.scroll.y) * game.tileSize * game.zoom);
-  }
-
-// converts full coordinates to canvas coordinates
-  Vector real2screen() {
-    return new Vector(
-        game.engine.renderer["main"].view.width / 2 + (x - game.scroll.x * game.tileSize) * game.zoom,
-        game.engine.renderer["main"].view.height / 2 + (y - game.scroll.y * game.tileSize) * game.zoom);
-  }
-
-// converts full coordinates to tile coordinates
-  Vector real2tiled() {
-    return new Vector(
-        x ~/ game.tileSize,
-        y ~/ game.tileSize);
   }
 }
 

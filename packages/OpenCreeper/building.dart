@@ -1,6 +1,6 @@
 part of creeper;
 
-class Building implements Node {
+class Building extends GameObject implements ZNode {
   Vector position, scale = new Vector(1, 1), moveTargetPosition, weaponTargetPosition, speed = new Vector(0, 0);
   String type, status = "IDLE"; // MOVING, RISING, FALLING
   bool operating = false, selected = false, hovered = false, built = false, active = true, canMove = false, needsEnergy = false, rotating = false;
@@ -11,8 +11,7 @@ class Building implements Node {
   Circle selectedCircle;
   Rect targetSymbol;
   static final double baseSpeed = .5;
-  static int damageCounter = 0, collectCounter = 0;
-  static List<Building> buildings = new List<Building>();
+  int damageCounter = 0, collectCounter = 0;
   static Building base;
 
   Building.template(imageID) {
@@ -120,45 +119,45 @@ class Building implements Node {
       needsEnergy = true;
     }   
     else if (type == "analyzer") {
-      maxHealth = 80;
+      maxHealth = game.debug == true ? 1 : 80;
       maxEnergy = 20;
       canMove = true;
       needsEnergy = true;
       weaponRadius = 10;
     }
     else if (type == "terp") {
-      maxHealth = 60;
+      maxHealth = game.debug == true ? 1 : 60;
       maxEnergy = 20;
       canMove = true;
       needsEnergy = true;
       weaponRadius = 20;
     }
     else if (type == "shield") {
-      maxHealth = 75;
+      maxHealth = game.debug == true ? 1 : 75;
       maxEnergy = 20;
       canMove = true;
       needsEnergy = true;
       weaponRadius = 10;
     }
     else if (type == "bomber") {
-      maxHealth = 1; // 75
+      maxHealth = game.debug == true ? 1 : 75;
       maxEnergy = 15;
       needsEnergy = true;
     }
     else if (type == "storage") {
-      maxHealth = 8;
+      maxHealth = game.debug == true ? 1 : 8;
     }
     else if (type == "reactor") {
-      maxHealth = 50;
+      maxHealth = game.debug == true ? 1 : 50;
     }
     else if (type == "collector") {
-      maxHealth = 5;
+      maxHealth = game.debug == true ? 1 : 5;
     }
     else if (type == "relay") {
-      maxHealth = 10;
+      maxHealth = game.debug == true ? 1 : 10;
     }
     else if (type == "cannon") {
-      maxHealth = 25;
+      maxHealth = game.debug == true ? 1 : 25;
       maxEnergy = 40;
       weaponRadius = 10;
       canMove = true;
@@ -171,7 +170,7 @@ class Building implements Node {
       game.engine.renderer["buffer"].addDisplayObject(cannon);
     }
     else if (type == "mortar") {
-      maxHealth = 40;
+      maxHealth = game.debug == true ? 1 : 40;
       maxEnergy = 20;
       weaponRadius = 14;
       canMove = true;
@@ -179,7 +178,7 @@ class Building implements Node {
       energyCounter = 200;
     }
     else if (type == "beam") {
-      maxHealth = 20;
+      maxHealth = game.debug == true ? 1 : 20;
       maxEnergy = 10;
       weaponRadius = 20;
       canMove = true;
@@ -188,12 +187,7 @@ class Building implements Node {
     
     Connection.add(this);
   }
-  
-  static void clear() {
-    buildings.clear();
-    damageCounter = 0;
-  }
-    
+     
   /**
    * Adds a building of a given [type] at the given [position].
    */
@@ -201,7 +195,7 @@ class Building implements Node {
     position = position * 16 + new Vector(8, 8);
     Building building = new Building(position, type);
     if (type == "base") base = building;
-    buildings.add(building);
+    game.engine.gameObjects.add(building);
     return building;
   }
   
@@ -213,7 +207,7 @@ class Building implements Node {
     // only explode building when it has been built
     if (building.built) {
       Explosion.add(building.position);
-      game.engine.playSound("explosion", building.position.real2tiled());
+      game.engine.playSound("explosion", building.position, game.scroll, game.zoom);
     }
 
     if (building.type == "base") {
@@ -244,14 +238,16 @@ class Building implements Node {
     if (building.cannon != null)
       game.engine.renderer["buffer"].removeDisplayObject(building.cannon);
 
-    buildings.removeAt(buildings.indexOf(building));
+    game.engine.gameObjects.remove(building);
   }
   
   static void removeSelected() {
-    for (int i = 0; i < buildings.length; i++) {
-      if (buildings[i].selected) {
-        if (buildings[i].type != "base")
-          Building.remove(buildings[i]);
+    for (var building in game.engine.gameObjects) {
+      if (building is Building) {
+        if (building.selected) {
+          if (building.type != "base")
+            Building.remove(building);
+        }
       }
     }
   }
@@ -259,13 +255,15 @@ class Building implements Node {
   static void select() {
     if (game.mode == "DEFAULT") {
       Building buildingSelected = null;
-      for (int i = 0; i < buildings.length; i++) {
-        buildings[i].selected = buildings[i].hovered;
-        if (buildings[i].selected) {
-          buildingSelected = buildings[i];
-          buildings[i].selectedCircle.visible = true;
-        } else {
-          buildings[i].selectedCircle.visible = false;
+      for (var building in game.engine.gameObjects) {
+        if (building is Building) {
+          building.selected = building.hovered;
+          if (building.selected) {
+            buildingSelected = building;
+            building.selectedCircle.visible = true;
+          } else {
+            building.selectedCircle.visible = false;
+          }
         }
       }
       if (buildingSelected != null) {
@@ -284,38 +282,42 @@ class Building implements Node {
   }
   
   static void deselect() {
-    for (int i = 0; i < buildings.length; i++) {
-      buildings[i].selected = false;
-      buildings[i].selectedCircle.visible = false;
+    for (var building in game.engine.gameObjects) {
+      if (building is Building) {
+        building.selected = false;
+        building.selectedCircle.visible = false;
+      }
     }
     querySelector('#deactivate').style.display = "none";
     querySelector('#activate').style.display = "none";
   }
   
   static void updateHoverState() {
-    for (int i = 0; i < buildings.length; i++) {
-      Vector realPosition = buildings[i].position.real2screen();
-      buildings[i].hovered = (game.engine.mouse.position.x > realPosition.x - (game.tileSize * buildings[i].size * game.zoom / 2) &&
-          game.engine.mouse.position.x < realPosition.x + (game.tileSize * buildings[i].size * game.zoom / 2) &&
-          game.engine.mouse.position.y > realPosition.y - (game.tileSize * buildings[i].size * game.zoom / 2) &&
-          game.engine.mouse.position.y < realPosition.y + (game.tileSize * buildings[i].size * game.zoom / 2));
+    for (var building in game.engine.gameObjects) {
+      if (building is Building) {
+        Vector realPosition = game.real2screen(building.position);
+        building.hovered = (game.mouse.position.x > realPosition.x - (game.tileSize * building.size * game.zoom / 2) &&
+            game.mouse.position.x < realPosition.x + (game.tileSize * building.size * game.zoom / 2) &&
+            game.mouse.position.y > realPosition.y - (game.tileSize * building.size * game.zoom / 2) &&
+            game.mouse.position.y < realPosition.y + (game.tileSize * building.size * game.zoom / 2));
+      }
     }
   }
   
-  static void update() {
-    for (int i = 0; i < buildings.length; i++) {
-      buildings[i].move();
-      buildings[i].checkOperating();
-      buildings[i].shield();
-      buildings[i].requestPacket();
-    }
+  void update() {
+    move();
+    checkOperating();
+    shield();
+    requestPacket();
 
     // take damage
     damageCounter += 1 * game.speed;
     if (damageCounter > 10) {
       damageCounter -= 10;
-      for (int i = 0; i < buildings.length; i++) {
-        buildings[i].takeDamage();
+      for (var building in game.engine.gameObjects) {
+        if (building is Building) {
+          building.takeDamage();
+        }
       }
     }
 
@@ -323,80 +325,92 @@ class Building implements Node {
     collectCounter += 1 * game.speed;
     if (collectCounter > 250) {
       collectCounter -= 250;
-      for (int i = 0; i < buildings.length; i++) {
-        buildings[i].collectEnergy();
+      for (var building in game.engine.gameObjects) {
+        if (building is Building) {
+          building.collectEnergy();
+        }
       }
     }
   }
   
   static void activate() {
-    for (int i = 0; i < buildings.length; i++) {
-      if (buildings[i].selected)
-        buildings[i].active = true;
+    for (var building in game.engine.gameObjects) {
+      if (building is Building) {
+        if (building.selected)
+          building.active = true;
+      }
     }
   }
   
   static void deactivate() {
-    for (int i = 0; i < buildings.length; i++) {
-      if (buildings[i].selected) {
-        buildings[i].active = false;
-        
-        if (buildings[i].type == "analyzer") {
-          for (int j = 0; j < Emitter.emitters.length; j++) {
-            if (buildings[i].weaponTargetPosition == Emitter.emitters[j].sprite.position) {
-              Emitter.emitters[j].analyzer = null;
-              buildings[i].weaponTargetPosition = null;
-              break;
+    for (var building in game.engine.gameObjects) {
+      if (building is Building) {
+        if (building.selected) {
+          building.active = false;
+          
+          if (building.type == "analyzer") {
+            for (var emitter in game.engine.gameObjects) {
+              if (emitter is Emitter) {
+                if (building.weaponTargetPosition == emitter.sprite.position) {
+                  emitter.analyzer = null;
+                  building.weaponTargetPosition = null;
+                  break;
+                }
+              }
             }
           }
+          
         }
-        
       }
     }
   }
   
   static void reposition(Vector position) { 
-    for (int i = 0; i < buildings.length; i++) {
-      if (buildings[i].built && buildings[i].selected && buildings[i].canMove) {
-        // check if it can be placed
-        if (game.canBePlaced(position, buildings[i])) {
-          game.engine.renderer["main"].view.style.cursor = "url('images/Normal.cur') 2 2, pointer";
-          buildings[i].operating = false;
-          buildings[i].rotating = false;
-          buildings[i].weaponTargetPosition = null;
-          buildings[i].status = "RISING";
-          buildings[i].moveTargetPosition = (position * game.tileSize) + new Vector(8, 8);
-          buildings[i].targetSymbol.visible = true;
-          buildings[i].targetSymbol.position = (position * game.tileSize) + new Vector(8, 8);
-          Connection.remove(buildings[i]);
+    for (var building in game.engine.gameObjects) {
+      if (building is Building) {
+        if (building.built && building.selected && building.canMove) {
+          // check if it can be placed
+          if (game.canBePlaced(position, building)) {
+            game.engine.renderer["main"].view.style.cursor = "url('images/Normal.cur') 2 2, pointer";
+            building.operating = false;
+            building.rotating = false;
+            building.weaponTargetPosition = null;
+            building.status = "RISING";
+            building.moveTargetPosition = (position * game.tileSize) + new Vector(8, 8);
+            building.targetSymbol.visible = true;
+            building.targetSymbol.position = (position * game.tileSize) + new Vector(8, 8);
+            Connection.remove(building);
+          }
         }
       }
     }
   }
   
-  static bool collision(Rectangle rectangle, [Building building]) {  
+  static bool intersect(Rectangle rectangle, [Building building2]) {  
     // check stationary buildings
-    for (int i = 0; i < buildings.length; i++) {
-      if (building != null && building == buildings[i])
-        continue;
-      
-      Rectangle buildingRect = null;
-      // check flying buildings
-      if (buildings[i].status != "IDLE") {
-        buildingRect = new Rectangle(buildings[i].moveTargetPosition.x - buildings[i].size * game.tileSize / 2,
-                                     buildings[i].moveTargetPosition.y - buildings[i].size * game.tileSize / 2,
-                                     buildings[i].size * game.tileSize - 1,
-                                     buildings[i].size * game.tileSize - 1);  
-      } 
-      // check stationary buildings
-      else { 
-        buildingRect = new Rectangle(buildings[i].position.x - buildings[i].size * game.tileSize / 2,
-                                     buildings[i].position.y - buildings[i].size * game.tileSize / 2,
-                                     buildings[i].size * game.tileSize - 1,
-                                     buildings[i].size * game.tileSize - 1);  
-      }
-      if (rectangle.intersects(buildingRect)) {
-        return true;
+    for (var building in game.engine.gameObjects) {
+      if (building is Building) {
+        if (building2 != null && building2 == building)
+          continue;
+        
+        Rectangle buildingRect = null;
+        // check flying buildings
+        if (building.status != "IDLE") {
+          buildingRect = new Rectangle(building.moveTargetPosition.x - building.size * game.tileSize / 2,
+                                       building.moveTargetPosition.y - building.size * game.tileSize / 2,
+                                       building.size * game.tileSize - 1,
+                                       building.size * game.tileSize - 1);  
+        } 
+        // check stationary buildings
+        else { 
+          buildingRect = new Rectangle(building.position.x - building.size * game.tileSize / 2,
+                                       building.position.y - building.size * game.tileSize / 2,
+                                       building.size * game.tileSize - 1,
+                                       building.size * game.tileSize - 1);  
+        }
+        if (rectangle.intersects(buildingRect)) {
+          return true;
+        }
       }
     }
     return false;
@@ -409,22 +423,24 @@ class Building implements Node {
   List getNeighbours(Building target) {
     List neighbours = new List();
     
-    for (int i = 0; i < buildings.length; i++) {
-      // must not be the same building
-      if (buildings[i].position != position) {
-        // must be idle
-        if (buildings[i].status == "IDLE") {
-          // it must either be the target or be built
-          if (buildings[i] == target || (buildings[i].built && (buildings[i].type == "collector" || buildings[i].type == "relay"))) {
-
-              int allowedDistance = 10 * game.tileSize;
-              if (type == "relay" && buildings[i].type == "relay") {
-                allowedDistance = 20 * game.tileSize;
-              }
-              
-              if (position.distanceTo(buildings[i].position) <= allowedDistance) {
-                neighbours.add(buildings[i]);
-              }
+    for (var building in game.engine.gameObjects) {
+      if (building is Building) {
+        // must not be the same building
+        if (building.position != position) {
+          // must be idle
+          if (building.status == "IDLE") {
+            // it must either be the target or be built
+            if (building == target || (building.built && (building.type == "collector" || building.type == "relay"))) {
+  
+                int allowedDistance = 10 * game.tileSize;
+                if (type == "relay" && building.type == "relay") {
+                  allowedDistance = 20 * game.tileSize;
+                }
+                
+                if (position.distanceTo(building.position) <= allowedDistance) {
+                  neighbours.add(building);
+                }
+            }
           }
         }
       }
@@ -481,9 +497,9 @@ class Building implements Node {
     }
 
     if (status == "MOVING") {
-      calculateVector();
-      
-      position += speed;
+      if (moveTargetPosition.x != position.x || moveTargetPosition.y != position.y) {
+        position += game.engine.calculateVelocity(position, moveTargetPosition, Building.baseSpeed * game.speed);
+      }    
       
       if (position.x > moveTargetPosition.x - 1 &&
           position.x < moveTargetPosition.x + 1 &&
@@ -497,35 +513,16 @@ class Building implements Node {
     }
   }
 
-  void calculateVector() {
-    if (moveTargetPosition.x != position.x || moveTargetPosition.y != position.y) {
-      Vector targetPosition = new Vector(moveTargetPosition.x, moveTargetPosition.y);
-      Vector ownPosition = new Vector(position.x, position.y);
-      Vector delta = targetPosition - ownPosition;
-      num distance = ownPosition.distanceTo(targetPosition);
-
-      speed.x = (delta.x / distance) * Building.baseSpeed * game.speed;
-      speed.y = (delta.y / distance) * Building.baseSpeed * game.speed;
-      
-      if (speed.x.abs() > delta.x.abs())
-        speed.x = delta.x;
-      if (speed.y.abs() > delta.y.abs())
-        speed.y = delta.y;
-    }
-  }
-
   void takeDamage() {
     // buildings can only be damaged while not moving
     if (status == "IDLE") {
 
       for (int i = -(size ~/ 2); i <= (size ~/ 2); i++) {
         for (int j = -(size ~/ 2); j <= -(size ~/ 2); j++) {
-          Vector tilePosition = position.real2tiled() + new Vector(i, j);
-          if (game.world.contains(tilePosition)) {
-            Tile tile = game.world.getTile(position + new Vector(i * game.tileSize, j * game.tileSize));
-            if (tile.creep > 0) {
-              health -= tile.creep / 10;
-            }
+          Vector tempPosition = position + new Vector(i * game.tileSize, j * game.tileSize);
+          Tile tile = game.world.getTile(tempPosition);
+          if (tile.creep > 0) {
+            health -= tile.creep / 10;
           }
         }
       }
@@ -538,18 +535,18 @@ class Building implements Node {
   
   void shield() {
     if (built && operating && type == "shield" && status == "IDLE") {
-      Vector center = position;
-      var tiledPosition = position.real2tiled();
 
-      for (int i = tiledPosition.x - weaponRadius; i <= tiledPosition.x + weaponRadius; i++) {
-        for (int j = tiledPosition.y - weaponRadius; j <= tiledPosition.y + weaponRadius; j++) {
-          if (game.world.contains(new Vector(i, j))) {  
-            num distance = pow((i * game.tileSize + game.tileSize / 2) - center.x, 2) + pow((j * game.tileSize + game.tileSize / 2) - center.y, 2);
-            if (distance < pow(game.tileSize * 10, 2)) {
-              if (game.world.tiles[i][j].creep > 0) {
-                game.world.tiles[i][j].creep -= distance / game.tileSize * .1; // the closer to the shield the more creep is removed
-                if (game.world.tiles[i][j].creep < 0) {
-                  game.world.tiles[i][j].creep = 0;
+      for (int i = -weaponRadius; i <= weaponRadius; i++) {
+        for (int j = -weaponRadius; j <= weaponRadius; j++) {
+          Vector tempPosition = position + new Vector(i * game.tileSize, j * game.tileSize);
+          if (game.world.contains(tempPosition / game.tileSize)) {  
+            var distance = position.distanceTo(tempPosition + new Vector(8, 8));
+            if (distance < game.tileSize * 10) {
+              Tile tile = game.world.getTile(tempPosition);
+              if (tile.creep > 0) {
+                tile.creep -= distance / game.tileSize * .1; // the closer to the shield the more creep is removed
+                if (tile.creep < 0) {
+                  tile.creep = 0;
                 }
                 World.creeperDirty = true;
               }
@@ -586,20 +583,16 @@ class Building implements Node {
   void collectEnergy() {
     if (type == "collector" && built) {
       int height = game.world.getTile(position).height;
-      Vector centerBuilding = position;
 
       for (int i = -5; i < 7; i++) {
         for (int j = -5; j < 7; j++) {
-          var tiledPosition = position.real2tiled();
-          Vector positionCurrent = new Vector(tiledPosition.x + i, tiledPosition.y + j);
+          Vector tempPosition = position + new Vector(i * game.tileSize, j * game.tileSize);
+          if (game.world.contains(tempPosition / game.tileSize)) {
+            int tileHeight = game.world.getTile(tempPosition).height;
 
-          if (game.world.contains(positionCurrent)) {
-            Vector positionCurrentCenter = new Vector(positionCurrent.x * game.tileSize + (game.tileSize / 2), positionCurrent.y * game.tileSize + (game.tileSize / 2));
-            int tileHeight = game.world.tiles[positionCurrent.x][positionCurrent.y].height;
-
-            if (pow(positionCurrentCenter.x - centerBuilding.x, 2) + pow(positionCurrentCenter.y - centerBuilding.y, 2) < pow(game.tileSize * 6, 2)) {
+            if (position.distanceTo(tempPosition + new Vector(8, 8)) < game.tileSize * 6) {
               if (tileHeight == height) {
-                if (game.world.tiles[positionCurrent.x][positionCurrent.y].collector == this)
+                if (game.world.getTile(tempPosition).collector == this)
                   collectedEnergy += 1;
               }
             }
@@ -644,7 +637,7 @@ class Building implements Node {
     for (int i = -5; i < 7; i++) {
       for (int j = -5; j < 7; j++) {
 
-        var tiledPosition = position.real2tiled();
+        var tiledPosition = game.real2tiled(position);
         Vector positionCurrent = new Vector(tiledPosition.x + i, tiledPosition.y + j);
 
         if (game.world.contains(positionCurrent)) {
@@ -659,14 +652,16 @@ class Building implements Node {
                 game.world.tiles[positionCurrent.x][positionCurrent.y].collector = null;
 
                 // check if another collector can take this tile
-                for (int k = 0; k < buildings.length; k++) {
-                  if (buildings[k] != this && buildings[k].type == "collector") {
-                    int heightK = game.world.getTile(buildings[k].position).height;
-                    Vector centerBuildingK = buildings[k].position;
-                    if (centerBuildingK.distanceTo(positionCurrentCenter) < game.tileSize * 6) {
-                      if (tileHeight == heightK) {
-                        game.world.tiles[positionCurrent.x][positionCurrent.y].collector = buildings[k];
-                        break;
+                for (var building in game.engine.gameObjects) {
+                  if (building is Building) {
+                    if (building != this && building.type == "collector") {
+                      int heightK = game.world.getTile(building.position).height;
+                      Vector centerBuildingK = building.position;
+                      if (centerBuildingK.distanceTo(positionCurrentCenter) < game.tileSize * 6) {
+                        if (tileHeight == heightK) {
+                          game.world.tiles[positionCurrent.x][positionCurrent.y].collector = building;
+                          break;
+                        }
                       }
                     }
                   }
@@ -698,7 +693,7 @@ class Building implements Node {
         if (weaponTargetPosition == null) {
           int lowestTile = 10;
           
-          var positionTiled = position.real2tiled();
+          var positionTiled = game.real2tiled(position);
           for (int i = -weaponRadius; i <= weaponRadius; i++) {
             for (int j = -weaponRadius; j <= weaponRadius; j++) {
 
@@ -778,7 +773,7 @@ class Building implements Node {
           List targets = new List();
 
           // find closest random target
-          var targetPositionTiled = position.real2tiled();
+          var targetPositionTiled = game.real2tiled(position);
           for (int i = -weaponRadius; i <= weaponRadius; i++) {
             for (int j = -weaponRadius; j <= weaponRadius; j++) {
 
@@ -806,7 +801,7 @@ class Building implements Node {
             var dx = targets[0].x * game.tileSize + game.tileSize / 2 - position.x;
             var dy = targets[0].y * game.tileSize + game.tileSize / 2 - position.y;
 
-            targetAngle = game.engine.rad2deg(atan2(dy, dx)).floor();
+            targetAngle = Engine.rad2deg(atan2(dy, dx)).floor();
             weaponTargetPosition = new Vector(targets[0].x, targets[0].y);
             rotating = true;
           }
@@ -845,7 +840,7 @@ class Building implements Node {
             energy -= 1;
             operating = true;
             Projectile.add(position, new Vector(weaponTargetPosition.x * game.tileSize + game.tileSize / 2, weaponTargetPosition.y * game.tileSize + game.tileSize / 2), targetAngle);
-            game.engine.playSound("laser", position.real2tiled());
+            game.engine.playSound("laser", position, game.scroll, game.zoom);
           }
         }
       }
@@ -856,7 +851,7 @@ class Building implements Node {
           // find most creep in range
           Vector target = null;
           var highestCreep = 0;
-          var tiledPosition = position.real2tiled();
+          var tiledPosition = game.real2tiled(position);
           for (int i = tiledPosition.x - weaponRadius; i <= tiledPosition.x + weaponRadius; i++) {
             for (int j = tiledPosition.y - weaponRadius; j <= tiledPosition.y + weaponRadius; j++) {
               if (game.world.contains(new Vector(i, j))) {
@@ -870,7 +865,7 @@ class Building implements Node {
             }
           }
           if (target != null) {
-            game.engine.playSound("shot", position.real2tiled());
+            game.engine.playSound("shot", position, game.scroll, game.zoom);
             Shell.add(position, new Vector(target.x * game.tileSize + game.tileSize / 2, target.y * game.tileSize + game.tileSize / 2));
             energy -= 1;
           }
@@ -886,57 +881,50 @@ class Building implements Node {
   
   static void drawRepositionInfo() {
     CanvasRenderingContext2D context = game.engine.renderer["buffer"].context;
-    
-    for (int i = 0; i < buildings.length; i++) {
-      if (buildings[i].built && buildings[i].selected && buildings[i].canMove) {
-        game.engine.renderer["main"].view.style.cursor = "none";
         
-        Vector positionI = game.hoveredTile.tiled2screen() + new Vector(8 * game.zoom, 8 * game.zoom);
-   
-        game.drawRangeBoxes(game.hoveredTile, buildings[i]);
+    for (var building in game.engine.gameObjects) {
+      if (building is Building) {
+        if (building.built && building.selected && building.canMove) {
+          game.engine.renderer["main"].view.style.cursor = "none";
+          
+          Vector positionI = game.tiled2screen(game.hoveredTile) + new Vector(8 * game.zoom, 8 * game.zoom);
+     
+          game.drawRangeBoxes(game.hoveredTile, building);
+    
+          bool canBePlaced = game.canBePlaced(game.hoveredTile, building);
   
-        bool canBePlaced = game.canBePlaced(game.hoveredTile, buildings[i]);
-
-        if (canBePlaced)
-          context.fillStyle = "rgba(0,255,0,0.5)";
-        else
-          context.fillStyle = "rgba(255,0,0,0.5)";
-  
-        // draw rectangle
-        context.fillRect(positionI.x - game.tileSize * buildings[i].size * game.zoom / 2,
-                         positionI.y - game.tileSize * buildings[i].size * game.zoom / 2,
-                         game.tileSize * buildings[i].size * game.zoom,
-                         game.tileSize * buildings[i].size * game.zoom);
-
-        if (canBePlaced) {
-          // draw lines to other buildings
-          for (int j = 0; j < buildings.length; j++) {
-            if (i != j) {
-              if (buildings[i].type == "base" || buildings[j].type == "collector" || buildings[j].type == "relay" || buildings[j].type == "base") {
-                Vector positionJ = buildings[j].position.real2screen();
-
-                int allowedDistance = 10 * game.tileSize;
-                if (buildings[j].type == "relay" && buildings[i].type == "relay") {
-                  allowedDistance = 20 * game.tileSize;
-                }
-
-                if (positionJ.distanceTo(positionI) <= allowedDistance * game.zoom) {
-                  context
-                    ..strokeStyle = '#000'
-                    ..lineWidth = 3 * game.zoom
-                    ..beginPath()
-                    ..moveTo(positionJ.x, positionJ.y)
-                    ..lineTo(positionI.x, positionI.y)
-                    ..stroke()
-                    ..strokeStyle = '#0f0'
-                    ..lineWidth = 2 * game.zoom
-                    ..stroke();
+          if (canBePlaced) {
+            // draw lines to other buildings
+            for (var building2 in game.engine.gameObjects) {
+              if (building2 is Building) {
+                if (building != building2) {
+                  if (building.type == "base" || building2.type == "collector" || building2.type == "relay" || building2.type == "base") {
+                    Vector positionJ = game.real2screen(building2.position);
+    
+                    int allowedDistance = 10 * game.tileSize;
+                    if (building2.type == "relay" && building.type == "relay") {
+                      allowedDistance = 20 * game.tileSize;
+                    }
+    
+                    if (positionJ.distanceTo(positionI) <= allowedDistance * game.zoom) {
+                      context
+                        ..strokeStyle = '#000'
+                        ..lineWidth = 3 * game.zoom
+                        ..beginPath()
+                        ..moveTo(positionJ.x, positionJ.y)
+                        ..lineTo(positionI.x, positionI.y)
+                        ..stroke()
+                        ..strokeStyle = '#0f0'
+                        ..lineWidth = 2 * game.zoom
+                        ..stroke();
+                    }
+                  }
                 }
               }
             }
           }
+  
         }
-
       }
     }
   }
@@ -944,93 +932,95 @@ class Building implements Node {
   static void draw() {
     CanvasRenderingContext2D context = game.engine.renderer["buffer"].context;
     
-    for (int i = 0; i < buildings.length; i++) {
-      Vector realPosition = buildings[i].position.real2screen();
-  
-      if (game.engine.renderer["buffer"].isVisible(realPosition, new Vector(game.engine.images[buildings[i].type].width * game.zoom, game.engine.images[buildings[i].type].height * game.zoom))) { 
-        // draw energy bar
-        if (buildings[i].needsEnergy) {
-          context.fillStyle = '#f00';
-          context.fillRect(realPosition.x - (buildings[i].size * game.tileSize / 2 - 2) * game.zoom,
-                           realPosition.y - (buildings[i].size * game.tileSize / 2 - 4) * game.zoom,
-                           ((buildings[i].size * game.tileSize * game.zoom - 4) / buildings[i].maxEnergy) * buildings[i].energy,
-                           3 * game.zoom);
+    for (var building in game.engine.gameObjects) {
+      if (building is Building) {
+        Vector realPosition = game.real2screen(building.position);
+    
+        if (game.engine.renderer["buffer"].isVisible(realPosition, new Vector(game.engine.images[building.type].width * game.zoom, game.engine.images[building.type].height * game.zoom))) { 
+          // draw energy bar
+          if (building.needsEnergy) {
+            context.fillStyle = '#f00';
+            context.fillRect(realPosition.x - (building.size * game.tileSize / 2 - 2) * game.zoom,
+                             realPosition.y - (building.size * game.tileSize / 2 - 4) * game.zoom,
+                             ((building.size * game.tileSize * game.zoom - 4) / building.maxEnergy) * building.energy,
+                             3 * game.zoom);
+          }
+    
+          // draw health bar (only if health is below maxHealth)
+          if (building.health < building.maxHealth) {
+            context.fillStyle = '#0f0';
+            context.fillRect(realPosition.x - (building.size * game.tileSize / 2 - 2) * game.zoom,
+                             realPosition.y + (building.size * game.tileSize / 2 - 4) * game.zoom,
+                             ((building.size * game.tileSize * game.zoom - 4) / building.maxHealth) * building.health,
+                             3 * game.zoom);
+          }
+    
+          // draw inactive sign
+          if (!building.active) {
+            context.strokeStyle = "#F00";
+            context.lineWidth = 2 * game.zoom;
+    
+            context.beginPath();
+            context.arc(realPosition.x, realPosition.y, (game.tileSize / 2) * building.size, 0, PI * 2, true);
+            context.closePath();
+            context.stroke();
+    
+            context.beginPath();
+            context.moveTo(realPosition.x - (game.tileSize * building.size / 3), realPosition.y + (game.tileSize * building.size / 3));
+            context.lineTo(realPosition.x + (game.tileSize * building.size / 3), realPosition.y - (game.tileSize * building.size / 3));
+            context.stroke();
+          }
         }
-  
-        // draw health bar (only if health is below maxHealth)
-        if (buildings[i].health < buildings[i].maxHealth) {
-          context.fillStyle = '#0f0';
-          context.fillRect(realPosition.x - (buildings[i].size * game.tileSize / 2 - 2) * game.zoom,
-                           realPosition.y + (buildings[i].size * game.tileSize / 2 - 4) * game.zoom,
-                           ((buildings[i].size * game.tileSize * game.zoom - 4) / buildings[i].maxHealth) * buildings[i].health,
-                           3 * game.zoom);
-        }
-  
-        // draw inactive sign
-        if (!buildings[i].active) {
-          context.strokeStyle = "#F00";
-          context.lineWidth = 2 * game.zoom;
-  
-          context.beginPath();
-          context.arc(realPosition.x, realPosition.y, (game.tileSize / 2) * buildings[i].size, 0, PI * 2, true);
-          context.closePath();
-          context.stroke();
-  
-          context.beginPath();
-          context.moveTo(realPosition.x - (game.tileSize * buildings[i].size / 3), realPosition.y + (game.tileSize * buildings[i].size / 3));
-          context.lineTo(realPosition.x + (game.tileSize * buildings[i].size / 3), realPosition.y - (game.tileSize * buildings[i].size / 3));
-          context.stroke();
-        }
-      }
-  
-      // draw various stuff when operating
-      if (buildings[i].operating) {
-        if (buildings[i].type == "analyzer") {
-          Vector targetPosition = buildings[i].weaponTargetPosition.real2screen();
-          context
-            ..strokeStyle = '#00f'
-            ..lineWidth = 5 * game.zoom
-            ..beginPath()
-            ..moveTo(realPosition.x, realPosition.y)
-            ..lineTo(targetPosition.x, targetPosition.y)
-            ..stroke()
-            ..strokeStyle = '#fff'
-            ..lineWidth = 3 * game.zoom
-            ..stroke();
-        }
-        else if (buildings[i].type == "beam") {
-          Vector targetPosition = buildings[i].weaponTargetPosition.real2screen();
-          context
-            ..strokeStyle = '#f00'
-            ..lineWidth = 5 * game.zoom
-            ..beginPath()
-            ..moveTo(realPosition.x, realPosition.y)
-            ..lineTo(targetPosition.x, targetPosition.y)
-            ..stroke()
-            ..strokeStyle = '#fff'
-            ..lineWidth = 3 * game.zoom
-            ..stroke();
-        }
-        else if (buildings[i].type == "shield") {
-          context
-            ..save()
-            ..globalAlpha = .5
-            ..drawImageScaled(game.engine.images["forcefield"], realPosition.x - 168 * game.zoom, realPosition.y - 168 * game.zoom, 336 * game.zoom, 336 * game.zoom)
-            ..restore();
-        }
-        else if (buildings[i].type == "terp") {
-          Vector targetPosition = buildings[i].weaponTargetPosition.tiled2screen();
-  
-          context
-            ..strokeStyle = '#f00'
-            ..lineWidth = 4 * game.zoom
-            ..beginPath()
-            ..moveTo(realPosition.x, realPosition.y)
-            ..lineTo(targetPosition.x + 8, targetPosition.y + 8)
-            ..stroke()
-            ..strokeStyle = '#fff'
-            ..lineWidth = 2 * game.zoom
-            ..stroke();
+    
+        // draw various stuff when operating
+        if (building.operating) {
+          if (building.type == "analyzer") {
+            Vector targetPosition = game.real2screen(building.weaponTargetPosition);
+            context
+              ..strokeStyle = '#00f'
+              ..lineWidth = 5 * game.zoom
+              ..beginPath()
+              ..moveTo(realPosition.x, realPosition.y)
+              ..lineTo(targetPosition.x, targetPosition.y)
+              ..stroke()
+              ..strokeStyle = '#fff'
+              ..lineWidth = 3 * game.zoom
+              ..stroke();
+          }
+          else if (building.type == "beam") {
+            Vector targetPosition = game.real2screen(building.weaponTargetPosition);
+            context
+              ..strokeStyle = '#f00'
+              ..lineWidth = 5 * game.zoom
+              ..beginPath()
+              ..moveTo(realPosition.x, realPosition.y)
+              ..lineTo(targetPosition.x, targetPosition.y)
+              ..stroke()
+              ..strokeStyle = '#fff'
+              ..lineWidth = 3 * game.zoom
+              ..stroke();
+          }
+          else if (building.type == "shield") {
+            context
+              ..save()
+              ..globalAlpha = .5
+              ..drawImageScaled(game.engine.images["forcefield"], realPosition.x - 168 * game.zoom, realPosition.y - 168 * game.zoom, 336 * game.zoom, 336 * game.zoom)
+              ..restore();
+          }
+          else if (building.type == "terp") {
+            Vector targetPosition = game.tiled2screen(building.weaponTargetPosition);
+    
+            context
+              ..strokeStyle = '#f00'
+              ..lineWidth = 4 * game.zoom
+              ..beginPath()
+              ..moveTo(realPosition.x, realPosition.y)
+              ..lineTo(targetPosition.x + 8, targetPosition.y + 8)
+              ..stroke()
+              ..strokeStyle = '#fff'
+              ..lineWidth = 2 * game.zoom
+              ..stroke();
+          }
         }
       }
     }

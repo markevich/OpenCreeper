@@ -1,12 +1,11 @@
 part of creeper;
 
-class Shell {
+class Shell extends GameObject {
   Vector targetPosition, speed = new Vector(0, 0);
   bool remove = false;
   int trailCounter = 0;
   Sprite sprite;
   static final num baseSpeed = 1.5;
-  static List<Shell> shells = new List<Shell>();
 
   Shell(position, this.targetPosition) {
     sprite = new Sprite(Layer.SHELL, game.engine.images["shell"], position, 16, 16);
@@ -14,43 +13,22 @@ class Shell {
     game.engine.renderer["buffer"].addDisplayObject(sprite);
   }
   
-  static void clear() {
-    shells.clear();
-  }
-  
   static Shell add(Vector position, Vector targetPosition) {
     Shell shell = new Shell(position, targetPosition);
-    shells.add(shell);
+    game.engine.gameObjects.add(shell);
     return shell;
   }
   
-  static void update() {
-    for (int i = shells.length - 1; i >= 0; i--) {
-      if (shells[i].remove) {
-        game.engine.renderer["buffer"].removeDisplayObject(shells[i].sprite);
-        shells.removeAt(i);
-      }
-      else
-        shells[i].move();
+  void update() {
+    if (remove) {
+      game.engine.renderer["buffer"].removeDisplayObject(sprite);
+      game.engine.gameObjects.remove(this);
     }
-  }
-
-  void calculateVector() {
-    Vector delta = targetPosition - sprite.position;
-    num distance = sprite.position.distanceTo(targetPosition);
-
-    speed.x = (delta.x / distance) * Shell.baseSpeed * game.speed;
-    speed.y = (delta.y / distance) * Shell.baseSpeed * game.speed;
-
-    if (speed.x.abs() > delta.x.abs())
-      speed.x = delta.x;
-    if (speed.y.abs() > delta.y.abs())
-      speed.y = delta.y;
+    else
+      move();
   }
 
   void move() {
-    calculateVector();
-
     trailCounter++;
     if (trailCounter == 10) {
       trailCounter = 0;
@@ -61,15 +39,15 @@ class Shell {
     if (sprite.rotation > 359)
       sprite.rotation -= 359;
 
-    sprite.position += speed;
+    sprite.position += game.engine.calculateVelocity(sprite.position, targetPosition, Shell.baseSpeed * game.speed);
 
     // if the target is reached explode and remove
     if (sprite.position == targetPosition) {
       remove = true;
 
-      Vector targetPositionTiled = targetPosition.real2tiled();
+      Vector targetPositionTiled = game.real2tiled(targetPosition);
       Explosion.add(targetPosition);
-      game.engine.playSound("explosion", targetPositionTiled);
+      game.engine.playSound("explosion", targetPosition, game.scroll, game.zoom);
 
       for (int i = -4; i <= 4; i++) {
         for (int j = -4; j <= 4; j++) {

@@ -21,24 +21,26 @@ class Connection {
     connections.clear();
   }
   
-  static void add(Building building) {  
-    for (int i = 0; i < Building.buildings.length; i++) {
-      if (Building.buildings[i] != building && Building.buildings[i].status == "IDLE" &&
-          (building.type == "collector" || building.type == "relay" || Building.buildings[i].type == "collector" || Building.buildings[i].type == "relay" || Building.buildings[i].type == "base")) {
-
-        num allowedDistance = 10 * game.tileSize;
-        if (Building.buildings[i].type == "relay" && building.type == "relay") {
-          allowedDistance = 20 * game.tileSize;
-        }
-
-        if (building.position.distanceTo(Building.buildings[i].position) <= allowedDistance) {
-          if (!exists(building, Building.buildings[i])) {
-            Connection connection = new Connection(building, Building.buildings[i]);
-            connections.add(connection);
+  static void add(Building building2) {  
+    for (var building in game.engine.gameObjects) {
+      if (building is Building) {
+        if (Building != building2 && building.status == "IDLE" &&
+            (building2.type == "collector" || building2.type == "relay" || building.type == "collector" || building.type == "relay" || building.type == "base")) {
+  
+          num allowedDistance = 10 * game.tileSize;
+          if (building.type == "relay" && building2.type == "relay") {
+            allowedDistance = 20 * game.tileSize;
+          }
+  
+          if (building2.position.distanceTo(building.position) <= allowedDistance) {
+            if (!exists(building2, building)) {
+              Connection connection = new Connection(building2, building);
+              connections.add(connection);
+            }
           }
         }
-      }
-    }    
+      }   
+    }
   }
   
   static void remove(Building building) {

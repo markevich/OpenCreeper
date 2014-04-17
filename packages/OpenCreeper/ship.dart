@@ -1,6 +1,6 @@
 part of creeper;
 
-class Ship {
+class Ship extends GameObject {
   Vector speed = new Vector(0, 0), targetPosition = new Vector(0, 0);
   String type, status = "IDLE"; // ATTACKING, RETURNING, RISING, FALLING
   bool remove = false, hovered = false, selected = false;
@@ -10,7 +10,6 @@ class Ship {
   Circle selectedCircle;
   Rect energyRect;
   static final int baseSpeed = 1;
-  static List<Ship> ships = new List<Ship>();
 
   Ship(position, imageID, this.type, this.home) {
     sprite = new Sprite(Layer.SHIP, game.engine.images[imageID], position, 48, 48);
@@ -30,52 +29,52 @@ class Ship {
     energyRect = new Rect(Layer.ENERGYBAR, new Vector(position.x - 22, position.y - 20), new Vector(44 / maxEnergy * energy, 3), 1, '#f00');
     game.engine.renderer["buffer"].addDisplayObject(energyRect);
   }
-  
-  static void clear() {
-    ships.clear();
-  }
-  
+   
   static Ship add(Vector position, String imageID, String type, Building home) {
     Ship ship = new Ship(position, imageID, type, home);
-    ships.add(ship);
+    game.engine.gameObjects.add(ship);
     return ship;
   }
   
-  static void update() {
-    for (int i = 0; i < ships.length; i++) {
-      ships[i].move();
-    }
+  void update() {
+    move();
   }
   
   static void select() {
     // select a ship if hovered
-    for (int i = 0; i < ships.length; i++) {
-      if (ships[i].hovered) {
-        ships[i].selected = true;
-        ships[i].selectedCircle.visible = true;
-        game.targetCursor.visible = true;
+    for (var ship in game.engine.gameObjects) {
+      if (ship is Ship) {
+        if (ship.hovered) {
+          ship.selected = true;
+          ship.selectedCircle.visible = true;
+          game.targetCursor.visible = true;
+        }
       }
     }
   }
   
   static void deselect() {
-    for (int i = 0; i < ships.length; i++) {
-      ships[i].selected = false;
-      ships[i].selectedCircle.visible = false;
+    for (var ship in game.engine.gameObjects) {
+      if (ship is Ship) {
+        ship.selected = false;
+        ship.selectedCircle.visible = false;
+      }
+      game.targetCursor.visible = false;
     }
-    game.targetCursor.visible = false;
   }
   
   static void updateHoverState() {
-    for (int i = 0; i < ships.length; i++) {
-      Vector realPosition = ships[i].sprite.position.real2screen();
-      ships[i].hovered = (game.engine.mouse.position.x > realPosition.x - 24 && game.engine.mouse.position.x < realPosition.x + 24 && game.engine.mouse.position.y > realPosition.y - 24 && game.engine.mouse.position.y < realPosition.y + 24);
+    for (var ship in game.engine.gameObjects) {
+      if (ship is Ship) {
+        Vector realPosition = game.real2screen(ship.sprite.position);
+        ship.hovered = (game.mouse.position.x > realPosition.x - 24 && game.mouse.position.x < realPosition.x + 24 && game.mouse.position.y > realPosition.y - 24 && game.mouse.position.y < realPosition.y + 24);
+      }
     }
   }
 
   void turnToTarget() {
     Vector delta = targetPosition - sprite.position;
-    double angleToTarget = game.engine.rad2deg(atan2(delta.y, delta.x));
+    double angleToTarget = Engine.rad2deg(atan2(delta.y, delta.x));
 
     num turnRate = 1.5;
     num absoluteDelta = (angleToTarget - sprite.rotation).abs();
@@ -101,8 +100,8 @@ class Ship {
   }
 
   void calculateVector() {
-    num x = cos(game.engine.deg2rad(sprite.rotation));
-    num y = sin(game.engine.deg2rad(sprite.rotation));
+    num x = cos(Engine.deg2rad(sprite.rotation));
+    num y = sin(Engine.deg2rad(sprite.rotation));
 
     speed.x = x * Ship.baseSpeed * game.speed;
     speed.y = y * Ship.baseSpeed * game.speed;
@@ -114,44 +113,46 @@ class Ship {
     
     select();
     
-    for (int i = 0; i < ships.length; i++) {
+    for (var ship in game.engine.gameObjects) {
+      if (ship is Ship) {
            
-      // control if selected
-      if (ships[i].selected) {
-        game.mode = "SHIP_SELECTED";
-  
-        if (ships[i].status == "IDLE") {
-          if (position != ships[i].home.position) {         
-            // leave home
-            // get energy from home
-            int delta = ships[i].maxEnergy - ships[i].energy;
-            if (ships[i].home.energy >= delta) {
-              ships[i].energy += delta;
-              ships[i].home.energy -= delta;
-            } else {
-              ships[i].energy += ships[i].home.energy;
-              ships[i].home.energy = 0;
+        // control if selected
+        if (ship.selected) {
+          game.mode = "SHIP_SELECTED";
+    
+          if (ship.status == "IDLE") {
+            if (position != ship.home.position) {         
+              // leave home
+              // get energy from home
+              int delta = ship.maxEnergy - ship.energy;
+              if (ship.home.energy >= delta) {
+                ship.energy += delta;
+                ship.home.energy -= delta;
+              } else {
+                ship.energy += ship.home.energy;
+                ship.home.energy = 0;
+              }
+              ship.targetPosition = position;
+              ship.targetSymbol.position = ship.targetPosition;
+              ship.status = "RISING";
             }
-            ships[i].targetPosition = position;
-            ships[i].targetSymbol.position = ships[i].targetPosition;
-            ships[i].status = "RISING";
           }
+          
+          if (ship.status == "ATTACKING" || ship.status == "RETURNING") {      
+            if (position == ship.home.position) {
+              // return home
+              ship.targetPosition = position;
+              ship.status = "RETURNING";
+            }
+            else {
+              // attack again
+              ship.targetPosition = position;
+              ship.targetSymbol.position = ship.targetPosition;
+              ship.status = "ATTACKING";
+            }
+          }
+    
         }
-        
-        if (ships[i].status == "ATTACKING" || ships[i].status == "RETURNING") {      
-          if (position == ships[i].home.position) {
-            // return home
-            ships[i].targetPosition = position;
-            ships[i].status = "RETURNING";
-          }
-          else {
-            // attack again
-            ships[i].targetPosition = position;
-            ships[i].targetSymbol.position = ships[i].targetPosition;
-            ships[i].status = "ATTACKING";
-          }
-        }
-  
       }
     }
   }
@@ -202,7 +203,7 @@ class Ship {
 
       turnToTarget();
       calculateVector();
-
+      
       sprite.position += speed;
       selectedCircle.position += speed;
       energyRect.position += speed;
@@ -212,9 +213,9 @@ class Ship {
           weaponCounter = 0;
           energy -= 1;
 
-          Vector targetPositionTiled = targetPosition.real2tiled();
+          Vector targetPositionTiled = game.real2tiled(targetPosition);
           Explosion.add(targetPosition);
-          game.engine.playSound("explosion", targetPositionTiled);
+          game.engine.playSound("explosion", targetPosition, game.scroll, game.zoom);
 
           for (int i = -3; i <= 3; i++) {
             for (int j = -3; j <= 3; j++) {

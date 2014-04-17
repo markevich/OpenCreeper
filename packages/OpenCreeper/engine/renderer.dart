@@ -1,10 +1,11 @@
-part of creeper;
+part of zengine;
 
 class Renderer {
   CanvasElement view;
   CanvasRenderingContext2D context;
   int top, left, bottom, right;
   double zoom = 1.0;
+  Vector offset = new Vector.empty();
   List<List<DisplayObject>> layers = new List<List<DisplayObject>>(20);
 
   Renderer(this.view, width, height) {
@@ -20,7 +21,7 @@ class Renderer {
   void clear() {
     context.clearRect(0, 0, view.width, view.height);
   }
-
+  
   /**
    * Updates the boundaries of the renderer (eg. after resizing the window)
    */
@@ -35,6 +36,10 @@ class Renderer {
   
   void updateZoom(double zoom) {
     this.zoom = zoom;
+  }
+  
+  void updateOffset(Vector offset) {
+    this.offset = offset;
   }
 
   void addDisplayObject(DisplayObject displayObject) {
@@ -62,12 +67,18 @@ class Renderer {
    * is visible in the renderer view. Returns true or false.
    */
   bool isVisible(Vector position, Vector size) {
-    Rectangle object = new Rectangle(position.x - (size.x * game.tileSize * zoom / 2),
-                                     position.y - (size.y * game.tileSize * zoom / 2),
-                                     size.x * game.tileSize * zoom,
-                                     size.y * game.tileSize * zoom);    
+    Rectangle object = new Rectangle(position.x - (size.x * 16 * zoom / 2),
+                                     position.y - (size.y * 16 * zoom / 2),
+                                     size.x * 16 * zoom,
+                                     size.y * 16 * zoom);    
     Rectangle myview = new Rectangle(0, 0, view.width, view.height);   
     return myview.intersects(object);
+  }
+  
+  Vector real2screen(Vector vector) {
+   return new Vector(
+       view.width / 2 + (vector.x - offset.x) * zoom,
+       view.height / 2 + (vector.y - offset.y) * zoom);
   }
 
   void draw() {   
@@ -78,7 +89,7 @@ class Renderer {
   
           // render sprite
           if (displayObject is Sprite) {
-            Vector realPosition = displayObject.position.real2screen();
+            Vector realPosition = real2screen(displayObject.position);
   
             if (isVisible(realPosition, displayObject.size)) {
   
@@ -88,7 +99,7 @@ class Renderer {
               if (displayObject.rotation != 0) {
                 context.save();
                 context.translate(realPosition.x, realPosition.y);
-                context.rotate(game.engine.deg2rad(displayObject.rotation));
+                context.rotate(Engine.deg2rad(displayObject.rotation));
                 if (displayObject.animated)
                   context.drawImageScaledFromSource(displayObject.image,
                   (displayObject.frame % 8) * displayObject.size.x,
@@ -132,9 +143,9 @@ class Renderer {
   
           // render rectangle
           else if (displayObject is Rect) {
-            Vector realPosition = displayObject.position.real2screen();
+            Vector realPosition = real2screen(displayObject.position);
   
-            if (isVisible(realPosition, displayObject.size * zoom)) {
+            if (isVisible(realPosition, displayObject.size)) {
               //context.lineWidth = displayObject.lineWidth;
               context.fillStyle = displayObject.color;
               context.fillRect(realPosition.x - displayObject.size.x * displayObject.anchor.x * displayObject.scale.x * zoom,
@@ -146,9 +157,9 @@ class Renderer {
   
           // render circle
           else if (displayObject is Circle) {
-            Vector realPosition = displayObject.position.real2screen();
+            Vector realPosition = real2screen(displayObject.position);
   
-            if (isVisible(realPosition, new Vector(displayObject.radius * displayObject.scale * zoom, displayObject.radius * displayObject.scale * zoom))) {
+            if (isVisible(realPosition, new Vector(displayObject.radius * displayObject.scale, displayObject.radius * displayObject.scale))) {
               context.lineWidth = displayObject.lineWidth * zoom;
               context.strokeStyle = displayObject.color;
               context.beginPath();
@@ -162,8 +173,8 @@ class Renderer {
           else if (displayObject is Line) {
             Rectangle myview = new Rectangle(0, 0, view.width, view.height);   
             
-            Vector realPositionFrom = displayObject.from.real2screen();
-            Vector realPositionTo = displayObject.to.real2screen();
+            Vector realPositionFrom = real2screen(displayObject.from);
+            Vector realPositionTo = real2screen(displayObject.to);
             
             // check if line is visible
             if (myview.containsPoint(new Point(realPositionFrom.x, realPositionFrom.y)) ||

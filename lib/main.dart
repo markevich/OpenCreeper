@@ -4,15 +4,7 @@ import 'dart:html';
 import 'dart:math';
 import 'dart:async';
 
-part 'engine/engine.dart';
-part 'engine/renderer.dart';
-part 'engine/displayobject.dart';
-part 'engine/mouse.dart';
-part 'engine/userinterface.dart';
-part 'engine/uisymbol.dart';
-part 'engine/vector.dart';
-part 'engine/route.dart';
-part 'engine/node.dart';
+import 'engine/zengine.dart';
 
 part 'world.dart';
 part 'tile.dart';
@@ -30,6 +22,8 @@ part 'sporetower.dart';
 part 'smoke.dart';
 part 'explosion.dart';
 part 'connection.dart';
+part 'userinterface.dart';
+part 'uisymbol.dart';
 
 Game game;
 

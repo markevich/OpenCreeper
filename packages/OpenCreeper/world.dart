@@ -1,14 +1,15 @@
 part of creeper;
 
-class World {
+class World extends GameObject {
   List tiles;
   Vector size;
-  static int creeperCounter;
+  int creeperCounter;
   static bool creeperDirty = true;
   
   World(int seed) {
-    size = new Vector(game.engine.randomInt(64, 127, seed), game.engine.randomInt(64, 127, seed));
+    size = new Vector(Engine.randomInt(64, 127, seed), Engine.randomInt(64, 127, seed));
     creeperCounter = 0;
+    //game.engine.gameObjects.add(this);
   }
   
   void createRandomLandscape() {
@@ -44,7 +45,7 @@ class World {
     return tiles[position.x ~/ game.tileSize][position.y ~/ game.tileSize];
   }  
   
-  static void update() {
+  void update() {
     // update creeper
     creeperCounter += 1 * game.speed;
     if (creeperCounter >= 25) {
@@ -52,43 +53,43 @@ class World {
       creeperDirty = true;
       
       // synchronize new creep with old creep
-      for (int i = 0; i < game.world.size.x; i++) {
-        for (int j = 0; j < game.world.size.y; j++) {
-          game.world.tiles[i][j].newcreep = game.world.tiles[i][j].creep;
+      for (int i = 0; i < size.x; i++) {
+        for (int j = 0; j < size.y; j++) {
+          tiles[i][j].newcreep = tiles[i][j].creep;
         }
       }
 
-      for (int i = 0; i < game.world.size.x; i++) {
-        for (int j = 0; j < game.world.size.y; j++) {
+      for (int i = 0; i < size.x; i++) {
+        for (int j = 0; j < size.y; j++) {
 
           // right neighbour
-          if (i + 1 < game.world.size.x) {
-            transferCreeper(game.world.tiles[i][j], game.world.tiles[i + 1][j]);
+          if (i + 1 < size.x) {
+            transferCreeper(tiles[i][j], tiles[i + 1][j]);
           }
           // left neighbour
           if (i - 1 > -1) {
-            transferCreeper(game.world.tiles[i][j], game.world.tiles[i - 1][j]);
+            transferCreeper(tiles[i][j], tiles[i - 1][j]);
           }
           // bottom neighbour
-          if (j + 1 < game.world.size.y) {
-            transferCreeper(game.world.tiles[i][j], game.world.tiles[i][j + 1]);
+          if (j + 1 < size.y) {
+            transferCreeper(tiles[i][j], tiles[i][j + 1]);
           }
           // top neighbour
           if (j - 1 > -1) {
-            transferCreeper(game.world.tiles[i][j], game.world.tiles[i][j - 1]);
+            transferCreeper(tiles[i][j], tiles[i][j - 1]);
           }
 
         }
       }
       
       // clamp creeper
-      for (int i = 0; i < game.world.size.x; i++) {
-        for (int j = 0; j < game.world.size.y; j++) {
-          if (game.world.tiles[i][j].newcreep > 10)
-            game.world.tiles[i][j].newcreep = 10;
-          else if (game.world.tiles[i][j].newcreep < .01)
-            game.world.tiles[i][j].newcreep = 0;
-          game.world.tiles[i][j].creep = game.world.tiles[i][j].newcreep;
+      for (int i = 0; i < size.x; i++) {
+        for (int j = 0; j < size.y; j++) {
+          if (tiles[i][j].newcreep > 10)
+            tiles[i][j].newcreep = 10;
+          else if (tiles[i][j].newcreep < .01)
+            tiles[i][j].newcreep = 0;
+          tiles[i][j].creep = tiles[i][j].newcreep;
         }
       }
 

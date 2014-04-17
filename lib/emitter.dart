@@ -1,11 +1,10 @@
 part of creeper;
 
-class Emitter {
+class Emitter extends GameObject {
   Sprite sprite;
   int strength;
   Building analyzer;
-  static int counter;
-  static List<Emitter> emitters = new List<Emitter>();
+  int counter = 0;
 
   Emitter(position, this.strength) {
     sprite = new Sprite(Layer.EMITTER, game.engine.images["emitter"], position, 48, 48);
@@ -13,51 +12,43 @@ class Emitter {
     game.engine.renderer["buffer"].addDisplayObject(sprite);
   }
   
-  static void clear() {
-    emitters.clear();
-    counter = 0;
-  }
-  
   static Emitter add(Vector position, int strength) {
     Emitter emitter = new Emitter(position, strength);
-    emitters.add(emitter);
+    game.engine.gameObjects.add(emitter);
     return emitter;
   }
-  
-  static void update() {
+   
+  void update() {
     counter += 1 * game.speed;
+    
     if (counter >= 25) {
       counter -= 25;
-      
-      for (int i = 0; i < emitters.length; i++) {
-        // only spawn creeper if not targeted by an analyzer
-        if (emitters[i].analyzer == null) {
-          game.world.getTile(emitters[i].sprite.position).creep += emitters[i].strength; //game.world.tiles[sprite.position.x + 1][sprite.position.y + 1].creep += strength;
-          World.creeperDirty = true;
-        }
+      if (analyzer == null) {
+        game.world.getTile(sprite.position).creep += strength; //game.world.tiles[sprite.position.x + 1][sprite.position.y + 1].creep += strength;
+        World.creeperDirty = true;
       }
     }
-    
-    checkWinningCondition();
   }
   
   static void find(Building building) {
     Vector center = building.sprite.position;
     
     if (building.weaponTargetPosition == null && building.energy > 0) {
-      for (int i = 0; i < emitters.length; i++) {
-        Vector emitterCenter = emitters[i].sprite.position;
-
-        num distance = pow(emitterCenter.x - center.x, 2) + pow(emitterCenter.y - center.y, 2);
-
-        if (distance <= pow(building.weaponRadius * game.tileSize, 2)) {
-          if (emitters[i].analyzer == null) {
-            emitters[i].analyzer = building;
-            building.weaponTargetPosition = emitters[i].sprite.position;
-            break;
+      for (var emitter in game.engine.gameObjects) {
+        if (emitter is Emitter) {
+          Vector emitterCenter = emitter.sprite.position;
+  
+          num distance = pow(emitterCenter.x - center.x, 2) + pow(emitterCenter.y - center.y, 2);
+  
+          if (distance <= pow(building.weaponRadius * game.tileSize, 2)) {
+            if (emitter.analyzer == null) {
+              emitter.analyzer = building;
+              building.weaponTargetPosition = emitter.sprite.position;
+              break;
+            }
           }
+  
         }
-
       }
     }
     else {
@@ -69,11 +60,13 @@ class Emitter {
         building.operating = true;
       } else {
         building.operating = false;
-        for (int i = 0; i < emitters.length; i++) {
-          if (building.weaponTargetPosition == emitters[i].sprite.position) {
-            emitters[i].analyzer = null;
-            building.weaponTargetPosition = null;
-            break;
+        for (var emitter in game.engine.gameObjects) {
+          if (emitter is Emitter) {
+            if (building.weaponTargetPosition == emitter.sprite.position) {
+              emitter.analyzer = null;
+              building.weaponTargetPosition = null;
+              break;
+            }
           }
         }
       }
@@ -83,6 +76,12 @@ class Emitter {
   static void checkWinningCondition() {
     if (!game.won) {
       int emittersChecked = 0;
+      List emitters = [];
+      for (var emitter in game.engine.gameObjects) {
+        if (emitter is Emitter) {
+          emitters.add(emitter);        
+        }
+      }
       for (int i = 0; i < emitters.length; i++) {
         if (emitters[i].analyzer != null)
           emittersChecked++;
@@ -98,14 +97,16 @@ class Emitter {
     }
   }
   
-  static bool collision(Rectangle rectangle) {  
-    for (int i = 0; i < emitters.length; i++) {
-      Rectangle emitterRect = new Rectangle(emitters[i].sprite.position.x - 3 * game.tileSize / 2,
-                                            emitters[i].sprite.position.y - 3 * game.tileSize / 2,
-                                            3 * game.tileSize - 1,
-                                            3 * game.tileSize - 1);        
-      if (rectangle.intersects(emitterRect)) {
-        return true;
+  static bool intersect(Rectangle rectangle) {  
+    for (var emitter in game.engine.gameObjects) {
+      if (emitter is Emitter) {
+        Rectangle emitterRect = new Rectangle(emitter.sprite.position.x - 3 * game.tileSize / 2,
+                                              emitter.sprite.position.y - 3 * game.tileSize / 2,
+                                              3 * game.tileSize - 1,
+                                              3 * game.tileSize - 1);        
+        if (rectangle.intersects(emitterRect)) {
+          return true;
+        }
       }
     }
     return false;

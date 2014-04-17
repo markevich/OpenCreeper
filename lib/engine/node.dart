@@ -1,19 +1,19 @@
-part of creeper;
+part of zengine;
 
 /**
  * Used for A*
  * Every class acting as a A* node will have to implement this.
  */
-class Node {
+abstract class ZNode {
   Vector position;
   
-  Node();
+  ZNode();
 
   /**
    * Used for A*, finds all neighbouring nodes.
    * The [target] node is also passed as it is a valid neighbour.
    */
-  getNeighbours(Node target) {   
+  getNeighbours(ZNode target) {   
     // loop through all nodes and determine if neighbour, example below
         
     /*List neighbours = new List();

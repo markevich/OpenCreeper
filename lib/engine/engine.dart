@@ -1,14 +1,24 @@
-part of creeper;
+part of zengine;
 
 class Engine {
   num animationRequest, TPS; // TPS = ticks per second
-  Mouse mouse = new Mouse();
   Map renderer = new Map(), sounds = new Map(), images = new Map();
   Timer resizeTimer;
-  var game;
+  List<GameObject> gameObjects = new List<GameObject>();
 
   Engine({int TPS: 60}) {
     this.TPS = TPS;
+  }
+  
+  void update() {
+    for (int i = gameObjects.length - 1; i >= 0; i--) {
+      gameObjects[i].update();
+    }
+  }
+  
+  void clear() {
+    gameObjects.clear();
+    renderer.forEach((k, v) => v.removeAllDisplayObjects());
   }
   
   /**
@@ -52,17 +62,13 @@ class Engine {
     });
   }
 
-  void playSound(String name, [Vector position]) {
+  void playSound(String name, [Vector position, Vector center, double zoom]) { // position is in real coordinates
     num volume = 1;
     
     // given a position adjust sound volume based on it and the current zoom
-    if (position != null) {
-      Vector screenCenter = new Vector(game.scroll.x, game.scroll.y);
-      /*Vector screenCenter = new Vector(
-          (halfWidth ~/ (game.tileSize * game.zoom)) + game.scroll.x,
-          (halfHeight ~/ (game.tileSize * game.zoom)) + game.scroll.y);*/
-      num distance = position.distanceTo(screenCenter);
-      volume = (game.zoom / pow(distance / 20, 2)).clamp(0, 1);
+    if (position != null && center != null && zoom != null) {
+      num distance = position.distanceTo(center * 16);
+      volume = (zoom / pow(distance / 200, 2)).clamp(0, 1);
     }
 
     for (int i = 0; i < 5; i++) {
@@ -73,17 +79,36 @@ class Engine {
       }
     }
   }
+  
+  /**
+   * Calculates the velocity between [position] and [targetPosition] with a given [multiplier]
+   */
+  Vector calculateVelocity(Vector position, Vector targetPosition, num multiplier) {
+    Vector delta = targetPosition - position;
+    num distance = position.distanceTo(targetPosition);
 
-  int randomInt(num from, num to, [num seed]) {
+    Vector velocity = new Vector(
+        (delta.x / distance) * multiplier,
+        (delta.y / distance) * multiplier);
+
+    if (velocity.x.abs() > delta.x.abs())
+      velocity.x = delta.x;
+    if (velocity.y.abs() > delta.y.abs())
+      velocity.y = delta.y;
+    
+    return velocity;
+  }
+
+  static int randomInt(num from, num to, [num seed]) {
     var random = new Random(seed);
     return (random.nextInt(to - from + 1) + from);
   }
   
-  num rad2deg(num angle) {
+  static num rad2deg(num angle) {
     return angle * 57.29577951308232;
   }
   
-  num deg2rad(num angle) {
+  static num deg2rad(num angle) {
     return angle * .017453292519943295;
   }
 }

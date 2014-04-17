@@ -1,18 +1,24 @@
 part of creeper;
 
 void onMouseMove(MouseEvent evt) {
-  game.engine.mouse.update(evt);
+  game.mouse.update(evt);
   
   if (game != null) {
+    game.oldHoveredTile = game.hoveredTile;
+    game.hoveredTile = new Vector(
+          ((game.mouse.position.x - game.mouse.renderer.view.width / 2) / (game.tileSize * game.zoom)).floor() + game.scroll.x,
+          ((game.mouse.position.y - game.mouse.renderer.view.height / 2) / (game.tileSize * game.zoom)).floor() + game.scroll.y);
+    game.updateVariousInfo();
+    
     game.mouseScrolling = new Vector.empty();
-    if (game.engine.mouse.position.x == 0) game.mouseScrolling.x = -1;
-    else if (game.engine.mouse.position.x == game.engine.renderer["main"].view.width - 1) game.mouseScrolling.x = 1;   
-    if (game.engine.mouse.position.y == 0) game.mouseScrolling.y = -1;
-    else if (game.engine.mouse.position.y == game.engine.renderer["main"].view.height - 1) game.mouseScrolling.y = 1;
+    if (game.mouse.position.x == 0) game.mouseScrolling.x = -1;
+    else if (game.mouse.position.x == game.mouse.renderer.view.width - 1) game.mouseScrolling.x = 1;   
+    if (game.mouse.position.y == 0) game.mouseScrolling.y = -1;
+    else if (game.mouse.position.y == game.mouse.renderer.view.height - 1) game.mouseScrolling.y = 1;
   }
   
   // flag for terraforming
-  if (game.engine.mouse.buttonPressed == 1) {
+  if (game.mouse.buttonPressed == 1) {
     if (game.mode == "TERRAFORM") { 
       if (game.world.contains(game.hoveredTile)) {
         
@@ -22,9 +28,9 @@ void onMouseMove(MouseEvent evt) {
                                               game.tileSize - 1); 
         
         // check for building/emitter/sporetower on that position
-        if (!Building.collision(currentRect) &&
-            !Emitter.collision(currentRect) &&
-            !Sporetower.collision(currentRect)) {
+        if (!Building.intersect(currentRect) &&
+            !Emitter.intersect(currentRect) &&
+            !Sporetower.intersect(currentRect)) {
           game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].flagTerraform(game.hoveredTile * game.tileSize);
         }
       }
@@ -85,7 +91,7 @@ void onKeyDown(KeyboardEvent evt) {
   // DEBUG: add explosion
   if (evt.keyCode == KeyCode.V) {
     Explosion.add(new Vector(game.hoveredTile.x * game.tileSize + 8, game.hoveredTile.y * game.tileSize + 8));
-    game.engine.playSound("explosion", game.hoveredTile);
+    game.engine.playSound("explosion", game.hoveredTile * game.tileSize, game.scroll, game.zoom);
   }
   
   // DEBUG: lower terrain
@@ -178,11 +184,11 @@ void onKeyUp(KeyboardEvent evt) {
 }
 
 void onEnter(evt) {
-  game.engine.mouse.overCanvas = true;
+  game.mouse.overCanvas = true;
 }
 
 void onLeave(evt) {
-  game.engine.mouse.overCanvas = false;
+  game.mouse.overCanvas = false;
 }
 
 void onLeaveGUI(evt) {
@@ -201,12 +207,12 @@ void onDoubleClick(MouseEvent evt) {
 }
 
 void onMouseDown(MouseEvent evt) {
-  game.engine.mouse.buttonPressed = evt.which;
+  game.mouse.buttonPressed = evt.which;
   
   if (evt.which == 1) {   
     
-    if (game.engine.mouse.dragStart == null) {
-      game.engine.mouse.dragStart = game.hoveredTile;
+    if (game.mouse.dragStart == null) {
+      game.mouse.dragStart = game.hoveredTile;
     }  
     
     // flag for terraforming 
@@ -219,9 +225,9 @@ void onMouseDown(MouseEvent evt) {
                                               game.tileSize - 1); 
         
         // check for building/emitter/sporetower on that position
-        if (!Building.collision(currentRect) &&
-            !Emitter.collision(currentRect) &&
-            !Sporetower.collision(currentRect)) {
+        if (!Building.intersect(currentRect) &&
+            !Emitter.intersect(currentRect) &&
+            !Sporetower.intersect(currentRect)) {
           game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].flagTerraform(game.hoveredTile * game.tileSize);
         }
       }
@@ -230,7 +236,7 @@ void onMouseDown(MouseEvent evt) {
 }
 
 void onMouseUp(MouseEvent evt) {
-  game.engine.mouse.buttonPressed = 0;
+  game.mouse.buttonPressed = 0;
   
   if (evt.which == 1) {
 
@@ -238,7 +244,7 @@ void onMouseUp(MouseEvent evt) {
     Building.reposition(game.hoveredTile);
     Building.select();
 
-    game.engine.mouse.dragStart = null;
+    game.mouse.dragStart = null;
 
     // when there is an active symbol place building
     if (UISymbol.activeSymbol != null) {

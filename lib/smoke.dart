@@ -1,9 +1,8 @@
 part of creeper;
 
-class Smoke {
+class Smoke extends GameObject {
   Sprite sprite;
-  static int counter = 0;
-  static List<Smoke> smokes = new List<Smoke>();
+  int counter = 0;
 
   Smoke(Vector position) {
     sprite = new Sprite(Layer.SMOKE, game.engine.images["smoke"], position, 128, 128);
@@ -12,30 +11,23 @@ class Smoke {
     sprite.scale = new Vector(0.5, 0.5);
     game.engine.renderer["buffer"].addDisplayObject(sprite);
   }
-  
-  static void clear() {
-    smokes.clear();
-    counter = 0;
-  }
-  
-  static Smoke add(Vector position) {
+   
+  static void add(Vector position) {
     Smoke smoke = new Smoke(position);
-    smokes.add(smoke);
-    return smoke;
+    game.engine.gameObjects.add(smoke);
   }
   
-  static void update() {
+  void update() {
     counter += 1; // * game.speed;
     if (counter >= 3) {
       counter -= 3;
-      for (int i = smokes.length - 1; i >= 0; i--) {
-        if (smokes[i].sprite.frame == 36) {
-          game.engine.renderer["buffer"].removeDisplayObject(smokes[i].sprite);
-          smokes.removeAt(i);
-        }
-        else {
-          smokes[i].sprite.frame++;
-        }
+
+      if (sprite.frame == 36) {
+        game.engine.renderer["buffer"].removeDisplayObject(sprite);
+        game.engine.gameObjects.remove(this);
+      }
+      else {
+        sprite.frame++;
       }
     }
   }
