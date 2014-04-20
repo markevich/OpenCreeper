@@ -13,15 +13,17 @@ class Sporetower extends GameObject {
    
   static Sporetower add(Vector position) {
     Sporetower sporetower = new Sporetower(position);
-    game.engine.gameObjects.add(sporetower);
+    game.engine.addGameObject(sporetower);
     return sporetower;
   }
   
   void update() {
-    sporeCounter -= 1;
-    if (sporeCounter <= 0) {
-      reset();
-      spawn();
+    if (!game.paused) {
+      sporeCounter -= 1;
+      if (sporeCounter <= 0) {
+        reset();
+        spawn();
+      }
     }
   }
 

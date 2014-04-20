@@ -14,20 +14,22 @@ class Smoke extends GameObject {
    
   static void add(Vector position) {
     Smoke smoke = new Smoke(position);
-    game.engine.gameObjects.add(smoke);
+    game.engine.addGameObject(smoke);
   }
   
   void update() {
-    counter += 1; // * game.speed;
-    if (counter >= 3) {
-      counter -= 3;
-
-      if (sprite.frame == 36) {
-        game.engine.renderer["buffer"].removeDisplayObject(sprite);
-        game.engine.gameObjects.remove(this);
-      }
-      else {
-        sprite.frame++;
+    if (!game.paused) {
+      counter += 1; // * game.speed;
+      if (counter >= 3) {
+        counter -= 3;
+  
+        if (sprite.frame == 36) {
+          game.engine.renderer["buffer"].removeDisplayObject(sprite);
+          game.engine.removeGameObject(this);
+        }
+        else {
+          sprite.frame++;
+        }
       }
     }
   }

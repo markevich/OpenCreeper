@@ -15,17 +15,19 @@ class Shell extends GameObject {
   
   static Shell add(Vector position, Vector targetPosition) {
     Shell shell = new Shell(position, targetPosition);
-    game.engine.gameObjects.add(shell);
+    game.engine.addGameObject(shell);
     return shell;
   }
   
   void update() {
-    if (remove) {
-      game.engine.renderer["buffer"].removeDisplayObject(sprite);
-      game.engine.gameObjects.remove(this);
+    if (!game.paused) {
+      if (remove) {
+        game.engine.renderer["buffer"].removeDisplayObject(sprite);
+        game.engine.removeGameObject(this);
+      }
+      else
+        move();
     }
-    else
-      move();
   }
 
   void move() {

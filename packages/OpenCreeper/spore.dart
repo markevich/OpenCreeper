@@ -16,23 +16,25 @@ class Spore extends GameObject {
    
   static void add(Vector position, Vector targetPosition) {
     Spore spore = new Spore(position, targetPosition);
-    game.engine.gameObjects.add(spore);
+    game.engine.addGameObject(spore);
   }
   
   void update() {
-    if (remove) {
-      game.engine.renderer["buffer"].removeDisplayObject(sprite);
-      game.engine.gameObjects.remove(this);
+    if (!game.paused) {
+      if (remove) {
+        game.engine.renderer["buffer"].removeDisplayObject(sprite);
+        game.engine.removeGameObject(this);
+      }
+      else
+        move();
     }
-    else
-      move();
   }
   
   static void damage(Building building) {
     Vector center = building.sprite.position;
     
     // find spore in range
-    for (var spore in game.engine.gameObjects.length) {
+    for (var spore in game.engine.gameObjects) {
       if (spore is Spore) {  
         Vector sporeCenter = spore.sprite.position;
         var distance = pow(sporeCenter.x - center.x, 2) + pow(sporeCenter.y - center.y, 2);

@@ -1,6 +1,6 @@
 part of creeper;
 
-class Packet {
+class Packet extends GameObject {
   Vector speed = new Vector(0, 0);
   String type;
   bool remove = false;
@@ -8,91 +8,43 @@ class Packet {
   Building target, currentTarget;
   Sprite sprite;
   static num baseSpeed = 3;
-  static List<Packet> packets = new List<Packet>();
-  static List<Packet> queue = new List<Packet>();
 
-  Packet(this.currentTarget, this.target, imageID, this.type) {
-    sprite = new Sprite(Layer.PACKET, game.engine.images[imageID], currentTarget.position, 16, 16);
+  Packet(this.currentTarget, this.target, this.type) {
+    sprite = new Sprite(Layer.PACKET, game.engine.images["packet_" + type], currentTarget.position, 16, 16);
     sprite.anchor = new Vector(0.5, 0.5);
-    sprite.visible = false;
-
-    if (type == "collection")
-      sprite.scale = new Vector(1.5, 1.5);
-
-    game.engine.renderer["buffer"].addDisplayObject(sprite);
   }
-  
-  static void clear() {
-    packets.clear();
-    queue.clear();
-  }
-  
-  static void add(Packet packet) {
-    packet.sprite.visible = true;
-    packets.add(packet);
-  }
-  
-  static void addQueue(Packet packet) {
-    queue.add(packet);
-  }
-  
-  static void update() {
-    for (int i = packets.length - 1; i >= 0; i--) {
-      if (packets[i].remove) {
-        game.engine.renderer["buffer"].removeDisplayObject(packets[i].sprite);
-        packets.removeAt(i);
+     
+  void update() {
+    if (!game.paused) {
+      if (remove) {
+        game.engine.renderer["buffer"].removeDisplayObject(sprite);
+        game.engine.removeGameObject(this);
       }
       else
-        packets[i].move();
-    }
-    
-    /**
-     * Updates the packet queue of the base.
-     * 
-     * If the base has energy the first packet is removed from
-     * the queue and sent to its target (FIFO).
-     */
-    for (int i = queue.length - 1; i >= 0; i--) {
-      if (Building.base.energy > 0) {
-        Building.base.energy--;
-        game.updateEnergyElement();
-        Packet packet = queue.removeAt(0);
-        Packet.add(packet);
-      }
+        move();
     }
   }
   
   static void removeWithTarget(building) {
-    for (int i = packets.length - 1; i >= 0; i--) {
-      if (packets[i].currentTarget == building || packets[i].target == building) {
-        packets[i].remove = true;
+    for (var packet in game.engine.gameObjects) {
+      if (packet is Packet) {
+        if (packet.currentTarget == building || packet.target == building) {
+          packet.remove = true;
+        }
       }
     }
-    for (int i = queue.length - 1; i >= 0; i--) {
-      if (queue[i].currentTarget == building || queue[i].target == building) {
-        queue[i].remove = true;
+    for (int i = Building.queue.length - 1; i >= 0; i--) {
+      if (Building.queue[i].currentTarget == building || Building.queue[i].target == building) {
+        Building.queue.remove(Building.queue[i]);
       }
     }
   }
   
-  /**
-   * Creates a new requested packet with its [target]
-   * and [type] and queues it.
-   */
-  static void queuePacket(Building target, String type) {
-    String img = "packet_" + type;
-    Packet packet = new Packet(Building.base, target, img, type);
-    if (packet.findRoute()) {
-      if (packet.type == "health")
-        packet.target.healthRequests++;
-      else if (packet.type == "energy")
-        packet.target.energyRequests += 4;
-      Packet.addQueue(packet);
-    } else {
-      game.engine.renderer["buffer"].removeDisplayObject(packet.sprite);
-    }
+  void send() {
+    game.engine.addGameObject(this);
+    game.engine.renderer["buffer"].addDisplayObject(sprite);
   }
-
+  
   void move() {  
     sprite.position += game.engine.calculateVelocity(sprite.position, currentTarget.position, Packet.baseSpeed * game.speed * speedMultiplier);
 

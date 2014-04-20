@@ -14,19 +14,21 @@ class Explosion extends GameObject {
   
   static void add(Vector position) {
     Explosion explosion = new Explosion(position);
-    game.engine.gameObjects.add(explosion);
+    game.engine.addGameObject(explosion);
   }
   
   void update() {
-    counter += 1; // * game.speed;
-    if (counter >= 1) {
-      counter -= 1;
-      if (sprite.frame == 44) {
-        game.engine.renderer["buffer"].removeDisplayObject(sprite);
-        game.engine.gameObjects.remove(this);
+    if (!game.paused) {
+      counter += 1; // * game.speed;
+      if (counter >= 1) {
+        counter -= 1;
+        if (sprite.frame == 44) {
+          game.engine.renderer["buffer"].removeDisplayObject(sprite);
+          game.engine.removeGameObject(this);
+        }
+        else
+          sprite.frame++;
       }
-      else
-        sprite.frame++;
     }
   }
 }

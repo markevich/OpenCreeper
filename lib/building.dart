@@ -13,6 +13,7 @@ class Building extends GameObject implements ZNode {
   static final double baseSpeed = .5;
   int damageCounter = 0, collectCounter = 0;
   static Building base;
+  static List<Packet> queue = new List<Packet>();
 
   Building.template(imageID) {
     type = imageID;  
@@ -195,7 +196,7 @@ class Building extends GameObject implements ZNode {
     position = position * 16 + new Vector(8, 8);
     Building building = new Building(position, type);
     if (type == "base") base = building;
-    game.engine.gameObjects.add(building);
+    game.engine.addGameObject(building);
     return building;
   }
   
@@ -239,6 +240,27 @@ class Building extends GameObject implements ZNode {
       game.engine.renderer["buffer"].removeDisplayObject(building.cannon);
 
     game.engine.gameObjects.remove(building);
+  }
+  
+  static void addToQueue(Packet packet) {
+    queue.add(packet);
+  }
+  
+  /**
+   * Updates the packet queue of the base.
+   * 
+   * If the base has energy the first packet is removed from
+   * the queue and sent to its target (FIFO).
+   */
+  static void updateQueue() {
+    for (int i = queue.length - 1; i >= 0; i--) {
+      if (base.energy > 0) {
+        base.energy--;
+        game.updateEnergyElement();
+        Packet packet = queue.removeAt(0);
+        packet.send();
+      }
+    }
   }
   
   static void removeSelected() {
@@ -292,43 +314,35 @@ class Building extends GameObject implements ZNode {
     querySelector('#activate').style.display = "none";
   }
   
-  static void updateHoverState() {
-    for (var building in game.engine.gameObjects) {
-      if (building is Building) {
-        Vector realPosition = game.real2screen(building.position);
-        building.hovered = (game.mouse.position.x > realPosition.x - (game.tileSize * building.size * game.zoom / 2) &&
-            game.mouse.position.x < realPosition.x + (game.tileSize * building.size * game.zoom / 2) &&
-            game.mouse.position.y > realPosition.y - (game.tileSize * building.size * game.zoom / 2) &&
-            game.mouse.position.y < realPosition.y + (game.tileSize * building.size * game.zoom / 2));
-      }
-    }
+  void updateHoverState() {
+    Vector realPosition = game.real2screen(position);
+    hovered = (game.mouse.position.x > realPosition.x - (game.tileSize * size * game.zoom / 2) &&
+        game.mouse.position.x < realPosition.x + (game.tileSize * size * game.zoom / 2) &&
+        game.mouse.position.y > realPosition.y - (game.tileSize * size * game.zoom / 2) &&
+        game.mouse.position.y < realPosition.y + (game.tileSize * size * game.zoom / 2));
   }
   
   void update() {
-    move();
-    checkOperating();
-    shield();
-    requestPacket();
-
-    // take damage
-    damageCounter += 1 * game.speed;
-    if (damageCounter > 10) {
-      damageCounter -= 10;
-      for (var building in game.engine.gameObjects) {
-        if (building is Building) {
-          building.takeDamage();
-        }
+    updateHoverState();
+    
+    if (!game.paused) {
+      move();
+      checkOperating();
+      shield();
+      requestPacket();
+      
+      // take damage
+      damageCounter += 1 * game.speed;
+      if (damageCounter > 10) {
+        damageCounter -= 10;
+        takeDamage();
       }
-    }
 
-    // collect energy
-    collectCounter += 1 * game.speed;
-    if (collectCounter > 250) {
-      collectCounter -= 250;
-      for (var building in game.engine.gameObjects) {
-        if (building is Building) {
-          building.collectEnergy();
-        }
+      // collect energy
+      collectCounter += 1 * game.speed;
+      if (collectCounter > 250) {
+        collectCounter -= 250;
+        collectEnergy();
       }
     }
   }
@@ -566,17 +580,32 @@ class Building extends GameObject implements ZNode {
         num healthAndRequestDelta = maxHealth - health - healthRequests;
         if (healthAndRequestDelta > 0) {
           requestCounter -= 50;
-          Packet.queuePacket(this, "health");
+          queuePacket("health");
         }
         // request energy
         if (needsEnergy && built) {
           num energyAndRequestDelta = maxEnergy - energy - energyRequests;
           if (energyAndRequestDelta > 0) {
             requestCounter -= 50;
-            Packet.queuePacket(this, "energy");
+            queuePacket("energy");
           }
         }
       }
+    }
+  }
+  
+  /**
+   * Creates a new requested packet with its [target]
+   * and [type] and queues it.
+   */
+  void queuePacket(String type) {
+    Packet packet = new Packet(Building.base, this, type);
+    if (packet.findRoute()) {
+      if (packet.type == "health")
+        packet.target.healthRequests++;
+      else if (packet.type == "energy")
+        packet.target.energyRequests += 4;
+      Building.addToQueue(packet);
     }
   }
 
@@ -612,9 +641,9 @@ class Building extends GameObject implements ZNode {
     if (collectedEnergy >= 100) {
       collectedEnergy -= 100;
       if (type == "collector") {
-        Packet packet = new Packet(this, Building.base, "packet_collection", "collection");
+        Packet packet = new Packet(this, Building.base, "collection");
         if (packet.findRoute())
-          Packet.add(packet);
+          packet.send();
         else
           game.engine.renderer["buffer"].removeDisplayObject(packet.sprite);
       }

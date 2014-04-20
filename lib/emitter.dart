@@ -14,18 +14,20 @@ class Emitter extends GameObject {
   
   static Emitter add(Vector position, int strength) {
     Emitter emitter = new Emitter(position, strength);
-    game.engine.gameObjects.add(emitter);
+    game.engine.addGameObject(emitter);
     return emitter;
   }
    
   void update() {
-    counter += 1 * game.speed;
-    
-    if (counter >= 25) {
-      counter -= 25;
-      if (analyzer == null) {
-        game.world.getTile(sprite.position).creep += strength; //game.world.tiles[sprite.position.x + 1][sprite.position.y + 1].creep += strength;
-        World.creeperDirty = true;
+    if (!game.paused) {
+      counter += 1 * game.speed;
+      
+      if (counter >= 25) {
+        counter -= 25;
+        if (analyzer == null) {
+          game.world.getTile(sprite.position).creep += strength; //game.world.tiles[sprite.position.x + 1][sprite.position.y + 1].creep += strength;
+          World.creeperDirty = true;
+        }
       }
     }
   }

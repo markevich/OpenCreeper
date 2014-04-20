@@ -5,9 +5,31 @@ class Engine {
   Map renderer = new Map(), sounds = new Map(), images = new Map();
   Timer resizeTimer;
   List<GameObject> gameObjects = new List<GameObject>();
+  bool debug;
 
-  Engine({int TPS: 60}) {
+  Engine({int TPS: 60, bool debug: false}) {
     this.TPS = TPS;
+    this.debug = debug;
+  }
+  
+  void addGameObject(GameObject gameObject) {
+    gameObjects.add(gameObject);
+    /*if (gameObject.sprite != null) {
+      renderer["buffer"].addDisplayObject(gameObject.sprite);
+    }*/
+    
+    if (debug) {
+      print("Added ${gameObject.runtimeType}");
+      print("# GameObjects: ${gameObjects.length}");
+    }
+  }
+  
+  void removeGameObject(GameObject gameObject) {
+    gameObjects.remove(gameObject);
+    if (debug) {
+      print("Removed ${gameObject.runtimeType}");
+      print("# GameObjects: ${gameObjects.length}");
+    }
   }
   
   void update() {

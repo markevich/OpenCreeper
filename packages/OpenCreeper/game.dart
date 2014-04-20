@@ -22,7 +22,7 @@ class Game {
   var debug = true;
   
   Game() {
-    engine = new Engine(TPS: 60);
+    engine = new Engine(TPS: 60, debug: false);
   }
 
   void start([int seed = null]) {
@@ -152,8 +152,8 @@ class Game {
 
   void reset() {
     engine.clear();
-    Packet.clear();
     UISymbol.reset();
+    Building.queue.clear();
     
     mode = "DEFAULT";
     speed = 1;
@@ -660,12 +660,10 @@ class Game {
    * Is called by a periodic timer.
    */ 
   void update() {
-    Building.updateHoverState();
-    Ship.updateHoverState();
-
-    if (!paused) {
-      engine.update(); 
-      Packet.update();
+    engine.update();
+    
+    if (!paused) { 
+      Building.updateQueue();
       game.world.update(); // FIXME: find out why this doesn't work automatically since the world is a gameobject
       Emitter.checkWinningCondition();
     }

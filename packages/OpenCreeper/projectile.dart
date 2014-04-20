@@ -16,16 +16,18 @@ class Projectile extends GameObject {
   
   static void add(Vector position, Vector targetPosition, num rotation) {
     Projectile projectile = new Projectile(position, targetPosition, rotation);
-    game.engine.gameObjects.add(projectile);
+    game.engine.addGameObject(projectile);
   }
    
   void update() {
-    if (remove) {
-      game.engine.renderer["buffer"].removeDisplayObject(sprite);
-      game.engine.gameObjects.remove(this);
-    }
-    else {
-      move();
+    if (!game.paused) {
+      if (remove) {
+        game.engine.renderer["buffer"].removeDisplayObject(sprite);
+        game.engine.removeGameObject(this);
+      }
+      else {
+        move();
+      }
     }
   }
 

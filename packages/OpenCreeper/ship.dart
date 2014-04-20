@@ -32,12 +32,15 @@ class Ship extends GameObject {
    
   static Ship add(Vector position, String imageID, String type, Building home) {
     Ship ship = new Ship(position, imageID, type, home);
-    game.engine.gameObjects.add(ship);
+    game.engine.addGameObject(ship);
     return ship;
   }
   
   void update() {
-    move();
+    if (!game.paused) {
+      move();
+    }
+    updateHoverState();
   }
   
   static void select() {
@@ -63,13 +66,9 @@ class Ship extends GameObject {
     }
   }
   
-  static void updateHoverState() {
-    for (var ship in game.engine.gameObjects) {
-      if (ship is Ship) {
-        Vector realPosition = game.real2screen(ship.sprite.position);
-        ship.hovered = (game.mouse.position.x > realPosition.x - 24 && game.mouse.position.x < realPosition.x + 24 && game.mouse.position.y > realPosition.y - 24 && game.mouse.position.y < realPosition.y + 24);
-      }
-    }
+  void updateHoverState() {
+    Vector realPosition = game.real2screen(sprite.position);
+    hovered = (game.mouse.position.x > realPosition.x - 24 && game.mouse.position.x < realPosition.x + 24 && game.mouse.position.y > realPosition.y - 24 && game.mouse.position.y < realPosition.y + 24);
   }
 
   void turnToTarget() {
