@@ -29,5 +29,6 @@ Game game;
 
 void main() {
   game = new Game(); 
-  game.start(); // enter a number as parameter to start with a given seed
+  // use [seed] and [friendly] (no enemies) flags
+  game.start(friendly: true);
 }

@@ -19,17 +19,20 @@ class Game {
   UserInterface ui;
   List zoomableRenderers;
   Mouse mouse;
-  var debug = true;
+  var debug = false;
+  bool friendly;
   
   Game() {
     engine = new Engine(TPS: 60, debug: false);
   }
 
-  void start([int seed = null]) {
+  void start({int seed: null, bool friendly: false}) {
     if (seed == null)
       this.seed = Engine.randomInt(0, 10000);
     else
       this.seed = seed;
+    
+    this.friendly = friendly;
     
     List sounds = ["shot.wav", "click.wav", "explosion.wav", "failure.wav", "energy.wav", "laser.wav"];
     engine.loadSounds(sounds);
@@ -289,7 +292,7 @@ class Game {
 
     scroll = randomPosition;
     for (var renderer in zoomableRenderers) {
-      engine.renderer[renderer].updateOffset(new Vector(scroll.x * tileSize, scroll.y * tileSize));
+      engine.renderer[renderer].updatePosition(new Vector(scroll.x * tileSize, scroll.y * tileSize));
     }
 
     Building building = Building.add(randomPosition, "base");
@@ -303,40 +306,42 @@ class Game {
       }
     }
 
-    // create random emitters
-    int number = Engine.randomInt(2, 3, seed);
-    for (var l = 0; l < number; l++) {    
-      randomPosition = new Vector(
-          Engine.randomInt(1, world.size.x - 2, seed + Engine.randomInt(1, 1000, seed + l)) * tileSize + 8,
-          Engine.randomInt(1, world.size.y - 2, seed + Engine.randomInt(1, 1000, seed + 1 + l)) * tileSize + 8);
-  
-      Emitter emitter = Emitter.add(randomPosition, 25);
-  
-      height = world.getTile(emitter.sprite.position).height;
-      if (height < 0)
-        height = 0;
-      for (int i = -1; i <= 1; i++) {
-        for (int j = -1; j <= 1; j++) {
-          world.getTile(emitter.sprite.position + new Vector(i * tileSize, j * tileSize)).height = height;
+    if (!friendly) {
+      // create random emitters
+      int number = Engine.randomInt(2, 3, seed);
+      for (var l = 0; l < number; l++) {    
+        randomPosition = new Vector(
+            Engine.randomInt(1, world.size.x - 2, seed + Engine.randomInt(1, 1000, seed + l)) * tileSize + 8,
+            Engine.randomInt(1, world.size.y - 2, seed + Engine.randomInt(1, 1000, seed + 1 + l)) * tileSize + 8);
+    
+        Emitter emitter = Emitter.add(randomPosition, 25);
+    
+        height = world.getTile(emitter.sprite.position).height;
+        if (height < 0)
+          height = 0;
+        for (int i = -1; i <= 1; i++) {
+          for (int j = -1; j <= 1; j++) {
+            world.getTile(emitter.sprite.position + new Vector(i * tileSize, j * tileSize)).height = height;
+          }
         }
       }
-    }
-
-    // create random sporetowers
-    number = Engine.randomInt(1, 2, seed + 1);
-    for (var l = 0; l < number; l++) {
-      randomPosition = new Vector(
-          Engine.randomInt(1, world.size.x - 2, seed + 3 + Engine.randomInt(1, 1000, seed + 2 + l)) * tileSize + 8,
-          Engine.randomInt(1, world.size.y - 2, seed + 3 + Engine.randomInt(1, 1000, seed + 3 + l)) * tileSize + 8);
   
-      Sporetower sporetower = Sporetower.add(randomPosition);
-  
-      height = world.getTile(sporetower.sprite.position).height;
-      if (height < 0)
-        height = 0;
-      for (int i = -1; i <= 1; i++) {
-        for (int j = -1; j <= 1; j++) {
-          world.getTile(sporetower.sprite.position + new Vector(i * tileSize, j * tileSize)).height = height;
+      // create random sporetowers
+      number = Engine.randomInt(1, 2, seed + 1);
+      for (var l = 0; l < number; l++) {
+        randomPosition = new Vector(
+            Engine.randomInt(1, world.size.x - 2, seed + 3 + Engine.randomInt(1, 1000, seed + 2 + l)) * tileSize + 8,
+            Engine.randomInt(1, world.size.y - 2, seed + 3 + Engine.randomInt(1, 1000, seed + 3 + l)) * tileSize + 8);
+    
+        Sporetower sporetower = Sporetower.add(randomPosition);
+    
+        height = world.getTile(sporetower.sprite.position).height;
+        if (height < 0)
+          height = 0;
+        for (int i = -1; i <= 1; i++) {
+          for (int j = -1; j <= 1; j++) {
+            world.getTile(sporetower.sprite.position + new Vector(i * tileSize, j * tileSize)).height = height;
+          }
         }
       }
     }
@@ -665,7 +670,8 @@ class Game {
     if (!paused) { 
       Building.updateQueue();
       game.world.update(); // FIXME: find out why this doesn't work automatically since the world is a gameobject
-      Emitter.checkWinningCondition();
+      if (!game.friendly)
+        Emitter.checkWinningCondition();
     }
 
     // scroll left or right   
@@ -680,7 +686,7 @@ class Game {
 
     if (mouseScrolling.x != 0 || mouseScrolling.y != 0 || keyScrolling.x != 0 || keyScrolling.y != 0) {
       for (var renderer in zoomableRenderers) {
-        engine.renderer[renderer].updateOffset(new Vector(scroll.x * tileSize, scroll.y * tileSize));
+        engine.renderer[renderer].updatePosition(new Vector(scroll.x * tileSize, scroll.y * tileSize));
       }
       copyTerrain();
       drawCollection();

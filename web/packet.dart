@@ -39,7 +39,7 @@ class Packet extends GameObject {
       }
     }
   }
-  
+
   void send() {
     game.engine.addGameObject(this);
     game.engine.renderer["buffer"].addDisplayObject(sprite);
@@ -99,13 +99,14 @@ class Packet extends GameObject {
    * Find a route for this packet
    */
   bool findRoute() {
-    Route route = Route.find(currentTarget, target);
+    //Route route = Route.find(currentTarget, target);
+    var next = Route.find(currentTarget, target);
 
     // if a route is left set the second element as the next node for the packet
-    if (route != null) {
+    if (next != null) {
 
       // adjust speed if packet is travelling between relays
-      if (route.nodes[1].type == "relay") {
+      if (next.gameObject.type == "relay") {
         speedMultiplier = 2;
       } else {
         speedMultiplier = 1;
@@ -115,7 +116,7 @@ class Packet extends GameObject {
       if (type == "collection")
         speedMultiplier /= 4;
 
-      currentTarget = route.nodes[1];
+      currentTarget = next.gameObject;
       return true;
     } else {
 

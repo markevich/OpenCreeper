@@ -1,6 +1,6 @@
 part of creeper;
 
-class Building extends GameObject implements ZNode {
+class Building extends GameObject {
   Vector position, scale = new Vector(1, 1), moveTargetPosition, weaponTargetPosition, speed = new Vector(0, 0);
   String type, status = "IDLE"; // MOVING, RISING, FALLING
   bool operating = false, selected = false, hovered = false, built = false, active = true, canMove = false, needsEnergy = false, rotating = false;
@@ -965,7 +965,7 @@ class Building extends GameObject implements ZNode {
       if (building is Building) {
         Vector realPosition = game.real2screen(building.position);
     
-        if (game.engine.renderer["buffer"].isVisible(realPosition, new Vector(game.engine.images[building.type].width * game.zoom, game.engine.images[building.type].height * game.zoom))) { 
+        if (game.engine.renderer["buffer"].isVisible(building.sprite)) {
           // draw energy bar
           if (building.needsEnergy) {
             context.fillStyle = '#f00';

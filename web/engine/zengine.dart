@@ -10,5 +10,4 @@ part 'displayobject.dart';
 part 'mouse.dart';
 part 'vector.dart';
 part 'route.dart';
-part 'node.dart';
 part 'gameobject.dart';
