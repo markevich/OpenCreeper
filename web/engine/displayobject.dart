@@ -40,6 +40,10 @@ class Line extends DisplayObject {
   Line(layer, this.from, this.to, this.lineWidth, this.color) {
     super.layer = layer;
   }
+  
+  String toString() {
+    return "$from - $to";
+  }
 }
 
 class Sprite extends DisplayObject {

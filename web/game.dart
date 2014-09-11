@@ -80,38 +80,7 @@ class Game {
     music.loop = true;
     music.volume = 0.25;
     music.onCanPlay.listen((event) => music.play()); // TODO: find out why this is not working
-  
-    // create terraform lines and number used when terraforming is enabled
-    tfLine1 = new Line(Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff");
-    tfLine1.visible = false;
-    engine.renderer["buffer"].addDisplayObject(tfLine1);
-    tfLine2 = new Line(Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff");
-    tfLine2.visible = false;
-    engine.renderer["buffer"].addDisplayObject(tfLine2);
-    tfLine3 = new Line(Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff");
-    tfLine3.visible = false;
-    engine.renderer["buffer"].addDisplayObject(tfLine3);
-    tfLine4 = new Line(Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff");
-    tfLine4.visible = false;
-    engine.renderer["buffer"].addDisplayObject(tfLine4);
-    
-    tfNumber = new Sprite(Layer.TERRAFORM, engine.images["numbers"], new Vector.empty(), 16, 16);
-    tfNumber.visible = false;
-    tfNumber.animated = true;
-    tfNumber.frame = terraformingHeight;
-    engine.renderer["buffer"].addDisplayObject(tfNumber);
-    
-    // create target cursor used when a ship is selected
-    targetCursor = new Sprite(Layer.TARGETSYMBOL, engine.images["targetcursor"], new Vector.empty(), 48, 48);
-    targetCursor.anchor = new Vector(0.5, 0.5);
-    targetCursor.visible = false;
-    engine.renderer["buffer"].addDisplayObject(targetCursor);
-    
-    // rectangle that is drawn when repositioning a building
-    repositionRect = new Rect(Layer.TARGETSYMBOL, new Vector(0, 0), new Vector(32, 32), 10, "#f00");
-    repositionRect.visible = false;
-    engine.renderer["buffer"].addDisplayObject(repositionRect);
-    
+     
     reset();
     drawTerrain();
     copyTerrain();
@@ -174,6 +143,37 @@ class Game {
     updateEnergyElement();
     updateSpeedElement();
     querySelector('#time').innerHtml = 'Time: 00:00';
+    
+    // create terraform lines and number used when terraforming is enabled
+    tfLine1 = new Line(Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff");
+    tfLine1.visible = false;
+    engine.renderer["buffer"].addDisplayObject(tfLine1);
+    tfLine2 = new Line(Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff");
+    tfLine2.visible = false;
+    engine.renderer["buffer"].addDisplayObject(tfLine2);
+    tfLine3 = new Line(Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff");
+    tfLine3.visible = false;
+    engine.renderer["buffer"].addDisplayObject(tfLine3);
+    tfLine4 = new Line(Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff");
+    tfLine4.visible = false;
+    engine.renderer["buffer"].addDisplayObject(tfLine4);
+    
+    tfNumber = new Sprite(Layer.TERRAFORM, engine.images["numbers"], new Vector.empty(), 16, 16);
+    tfNumber.visible = false;
+    tfNumber.animated = true;
+    tfNumber.frame = terraformingHeight;
+    engine.renderer["buffer"].addDisplayObject(tfNumber);
+    
+    // create target cursor used when a ship is selected
+    targetCursor = new Sprite(Layer.TARGETSYMBOL, engine.images["targetcursor"], new Vector.empty(), 48, 48);
+    targetCursor.anchor = new Vector(0.5, 0.5);
+    targetCursor.visible = false;
+    engine.renderer["buffer"].addDisplayObject(targetCursor);
+    
+    // rectangle that is drawn when repositioning a building
+    repositionRect = new Rect(Layer.TARGETSYMBOL, new Vector(0, 0), new Vector(32, 32), 10, "#f00");
+    repositionRect.visible = false;
+    engine.renderer["buffer"].addDisplayObject(repositionRect);
   }
   
   void updateTime(Timer _) {
@@ -925,7 +925,7 @@ class Game {
       ghosts.clear(); // ghosts are all the placeholders to build
       
       // calculate multiple ghosts when dragging
-      if (mouse.dragStart != null) {
+      if (mouse.dragStart != null && UISymbol.activeSymbol != null) {
         
         Vector start = mouse.dragStart;
         Vector end = hoveredTile;

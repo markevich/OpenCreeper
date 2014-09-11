@@ -91,6 +91,7 @@ class Renderer {
                                        size.y * 16);          
       return renderer.intersects(object);
     } else if (displayObject is Line) {   
+      // FIXME: a line might be partially visible although neither start nor end are visible
       return (renderer.containsPoint(new Point(displayObject.from.x, displayObject.from.y)) ||
               renderer.containsPoint(new Point(displayObject.to.x, displayObject.to.y)));
     }
