@@ -22,10 +22,9 @@ class Tile {
       terraformProgress = 0;
       
       if (terraformNumber == null) {
-        terraformNumber = new Sprite(Layer.TERRAFORM, game.engine.images["numbers"], position, 16, 16);
+        terraformNumber = new Sprite("buffer", Layer.TERRAFORM, game.engine.images["numbers"], position, 16, 16);
         terraformNumber.animated = true;
         terraformNumber.frame = terraformTarget;
-        game.engine.renderer["buffer"].addDisplayObject(terraformNumber);
       } else {
         terraformNumber.frame = terraformTarget;
       }

@@ -8,9 +8,8 @@ class Shell extends GameObject {
   static final num baseSpeed = 1.5;
 
   Shell(position, this.targetPosition) {
-    sprite = new Sprite(Layer.SHELL, game.engine.images["shell"], position, 16, 16);
+    sprite = new Sprite("buffer", Layer.SHELL, game.engine.images["shell"], position, 16, 16);
     sprite.anchor = new Vector(0.5, 0.5);  
-    game.engine.renderer["buffer"].addDisplayObject(sprite);
   }
   
   static Shell add(Vector position, Vector targetPosition) {

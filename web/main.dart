@@ -28,7 +28,8 @@ part 'uisymbol.dart';
 Game game;
 
 void main() {
-  game = new Game(); 
-  // use [seed] and [friendly] (no enemies) flags
-  game.start(friendly: true);
+  game = new Game().start(
+      friendly: true // disables enemies
+      //seed: 1 // use seed
+      );
 }

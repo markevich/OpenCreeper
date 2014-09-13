@@ -12,10 +12,11 @@ class Rect extends DisplayObject {
   Vector anchor;
   Vector scale;
 
-  Rect(layer, this.position, this.size, this.lineWidth, this.color) {
+  Rect(rendererName, layer, this.position, this.size, this.lineWidth, this.color) {
     super.layer = layer;
     anchor = new Vector.empty();
     scale = new Vector(1.0, 1.0);
+    engine.renderer[rendererName].addDisplayObject(this);
   }
 }
 
@@ -26,9 +27,10 @@ class Circle extends DisplayObject {
   String color;
   num scale;
 
-  Circle(layer, this.position, this.radius, this.lineWidth, this.color) {
+  Circle(rendererName, layer, this.position, this.radius, this.lineWidth, this.color) {
     super.layer = layer;
     scale = 1.0;
+    engine.renderer[rendererName].addDisplayObject(this);
   }
 }
 
@@ -37,8 +39,9 @@ class Line extends DisplayObject {
   Vector from, to;
   int lineWidth;
 
-  Line(layer, this.from, this.to, this.lineWidth, this.color) {
+  Line(rendererName, layer, this.from, this.to, this.lineWidth, this.color) {
     super.layer = layer;
+    engine.renderer[rendererName].addDisplayObject(this);
   }
   
   String toString() {
@@ -53,11 +56,12 @@ class Sprite extends DisplayObject {
   num rotation = 0, alpha = 1.0;
   bool animated = false;
 
-  Sprite(layer, this.image, this.position, width, height) {
+  Sprite(rendererName, layer, this.image, this.position, width, height) {
     super.layer = layer;
     anchor = new Vector.empty();
     scale = new Vector(1.0, 1.0);
     size = new Vector(width, height);
+    engine.renderer[rendererName].addDisplayObject(this);
   }
 }
 

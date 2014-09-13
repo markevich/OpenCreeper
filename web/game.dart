@@ -26,7 +26,7 @@ class Game {
     engine = new Engine(TPS: 60, debug: false);
   }
 
-  void start({int seed: null, bool friendly: false}) {
+  Game start({int seed: null, bool friendly: false}) {
     if (seed == null)
       this.seed = Engine.randomInt(0, 10000);
     else
@@ -40,6 +40,7 @@ class Game {
                        "cannongun", "base", "collector", "reactor", "storage", "terp", "packet_collection", "packet_energy", "packet_health", "relay", "emitter", "creeper",
                        "mortar", "shell", "beam", "spore", "bomber", "bombership", "smoke", "explosion", "targetcursor", "sporetower", "forcefield", "shield", "projectile"];  
     engine.loadImages(images).then((results) => init());    
+    return this;
   }
 
   void init() {  
@@ -145,35 +146,28 @@ class Game {
     querySelector('#time').innerHtml = 'Time: 00:00';
     
     // create terraform lines and number used when terraforming is enabled
-    tfLine1 = new Line(Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff");
+    tfLine1 = new Line("buffer", Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff");
     tfLine1.visible = false;
-    engine.renderer["buffer"].addDisplayObject(tfLine1);
-    tfLine2 = new Line(Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff");
+    tfLine2 = new Line("buffer", Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff");
     tfLine2.visible = false;
-    engine.renderer["buffer"].addDisplayObject(tfLine2);
-    tfLine3 = new Line(Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff");
+    tfLine3 = new Line("buffer", Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff");
     tfLine3.visible = false;
-    engine.renderer["buffer"].addDisplayObject(tfLine3);
-    tfLine4 = new Line(Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff");
+    tfLine4 = new Line("buffer", Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff");
     tfLine4.visible = false;
-    engine.renderer["buffer"].addDisplayObject(tfLine4);
     
-    tfNumber = new Sprite(Layer.TERRAFORM, engine.images["numbers"], new Vector.empty(), 16, 16);
+    tfNumber = new Sprite("buffer", Layer.TERRAFORM, engine.images["numbers"], new Vector.empty(), 16, 16);
     tfNumber.visible = false;
     tfNumber.animated = true;
     tfNumber.frame = terraformingHeight;
-    engine.renderer["buffer"].addDisplayObject(tfNumber);
     
     // create target cursor used when a ship is selected
-    targetCursor = new Sprite(Layer.TARGETSYMBOL, engine.images["targetcursor"], new Vector.empty(), 48, 48);
+    targetCursor = new Sprite("buffer", Layer.TARGETSYMBOL, engine.images["targetcursor"], new Vector.empty(), 48, 48);
     targetCursor.anchor = new Vector(0.5, 0.5);
     targetCursor.visible = false;
-    engine.renderer["buffer"].addDisplayObject(targetCursor);
     
     // rectangle that is drawn when repositioning a building
-    repositionRect = new Rect(Layer.TARGETSYMBOL, new Vector(0, 0), new Vector(32, 32), 10, "#f00");
+    repositionRect = new Rect("buffer", Layer.TARGETSYMBOL, new Vector(0, 0), new Vector(32, 32), 10, "#f00");
     repositionRect.visible = false;
-    engine.renderer["buffer"].addDisplayObject(repositionRect);
   }
   
   void updateTime(Timer _) {
@@ -872,8 +866,8 @@ class Game {
   
             repositionRect.visible = true;
              
-            repositionRect.position = new Vector(hoveredTile.x * tileSize + 8, hoveredTile.y * tileSize + 8);
-            repositionRect.size = new Vector(building.size, building.size);
+            repositionRect.position = new Vector(hoveredTile.x * tileSize - (building.size * tileSize / 2) + 8, hoveredTile.y * tileSize - (building.size * tileSize / 2) + 8);
+            repositionRect.size = new Vector(building.size * tileSize, building.size * tileSize);
             if (canBePlaced)
               repositionRect.color = "rgba(0, 255, 0, 0.5)";
             else

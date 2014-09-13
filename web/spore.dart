@@ -9,9 +9,8 @@ class Spore extends GameObject {
   static final int baseSpeed = 1;
 
   Spore(position, this.targetPosition) {   
-    sprite = new Sprite(Layer.SPORE, game.engine.images["spore"], position, 32, 32);
+    sprite = new Sprite("buffer", Layer.SPORE, game.engine.images["spore"], position, 32, 32);
     sprite.anchor = new Vector(0.5, 0.5);  
-    game.engine.renderer["buffer"].addDisplayObject(sprite);
   }
    
   static void add(Vector position, Vector targetPosition) {

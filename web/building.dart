@@ -88,20 +88,13 @@ class Building extends GameObject {
   Building(position, imageID) {
     type = imageID;
     this.position = position;
-    sprite = new Sprite(Layer.BUILDING, game.engine.images[imageID], position, 48, 48);
+    sprite = new Sprite("buffer", Layer.BUILDING, game.engine.images[imageID], position, 48, 48);
     sprite.anchor = new Vector(0.5, 0.5);
     sprite.alpha = 0.5;
-    game.engine.renderer["buffer"].addDisplayObject(sprite);
 
-    selectedCircle = new Circle(Layer.SELECTEDCIRCLE, position, 24, 2, "#fff");
+    selectedCircle = new Circle("buffer", Layer.SELECTEDCIRCLE, position, 24, 2, "#fff");
     selectedCircle.visible = false;
-    game.engine.renderer["buffer"].addDisplayObject(selectedCircle);
-    
-    targetSymbol = new Rect(Layer.TARGETSYMBOL, new Vector.empty(), new Vector(48, 48), 1, '#0f0');
-    targetSymbol.visible = false;
-    targetSymbol.anchor = new Vector(0.5, 0.5);
-    game.engine.renderer["buffer"].addDisplayObject(targetSymbol);
-    
+      
     health = 0;
     size = 3;
     energy = 0;
@@ -165,10 +158,9 @@ class Building extends GameObject {
       needsEnergy = true;
       energyCounter = 15;
       
-      cannon = new Sprite(Layer.BUILDINGGUN, game.engine.images["cannongun"], position, 48, 48);
+      cannon = new Sprite("buffer", Layer.BUILDINGGUN, game.engine.images["cannongun"], position, 48, 48);
       cannon.anchor = new Vector(0.5, 0.5);
       cannon.alpha = 0.5;
-      game.engine.renderer["buffer"].addDisplayObject(cannon);
     }
     else if (type == "mortar") {
       maxHealth = game.debug == true ? 1 : 40;
@@ -185,6 +177,10 @@ class Building extends GameObject {
       canMove = true;
       needsEnergy = true;
     }
+    
+    targetSymbol = new Rect("buffer", Layer.TARGETSYMBOL, new Vector.empty(), new Vector(size * game.tileSize, size * game.tileSize), 1, '#0f0');
+    targetSymbol.visible = false;
+    targetSymbol.anchor = new Vector(0.5, 0.5);
     
     Connection.add(this);
   }

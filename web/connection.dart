@@ -6,15 +6,13 @@ class Connection {
   static List<Connection> connections = new List<Connection>();
   
   Connection(this.from, this.to) {
-    line = new Line(Layer.CONNECTIONBORDER, this.from.position, this.to.position, 3, "#000");
-    game.engine.renderer["buffer"].addDisplayObject(line);
+    line = new Line("buffer", Layer.CONNECTIONBORDER, this.from.position, this.to.position, 3, "#000");
 
     var color = '#777';
     if (from.built && to.built)
       color = '#fff';
 
-    line2 = new Line(Layer.CONNECTION, this.from.position, this.to.position, 2, color);
-    game.engine.renderer["buffer"].addDisplayObject(line2);
+    line2 = new Line("buffer", Layer.CONNECTION, this.from.position, this.to.position, 2, color);
   }
   
   static void clear() {

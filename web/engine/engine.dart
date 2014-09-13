@@ -10,6 +10,7 @@ class Engine {
   Engine({int TPS: 60, bool debug: false}) {
     this.TPS = TPS;
     this.debug = debug;
+    engine = this;
   }
   
   void addGameObject(GameObject gameObject) {

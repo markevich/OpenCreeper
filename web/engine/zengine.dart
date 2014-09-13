@@ -11,3 +11,5 @@ part 'mouse.dart';
 part 'vector.dart';
 part 'route.dart';
 part 'gameobject.dart';
+
+Engine engine;

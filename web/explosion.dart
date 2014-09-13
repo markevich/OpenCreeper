@@ -5,11 +5,10 @@ class Explosion extends GameObject {
   int counter = 0;
 
   Explosion(Vector position) {
-    sprite = new Sprite(Layer.EXPLOSION, game.engine.images["explosion"], position, 64, 64);
+    sprite = new Sprite("buffer", Layer.EXPLOSION, game.engine.images["explosion"], position, 64, 64);
     sprite.animated = true;
     sprite.rotation = Engine.randomInt(0, 359);
     sprite.anchor = new Vector(0.5, 0.5);
-    game.engine.renderer["buffer"].addDisplayObject(sprite);
   }
   
   static void add(Vector position) {
