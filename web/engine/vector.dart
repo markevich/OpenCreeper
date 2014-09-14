@@ -19,6 +19,10 @@ class Vector {
   num distanceTo(Vector other) {
     return sqrt(pow(x - other.x, 2) + pow(y - other.y, 2));
   }
+  
+  num angleTo(Vector other) {
+    return atan2(other.y - y, other.x - x) * 180 / PI;
+  }
 }
 
 class Vector3 {

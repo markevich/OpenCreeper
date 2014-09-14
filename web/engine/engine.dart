@@ -47,11 +47,12 @@ class Engine {
   /**
    * Creates a renderer with a [name], [width], [height] and optionally adds it to a [container] in the DOM
    */
-  void createRenderer(String name, int width, int height, [String container]) {
+  Renderer createRenderer(String name, int width, int height, [String container]) {
     renderer[name] = new Renderer(new CanvasElement(), width, height);
     if (container != null)
       querySelector(container).children.add(renderer[name].view);
     renderer[name].updateRect(width, height);
+    return renderer[name];
   }
   
   /**
@@ -121,7 +122,7 @@ class Engine {
     
     return velocity;
   }
-
+  
   static int randomInt(num from, num to, [num seed]) {
     var random = new Random(seed);
     return (random.nextInt(to - from + 1) + from);

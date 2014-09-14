@@ -92,8 +92,7 @@ class Building extends GameObject {
     sprite.anchor = new Vector(0.5, 0.5);
     sprite.alpha = 0.5;
 
-    selectedCircle = new Circle("buffer", Layer.SELECTEDCIRCLE, position, 24, 2, "#fff");
-    selectedCircle.visible = false;
+    selectedCircle = new Circle("buffer", Layer.SELECTEDCIRCLE, position, 24, 2, null, "#fff", visible: false);
       
     health = 0;
     size = 3;
@@ -178,8 +177,7 @@ class Building extends GameObject {
       needsEnergy = true;
     }
     
-    targetSymbol = new Rect("buffer", Layer.TARGETSYMBOL, new Vector.empty(), new Vector(size * game.tileSize, size * game.tileSize), 1, '#0f0');
-    targetSymbol.visible = false;
+    targetSymbol = new Rect("buffer", Layer.TARGETSYMBOL, new Vector.empty(), new Vector(size * game.tileSize, size * game.tileSize), 1, '#0f0', null, visible: false);
     targetSymbol.anchor = new Vector(0.5, 0.5);
     
     Connection.add(this);
@@ -309,17 +307,9 @@ class Building extends GameObject {
     querySelector('#deactivate').style.display = "none";
     querySelector('#activate').style.display = "none";
   }
-  
-  void updateHoverState() {
-    Vector realPosition = game.real2screen(position);
-    hovered = (game.mouse.position.x > realPosition.x - (game.tileSize * size * game.zoom / 2) &&
-        game.mouse.position.x < realPosition.x + (game.tileSize * size * game.zoom / 2) &&
-        game.mouse.position.y > realPosition.y - (game.tileSize * size * game.zoom / 2) &&
-        game.mouse.position.y < realPosition.y + (game.tileSize * size * game.zoom / 2));
-  }
-  
+   
   void update() {
-    updateHoverState();
+    hovered = this.sprite.isHovered();
     
     if (!game.paused) {
       move();

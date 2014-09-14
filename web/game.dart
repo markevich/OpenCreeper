@@ -52,9 +52,10 @@ class Game {
     
     engine.createRenderer("main", width, height, "#canvasContainer");
     engine.renderer["main"].view.style.zIndex = "1";   
-    mouse = new Mouse(engine.renderer["main"]);
     
-    engine.createRenderer("buffer", width, height);
+    var buffer = engine.createRenderer("buffer", width, height);
+    buffer.enableMouse();
+    mouse = buffer.mouse;
     
     for (int i = 0; i < 10; i++) {
       engine.createRenderer("level$i", 128 * 16, 128 * 16);
@@ -99,7 +100,7 @@ class Game {
     querySelector('#restart2').onClick.listen((event) => game.restart());
     querySelector('#deactivate').onClick.listen((event) => Building.deactivate());
     querySelector('#activate').onClick.listen((event) => Building.activate());
-
+  
     game.engine.renderer["main"].view
       ..onMouseMove.listen((event) => onMouseMove(event))
       ..onDoubleClick.listen((event) => onDoubleClick(event))
@@ -146,28 +147,21 @@ class Game {
     querySelector('#time').innerHtml = 'Time: 00:00';
     
     // create terraform lines and number used when terraforming is enabled
-    tfLine1 = new Line("buffer", Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff");
-    tfLine1.visible = false;
-    tfLine2 = new Line("buffer", Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff");
-    tfLine2.visible = false;
-    tfLine3 = new Line("buffer", Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff");
-    tfLine3.visible = false;
-    tfLine4 = new Line("buffer", Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff");
-    tfLine4.visible = false;
+    tfLine1 = new Line("buffer", Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff", visible: false);
+    tfLine2 = new Line("buffer", Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff", visible: false);
+    tfLine3 = new Line("buffer", Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff", visible: false);
+    tfLine4 = new Line("buffer", Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff", visible: false);
     
-    tfNumber = new Sprite("buffer", Layer.TERRAFORM, engine.images["numbers"], new Vector.empty(), 16, 16);
-    tfNumber.visible = false;
+    tfNumber = new Sprite("buffer", Layer.TERRAFORM, engine.images["numbers"], new Vector.empty(), 16, 16, visible: false);
     tfNumber.animated = true;
     tfNumber.frame = terraformingHeight;
     
     // create target cursor used when a ship is selected
-    targetCursor = new Sprite("buffer", Layer.TARGETSYMBOL, engine.images["targetcursor"], new Vector.empty(), 48, 48);
+    targetCursor = new Sprite("buffer", Layer.TARGETSYMBOL, engine.images["targetcursor"], new Vector.empty(), 48, 48, visible: false);
     targetCursor.anchor = new Vector(0.5, 0.5);
-    targetCursor.visible = false;
     
     // rectangle that is drawn when repositioning a building
-    repositionRect = new Rect("buffer", Layer.TARGETSYMBOL, new Vector(0, 0), new Vector(32, 32), 10, "#f00");
-    repositionRect.visible = false;
+    repositionRect = new Rect("buffer", Layer.TARGETSYMBOL, new Vector(0, 0), new Vector(32, 32), 10, "#f00", null, visible: false);
   }
   
   void updateTime(Timer _) {
@@ -869,9 +863,9 @@ class Game {
             repositionRect.position = new Vector(hoveredTile.x * tileSize - (building.size * tileSize / 2) + 8, hoveredTile.y * tileSize - (building.size * tileSize / 2) + 8);
             repositionRect.size = new Vector(building.size * tileSize, building.size * tileSize);
             if (canBePlaced)
-              repositionRect.color = "rgba(0, 255, 0, 0.5)";
+              repositionRect.fillColor = "rgba(0, 255, 0, 0.5)";
             else
-              repositionRect.color = "rgba(255, 0, 0, 0.5)";
+              repositionRect.fillColor = "rgba(255, 0, 0, 0.5)";
           }
         }
       }

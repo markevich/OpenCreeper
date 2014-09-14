@@ -15,15 +15,13 @@ class Ship extends GameObject {
     sprite = new Sprite("buffer", Layer.SHIP, game.engine.images[imageID], position, 48, 48);
     sprite.anchor = new Vector(0.5, 0.5);
 
-    selectedCircle = new Circle("buffer", Layer.SELECTEDCIRCLE, position, 24, 2, "#fff");
-    selectedCircle.visible = false;
+    selectedCircle = new Circle("buffer", Layer.SELECTEDCIRCLE, position, 24, 2, "#fff", null, visible: false);
 
-    targetSymbol = new Sprite("buffer", Layer.TARGETSYMBOL, game.engine.images["targetcursor"], position, 48, 48);
+    targetSymbol = new Sprite("buffer", Layer.TARGETSYMBOL, game.engine.images["targetcursor"], position, 48, 48, visible: false);
     targetSymbol.anchor = new Vector(0.5, 0.5);
     targetSymbol.alpha = 0.5;
-    targetSymbol.visible = false;
     
-    energyRect = new Rect("buffer", Layer.ENERGYBAR, new Vector(position.x - 22, position.y - 20), new Vector(44 / maxEnergy * energy, 3), 1, '#f00');
+    energyRect = new Rect("buffer", Layer.ENERGYBAR, new Vector(position.x - 22, position.y - 20), new Vector(44 / maxEnergy * energy, 3), 1, '#f00', null);
   }
    
   static Ship add(Vector position, String imageID, String type, Building home) {

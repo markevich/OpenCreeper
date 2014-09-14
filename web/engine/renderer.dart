@@ -7,6 +7,8 @@ class Renderer {
   double zoom = 1.0;
   Vector position = new Vector.empty();
   List<List<DisplayObject>> layers = new List<List<DisplayObject>>(20);
+  Mouse mouse;
+  var mouseMove;
 
   Renderer(this.view, width, height) {
     updateRect(width, height);
@@ -22,6 +24,10 @@ class Renderer {
     context.clearRect(0, 0, view.width, view.height);
   }
   
+  void enableMouse() {
+    this.mouse = new Mouse(this);
+  }
+   
   /**
    * Updates the boundaries of the renderer (eg. after resizing the window)
    */
@@ -104,7 +110,7 @@ class Renderer {
        view.width / 2 + (vector.x - position.x) * zoom,
        view.height / 2 + (vector.y - position.y) * zoom);
   }
-
+  
   void draw() {
     for (var layer in layers) {
       for (var displayObject in layer) {
@@ -167,12 +173,42 @@ class Renderer {
             else if (displayObject is Rect) {
               Vector relativePos = relativePosition(displayObject.position);
 
-              //context.lineWidth = displayObject.lineWidth;
-              context.fillStyle = displayObject.color;
-              context.fillRect(relativePos.x - displayObject.size.x * displayObject.anchor.x * displayObject.scale.x * zoom,
-                               relativePos.y - displayObject.size.y * displayObject.anchor.y * displayObject.scale.y * zoom,
-                               displayObject.size.x * displayObject.scale.x * zoom,
-                               displayObject.size.y * displayObject.scale.y * zoom);
+              context.lineWidth = displayObject.lineWidth * zoom;
+              if (displayObject.rotation != 0) {
+                context.save();
+                context.translate(relativePos.x, relativePos.y);
+                context.rotate(Engine.deg2rad(displayObject.rotation));
+                if (displayObject.fillColor != null) {
+                  context.fillStyle = displayObject.fillColor;
+                  context.fillRect(-displayObject.size.x * displayObject.anchor.x * displayObject.scale.x * zoom,
+                                   -displayObject.size.y * displayObject.anchor.y * displayObject.scale.y * zoom,
+                                   displayObject.size.x * displayObject.scale.x * zoom,
+                                   displayObject.size.y * displayObject.scale.y * zoom);
+                }
+                if (displayObject.strokeColor != null) {
+                  context.strokeStyle = displayObject.strokeColor;
+                  context.strokeRect(-displayObject.size.x * displayObject.anchor.x * displayObject.scale.x * zoom,
+                                   -displayObject.size.y * displayObject.anchor.y * displayObject.scale.y * zoom,
+                                   displayObject.size.x * displayObject.scale.x * zoom,
+                                   displayObject.size.y * displayObject.scale.y * zoom);
+                }
+                context.restore();
+              } else {
+                if (displayObject.fillColor != null) {
+                  context.fillStyle = displayObject.fillColor;
+                  context.fillRect(relativePos.x - displayObject.size.x * displayObject.anchor.x * displayObject.scale.x * zoom,
+                                   relativePos.y - displayObject.size.y * displayObject.anchor.y * displayObject.scale.y * zoom,
+                                   displayObject.size.x * displayObject.scale.x * zoom,
+                                   displayObject.size.y * displayObject.scale.y * zoom);
+                }
+                if (displayObject.strokeColor != null) {
+                  context.strokeStyle = displayObject.strokeColor;
+                  context.strokeRect(relativePos.x - displayObject.size.x * displayObject.anchor.x * displayObject.scale.x * zoom,
+                                   relativePos.y - displayObject.size.y * displayObject.anchor.y * displayObject.scale.y * zoom,
+                                   displayObject.size.x * displayObject.scale.x * zoom,
+                                   displayObject.size.y * displayObject.scale.y * zoom);
+                }
+              }
             }
 
             // render circle
@@ -180,11 +216,41 @@ class Renderer {
               Vector relativePos = relativePosition(displayObject.position);
 
               context.lineWidth = displayObject.lineWidth * zoom;
-              context.strokeStyle = displayObject.color;
-              context.beginPath();
-              context.arc(relativePos.x, relativePos.y, displayObject.radius * displayObject.scale * zoom, 0, PI * 2, true);
-              context.closePath();
-              context.stroke();
+              if (displayObject.rotation != 0) {
+                context.save();
+                context.translate(relativePos.x, relativePos.y);
+                context.rotate(Engine.deg2rad(displayObject.rotation));
+                if (displayObject.fillColor != null) {
+                  context.fillStyle = displayObject.fillColor;
+                  context.beginPath();
+                  context.arc(0, 0, displayObject.radius * displayObject.scale * zoom, 0, Engine.deg2rad(displayObject.degrees), true);
+                  context.closePath();
+                  context.fill();
+                }
+                if (displayObject.strokeColor != null) {
+                  context.strokeStyle = displayObject.strokeColor;
+                  context.beginPath();
+                  context.arc(0, 0, displayObject.radius * displayObject.scale * zoom, 0, Engine.deg2rad(displayObject.degrees), true);
+                  context.closePath();
+                  context.stroke();
+                }
+                context.restore();
+              } else {
+                if (displayObject.fillColor != null) {
+                  context.fillStyle = displayObject.fillColor;
+                  context.beginPath();
+                  context.arc(relativePos.x, relativePos.y, displayObject.radius * displayObject.scale * zoom, 0, Engine.deg2rad(displayObject.degrees), true);
+                  context.closePath();
+                  context.fill();
+                }
+                if (displayObject.strokeColor != null) {
+                  context.strokeStyle = displayObject.strokeColor;
+                  context.beginPath();
+                  context.arc(relativePos.x, relativePos.y, displayObject.radius * displayObject.scale * zoom, 0, Engine.deg2rad(displayObject.degrees), true);
+                  context.closePath();
+                  context.stroke();
+                }
+              }
             }
 
             // render line
