@@ -10,8 +10,7 @@ class Packet extends GameObject {
   static num baseSpeed = 3;
 
   Packet(this.currentTarget, this.target, this.type) {
-    sprite = new Sprite("buffer", Layer.PACKET, game.engine.images["packet_" + type], currentTarget.position, 16, 16, visible: false);
-    sprite.anchor = new Vector(0.5, 0.5);
+    sprite = new Sprite("buffer", "packet", game.engine.images["packet_" + type], currentTarget.position, 16, 16, visible: false, anchor: new Vector(0.5, 0.5));
   }
      
   void update() {

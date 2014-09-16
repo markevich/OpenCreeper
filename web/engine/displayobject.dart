@@ -1,7 +1,7 @@
 part of zengine;
 
 abstract class DisplayObject {
-  Layer layer;
+  String layer;
   bool visible = true;
 }
 
@@ -10,15 +10,14 @@ class Rect extends DisplayObject {
   int lineWidth;
   String fillColor, strokeColor;
   num rotation = 0;
-  Vector anchor;
-  Vector scale;
+  Vector anchor = new Vector.empty();
+  Vector scale = new Vector(1.0, 1.0);
   String rendererName;
 
-  Rect(rendererName, layer, this.position, this.size, this.lineWidth, this.fillColor, this.strokeColor, {bool visible: true}) {
+  Rect(rendererName, layer, this.position, this.size, this.lineWidth, this.fillColor, this.strokeColor, {bool visible: true, Vector anchor}) {
     super.layer = layer;
     super.visible = visible;
-    anchor = new Vector.empty();
-    scale = new Vector(1.0, 1.0);
+    if (anchor != null) this.anchor = anchor;
     engine.renderer[rendererName].addDisplayObject(this);
     this.rendererName = rendererName;
   }
@@ -73,21 +72,49 @@ class Line extends DisplayObject {
 }
 
 class Sprite extends DisplayObject {
-  int frame = 0;
+  int frame;
   ImageElement image;
-  Vector anchor, scale, position, size;
-  num rotation = 0, alpha = 1.0;
-  bool animated = false;
+  Vector anchor = new Vector.empty(), position, size;
+  Vector scale = new Vector(1.0, 1.0);
+  num rotation, alpha;
+  bool animated; // animated sprites should be in 8 columns in the spritesheet
   String rendererName;
+  Timer animationTimer;
+  int animationFPS;
 
-  Sprite(rendererName, layer, this.image, this.position, width, height, {bool visible: true}) {
+  Sprite(rendererName, layer, this.image, this.position, width, height, {int frame: 0, bool animated: false, animationFPS: 30, bool visible: true, Vector anchor, num alpha: 1.0, num rotation: 0, Vector scale}) {
     super.layer = layer;
     super.visible = visible;
-    anchor = new Vector.empty();
-    scale = new Vector(1.0, 1.0);
+    this.alpha = alpha;
+    this.rotation = rotation;
+    this.animated = animated;
+    this.frame = frame;
+    this.animationFPS = animationFPS;
+    if (anchor != null) this.anchor = anchor;
+    if (scale != null) this.scale = scale;
     size = new Vector(width, height);
     engine.renderer[rendererName].addDisplayObject(this);
     this.rendererName = rendererName;
+    if (animated)
+      startAnimation();
+  }
+  
+  void stopAnimation() {
+    animationTimer.cancel();
+  }
+  
+  void startAnimation() {
+    animationTimer = new Timer.periodic(new Duration(milliseconds: (1000 / animationFPS).floor()), (Timer timer) => animate());
+  }
+  
+  void animate() {
+    frame++;    
+  }
+  
+  void rotate(int angle) {
+    rotation += angle;
+    if (rotation > 359)
+      rotation -= 359;
   }
   
   bool isHovered() {
@@ -97,47 +124,4 @@ class Sprite extends DisplayObject {
             engine.renderer[rendererName].mouse.position.y >= relativePosition.y - this.size.y * this.scale.y * this.anchor.y * engine.renderer[rendererName].zoom &&
             engine.renderer[rendererName].mouse.position.y <= relativePosition.y - this.size.y * this.scale.y * this.anchor.y * engine.renderer[rendererName].zoom + this.size.y * this.scale.y * engine.renderer[rendererName].zoom);
   }
-}
-
-// Layer Enum: http://stackoverflow.com/questions/15854549/how-can-i-build-an-enum-with-dart
-
-/**
- * These layers define the order in which displayobjects are drawn.
- * -- Change this for every project --
- */
-class Layer {
-  final int _value;
-  const Layer._internal(this._value);
-
-  int operator -(Layer other) => _value - other._value;
-
-  static const ENERGYBAR = const Layer._internal(10);
-  
-  static const BUILDINGGUNFLYING = const Layer._internal(9);
-
-  static const SPORE = const Layer._internal(8);
-  static const SHELL = const Layer._internal(8);
-  static const SHIP = const Layer._internal(8);
-  static const BUILDINGFLYING = const Layer._internal(8);
-  
-  static const SMOKE = const Layer._internal(7);
-  static const EXPLOSION = const Layer._internal(7);
-  
-  static const PACKET = const Layer._internal(6);
-  
-  static const BUILDINGGUN = const Layer._internal(5);
-
-  static const PROJECTILE = const Layer._internal(4);
-
-  static const EMITTER = const Layer._internal(3);
-  static const SPORETOWER = const Layer._internal(3);
-  static const BUILDING = const Layer._internal(3);
-  
-  static const CONNECTION = const Layer._internal(2);
-  
-  static const CONNECTIONBORDER = const Layer._internal(1);
-  
-  static const TARGETSYMBOL = const Layer._internal(0);
-  static const SELECTEDCIRCLE = const Layer._internal(0);
-  static const TERRAFORM = const Layer._internal(0);
 }

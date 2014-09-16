@@ -7,9 +7,7 @@ class Projectile extends GameObject {
   static num baseSpeed = 7;
 
   Projectile(position, this.targetPosition, rotation) {
-    sprite = new Sprite("buffer", Layer.PROJECTILE, game.engine.images["projectile"], position, 16, 16);
-    sprite.anchor = new Vector(0.5, 0.5);
-    sprite.rotation = rotation;  
+    sprite = new Sprite("buffer", "projectile", game.engine.images["projectile"], position, 16, 16, anchor: new Vector(0.5, 0.5), rotation: rotation);
   }
   
   static void add(Vector position, Vector targetPosition, num rotation) {

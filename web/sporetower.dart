@@ -5,8 +5,7 @@ class Sporetower extends GameObject {
   int sporeCounter = 0;
 
   Sporetower(position) {
-    sprite = new Sprite("buffer", Layer.SPORETOWER, game.engine.images["sporetower"], position, 48, 48);
-    sprite.anchor = new Vector(0.5, 0.5);
+    sprite = new Sprite("buffer", "sporetower", game.engine.images["sporetower"], position, 48, 48, anchor: new Vector(0.5, 0.5));
     reset();
   }
    

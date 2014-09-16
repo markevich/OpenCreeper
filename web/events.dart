@@ -76,7 +76,7 @@ void onKeyDown(KeyboardEvent evt) {
     UISymbol.deselect();
     Building.deselect();
     Ship.deselect();
-    game.engine.renderer["main"].view.style.cursor = "url('images/Normal.cur') 2 2, pointer";
+    game.mouse.showCursor();
   }
 
   if (evt.keyCode == KeyCode.LEFT)

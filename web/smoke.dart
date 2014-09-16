@@ -2,13 +2,9 @@ part of creeper;
 
 class Smoke extends GameObject {
   Sprite sprite;
-  int counter = 0;
 
   Smoke(Vector position) {
-    sprite = new Sprite("buffer", Layer.SMOKE, game.engine.images["smoke"], position, 128, 128);
-    sprite.animated = true;
-    sprite.anchor = new Vector(0.5, 0.5);
-    sprite.scale = new Vector(0.5, 0.5);
+    sprite = new Sprite("buffer", "smoke", game.engine.images["smoke"], position, 128, 128, animated: true, animationFPS: 30, anchor: new Vector(0.5, 0.5), scale: new Vector(0.5, 0.5));
   }
    
   static void add(Vector position) {
@@ -17,19 +13,9 @@ class Smoke extends GameObject {
   }
   
   void update() {
-    if (!game.paused) {
-      counter += 1; // * game.speed;
-      if (counter >= 3) {
-        counter -= 3;
-  
-        if (sprite.frame == 36) {
-          game.engine.renderer["buffer"].removeDisplayObject(sprite);
-          game.engine.removeGameObject(this);
-        }
-        else {
-          sprite.frame++;
-        }
-      }
+    if (sprite.frame == 36) {
+      game.engine.renderer["buffer"].removeDisplayObject(sprite);
+      game.engine.removeGameObject(this);
     }
   }
 }

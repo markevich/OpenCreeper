@@ -7,8 +7,7 @@ class Emitter extends GameObject {
   int counter = 0;
 
   Emitter(position, this.strength) {
-    sprite = new Sprite("buffer", Layer.EMITTER, game.engine.images["emitter"], position, 48, 48);
-    sprite.anchor = new Vector(0.5, 0.5);
+    sprite = new Sprite("buffer", "emitter", game.engine.images["emitter"], position, 48, 48, anchor: new Vector(0.5, 0.5));
   }
   
   static Emitter add(Vector position, int strength) {

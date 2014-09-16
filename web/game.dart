@@ -56,7 +56,11 @@ class Game {
     var buffer = engine.createRenderer("buffer", width, height);
     buffer.enableMouse();
     mouse = buffer.mouse;
+    mouse.setCursor("url('images/Normal.cur') 2 2, pointer");
     
+    buffer.setLayers(["terraform", "selectedcircle", "targetsymbol", "connectionborder", "connection", "building", "sporetower", "emitter", "projectile", "buildinggun", "packet",
+                      "explosion", "smoke", "buildingflying", "ship", "shell", "spore", "buildinggunflying", "energybar"]);
+   
     for (int i = 0; i < 10; i++) {
       engine.createRenderer("level$i", 128 * 16, 128 * 16);
     }
@@ -147,21 +151,18 @@ class Game {
     querySelector('#time').innerHtml = 'Time: 00:00';
     
     // create terraform lines and number used when terraforming is enabled
-    tfLine1 = new Line("buffer", Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff", visible: false);
-    tfLine2 = new Line("buffer", Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff", visible: false);
-    tfLine3 = new Line("buffer", Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff", visible: false);
-    tfLine4 = new Line("buffer", Layer.TERRAFORM, new Vector.empty(), new Vector.empty(), 1, "#fff", visible: false);
+    tfLine1 = new Line("buffer", "terraform", new Vector.empty(), new Vector.empty(), 1, "#fff", visible: false);
+    tfLine2 = new Line("buffer", "terraform", new Vector.empty(), new Vector.empty(), 1, "#fff", visible: false);
+    tfLine3 = new Line("buffer", "terraform", new Vector.empty(), new Vector.empty(), 1, "#fff", visible: false);
+    tfLine4 = new Line("buffer", "terraform", new Vector.empty(), new Vector.empty(), 1, "#fff", visible: false);
     
-    tfNumber = new Sprite("buffer", Layer.TERRAFORM, engine.images["numbers"], new Vector.empty(), 16, 16, visible: false);
-    tfNumber.animated = true;
-    tfNumber.frame = terraformingHeight;
+    tfNumber = new Sprite("buffer", "terraform", engine.images["numbers"], new Vector.empty(), 16, 16, animated: true, frame: terraformingHeight, visible: false);
     
     // create target cursor used when a ship is selected
-    targetCursor = new Sprite("buffer", Layer.TARGETSYMBOL, engine.images["targetcursor"], new Vector.empty(), 48, 48, visible: false);
-    targetCursor.anchor = new Vector(0.5, 0.5);
+    targetCursor = new Sprite("buffer", "targetsymbol", engine.images["targetcursor"], new Vector.empty(), 48, 48, visible: false, anchor: new Vector(0.5, 0.5));
     
     // rectangle that is drawn when repositioning a building
-    repositionRect = new Rect("buffer", Layer.TARGETSYMBOL, new Vector(0, 0), new Vector(32, 32), 10, "#f00", null, visible: false);
+    repositionRect = new Rect("buffer", "targetsymbol", new Vector(0, 0), new Vector(32, 32), 10, "#f00", null, visible: false);
   }
   
   void updateTime(Timer _) {
@@ -179,6 +180,7 @@ class Game {
     querySelector('#paused').style.display = 'block';
     paused = true;
     stopwatch.stop();
+    game.engine.stopAnimations();
   }
 
   void resume() {
@@ -186,6 +188,7 @@ class Game {
     querySelector('#win').style.display = 'none';
     paused = false;
     stopwatch.start();
+    game.engine.startAnimations();
   }
 
   void stop() {
@@ -340,10 +343,6 @@ class Game {
    * This method is only called ONCE at the start of the game.
    */
   void drawTerrain() {
-    /*for (int i = 0; i < 10; i++) {
-      engine.renderer["level$i"].clear();
-    }*/
-
     // 1st pass - draw masks
     for (int i = 0; i < world.size.x; i++) {
       for (int j = 0; j < world.size.y; j++) {
@@ -854,7 +853,7 @@ class Game {
       for (var building in game.engine.gameObjects) {
         if (building is Building) {
           if (building.built && building.selected && building.canMove) {
-            engine.renderer["main"].view.style.cursor = "none";
+            mouse.hideCursor();
             
             bool canBePlaced = game.canBePlaced(game.hoveredTile, building);
   
@@ -1086,7 +1085,7 @@ class Game {
        game.engine.renderer["main"].view.height / 2 + (vector.y - game.scroll.y) * game.tileSize * game.zoom);
   }
   
-  // converts full coordinates to canvas coordinates, 12 usages
+  // converts full coordinates to canvas coordinates, 5 usages
   Vector real2screen(Vector vector) {
    return new Vector(
        game.engine.renderer["main"].view.width / 2 + (vector.x - game.scroll.x * game.tileSize) * game.zoom,

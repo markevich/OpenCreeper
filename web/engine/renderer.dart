@@ -6,18 +6,13 @@ class Renderer {
   int top, left, bottom, right;
   double zoom = 1.0;
   Vector position = new Vector.empty();
-  List<List<DisplayObject>> layers = new List<List<DisplayObject>>(20);
+  List<Layer> layers = new List();
   Mouse mouse;
-  var mouseMove;
 
   Renderer(this.view, width, height) {
     updateRect(width, height);
     view.style.position = "absolute";
     context = view.getContext('2d');
-    
-    for (int i = 0; i < layers.length; i++) {
-      layers[i] = new List<DisplayObject>();
-    }
   }
 
   void clear() {
@@ -47,22 +42,37 @@ class Renderer {
   void updatePosition(Vector position) {
     this.position = position;
   }
+  
+  /**
+   * Sets the layers, first layers in the list are drawn first later
+   */
+  void setLayers(List layersList) {
+    for (String layerName in layersList) {
+      layers.add(new Layer(layerName));
+    }
+  }
 
   void addDisplayObject(DisplayObject displayObject) {
-    layers[displayObject.layer._value].add(displayObject);
+    for (Layer layer in layers) {
+      if (layer.name == displayObject.layer)
+        layer.displayObjects.add(displayObject);      
+    }
   }
   
   void removeDisplayObject(DisplayObject displayObject) {
-    layers[displayObject.layer._value].removeAt(layers[displayObject.layer._value].indexOf(displayObject));
+    for (Layer layer in layers) {
+      if (layer.name == displayObject.layer)
+        layer.displayObjects.removeAt(layer.displayObjects.indexOf(displayObject));
+    }
   }
   
   void removeAllDisplayObjects() {
     for (int i = 0; i < layers.length; i++) {
-      layers[i].clear();
+      layers[i].displayObjects.clear();
     }
   }
   
-  void switchLayer(DisplayObject displayObject, Layer layer) {
+  void switchLayer(DisplayObject displayObject, String layer) {
     removeDisplayObject(displayObject);
     displayObject.layer = layer;
     addDisplayObject(displayObject);
@@ -113,7 +123,7 @@ class Renderer {
   
   void draw() {
     for (var layer in layers) {
-      for (var displayObject in layer) {
+      for (var displayObject in layer.displayObjects) {
         if (displayObject.visible) {
 
           if (isVisible(displayObject)) {
@@ -272,4 +282,14 @@ class Renderer {
       }
     }
   }
+}
+
+/**
+ * Layers define the order in which displayobjects are drawn.
+ */
+class Layer {
+  String name;
+  List<DisplayObject> displayObjects = new List();
+  
+  Layer(this.name);
 }

@@ -88,11 +88,9 @@ class Building extends GameObject {
   Building(position, imageID) {
     type = imageID;
     this.position = position;
-    sprite = new Sprite("buffer", Layer.BUILDING, game.engine.images[imageID], position, 48, 48);
-    sprite.anchor = new Vector(0.5, 0.5);
-    sprite.alpha = 0.5;
+    sprite = new Sprite("buffer", "building", game.engine.images[imageID], position, 48, 48, anchor: new Vector(0.5, 0.5), alpha: 0.5);
 
-    selectedCircle = new Circle("buffer", Layer.SELECTEDCIRCLE, position, 24, 2, null, "#fff", visible: false);
+    selectedCircle = new Circle("buffer", "selectedcircle", position, 24, 2, null, "#fff", visible: false);
       
     health = 0;
     size = 3;
@@ -157,9 +155,7 @@ class Building extends GameObject {
       needsEnergy = true;
       energyCounter = 15;
       
-      cannon = new Sprite("buffer", Layer.BUILDINGGUN, game.engine.images["cannongun"], position, 48, 48);
-      cannon.anchor = new Vector(0.5, 0.5);
-      cannon.alpha = 0.5;
+      cannon = new Sprite("buffer", "buildinggun", game.engine.images["cannongun"], position, 48, 48, anchor: new Vector(0.5, 0.5), alpha: 0.5);
     }
     else if (type == "mortar") {
       maxHealth = game.debug == true ? 1 : 40;
@@ -177,8 +173,7 @@ class Building extends GameObject {
       needsEnergy = true;
     }
     
-    targetSymbol = new Rect("buffer", Layer.TARGETSYMBOL, new Vector.empty(), new Vector(size * game.tileSize, size * game.tileSize), 1, '#0f0', null, visible: false);
-    targetSymbol.anchor = new Vector(0.5, 0.5);
+    targetSymbol = new Rect("buffer", "targetsymbol", new Vector.empty(), new Vector(size * game.tileSize, size * game.tileSize), 1, '#0f0', null, visible: false, anchor: new Vector(0.5, 0.5));
     
     Connection.add(this);
   }
@@ -258,8 +253,9 @@ class Building extends GameObject {
   }
   
   static void removeSelected() {
-    for (var building in game.engine.gameObjects) {
-      if (building is Building) {
+    for (var i = game.engine.gameObjects.length - 1; i >= 0; i--) {
+      if (game.engine.gameObjects[i] is Building) {
+        Building building = game.engine.gameObjects[i];
         if (building.selected) {
           if (building.type != "base")
             Building.remove(building);
@@ -371,7 +367,7 @@ class Building extends GameObject {
         if (building.built && building.selected && building.canMove) {
           // check if it can be placed
           if (game.canBePlaced(position, building)) {
-            game.engine.renderer["main"].view.style.cursor = "url('images/Normal.cur') 2 2, pointer";
+            game.mouse.showCursor();
             building.operating = false;
             building.rotating = false;
             building.weaponTargetPosition = null;
@@ -471,9 +467,9 @@ class Building extends GameObject {
       if (flightCounter >= 25) {
         flightCounter = 25;
         status = "MOVING";
-        game.engine.renderer["buffer"].switchLayer(sprite, Layer.BUILDINGFLYING);
+        game.engine.renderer["buffer"].switchLayer(sprite, "buildingflying");
         if (cannon != null)
-          game.engine.renderer["buffer"].switchLayer(cannon, Layer.BUILDINGGUNFLYING);
+          game.engine.renderer["buffer"].switchLayer(cannon, "buildinggunflying");
       }
     }
     
@@ -490,9 +486,9 @@ class Building extends GameObject {
         targetSymbol.visible = false;
         updateDisplayObjects();
         Connection.add(this);
-        game.engine.renderer["buffer"].switchLayer(sprite, Layer.BUILDING);
+        game.engine.renderer["buffer"].switchLayer(sprite, "building");
         if (cannon != null)
-          game.engine.renderer["buffer"].switchLayer(cannon, Layer.BUILDINGGUN);
+          game.engine.renderer["buffer"].switchLayer(cannon, "buildinggun");
       }
     }
 
@@ -900,15 +896,13 @@ class Building extends GameObject {
     for (var building in game.engine.gameObjects) {
       if (building is Building) {
         if (building.built && building.selected && building.canMove) {
-          game.engine.renderer["main"].view.style.cursor = "none";
+          game.mouse.hideCursor();
           
           Vector positionI = game.tiled2screen(game.hoveredTile) + new Vector(8 * game.zoom, 8 * game.zoom);
      
           game.drawRangeBoxes(game.hoveredTile, building);
-    
-          bool canBePlaced = game.canBePlaced(game.hoveredTile, building);
-  
-          if (canBePlaced) {
+     
+          if (game.canBePlaced(game.hoveredTile, building)) {
             // draw lines to other buildings
             for (var building2 in game.engine.gameObjects) {
               if (building2 is Building) {

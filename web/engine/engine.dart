@@ -1,9 +1,12 @@
 part of zengine;
 
 class Engine {
-  num animationRequest, TPS; // TPS = ticks per second
-  Map renderer = new Map(), sounds = new Map(), images = new Map();
+  num animationRequest;
+  int TPS; // ticks per second
   Timer resizeTimer;
+  Map<String, Renderer> renderer = new Map();
+  Map<String, List> sounds = new Map();
+  Map<String, ImageElement> images = new Map();
   List<GameObject> gameObjects = new List<GameObject>();
   bool debug;
 
@@ -121,6 +124,30 @@ class Engine {
       velocity.y = delta.y;
     
     return velocity;
+  }
+  
+  void stopAnimations() {
+    renderer.forEach((k, v) {
+      for (int i = 0; i < v.layers.length; i++) {
+        for (int j = 0; j < v.layers[i].displayObjects.length; j++) {
+          if (v.layers[i].displayObjects[j] is Sprite && v.layers[i].displayObjects[j].animated) {
+            v.layers[i].displayObjects[j].stopAnimation();
+          }
+        }
+      }
+    });
+  }
+  
+  void startAnimations() {
+    renderer.forEach((k, v) {
+      for (int i = 0; i < v.layers.length; i++) {
+        for (int j = 0; j < v.layers[i].displayObjects.length; j++) {
+          if (v.layers[i].displayObjects[j] is Sprite && v.layers[i].displayObjects[j].animated) {
+            v.layers[i].displayObjects[j].startAnimation();
+          }
+        }
+      }
+    });
   }
   
   static int randomInt(num from, num to, [num seed]) {

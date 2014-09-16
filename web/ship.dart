@@ -12,16 +12,10 @@ class Ship extends GameObject {
   static final int baseSpeed = 1;
 
   Ship(position, imageID, this.type, this.home) {
-    sprite = new Sprite("buffer", Layer.SHIP, game.engine.images[imageID], position, 48, 48);
-    sprite.anchor = new Vector(0.5, 0.5);
-
-    selectedCircle = new Circle("buffer", Layer.SELECTEDCIRCLE, position, 24, 2, "#fff", null, visible: false);
-
-    targetSymbol = new Sprite("buffer", Layer.TARGETSYMBOL, game.engine.images["targetcursor"], position, 48, 48, visible: false);
-    targetSymbol.anchor = new Vector(0.5, 0.5);
-    targetSymbol.alpha = 0.5;
-    
-    energyRect = new Rect("buffer", Layer.ENERGYBAR, new Vector(position.x - 22, position.y - 20), new Vector(44 / maxEnergy * energy, 3), 1, '#f00', null);
+    sprite = new Sprite("buffer", "ship", game.engine.images[imageID], position, 48, 48, anchor: new Vector(0.5, 0.5));
+    selectedCircle = new Circle("buffer", "selectedcircle", position, 24, 2, null, "#fff", visible: false);
+    targetSymbol = new Sprite("buffer", "targetsymbol", game.engine.images["targetcursor"], position, 48, 48, visible: false, anchor: new Vector(0.5, 0.5), alpha: 0.5);
+    energyRect = new Rect("buffer", "energybar", new Vector(position.x - 22, position.y - 20), new Vector(44 / maxEnergy * energy, 3), 1, '#f00', null);
   }
    
   static Ship add(Vector position, String imageID, String type, Building home) {
@@ -34,7 +28,7 @@ class Ship extends GameObject {
     if (!game.paused) {
       move();
     }
-    updateHoverState();
+    hovered = sprite.isHovered();
   }
   
   static void select() {
@@ -60,11 +54,6 @@ class Ship extends GameObject {
     }
   }
   
-  void updateHoverState() {
-    Vector realPosition = game.real2screen(sprite.position);
-    hovered = (game.mouse.position.x > realPosition.x - 24 && game.mouse.position.x < realPosition.x + 24 && game.mouse.position.y > realPosition.y - 24 && game.mouse.position.y < realPosition.y + 24);
-  }
-
   void turnToTarget() {
     Vector delta = targetPosition - sprite.position;
     double angleToTarget = Engine.rad2deg(atan2(delta.y, delta.x));
@@ -150,8 +139,7 @@ class Ship extends GameObject {
     }
   }
 
-  void move() {
-    
+  void move() { 
     // update energy rect
     energyRect.size = new Vector(44 / maxEnergy * energy, 3);
     

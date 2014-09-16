@@ -9,8 +9,7 @@ class Spore extends GameObject {
   static final int baseSpeed = 1;
 
   Spore(position, this.targetPosition) {   
-    sprite = new Sprite("buffer", Layer.SPORE, game.engine.images["spore"], position, 32, 32);
-    sprite.anchor = new Vector(0.5, 0.5);  
+    sprite = new Sprite("buffer", "spore", game.engine.images["spore"], position, 32, 32, anchor: new Vector(0.5, 0.5));
   }
    
   static void add(Vector position, Vector targetPosition) {
@@ -29,24 +28,19 @@ class Spore extends GameObject {
     }
   }
   
-  static void damage(Building building) {
-    Vector center = building.sprite.position;
-    
+  static void damage(Building building) {  
     // find spore in range
     for (var spore in game.engine.gameObjects) {
-      if (spore is Spore) {  
-        Vector sporeCenter = spore.sprite.position;
-        var distance = pow(sporeCenter.x - center.x, 2) + pow(sporeCenter.y - center.y, 2);
-    
-        if (distance <= pow(building.weaponRadius * game.tileSize, 2)) {
-          building.weaponTargetPosition = sporeCenter;
+      if (spore is Spore) {      
+        if (building.sprite.position.distanceTo(spore.sprite.position) <= building.weaponRadius * game.tileSize) {
+          building.weaponTargetPosition = spore.sprite.position;
           building.energy -= .05;
           building.operating = true;
           spore.health -= 2;
           if (spore.health <= 0) {
             spore.remove = true;
             game.engine.playSound("explosion", game.real2tiled(spore.sprite.position), game.scroll, game.zoom);
-            Explosion.add(sporeCenter);
+            Explosion.add(spore.sprite.position);
           }
         }
       }
@@ -59,9 +53,7 @@ class Spore extends GameObject {
       trailCounter = 0;
       Smoke.add(new Vector(sprite.position.x, sprite.position.y - 16));
     }
-    sprite.rotation += 10;
-    if (sprite.rotation > 359)
-      sprite.rotation -= 359;
+    sprite.rotate(10);
 
     sprite.position += game.engine.calculateVelocity(sprite.position, targetPosition, Spore.baseSpeed * game.speed);
 
@@ -78,8 +70,7 @@ class Spore extends GameObject {
           
           if (game.world.contains(tilePosition)) {
             if ((tilePosition * game.tileSize + new Vector(8, 8)).distanceTo(targetPosition) <= game.tileSize * 2) {
-              Tile tile = game.world.getTile(tilePosition * game.tileSize);
-              
+              Tile tile = game.world.getTile(tilePosition * game.tileSize);             
               tile.creep += .5;
             }
           }

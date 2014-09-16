@@ -8,8 +8,7 @@ class Shell extends GameObject {
   static final num baseSpeed = 1.5;
 
   Shell(position, this.targetPosition) {
-    sprite = new Sprite("buffer", Layer.SHELL, game.engine.images["shell"], position, 16, 16);
-    sprite.anchor = new Vector(0.5, 0.5);  
+    sprite = new Sprite("buffer", "shell", game.engine.images["shell"], position, 16, 16, anchor: new Vector(0.5, 0.5));
   }
   
   static Shell add(Vector position, Vector targetPosition) {
@@ -36,10 +35,7 @@ class Shell extends GameObject {
       Smoke.add(new Vector(sprite.position.x, sprite.position.y - 16));
     }
 
-    sprite.rotation += 20;
-    if (sprite.rotation > 359)
-      sprite.rotation -= 359;
-
+    sprite.rotate(20);
     sprite.position += game.engine.calculateVelocity(sprite.position, targetPosition, Shell.baseSpeed * game.speed);
 
     // if the target is reached explode and remove
