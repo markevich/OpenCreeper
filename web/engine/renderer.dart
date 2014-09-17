@@ -1,4 +1,4 @@
-part of zengine;
+part of zei;
 
 class Renderer {
   CanvasElement view;
@@ -15,12 +15,19 @@ class Renderer {
     context = view.getContext('2d');
   }
 
-  void clear() {
+  void clear({Color color}) {
+    if (color != null)
+      context.fillStyle = color.rgba;
     context.clearRect(0, 0, view.width, view.height);
   }
   
   void enableMouse() {
     this.mouse = new Mouse(this);
+  }
+  
+  // FIXME: doesn't seem to work atm
+  void disableImageSmoothing() {
+    context.imageSmoothingEnabled = false;
   }
    
   /**
@@ -138,7 +145,7 @@ class Renderer {
               if (displayObject.rotation != 0) {
                 context.save();
                 context.translate(relativePos.x, relativePos.y);
-                context.rotate(Engine.deg2rad(displayObject.rotation));
+                context.rotate(Zei.deg2rad(displayObject.rotation));
                 if (displayObject.animated)
                   context.drawImageScaledFromSource(displayObject.image,
                   (displayObject.frame % 8) * displayObject.size.x,
@@ -187,16 +194,16 @@ class Renderer {
               if (displayObject.rotation != 0) {
                 context.save();
                 context.translate(relativePos.x, relativePos.y);
-                context.rotate(Engine.deg2rad(displayObject.rotation));
+                context.rotate(Zei.deg2rad(displayObject.rotation));
                 if (displayObject.fillColor != null) {
-                  context.fillStyle = displayObject.fillColor;
+                  context.fillStyle = displayObject.fillColor.rgba;
                   context.fillRect(-displayObject.size.x * displayObject.anchor.x * displayObject.scale.x * zoom,
                                    -displayObject.size.y * displayObject.anchor.y * displayObject.scale.y * zoom,
                                    displayObject.size.x * displayObject.scale.x * zoom,
                                    displayObject.size.y * displayObject.scale.y * zoom);
                 }
                 if (displayObject.strokeColor != null) {
-                  context.strokeStyle = displayObject.strokeColor;
+                  context.strokeStyle = displayObject.strokeColor.rgba;
                   context.strokeRect(-displayObject.size.x * displayObject.anchor.x * displayObject.scale.x * zoom,
                                    -displayObject.size.y * displayObject.anchor.y * displayObject.scale.y * zoom,
                                    displayObject.size.x * displayObject.scale.x * zoom,
@@ -205,14 +212,14 @@ class Renderer {
                 context.restore();
               } else {
                 if (displayObject.fillColor != null) {
-                  context.fillStyle = displayObject.fillColor;
+                  context.fillStyle = displayObject.fillColor.rgba;
                   context.fillRect(relativePos.x - displayObject.size.x * displayObject.anchor.x * displayObject.scale.x * zoom,
                                    relativePos.y - displayObject.size.y * displayObject.anchor.y * displayObject.scale.y * zoom,
                                    displayObject.size.x * displayObject.scale.x * zoom,
                                    displayObject.size.y * displayObject.scale.y * zoom);
                 }
                 if (displayObject.strokeColor != null) {
-                  context.strokeStyle = displayObject.strokeColor;
+                  context.strokeStyle = displayObject.strokeColor.rgba;
                   context.strokeRect(relativePos.x - displayObject.size.x * displayObject.anchor.x * displayObject.scale.x * zoom,
                                    relativePos.y - displayObject.size.y * displayObject.anchor.y * displayObject.scale.y * zoom,
                                    displayObject.size.x * displayObject.scale.x * zoom,
@@ -229,34 +236,34 @@ class Renderer {
               if (displayObject.rotation != 0) {
                 context.save();
                 context.translate(relativePos.x, relativePos.y);
-                context.rotate(Engine.deg2rad(displayObject.rotation));
+                context.rotate(Zei.deg2rad(displayObject.rotation));
                 if (displayObject.fillColor != null) {
-                  context.fillStyle = displayObject.fillColor;
+                  context.fillStyle = displayObject.fillColor.rgba;
                   context.beginPath();
-                  context.arc(0, 0, displayObject.radius * displayObject.scale * zoom, 0, Engine.deg2rad(displayObject.degrees), true);
+                  context.arc(0, 0, displayObject.radius * displayObject.scale * zoom, 0, Zei.deg2rad(displayObject.degrees), true);
                   context.closePath();
                   context.fill();
                 }
                 if (displayObject.strokeColor != null) {
-                  context.strokeStyle = displayObject.strokeColor;
+                  context.strokeStyle = displayObject.strokeColor.rgba;
                   context.beginPath();
-                  context.arc(0, 0, displayObject.radius * displayObject.scale * zoom, 0, Engine.deg2rad(displayObject.degrees), true);
+                  context.arc(0, 0, displayObject.radius * displayObject.scale * zoom, 0, Zei.deg2rad(displayObject.degrees), true);
                   context.closePath();
                   context.stroke();
                 }
                 context.restore();
               } else {
                 if (displayObject.fillColor != null) {
-                  context.fillStyle = displayObject.fillColor;
+                  context.fillStyle = displayObject.fillColor.rgba;
                   context.beginPath();
-                  context.arc(relativePos.x, relativePos.y, displayObject.radius * displayObject.scale * zoom, 0, Engine.deg2rad(displayObject.degrees), true);
+                  context.arc(relativePos.x, relativePos.y, displayObject.radius * displayObject.scale * zoom, 0, Zei.deg2rad(displayObject.degrees), true);
                   context.closePath();
                   context.fill();
                 }
                 if (displayObject.strokeColor != null) {
-                  context.strokeStyle = displayObject.strokeColor;
+                  context.strokeStyle = displayObject.strokeColor.rgba;
                   context.beginPath();
-                  context.arc(relativePos.x, relativePos.y, displayObject.radius * displayObject.scale * zoom, 0, Engine.deg2rad(displayObject.degrees), true);
+                  context.arc(relativePos.x, relativePos.y, displayObject.radius * displayObject.scale * zoom, 0, Zei.deg2rad(displayObject.degrees), true);
                   context.closePath();
                   context.stroke();
                 }
@@ -268,8 +275,9 @@ class Renderer {
               Vector relativePosFrom = relativePosition(displayObject.from);
               Vector relativePosTo = relativePosition(displayObject.to);
 
+              context.lineCap = 'round';
               context.lineWidth = displayObject.lineWidth * zoom;
-              context.strokeStyle = displayObject.color;
+              context.strokeStyle = displayObject.color.rgba;
 
               context.beginPath();
               context.moveTo(relativePosFrom.x, relativePosFrom.y);

@@ -10,14 +10,14 @@ class Packet extends GameObject {
   static num baseSpeed = 3;
 
   Packet(this.currentTarget, this.target, this.type) {
-    sprite = new Sprite("buffer", "packet", game.engine.images["packet_" + type], currentTarget.position, 16, 16, visible: false, anchor: new Vector(0.5, 0.5));
+    sprite = new Sprite("buffer", "packet", Zei.images["packet_" + type], currentTarget.position, 16, 16, visible: false, anchor: new Vector(0.5, 0.5));
   }
      
   void update() {
     if (!game.paused) {
       if (remove) {
-        game.engine.renderer["buffer"].removeDisplayObject(sprite);
-        game.engine.removeGameObject(this);
+        Zei.renderer["buffer"].removeDisplayObject(sprite);
+        Zei.removeGameObject(this);
       }
       else
         move();
@@ -25,7 +25,7 @@ class Packet extends GameObject {
   }
   
   static void removeWithTarget(building) {
-    for (var packet in game.engine.gameObjects) {
+    for (var packet in Zei.gameObjects) {
       if (packet is Packet) {
         if (packet.currentTarget == building || packet.target == building) {
           packet.remove = true;
@@ -40,12 +40,12 @@ class Packet extends GameObject {
   }
 
   void send() {
-    game.engine.addGameObject(this);
+    Zei.addGameObject(this);
     sprite.visible = true;
   }
   
   void move() {  
-    sprite.position += game.engine.calculateVelocity(sprite.position, currentTarget.position, Packet.baseSpeed * game.speed * speedMultiplier);
+    sprite.position += Zei.calculateVelocity(sprite.position, currentTarget.position, Packet.baseSpeed * game.speed * speedMultiplier);
 
     if (sprite.position == currentTarget.position) {
       
@@ -66,7 +66,7 @@ class Packet extends GameObject {
                 target.cannon.alpha = 1.0;
               if (target.type == "collector") {
                 target.updateCollection("add");
-                game.engine.playSound("energy", target.position, game.scroll, game.zoom);
+                Zei.playSound("energy", target.position, game.scroll, game.zoom);
               }
               if (target.type == "storage")
                 Building.base.maxEnergy += 20;

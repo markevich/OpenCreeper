@@ -1,4 +1,4 @@
-part of zengine;
+part of zei;
 
 abstract class DisplayObject {
   String layer;
@@ -8,7 +8,7 @@ abstract class DisplayObject {
 class Rect extends DisplayObject {
   Vector position, size;
   int lineWidth;
-  String fillColor, strokeColor;
+  Color fillColor, strokeColor;
   num rotation = 0;
   Vector anchor = new Vector.empty();
   Vector scale = new Vector(1.0, 1.0);
@@ -18,16 +18,16 @@ class Rect extends DisplayObject {
     super.layer = layer;
     super.visible = visible;
     if (anchor != null) this.anchor = anchor;
-    engine.renderer[rendererName].addDisplayObject(this);
+    Zei.renderer[rendererName].addDisplayObject(this);
     this.rendererName = rendererName;
   }
   
   bool isHovered() {
-    Vector relativePosition = engine.renderer[rendererName].relativePosition(this.position);
-    return (engine.renderer[rendererName].mouse.position.x >= relativePosition.x - this.size.x * this.scale.x * this.anchor.x * engine.renderer[rendererName].zoom &&
-            engine.renderer[rendererName].mouse.position.x <= relativePosition.x - this.size.x * this.scale.x * this.anchor.x * engine.renderer[rendererName].zoom + this.size.x * this.scale.x  * engine.renderer[rendererName].zoom &&
-            engine.renderer[rendererName].mouse.position.y >= relativePosition.y - this.size.y * this.scale.y * this.anchor.y * engine.renderer[rendererName].zoom &&
-            engine.renderer[rendererName].mouse.position.y <= relativePosition.y - this.size.y * this.scale.y * this.anchor.y * engine.renderer[rendererName].zoom + this.size.y * this.scale.y * engine.renderer[rendererName].zoom);
+    Vector relativePosition = Zei.renderer[rendererName].relativePosition(this.position);
+    return (Zei.renderer[rendererName].mouse.position.x >= relativePosition.x - this.size.x * this.scale.x * this.anchor.x * Zei.renderer[rendererName].zoom &&
+            Zei.renderer[rendererName].mouse.position.x <= relativePosition.x - this.size.x * this.scale.x * this.anchor.x * Zei.renderer[rendererName].zoom + this.size.x * this.scale.x * Zei.renderer[rendererName].zoom &&
+            Zei.renderer[rendererName].mouse.position.y >= relativePosition.y - this.size.y * this.scale.y * this.anchor.y * Zei.renderer[rendererName].zoom &&
+            Zei.renderer[rendererName].mouse.position.y <= relativePosition.y - this.size.y * this.scale.y * this.anchor.y * Zei.renderer[rendererName].zoom + this.size.y * this.scale.y * Zei.renderer[rendererName].zoom);
   }
 }
 
@@ -35,7 +35,7 @@ class Circle extends DisplayObject {
   Vector position;
   num radius;
   int lineWidth;
-  String fillColor, strokeColor;
+  Color fillColor, strokeColor;
   num rotation = 0;
   int degrees = 360;
   num scale;
@@ -45,25 +45,25 @@ class Circle extends DisplayObject {
     super.layer = layer;
     super.visible = visible;
     scale = 1.0;
-    engine.renderer[rendererName].addDisplayObject(this);
+    Zei.renderer[rendererName].addDisplayObject(this);
     this.rendererName = rendererName;
   }
   
   bool isHovered() {
-    Vector relativePosition = engine.renderer[rendererName].relativePosition(this.position);
-    return (engine.renderer[rendererName].mouse.position.distanceTo(relativePosition) <= this.radius * engine.renderer[rendererName].zoom);
+    Vector relativePosition = Zei.renderer[rendererName].relativePosition(this.position);
+    return (Zei.renderer[rendererName].mouse.position.distanceTo(relativePosition) <= this.radius * Zei.renderer[rendererName].zoom);
   }
 }
 
 class Line extends DisplayObject {
-  String color;
+  Color color;
   Vector from, to;
   int lineWidth;
 
   Line(rendererName, layer, this.from, this.to, this.lineWidth, this.color, {bool visible: true}) {
     super.layer = layer;
     super.visible = visible;
-    engine.renderer[rendererName].addDisplayObject(this);
+    Zei.renderer[rendererName].addDisplayObject(this);
   }
   
   String toString() {
@@ -93,7 +93,7 @@ class Sprite extends DisplayObject {
     if (anchor != null) this.anchor = anchor;
     if (scale != null) this.scale = scale;
     size = new Vector(width, height);
-    engine.renderer[rendererName].addDisplayObject(this);
+    Zei.renderer[rendererName].addDisplayObject(this);
     this.rendererName = rendererName;
     if (animated)
       startAnimation();
@@ -118,10 +118,10 @@ class Sprite extends DisplayObject {
   }
   
   bool isHovered() {
-    Vector relativePosition = engine.renderer[rendererName].relativePosition(this.position);
-    return (engine.renderer[rendererName].mouse.position.x >= relativePosition.x - this.size.x * this.scale.x * this.anchor.x * engine.renderer[rendererName].zoom &&
-            engine.renderer[rendererName].mouse.position.x <= relativePosition.x - this.size.x * this.scale.x * this.anchor.x * engine.renderer[rendererName].zoom + this.size.x * this.scale.x  * engine.renderer[rendererName].zoom &&
-            engine.renderer[rendererName].mouse.position.y >= relativePosition.y - this.size.y * this.scale.y * this.anchor.y * engine.renderer[rendererName].zoom &&
-            engine.renderer[rendererName].mouse.position.y <= relativePosition.y - this.size.y * this.scale.y * this.anchor.y * engine.renderer[rendererName].zoom + this.size.y * this.scale.y * engine.renderer[rendererName].zoom);
+    Vector relativePosition = Zei.renderer[rendererName].relativePosition(this.position);
+    return (Zei.renderer[rendererName].mouse.position.x >= relativePosition.x - this.size.x * this.scale.x * this.anchor.x * Zei.renderer[rendererName].zoom &&
+            Zei.renderer[rendererName].mouse.position.x <= relativePosition.x - this.size.x * this.scale.x * this.anchor.x * Zei.renderer[rendererName].zoom + this.size.x * this.scale.x * Zei.renderer[rendererName].zoom &&
+            Zei.renderer[rendererName].mouse.position.y >= relativePosition.y - this.size.y * this.scale.y * this.anchor.y * Zei.renderer[rendererName].zoom &&
+            Zei.renderer[rendererName].mouse.position.y <= relativePosition.y - this.size.y * this.scale.y * this.anchor.y * Zei.renderer[rendererName].zoom + this.size.y * this.scale.y * Zei.renderer[rendererName].zoom);
   }
 }

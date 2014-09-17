@@ -8,20 +8,20 @@ class Shell extends GameObject {
   static final num baseSpeed = 1.5;
 
   Shell(position, this.targetPosition) {
-    sprite = new Sprite("buffer", "shell", game.engine.images["shell"], position, 16, 16, anchor: new Vector(0.5, 0.5));
+    sprite = new Sprite("buffer", "shell", Zei.images["shell"], position, 16, 16, anchor: new Vector(0.5, 0.5));
   }
   
   static Shell add(Vector position, Vector targetPosition) {
     Shell shell = new Shell(position, targetPosition);
-    game.engine.addGameObject(shell);
+    Zei.addGameObject(shell);
     return shell;
   }
   
   void update() {
     if (!game.paused) {
       if (remove) {
-        game.engine.renderer["buffer"].removeDisplayObject(sprite);
-        game.engine.removeGameObject(this);
+        Zei.renderer["buffer"].removeDisplayObject(sprite);
+        Zei.removeGameObject(this);
       }
       else
         move();
@@ -36,7 +36,7 @@ class Shell extends GameObject {
     }
 
     sprite.rotate(20);
-    sprite.position += game.engine.calculateVelocity(sprite.position, targetPosition, Shell.baseSpeed * game.speed);
+    sprite.position += Zei.calculateVelocity(sprite.position, targetPosition, Shell.baseSpeed * game.speed);
 
     // if the target is reached explode and remove
     if (sprite.position == targetPosition) {
@@ -44,7 +44,7 @@ class Shell extends GameObject {
 
       Vector targetPositionTiled = game.real2tiled(targetPosition);
       Explosion.add(targetPosition);
-      game.engine.playSound("explosion", targetPosition, game.scroll, game.zoom);
+      Zei.playSound("explosion", targetPosition, game.scroll, game.zoom);
 
       for (int i = -4; i <= 4; i++) {
         for (int j = -4; j <= 4; j++) {

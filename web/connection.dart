@@ -6,11 +6,11 @@ class Connection {
   static List<Connection> connections = new List<Connection>();
   
   Connection(this.from, this.to) {
-    line = new Line("buffer", "connectionborder", this.from.position, this.to.position, 3, "#000");
+    line = new Line("buffer", "connectionborder", this.from.position, this.to.position, 3, new Color.black());
 
-    var color = '#777';
+    Color color = new Color(127, 127, 127);
     if (from.built && to.built)
-      color = '#fff';
+      color = new Color.white();
 
     line2 = new Line("buffer", "connection", this.from.position, this.to.position, 2, color);
   }
@@ -20,7 +20,7 @@ class Connection {
   }
   
   static void add(Building building2) {  
-    for (var building in game.engine.gameObjects) {
+    for (var building in Zei.gameObjects) {
       if (building is Building) {
         if (Building != building2 && building.status == "IDLE" &&
             (building2.type == "collector" || building2.type == "relay" || building.type == "collector" || building.type == "relay" || building.type == "base")) {
@@ -44,8 +44,8 @@ class Connection {
   static void remove(Building building) {
     for (int i = connections.length - 1; i >= 0; i--) {
       if (connections[i].from == building || connections[i].to == building) {
-        game.engine.renderer["buffer"].removeDisplayObject(connections[i].line);
-        game.engine.renderer["buffer"].removeDisplayObject(connections[i].line2);
+        Zei.renderer["buffer"].removeDisplayObject(connections[i].line);
+        Zei.renderer["buffer"].removeDisplayObject(connections[i].line2);
         connections.removeAt(i);
       }
     }
@@ -63,7 +63,7 @@ class Connection {
   static void activate(Building building) {
     for (var connection in connections) {
       if ((connection.from == building || connection.to == building) && (connection.from.built && connection.to.built)) {
-        connection.line2.color = '#fff';
+        connection.line2.color = new Color.white();
       }
     }
   }

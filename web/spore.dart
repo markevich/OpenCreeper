@@ -9,19 +9,19 @@ class Spore extends GameObject {
   static final int baseSpeed = 1;
 
   Spore(position, this.targetPosition) {   
-    sprite = new Sprite("buffer", "spore", game.engine.images["spore"], position, 32, 32, anchor: new Vector(0.5, 0.5));
+    sprite = new Sprite("buffer", "spore", Zei.images["spore"], position, 32, 32, anchor: new Vector(0.5, 0.5));
   }
    
   static void add(Vector position, Vector targetPosition) {
     Spore spore = new Spore(position, targetPosition);
-    game.engine.addGameObject(spore);
+    Zei.addGameObject(spore);
   }
   
   void update() {
     if (!game.paused) {
       if (remove) {
-        game.engine.renderer["buffer"].removeDisplayObject(sprite);
-        game.engine.removeGameObject(this);
+        Zei.renderer["buffer"].removeDisplayObject(sprite);
+        Zei.removeGameObject(this);
       }
       else
         move();
@@ -30,7 +30,7 @@ class Spore extends GameObject {
   
   static void damage(Building building) {  
     // find spore in range
-    for (var spore in game.engine.gameObjects) {
+    for (var spore in Zei.gameObjects) {
       if (spore is Spore) {      
         if (building.sprite.position.distanceTo(spore.sprite.position) <= building.weaponRadius * game.tileSize) {
           building.weaponTargetPosition = spore.sprite.position;
@@ -39,7 +39,7 @@ class Spore extends GameObject {
           spore.health -= 2;
           if (spore.health <= 0) {
             spore.remove = true;
-            game.engine.playSound("explosion", game.real2tiled(spore.sprite.position), game.scroll, game.zoom);
+            Zei.playSound("explosion", game.real2tiled(spore.sprite.position), game.scroll, game.zoom);
             Explosion.add(spore.sprite.position);
           }
         }
@@ -55,13 +55,13 @@ class Spore extends GameObject {
     }
     sprite.rotate(10);
 
-    sprite.position += game.engine.calculateVelocity(sprite.position, targetPosition, Spore.baseSpeed * game.speed);
+    sprite.position += Zei.calculateVelocity(sprite.position, targetPosition, Spore.baseSpeed * game.speed);
 
     if (sprite.position == targetPosition) {
       // if the target is reached explode and remove
       remove = true;
       Vector targetPositionTiled = game.real2tiled(targetPosition);
-      game.engine.playSound("explosion", targetPosition, game.scroll, game.zoom);
+      Zei.playSound("explosion", targetPosition, game.scroll, game.zoom);
 
       for (int i = -2; i <= 2; i++) {
         for (int j = -2; j <= 2; j++) {

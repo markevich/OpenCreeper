@@ -12,15 +12,15 @@ class Ship extends GameObject {
   static final int baseSpeed = 1;
 
   Ship(position, imageID, this.type, this.home) {
-    sprite = new Sprite("buffer", "ship", game.engine.images[imageID], position, 48, 48, anchor: new Vector(0.5, 0.5));
-    selectedCircle = new Circle("buffer", "selectedcircle", position, 24, 2, null, "#fff", visible: false);
-    targetSymbol = new Sprite("buffer", "targetsymbol", game.engine.images["targetcursor"], position, 48, 48, visible: false, anchor: new Vector(0.5, 0.5), alpha: 0.5);
-    energyRect = new Rect("buffer", "energybar", new Vector(position.x - 22, position.y - 20), new Vector(44 / maxEnergy * energy, 3), 1, '#f00', null);
+    sprite = new Sprite("buffer", "ship", Zei.images[imageID], position, 48, 48, anchor: new Vector(0.5, 0.5));
+    selectedCircle = new Circle("buffer", "selectedcircle", position, 24, 2, null, new Color.white(), visible: false);
+    targetSymbol = new Sprite("buffer", "targetsymbol", Zei.images["targetcursor"], position, 48, 48, visible: false, anchor: new Vector(0.5, 0.5), alpha: 0.5);
+    energyRect = new Rect("buffer", "energybar", new Vector(position.x - 22, position.y - 20), new Vector(44 / maxEnergy * energy, 3), 1, new Color.red(), null);
   }
    
   static Ship add(Vector position, String imageID, String type, Building home) {
     Ship ship = new Ship(position, imageID, type, home);
-    game.engine.addGameObject(ship);
+    Zei.addGameObject(ship);
     return ship;
   }
   
@@ -33,7 +33,7 @@ class Ship extends GameObject {
   
   static void select() {
     // select a ship if hovered
-    for (var ship in game.engine.gameObjects) {
+    for (var ship in Zei.gameObjects) {
       if (ship is Ship) {
         if (ship.hovered) {
           ship.selected = true;
@@ -45,7 +45,7 @@ class Ship extends GameObject {
   }
   
   static void deselect() {
-    for (var ship in game.engine.gameObjects) {
+    for (var ship in Zei.gameObjects) {
       if (ship is Ship) {
         ship.selected = false;
         ship.selectedCircle.visible = false;
@@ -56,7 +56,7 @@ class Ship extends GameObject {
   
   void turnToTarget() {
     Vector delta = targetPosition - sprite.position;
-    double angleToTarget = Engine.rad2deg(atan2(delta.y, delta.x));
+    double angleToTarget = Zei.rad2deg(atan2(delta.y, delta.x));
 
     num turnRate = 1.5;
     num absoluteDelta = (angleToTarget - sprite.rotation).abs();
@@ -82,8 +82,8 @@ class Ship extends GameObject {
   }
 
   void calculateVector() {
-    num x = cos(Engine.deg2rad(sprite.rotation));
-    num y = sin(Engine.deg2rad(sprite.rotation));
+    num x = cos(Zei.deg2rad(sprite.rotation));
+    num y = sin(Zei.deg2rad(sprite.rotation));
 
     speed.x = x * Ship.baseSpeed * game.speed;
     speed.y = y * Ship.baseSpeed * game.speed;
@@ -95,7 +95,7 @@ class Ship extends GameObject {
     
     select();
     
-    for (var ship in game.engine.gameObjects) {
+    for (var ship in Zei.gameObjects) {
       if (ship is Ship) {
            
         // control if selected
@@ -196,7 +196,7 @@ class Ship extends GameObject {
 
           Vector targetPositionTiled = game.real2tiled(targetPosition);
           Explosion.add(targetPosition);
-          game.engine.playSound("explosion", targetPosition, game.scroll, game.zoom);
+          Zei.playSound("explosion", targetPosition, game.scroll, game.zoom);
 
           for (int i = -3; i <= 3; i++) {
             for (int j = -3; j <= 3; j++) {

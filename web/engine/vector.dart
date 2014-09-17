@@ -1,4 +1,4 @@
-part of zengine;
+part of zei;
 
 class Vector {
   num x, y;

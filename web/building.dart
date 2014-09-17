@@ -88,9 +88,9 @@ class Building extends GameObject {
   Building(position, imageID) {
     type = imageID;
     this.position = position;
-    sprite = new Sprite("buffer", "building", game.engine.images[imageID], position, 48, 48, anchor: new Vector(0.5, 0.5), alpha: 0.5);
+    sprite = new Sprite("buffer", "building", Zei.images[imageID], position, 48, 48, anchor: new Vector(0.5, 0.5), alpha: 0.5);
 
-    selectedCircle = new Circle("buffer", "selectedcircle", position, 24, 2, null, "#fff", visible: false);
+    selectedCircle = new Circle("buffer", "selectedcircle", position, 24, 2, null, new Color.white(), visible: false);
       
     health = 0;
     size = 3;
@@ -155,7 +155,7 @@ class Building extends GameObject {
       needsEnergy = true;
       energyCounter = 15;
       
-      cannon = new Sprite("buffer", "buildinggun", game.engine.images["cannongun"], position, 48, 48, anchor: new Vector(0.5, 0.5), alpha: 0.5);
+      cannon = new Sprite("buffer", "buildinggun", Zei.images["cannongun"], position, 48, 48, anchor: new Vector(0.5, 0.5), alpha: 0.5);
     }
     else if (type == "mortar") {
       maxHealth = game.debug == true ? 1 : 40;
@@ -173,7 +173,7 @@ class Building extends GameObject {
       needsEnergy = true;
     }
     
-    targetSymbol = new Rect("buffer", "targetsymbol", new Vector.empty(), new Vector(size * game.tileSize, size * game.tileSize), 1, '#0f0', null, visible: false, anchor: new Vector(0.5, 0.5));
+    targetSymbol = new Rect("buffer", "targetsymbol", new Vector.empty(), new Vector(size * game.tileSize, size * game.tileSize), 1, new Color.green(), null, visible: false, anchor: new Vector(0.5, 0.5));
     
     Connection.add(this);
   }
@@ -185,7 +185,7 @@ class Building extends GameObject {
     position = position * 16 + new Vector(8, 8);
     Building building = new Building(position, type);
     if (type == "base") base = building;
-    game.engine.addGameObject(building);
+    Zei.addGameObject(building);
     return building;
   }
   
@@ -197,7 +197,7 @@ class Building extends GameObject {
     // only explode building when it has been built
     if (building.built) {
       Explosion.add(building.position);
-      game.engine.playSound("explosion", building.position, game.scroll, game.zoom);
+      Zei.playSound("explosion", building.position, game.scroll, game.zoom);
     }
 
     if (building.type == "base") {
@@ -222,13 +222,13 @@ class Building extends GameObject {
     
     Connection.remove(building);
 
-    game.engine.renderer["buffer"].removeDisplayObject(building.sprite);
-    game.engine.renderer["buffer"].removeDisplayObject(building.selectedCircle);
-    game.engine.renderer["buffer"].removeDisplayObject(building.targetSymbol);
+    Zei.renderer["buffer"].removeDisplayObject(building.sprite);
+    Zei.renderer["buffer"].removeDisplayObject(building.selectedCircle);
+    Zei.renderer["buffer"].removeDisplayObject(building.targetSymbol);
     if (building.cannon != null)
-      game.engine.renderer["buffer"].removeDisplayObject(building.cannon);
+      Zei.renderer["buffer"].removeDisplayObject(building.cannon);
 
-    game.engine.gameObjects.remove(building);
+    Zei.gameObjects.remove(building);
   }
   
   static void addToQueue(Packet packet) {
@@ -253,9 +253,9 @@ class Building extends GameObject {
   }
   
   static void removeSelected() {
-    for (var i = game.engine.gameObjects.length - 1; i >= 0; i--) {
-      if (game.engine.gameObjects[i] is Building) {
-        Building building = game.engine.gameObjects[i];
+    for (var i = Zei.gameObjects.length - 1; i >= 0; i--) {
+      if (Zei.gameObjects[i] is Building) {
+        Building building = Zei.gameObjects[i];
         if (building.selected) {
           if (building.type != "base")
             Building.remove(building);
@@ -267,7 +267,7 @@ class Building extends GameObject {
   static void select() {
     if (game.mode == "DEFAULT") {
       Building buildingSelected = null;
-      for (var building in game.engine.gameObjects) {
+      for (var building in Zei.gameObjects) {
         if (building is Building) {
           building.selected = building.hovered;
           if (building.selected) {
@@ -294,7 +294,7 @@ class Building extends GameObject {
   }
   
   static void deselect() {
-    for (var building in game.engine.gameObjects) {
+    for (var building in Zei.gameObjects) {
       if (building is Building) {
         building.selected = false;
         building.selectedCircle.visible = false;
@@ -330,7 +330,7 @@ class Building extends GameObject {
   }
   
   static void activate() {
-    for (var building in game.engine.gameObjects) {
+    for (var building in Zei.gameObjects) {
       if (building is Building) {
         if (building.selected)
           building.active = true;
@@ -339,13 +339,13 @@ class Building extends GameObject {
   }
   
   static void deactivate() {
-    for (var building in game.engine.gameObjects) {
+    for (var building in Zei.gameObjects) {
       if (building is Building) {
         if (building.selected) {
           building.active = false;
           
           if (building.type == "analyzer") {
-            for (var emitter in game.engine.gameObjects) {
+            for (var emitter in Zei.gameObjects) {
               if (emitter is Emitter) {
                 if (building.weaponTargetPosition == emitter.sprite.position) {
                   emitter.analyzer = null;
@@ -362,7 +362,7 @@ class Building extends GameObject {
   }
   
   static void reposition(Vector position) { 
-    for (var building in game.engine.gameObjects) {
+    for (var building in Zei.gameObjects) {
       if (building is Building) {
         if (building.built && building.selected && building.canMove) {
           // check if it can be placed
@@ -384,7 +384,7 @@ class Building extends GameObject {
   
   static bool intersect(Rectangle rectangle, [Building building2]) {  
     // check stationary buildings
-    for (var building in game.engine.gameObjects) {
+    for (var building in Zei.gameObjects) {
       if (building is Building) {
         if (building2 != null && building2 == building)
           continue;
@@ -419,7 +419,7 @@ class Building extends GameObject {
   List getNeighbours(Building target) {
     List neighbours = new List();
     
-    for (var building in game.engine.gameObjects) {
+    for (var building in Zei.gameObjects) {
       if (building is Building) {
         // must not be the same building
         if (building.position != position) {
@@ -467,9 +467,9 @@ class Building extends GameObject {
       if (flightCounter >= 25) {
         flightCounter = 25;
         status = "MOVING";
-        game.engine.renderer["buffer"].switchLayer(sprite, "buildingflying");
+        Zei.renderer["buffer"].switchLayer(sprite, "buildingflying");
         if (cannon != null)
-          game.engine.renderer["buffer"].switchLayer(cannon, "buildinggunflying");
+          Zei.renderer["buffer"].switchLayer(cannon, "buildinggunflying");
       }
     }
     
@@ -486,15 +486,15 @@ class Building extends GameObject {
         targetSymbol.visible = false;
         updateDisplayObjects();
         Connection.add(this);
-        game.engine.renderer["buffer"].switchLayer(sprite, "building");
+        Zei.renderer["buffer"].switchLayer(sprite, "building");
         if (cannon != null)
-          game.engine.renderer["buffer"].switchLayer(cannon, "buildinggun");
+          Zei.renderer["buffer"].switchLayer(cannon, "buildinggun");
       }
     }
 
     if (status == "MOVING") {
       if (moveTargetPosition.x != position.x || moveTargetPosition.y != position.y) {
-        position += game.engine.calculateVelocity(position, moveTargetPosition, Building.baseSpeed * game.speed);
+        position += Zei.calculateVelocity(position, moveTargetPosition, Building.baseSpeed * game.speed);
       }    
       
       if (position.x > moveTargetPosition.x - 1 &&
@@ -627,7 +627,7 @@ class Building extends GameObject {
         if (packet.findRoute())
           packet.send();
         else
-          game.engine.renderer["buffer"].removeDisplayObject(packet.sprite);
+          Zei.renderer["buffer"].removeDisplayObject(packet.sprite);
       }
       if (type == "reactor" || type == "base") {
         Building.base.energy += 1;
@@ -663,7 +663,7 @@ class Building extends GameObject {
                 game.world.tiles[positionCurrent.x][positionCurrent.y].collector = null;
 
                 // check if another collector can take this tile
-                for (var building in game.engine.gameObjects) {
+                for (var building in Zei.gameObjects) {
                   if (building is Building) {
                     if (building != this && building.type == "collector") {
                       int heightK = game.world.getTile(building.position).height;
@@ -812,7 +812,7 @@ class Building extends GameObject {
             var dx = targets[0].x * game.tileSize + game.tileSize / 2 - position.x;
             var dy = targets[0].y * game.tileSize + game.tileSize / 2 - position.y;
 
-            targetAngle = Engine.rad2deg(atan2(dy, dx)).floor();
+            targetAngle = Zei.rad2deg(atan2(dy, dx)).floor();
             weaponTargetPosition = new Vector(targets[0].x, targets[0].y);
             rotating = true;
           }
@@ -851,7 +851,7 @@ class Building extends GameObject {
             energy -= 1;
             operating = true;
             Projectile.add(position, new Vector(weaponTargetPosition.x * game.tileSize + game.tileSize / 2, weaponTargetPosition.y * game.tileSize + game.tileSize / 2), targetAngle);
-            game.engine.playSound("laser", position, game.scroll, game.zoom);
+            Zei.playSound("laser", position, game.scroll, game.zoom);
           }
         }
       }
@@ -876,7 +876,7 @@ class Building extends GameObject {
             }
           }
           if (target != null) {
-            game.engine.playSound("shot", position, game.scroll, game.zoom);
+            Zei.playSound("shot", position, game.scroll, game.zoom);
             Shell.add(position, new Vector(target.x * game.tileSize + game.tileSize / 2, target.y * game.tileSize + game.tileSize / 2));
             energy -= 1;
           }
@@ -891,9 +891,9 @@ class Building extends GameObject {
   }
   
   static void drawRepositionInfo() {
-    CanvasRenderingContext2D context = game.engine.renderer["buffer"].context;
+    CanvasRenderingContext2D context = Zei.renderer["buffer"].context;
         
-    for (var building in game.engine.gameObjects) {
+    for (var building in Zei.gameObjects) {
       if (building is Building) {
         if (building.built && building.selected && building.canMove) {
           game.mouse.hideCursor();
@@ -904,7 +904,7 @@ class Building extends GameObject {
      
           if (game.canBePlaced(game.hoveredTile, building)) {
             // draw lines to other buildings
-            for (var building2 in game.engine.gameObjects) {
+            for (var building2 in Zei.gameObjects) {
               if (building2 is Building) {
                 if (building != building2) {
                   if (building.type == "base" || building2.type == "collector" || building2.type == "relay" || building2.type == "base") {
@@ -939,13 +939,13 @@ class Building extends GameObject {
   }
 
   static void draw() {
-    CanvasRenderingContext2D context = game.engine.renderer["buffer"].context;
+    CanvasRenderingContext2D context = Zei.renderer["buffer"].context;
     
-    for (var building in game.engine.gameObjects) {
+    for (var building in Zei.gameObjects) {
       if (building is Building) {
         Vector realPosition = game.real2screen(building.position);
     
-        if (game.engine.renderer["buffer"].isVisible(building.sprite)) {
+        if (Zei.renderer["buffer"].isVisible(building.sprite)) {
           // draw energy bar
           if (building.needsEnergy) {
             context.fillStyle = '#f00';
@@ -1013,7 +1013,7 @@ class Building extends GameObject {
             context
               ..save()
               ..globalAlpha = .5
-              ..drawImageScaled(game.engine.images["forcefield"], realPosition.x - 168 * game.zoom, realPosition.y - 168 * game.zoom, 336 * game.zoom, 336 * game.zoom)
+              ..drawImageScaled(Zei.images["forcefield"], realPosition.x - 168 * game.zoom, realPosition.y - 168 * game.zoom, 336 * game.zoom, 336 * game.zoom)
               ..restore();
           }
           else if (building.type == "terp") {

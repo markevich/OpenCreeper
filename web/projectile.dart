@@ -7,19 +7,19 @@ class Projectile extends GameObject {
   static num baseSpeed = 7;
 
   Projectile(position, this.targetPosition, rotation) {
-    sprite = new Sprite("buffer", "projectile", game.engine.images["projectile"], position, 16, 16, anchor: new Vector(0.5, 0.5), rotation: rotation);
+    sprite = new Sprite("buffer", "projectile", Zei.images["projectile"], position, 16, 16, anchor: new Vector(0.5, 0.5), rotation: rotation);
   }
   
   static void add(Vector position, Vector targetPosition, num rotation) {
     Projectile projectile = new Projectile(position, targetPosition, rotation);
-    game.engine.addGameObject(projectile);
+    Zei.addGameObject(projectile);
   }
    
   void update() {
     if (!game.paused) {
       if (remove) {
-        game.engine.renderer["buffer"].removeDisplayObject(sprite);
-        game.engine.removeGameObject(this);
+        Zei.renderer["buffer"].removeDisplayObject(sprite);
+        Zei.removeGameObject(this);
       }
       else {
         move();
@@ -28,7 +28,7 @@ class Projectile extends GameObject {
   }
 
   void move() {
-    sprite.position += game.engine.calculateVelocity(sprite.position, targetPosition, Projectile.baseSpeed * game.speed);
+    sprite.position += Zei.calculateVelocity(sprite.position, targetPosition, Projectile.baseSpeed * game.speed);
 
     if (sprite.position == targetPosition) {
       // if the target is reached smoke and remove

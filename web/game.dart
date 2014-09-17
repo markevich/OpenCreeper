@@ -15,7 +15,6 @@ class Game {
   Sprite tfNumber;
   Sprite targetCursor;
   Rect repositionRect;
-  Engine engine;
   UserInterface ui;
   List zoomableRenderers;
   Mouse mouse;
@@ -23,23 +22,23 @@ class Game {
   bool friendly;
   
   Game() {
-    engine = new Engine(TPS: 60, debug: false);
+    Zei.init(TPS: 60, debug: false);
   }
 
   Game start({int seed: null, bool friendly: false}) {
     if (seed == null)
-      this.seed = Engine.randomInt(0, 10000);
+      this.seed = Zei.randomInt(0, 10000);
     else
       this.seed = seed;
     
     this.friendly = friendly;
     
     List sounds = ["shot.wav", "click.wav", "explosion.wav", "failure.wav", "energy.wav", "laser.wav"];
-    engine.loadSounds(sounds);
+    Zei.loadSounds(sounds);
     List images = ["analyzer", "numbers", "level0", "level1", "level2", "level3", "level4", "level5", "level6", "level7", "level8", "level9", "borders", "mask", "cannon",
                        "cannongun", "base", "collector", "reactor", "storage", "terp", "packet_collection", "packet_energy", "packet_health", "relay", "emitter", "creeper",
                        "mortar", "shell", "beam", "spore", "bomber", "bombership", "smoke", "explosion", "targetcursor", "sporetower", "forcefield", "shield", "projectile"];  
-    engine.loadImages(images).then((results) => init());    
+    Zei.loadImages(images).then((results) => init());    
     return this;
   }
 
@@ -50,10 +49,10 @@ class Game {
     int width = window.innerWidth;
     int height = window.innerHeight;
     
-    engine.createRenderer("main", width, height, "#canvasContainer");
-    engine.renderer["main"].view.style.zIndex = "1";   
+    Zei.createRenderer("main", width, height, "#canvasContainer");
+    Zei.renderer["main"].view.style.zIndex = "1";   
     
-    var buffer = engine.createRenderer("buffer", width, height);
+    var buffer = Zei.createRenderer("buffer", width, height);
     buffer.enableMouse();
     mouse = buffer.mouse;
     mouse.setCursor("url('images/Normal.cur') 2 2, pointer");
@@ -62,23 +61,23 @@ class Game {
                       "explosion", "smoke", "buildingflying", "ship", "shell", "spore", "buildinggunflying", "energybar"]);
    
     for (int i = 0; i < 10; i++) {
-      engine.createRenderer("level$i", 128 * 16, 128 * 16);
+      Zei.createRenderer("level$i", 128 * 16, 128 * 16);
     }
-    engine.createRenderer("levelbuffer", 128 * 16, 128 * 16);
-    engine.createRenderer("levelfinal", width, height, "#canvasContainer");
+    Zei.createRenderer("levelbuffer", 128 * 16, 128 * 16);
+    Zei.createRenderer("levelfinal", width, height, "#canvasContainer");
     
-    engine.createRenderer("collection", width, height, "#canvasContainer");
+    Zei.createRenderer("collection", width, height, "#canvasContainer");
     
-    engine.createRenderer("creeperbuffer", width, height);
-    engine.createRenderer("creeper", width, height, "#canvasContainer");
+    Zei.createRenderer("creeperbuffer", width, height);
+    Zei.createRenderer("creeper", width, height, "#canvasContainer");
     
-    engine.createRenderer("gui", 780, 110, "#gui");
+    Zei.createRenderer("gui", 780, 110, "#gui");
     
     // renderes affected when zooming
     zoomableRenderers = ["buffer", "collection", "creeperbuffer"];
     
     // create UI
-    ui = new UserInterface(engine.renderer["gui"]);
+    ui = new UserInterface(Zei.renderer["gui"]);
     
     world = new World(seed);
   
@@ -105,7 +104,7 @@ class Game {
     querySelector('#deactivate').onClick.listen((event) => Building.deactivate());
     querySelector('#activate').onClick.listen((event) => Building.activate());
   
-    game.engine.renderer["main"].view
+    Zei.renderer["main"].view
       ..onMouseMove.listen((event) => onMouseMove(event))
       ..onDoubleClick.listen((event) => onDoubleClick(event))
       ..onMouseDown.listen((event) => onMouseDown(event))
@@ -114,7 +113,7 @@ class Game {
       ..onMouseEnter.listen((event) => onEnter(event))
       ..onMouseLeave.listen((event) => onLeave(event));
 
-    game.engine.renderer["gui"].view
+    Zei.renderer["gui"].view
       ..onMouseMove.listen((event) => onMouseMoveGUI(event))
       ..onClick.listen((event) => onClickGUI(event))
       ..onMouseLeave.listen((event) => onLeaveGUI);
@@ -129,7 +128,7 @@ class Game {
   }
 
   void reset() {
-    engine.clear();
+    Zei.clear();
     UISymbol.reset();
     Building.queue.clear();
     
@@ -151,18 +150,18 @@ class Game {
     querySelector('#time').innerHtml = 'Time: 00:00';
     
     // create terraform lines and number used when terraforming is enabled
-    tfLine1 = new Line("buffer", "terraform", new Vector.empty(), new Vector.empty(), 1, "#fff", visible: false);
-    tfLine2 = new Line("buffer", "terraform", new Vector.empty(), new Vector.empty(), 1, "#fff", visible: false);
-    tfLine3 = new Line("buffer", "terraform", new Vector.empty(), new Vector.empty(), 1, "#fff", visible: false);
-    tfLine4 = new Line("buffer", "terraform", new Vector.empty(), new Vector.empty(), 1, "#fff", visible: false);
+    tfLine1 = new Line("buffer", "terraform", new Vector.empty(), new Vector.empty(), 1, new Color.white(), visible: false);
+    tfLine2 = new Line("buffer", "terraform", new Vector.empty(), new Vector.empty(), 1, new Color.white(), visible: false);
+    tfLine3 = new Line("buffer", "terraform", new Vector.empty(), new Vector.empty(), 1, new Color.white(), visible: false);
+    tfLine4 = new Line("buffer", "terraform", new Vector.empty(), new Vector.empty(), 1, new Color.white(), visible: false);
     
-    tfNumber = new Sprite("buffer", "terraform", engine.images["numbers"], new Vector.empty(), 16, 16, animated: true, frame: terraformingHeight, visible: false);
+    tfNumber = new Sprite("buffer", "terraform", Zei.images["numbers"], new Vector.empty(), 16, 16, animated: true, frame: terraformingHeight, visible: false);
     
     // create target cursor used when a ship is selected
-    targetCursor = new Sprite("buffer", "targetsymbol", engine.images["targetcursor"], new Vector.empty(), 48, 48, visible: false, anchor: new Vector(0.5, 0.5));
+    targetCursor = new Sprite("buffer", "targetsymbol", Zei.images["targetcursor"], new Vector.empty(), 48, 48, visible: false, anchor: new Vector(0.5, 0.5));
     
     // rectangle that is drawn when repositioning a building
-    repositionRect = new Rect("buffer", "targetsymbol", new Vector(0, 0), new Vector(32, 32), 10, "#f00", null, visible: false);
+    repositionRect = new Rect("buffer", "targetsymbol", new Vector(0, 0), new Vector(32, 32), 10, new Color.red(), null, visible: false);
   }
   
   void updateTime(Timer _) {
@@ -180,7 +179,7 @@ class Game {
     querySelector('#paused').style.display = 'block';
     paused = true;
     stopwatch.stop();
-    game.engine.stopAnimations();
+    Zei.stopAnimations();
   }
 
   void resume() {
@@ -188,7 +187,7 @@ class Game {
     querySelector('#win').style.display = 'none';
     paused = false;
     stopwatch.start();
-    game.engine.startAnimations();
+    Zei.startAnimations();
   }
 
   void stop() {
@@ -196,8 +195,8 @@ class Game {
   }
 
   void run() {
-    running = new Timer.periodic(new Duration(milliseconds: (1000 / engine.TPS).floor()), (Timer timer) => updateAll());
-    engine.animationRequest = window.requestAnimationFrame(draw);
+    running = new Timer.periodic(new Duration(milliseconds: (1000 / Zei.TPS).floor()), (Timer timer) => updateAll());
+    Zei.animationRequest = window.requestAnimationFrame(draw);
   }
   
   void updateAll() {
@@ -249,7 +248,7 @@ class Game {
       zoom = double.parse(zoom.toStringAsFixed(2));
       
       for (var renderer in zoomableRenderers) {
-        engine.renderer[renderer].updateZoom(zoom);
+        Zei.renderer[renderer].updateZoom(zoom);
       }
       copyTerrain();
       drawCollection();
@@ -262,7 +261,7 @@ class Game {
       zoom -= .2;
       zoom = double.parse(zoom.toStringAsFixed(2));
       for (var renderer in zoomableRenderers) {
-        engine.renderer[renderer].updateZoom(zoom);
+        Zei.renderer[renderer].updateZoom(zoom);
       }
       copyTerrain();
       drawCollection();
@@ -278,12 +277,12 @@ class Game {
 
     // create random base
     Vector randomPosition = new Vector(
-        Engine.randomInt(4, world.size.x - 5, seed + 1),
-        Engine.randomInt(4, world.size.y - 5, seed + 1));
+        Zei.randomInt(4, world.size.x - 5, seed + 1),
+        Zei.randomInt(4, world.size.y - 5, seed + 1));
 
     scroll = randomPosition;
     for (var renderer in zoomableRenderers) {
-      engine.renderer[renderer].updatePosition(new Vector(scroll.x * tileSize, scroll.y * tileSize));
+      Zei.renderer[renderer].updatePosition(new Vector(scroll.x * tileSize, scroll.y * tileSize));
     }
 
     Building building = Building.add(randomPosition, "base");
@@ -299,11 +298,11 @@ class Game {
 
     if (!friendly) {
       // create random emitters
-      int number = Engine.randomInt(2, 3, seed);
+      int number = Zei.randomInt(2, 3, seed);
       for (var l = 0; l < number; l++) {    
         randomPosition = new Vector(
-            Engine.randomInt(1, world.size.x - 2, seed + Engine.randomInt(1, 1000, seed + l)) * tileSize + 8,
-            Engine.randomInt(1, world.size.y - 2, seed + Engine.randomInt(1, 1000, seed + 1 + l)) * tileSize + 8);
+            Zei.randomInt(1, world.size.x - 2, seed + Zei.randomInt(1, 1000, seed + l)) * tileSize + 8,
+            Zei.randomInt(1, world.size.y - 2, seed + Zei.randomInt(1, 1000, seed + 1 + l)) * tileSize + 8);
     
         Emitter emitter = Emitter.add(randomPosition, 25);
     
@@ -318,11 +317,11 @@ class Game {
       }
   
       // create random sporetowers
-      number = Engine.randomInt(1, 2, seed + 1);
+      number = Zei.randomInt(1, 2, seed + 1);
       for (var l = 0; l < number; l++) {
         randomPosition = new Vector(
-            Engine.randomInt(1, world.size.x - 2, seed + 3 + Engine.randomInt(1, 1000, seed + 2 + l)) * tileSize + 8,
-            Engine.randomInt(1, world.size.y - 2, seed + 3 + Engine.randomInt(1, 1000, seed + 3 + l)) * tileSize + 8);
+            Zei.randomInt(1, world.size.x - 2, seed + 3 + Zei.randomInt(1, 1000, seed + 2 + l)) * tileSize + 8,
+            Zei.randomInt(1, world.size.y - 2, seed + 3 + Zei.randomInt(1, 1000, seed + 3 + l)) * tileSize + 8);
     
         Sporetower sporetower = Sporetower.add(randomPosition);
     
@@ -387,7 +386,7 @@ class Game {
             
             indexAbove = index;
            
-            engine.renderer["level$k"].context.drawImageScaledFromSource(engine.images["mask"], index * (tileSize + 6) + 3, (tileSize + 6) + 3, tileSize, tileSize, i * tileSize, j * tileSize, tileSize, tileSize);
+            Zei.renderer["level$k"].context.drawImageScaledFromSource(Zei.images["mask"], index * (tileSize + 6) + 3, (tileSize + 6) + 3, tileSize, tileSize, i * tileSize, j * tileSize, tileSize, tileSize);
           }
         }
       }
@@ -395,11 +394,11 @@ class Game {
 
     // 2nd pass - draw textures
     for (int i = 0; i < 10; i++) {
-      CanvasPattern pattern = engine.renderer["level$i"].context.createPatternFromImage(engine.images["level$i"], 'repeat');
-      engine.renderer["level$i"].context.globalCompositeOperation = 'source-in';
-      engine.renderer["level$i"].context.fillStyle = pattern;
-      engine.renderer["level$i"].context.fillRect(0, 0, engine.renderer["level$i"].view.width, engine.renderer["level$i"].view.height);
-      engine.renderer["level$i"].context.globalCompositeOperation = 'source-over';
+      CanvasPattern pattern = Zei.renderer["level$i"].context.createPatternFromImage(Zei.images["level$i"], 'repeat');
+      Zei.renderer["level$i"].context.globalCompositeOperation = 'source-in';
+      Zei.renderer["level$i"].context.fillStyle = pattern;
+      Zei.renderer["level$i"].context.fillRect(0, 0, Zei.renderer["level$i"].view.width, Zei.renderer["level$i"].view.height);
+      Zei.renderer["level$i"].context.globalCompositeOperation = 'source-over';
     }
 
     // 3rd pass - draw borders
@@ -443,15 +442,15 @@ class Game {
             
             indexAbove = index;
   
-            engine.renderer["level$k"].context.drawImageScaledFromSource(engine.images["borders"], index * (tileSize + 6) + 2, 2, tileSize + 2, tileSize + 2, i * tileSize, j * tileSize, (tileSize + 2), (tileSize + 2));       
+            Zei.renderer["level$k"].context.drawImageScaledFromSource(Zei.images["borders"], index * (tileSize + 6) + 2, 2, tileSize + 2, tileSize + 2, i * tileSize, j * tileSize, (tileSize + 2), (tileSize + 2));       
           }
         }
       }
     }
 
-    engine.renderer["levelbuffer"].clear();
+    Zei.renderer["levelbuffer"].clear();
     for (int k = 0; k < 10; k++) {
-      engine.renderer["levelbuffer"].context.drawImage(engine.renderer["level$k"].view, 0, 0);
+      Zei.renderer["levelbuffer"].context.drawImage(Zei.renderer["level$k"].view, 0, 0);
     }
     querySelector('#loading').style.display = 'none';
   }
@@ -461,12 +460,12 @@ class Game {
    * to the visible buffer.
    */
   void copyTerrain() {
-    engine.renderer["levelfinal"].clear();
+    Zei.renderer["levelfinal"].clear();
 
     var targetLeft = 0;
     var targetTop = 0;
-    var sourceLeft = scroll.x * tileSize - engine.renderer["main"].view.width / 2 / zoom;
-    var sourceTop = scroll.y * tileSize - engine.renderer["main"].view.height / 2 / zoom;
+    var sourceLeft = scroll.x * tileSize - Zei.renderer["main"].view.width / 2 / zoom;
+    var sourceTop = scroll.y * tileSize - Zei.renderer["main"].view.height / 2 / zoom;
     if (sourceLeft < 0) {
       targetLeft = -sourceLeft * zoom;
       sourceLeft = 0;
@@ -476,10 +475,10 @@ class Game {
       sourceTop = 0;
     }
 
-    var targetWidth = engine.renderer["main"].view.width;
-    var targetHeight = engine.renderer["main"].view.height;
-    var sourceWidth = engine.renderer["main"].view.width / zoom;
-    var sourceHeight = engine.renderer["main"].view.height / zoom;
+    var targetWidth = Zei.renderer["main"].view.width;
+    var targetHeight = Zei.renderer["main"].view.height;
+    var sourceWidth = Zei.renderer["main"].view.width / zoom;
+    var sourceHeight = Zei.renderer["main"].view.height / zoom;
     if (sourceLeft + sourceWidth > world.size.x * tileSize) {
       targetWidth -= (sourceLeft + sourceWidth - world.size.x * tileSize) * zoom;
       sourceWidth = world.size.x * tileSize - sourceLeft;
@@ -488,7 +487,7 @@ class Game {
       targetHeight -= (sourceTop + sourceHeight - world.size.y * tileSize) * zoom;
       sourceHeight = world.size.y * tileSize - sourceTop;
     }
-    engine.renderer["levelfinal"].context.drawImageScaledFromSource(engine.renderer["levelbuffer"].view, sourceLeft, sourceTop, sourceWidth, sourceHeight, targetLeft, targetTop, targetWidth, targetHeight);
+    Zei.renderer["levelfinal"].context.drawImageScaledFromSource(Zei.renderer["levelbuffer"].view, sourceLeft, sourceTop, sourceWidth, sourceHeight, targetLeft, targetTop, targetWidth, targetHeight);
   }
 
   /**
@@ -553,10 +552,10 @@ class Game {
                 continue;
             }
             
-            tempContext[t].drawImageScaledFromSource(engine.images["mask"], index * (tileSize + 6) + 3, (tileSize + 6) + 3, tileSize, tileSize, 0, 0, tileSize, tileSize);
+            tempContext[t].drawImageScaledFromSource(Zei.images["mask"], index * (tileSize + 6) + 3, (tileSize + 6) + 3, tileSize, tileSize, 0, 0, tileSize, tileSize);
   
             // redraw pattern
-            var pattern = tempContext[t].createPatternFromImage(engine.images["level$t"], 'repeat');
+            var pattern = tempContext[t].createPatternFromImage(Zei.images["level$t"], 'repeat');
   
             tempContext[t].globalCompositeOperation = 'source-in';
             tempContext[t].fillStyle = pattern;
@@ -581,16 +580,16 @@ class Game {
                 continue;
             }
             
-            tempContext[t].drawImageScaledFromSource(engine.images["borders"], index * (tileSize + 6) + 2, 2, tileSize + 2, tileSize + 2, 0, 0, (tileSize + 2), (tileSize + 2));         
+            tempContext[t].drawImageScaledFromSource(Zei.images["borders"], index * (tileSize + 6) + 2, 2, tileSize + 2, tileSize + 2, 0, 0, (tileSize + 2), (tileSize + 2));         
           //}
           
           // set above index
           indexAbove = index;
         }
   
-        engine.renderer["levelbuffer"].context.clearRect(iS * tileSize, jS * tileSize, tileSize, tileSize);
+        Zei.renderer["levelbuffer"].context.clearRect(iS * tileSize, jS * tileSize, tileSize, tileSize);
         for (int t = 0; t < 10; t++) {
-          engine.renderer["levelbuffer"].context.drawImageScaledFromSource(tempCanvas[t], 0, 0, tileSize, tileSize, iS * tileSize, jS * tileSize, tileSize, tileSize);
+          Zei.renderer["levelbuffer"].context.drawImageScaledFromSource(tempCanvas[t], 0, 0, tileSize, tileSize, iS * tileSize, jS * tileSize, tileSize, tileSize);
         }
       }
     }
@@ -652,7 +651,7 @@ class Game {
    * Is called by a periodic timer.
    */ 
   void update() {
-    engine.update();
+    Zei.update();
     
     if (!paused) { 
       Building.updateQueue();
@@ -673,7 +672,7 @@ class Game {
 
     if (mouseScrolling.x != 0 || mouseScrolling.y != 0 || keyScrolling.x != 0 || keyScrolling.y != 0) {
       for (var renderer in zoomableRenderers) {
-        engine.renderer[renderer].updatePosition(new Vector(scroll.x * tileSize, scroll.y * tileSize));
+        Zei.renderer[renderer].updatePosition(new Vector(scroll.x * tileSize, scroll.y * tileSize));
       }
       copyTerrain();
       drawCollection();
@@ -686,7 +685,7 @@ class Game {
    * Draws the range boxes around the [position] of a building.
    */
   void drawRangeBoxes(Vector position, Building building) {
-    CanvasRenderingContext2D context = engine.renderer["buffer"].context;
+    CanvasRenderingContext2D context = Zei.renderer["buffer"].context;
     
     if (canBePlaced(position, building) && (building.type == "collector" || building.type == "cannon" || building.type == "mortar" || building.type == "shield" || building.type == "beam" || building.type == "terp" || building.type == "analyzer")) {
 
@@ -726,12 +725,12 @@ class Game {
    * Draws the green collection areas of collectors.
    */
   void drawCollection() {
-    engine.renderer["collection"].clear();
-    engine.renderer["collection"].context.save();
-    engine.renderer["collection"].context.globalAlpha = .5;
+    Zei.renderer["collection"].clear();
+    Zei.renderer["collection"].context.save();
+    Zei.renderer["collection"].context.globalAlpha = .5;
 
-    int timesX = (engine.renderer["main"].view.width / 2 / tileSize / zoom).ceil();
-    int timesY = (engine.renderer["main"].view.height / 2 / tileSize / zoom).ceil();
+    int timesX = (Zei.renderer["main"].view.width / 2 / tileSize / zoom).ceil();
+    int timesY = (Zei.renderer["main"].view.height / 2 / tileSize / zoom).ceil();
 
     for (int i = -timesX; i <= timesX; i++) {
       for (int j = -timesY; j <= timesY; j++) {
@@ -759,19 +758,19 @@ class Game {
               right = world.tiles[position.x + 1][position.y].collector != null ? 1 : 0;
 
             int index = (8 * down) + (4 * left) + (2 * up) + right;
-            engine.renderer["collection"].context.drawImageScaledFromSource(engine.images["mask"], index * (tileSize + 6) + 3, (tileSize + 6) + 3, tileSize, tileSize, engine.renderer["main"].view.width / 2 + i * tileSize * zoom, engine.renderer["main"].view.height / 2 + j * tileSize * zoom, tileSize * zoom, tileSize * zoom);
+            Zei.renderer["collection"].context.drawImageScaledFromSource(Zei.images["mask"], index * (tileSize + 6) + 3, (tileSize + 6) + 3, tileSize, tileSize, Zei.renderer["main"].view.width / 2 + i * tileSize * zoom, Zei.renderer["main"].view.height / 2 + j * tileSize * zoom, tileSize * zoom, tileSize * zoom);
           }
         }
       }
     }
-    engine.renderer["collection"].context.restore();
+    Zei.renderer["collection"].context.restore();
   }
 
   void drawCreeper() {
-    engine.renderer["creeperbuffer"].clear();
+    Zei.renderer["creeperbuffer"].clear();
 
-    int timesX = (engine.renderer["main"].view.width / 2 / tileSize / zoom).ceil();
-    int timesY = (engine.renderer["main"].view.height / 2 / tileSize / zoom).ceil();
+    int timesX = (Zei.renderer["main"].view.width / 2 / tileSize / zoom).ceil();
+    int timesY = (Zei.renderer["main"].view.height / 2 / tileSize / zoom).ceil();
 
     for (int i = -timesX; i <= timesX; i++) {
       for (int j = -timesY; j <= timesY; j++) {
@@ -806,7 +805,7 @@ class Game {
                 right = 1;
   
               int index = (8 * down) + (4 * left) + (2 * up) + right;
-              engine.renderer["creeperbuffer"].context.drawImageScaledFromSource(engine.images["creeper"], index * tileSize, 0, tileSize, tileSize, engine.renderer["main"].view.width / 2 + i * tileSize * zoom, engine.renderer["main"].view.height / 2 + j * tileSize * zoom, tileSize * zoom, tileSize * zoom);
+              Zei.renderer["creeperbuffer"].context.drawImageScaledFromSource(Zei.images["creeper"], index * tileSize, 0, tileSize, tileSize, Zei.renderer["main"].view.width / 2 + i * tileSize * zoom, Zei.renderer["main"].view.height / 2 + j * tileSize * zoom, tileSize * zoom, tileSize * zoom);
               continue;
             }
             
@@ -833,7 +832,7 @@ class Game {
   
               int index = (8 * down) + (4 * left) + (2 * up) + right;
               if (index != 0)
-                engine.renderer["creeperbuffer"].context.drawImageScaledFromSource(engine.images["creeper"], index * tileSize, 0, tileSize, tileSize, engine.renderer["main"].view.width / 2 + i * tileSize * zoom, engine.renderer["main"].view.height / 2 + j * tileSize * zoom, tileSize * zoom, tileSize * zoom);
+                Zei.renderer["creeperbuffer"].context.drawImageScaledFromSource(Zei.images["creeper"], index * tileSize, 0, tileSize, tileSize, Zei.renderer["main"].view.width / 2 + i * tileSize * zoom, Zei.renderer["main"].view.height / 2 + j * tileSize * zoom, tileSize * zoom, tileSize * zoom);
             }
           }
         }
@@ -841,8 +840,8 @@ class Game {
       }
     }
     
-    engine.renderer["creeper"].clear();
-    engine.renderer["creeper"].context.drawImage(engine.renderer["creeperbuffer"].view, 0, 0);
+    Zei.renderer["creeper"].clear();
+    Zei.renderer["creeper"].context.drawImage(Zei.renderer["creeperbuffer"].view, 0, 0);
   }
   
   void updateVariousInfo() {
@@ -850,7 +849,7 @@ class Game {
       
       // set visibility of reposition rect
       game.repositionRect.visible = false;
-      for (var building in game.engine.gameObjects) {
+      for (var building in Zei.gameObjects) {
         if (building is Building) {
           if (building.built && building.selected && building.canMove) {
             mouse.hideCursor();
@@ -862,9 +861,9 @@ class Game {
             repositionRect.position = new Vector(hoveredTile.x * tileSize - (building.size * tileSize / 2) + 8, hoveredTile.y * tileSize - (building.size * tileSize / 2) + 8);
             repositionRect.size = new Vector(building.size * tileSize, building.size * tileSize);
             if (canBePlaced)
-              repositionRect.fillColor = "rgba(0, 255, 0, 0.5)";
+              repositionRect.fillColor = new Color(0, 255, 0, 0.5);
             else
-              repositionRect.fillColor = "rgba(255, 0, 0, 0.5)";
+              repositionRect.fillColor = new Color(255, 0, 0, 0.5);
           }
         }
       }
@@ -958,7 +957,7 @@ class Game {
    */
   void drawGhosts() {
     if (UISymbol.activeSymbol != null) {
-      CanvasRenderingContext2D context = engine.renderer["buffer"].context;
+      CanvasRenderingContext2D context = Zei.renderer["buffer"].context;
        
       for (int i = 0; i < ghosts.length; i++) {
         Vector drawPosition = game.tiled2screen(ghosts[i]);
@@ -971,9 +970,9 @@ class Game {
           context.globalAlpha = .5;
   
           // draw building
-          context.drawImageScaled(engine.images[UISymbol.activeSymbol.building.type], drawPosition.x - tileSize * zoom, drawPosition.y - tileSize * zoom, UISymbol.activeSymbol.building.size * tileSize * zoom, UISymbol.activeSymbol.building.size * tileSize * zoom);
+          context.drawImageScaled(Zei.images[UISymbol.activeSymbol.building.type], drawPosition.x - tileSize * zoom, drawPosition.y - tileSize * zoom, UISymbol.activeSymbol.building.size * tileSize * zoom, UISymbol.activeSymbol.building.size * tileSize * zoom);
           if (UISymbol.activeSymbol.building.type == "cannon")
-            context.drawImageScaled(engine.images["cannongun"], drawPosition.x - tileSize * zoom, drawPosition.y - tileSize * zoom, 48 * zoom, 48 * zoom);
+            context.drawImageScaled(Zei.images["cannongun"], drawPosition.x - tileSize * zoom, drawPosition.y - tileSize * zoom, 48 * zoom, 48 * zoom);
   
           // draw green or red box
           // make sure there isn't a building on this tile yet
@@ -991,7 +990,7 @@ class Game {
 
           if (ghostCanBePlaced) {
             // draw lines to other buildings
-            for (var building in game.engine.gameObjects) {
+            for (var building in Zei.gameObjects) {
               if (building is Building) {
                 if (UISymbol.activeSymbol.building.type == "collector" || UISymbol.activeSymbol.building.type == "relay" ||
                     building.type == "collector" || building.type == "relay" || building.type == "base") {
@@ -1058,8 +1057,8 @@ class Game {
   void draw(num _) {   
     ui.draw();
     
-    engine.renderer["buffer"].clear();
-    engine.renderer["buffer"].draw();
+    Zei.renderer["buffer"].clear();
+    Zei.renderer["buffer"].draw();
     Building.draw();
     
     if (World.creeperDirty) {
@@ -1072,8 +1071,8 @@ class Game {
       drawGhosts();
     }
 
-    engine.renderer["main"].clear();
-    engine.renderer["main"].context.drawImage(engine.renderer["buffer"].view, 0, 0);
+    Zei.renderer["main"].clear();
+    Zei.renderer["main"].context.drawImage(Zei.renderer["buffer"].view, 0, 0);
 
     window.requestAnimationFrame(draw);
   }
@@ -1081,15 +1080,15 @@ class Game {
   // converts tile coordinates to canvas coordinates, 5 usages
   Vector tiled2screen(Vector vector) {
    return new Vector(
-       game.engine.renderer["main"].view.width / 2 + (vector.x - game.scroll.x) * game.tileSize * game.zoom,
-       game.engine.renderer["main"].view.height / 2 + (vector.y - game.scroll.y) * game.tileSize * game.zoom);
+       Zei.renderer["main"].view.width / 2 + (vector.x - game.scroll.x) * game.tileSize * game.zoom,
+       Zei.renderer["main"].view.height / 2 + (vector.y - game.scroll.y) * game.tileSize * game.zoom);
   }
   
   // converts full coordinates to canvas coordinates, 5 usages
   Vector real2screen(Vector vector) {
    return new Vector(
-       game.engine.renderer["main"].view.width / 2 + (vector.x - game.scroll.x * game.tileSize) * game.zoom,
-       game.engine.renderer["main"].view.height / 2 + (vector.y - game.scroll.y * game.tileSize) * game.zoom);
+       Zei.renderer["main"].view.width / 2 + (vector.x - game.scroll.x * game.tileSize) * game.zoom,
+       Zei.renderer["main"].view.height / 2 + (vector.y - game.scroll.y * game.tileSize) * game.zoom);
   }
   
   // converts full coordinates to tile coordinates, 9 usages

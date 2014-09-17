@@ -91,7 +91,7 @@ void onKeyDown(KeyboardEvent evt) {
   // DEBUG: add explosion
   if (evt.keyCode == KeyCode.V) {
     Explosion.add(new Vector(game.hoveredTile.x * game.tileSize + 8, game.hoveredTile.y * game.tileSize + 8));
-    game.engine.playSound("explosion", game.hoveredTile * game.tileSize, game.scroll, game.zoom);
+    Zei.playSound("explosion", game.hoveredTile * game.tileSize, game.scroll, game.zoom);
   }
   
   // DEBUG: lower terrain
@@ -199,7 +199,7 @@ void onClickGUI(MouseEvent evt) {
   Building.deselect();
   Ship.deselect();
   UISymbol.setActive();
-  game.engine.playSound("click");
+  Zei.playSound("click");
 }
 
 void onDoubleClick(MouseEvent evt) {
@@ -259,9 +259,9 @@ void onMouseUp(MouseEvent evt) {
         }
       }
       if (soundSuccess)
-        game.engine.playSound("click");
+        Zei.playSound("click");
       else
-        game.engine.playSound("failure");
+        Zei.playSound("failure");
     }
   } else if (evt.which == 3) {
     game.mode = "DEFAULT";
@@ -286,24 +286,24 @@ void onMouseScroll(WheelEvent evt) {
 
 void onResize(evt) {
   // delay the resizing to avoid it being called multiple times
-  if (game.engine.resizeTimer != null)
-    game.engine.resizeTimer.cancel();
-  game.engine.resizeTimer = new Timer(new Duration(milliseconds: 250), doneResizing);
+  if (Zei.resizeTimer != null)
+    Zei.resizeTimer.cancel();
+  Zei.resizeTimer = new Timer(new Duration(milliseconds: 250), doneResizing);
 }
 
 void doneResizing() {
   var width = window.innerWidth;
   var height = window.innerHeight;
 
-  game.engine.renderer["main"].updateRect(width, height);
-  game.engine.renderer["buffer"].updateRect(width, height);
-  game.engine.renderer["levelfinal"].updateRect(width, height);
-  game.engine.renderer["collection"].updateRect(width, height);
-  game.engine.renderer["creeperbuffer"].updateRect(width, height);
-  game.engine.renderer["creeper"].updateRect(width, height);
+  Zei.renderer["main"].updateRect(width, height);
+  Zei.renderer["buffer"].updateRect(width, height);
+  Zei.renderer["levelfinal"].updateRect(width, height);
+  Zei.renderer["collection"].updateRect(width, height);
+  Zei.renderer["creeperbuffer"].updateRect(width, height);
+  Zei.renderer["creeper"].updateRect(width, height);
 
-  game.engine.renderer["gui"].top = game.engine.renderer["gui"].view.offsetTop;
-  game.engine.renderer["gui"].left = game.engine.renderer["gui"].view.offsetLeft;
+  Zei.renderer["gui"].top = Zei.renderer["gui"].view.offsetTop;
+  Zei.renderer["gui"].left = Zei.renderer["gui"].view.offsetLeft;
 
   if (game != null) {
     game.copyTerrain();

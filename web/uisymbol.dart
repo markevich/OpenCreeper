@@ -19,7 +19,7 @@ class UISymbol {
   static void reset() {
     activeSymbol = null;
     UISymbol.deselect();
-    game.engine.renderer["main"].view.style.cursor = "url('images/Normal.cur') 2 2, pointer";
+    Zei.renderer["main"].view.style.cursor = "url('images/Normal.cur') 2 2, pointer";
   }
   
   static UISymbol add(Vector position, Building template, int keyCode) {
@@ -29,8 +29,8 @@ class UISymbol {
   }
   
   static void checkHovered(evt) {
-    Point mousePosition = new Point((evt.client.x - game.engine.renderer["gui"].view.getBoundingClientRect().left),
-                                     evt.client.y - game.engine.renderer["gui"].view.getBoundingClientRect().top);
+    Point mousePosition = new Point((evt.client.x - Zei.renderer["gui"].view.getBoundingClientRect().left),
+                                     evt.client.y - Zei.renderer["gui"].view.getBoundingClientRect().top);
     for (int i = 0; i < symbols.length; i++) {
       symbols[i].hovered = symbols[i].rectangle.containsPoint(mousePosition);
     }   
@@ -49,7 +49,7 @@ class UISymbol {
       if (evt.keyCode == symbols[i].keyCode) {
         activeSymbol = symbols[i];
         symbols[i].active = true;
-        game.engine.renderer["main"].view.style.cursor = "none";
+        Zei.renderer["main"].view.style.cursor = "none";
       }
     }
   }
@@ -73,13 +73,13 @@ class UISymbol {
     
 
     if (activeSymbol != null) {
-      game.engine.renderer["main"].view.style.cursor = "none";
+      Zei.renderer["main"].view.style.cursor = "none";
     }
 
   }
   
   void draw() {
-    CanvasRenderingContext2D context = game.engine.renderer["gui"].context;
+    CanvasRenderingContext2D context = Zei.renderer["gui"].context;
     
     if (active) {
       context.fillStyle = "#696";
@@ -92,13 +92,13 @@ class UISymbol {
     }
     context.fillRect(rectangle.left + 1, rectangle.top + 1, rectangle.width, rectangle.height);
 
-    context.drawImageScaled(game.engine.images[building.type], rectangle.left + 24, rectangle.top + 20, 32, 32); // scale buildings to 32x32
+    context.drawImageScaled(Zei.images[building.type], rectangle.left + 24, rectangle.top + 20, 32, 32); // scale buildings to 32x32
     
     // draw cannon gun and ships
     if (building.type == "cannon")
-      context.drawImageScaled(game.engine.images["cannongun"], rectangle.left + 24, rectangle.top + 20, 32, 32);
+      context.drawImageScaled(Zei.images["cannongun"], rectangle.left + 24, rectangle.top + 20, 32, 32);
     if (building.type == "bomber")
-      context.drawImageScaled(game.engine.images["bombership"], rectangle.left + 24, rectangle.top + 20, 32, 32);
+      context.drawImageScaled(Zei.images["bombership"], rectangle.left + 24, rectangle.top + 20, 32, 32);
     
     context
       ..fillStyle = '#fff'

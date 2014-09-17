@@ -1,4 +1,4 @@
-part of zengine;
+part of zei;
 
 class Mouse {
   Vector position = new Vector.empty();

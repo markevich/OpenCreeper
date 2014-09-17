@@ -7,12 +7,12 @@ class Emitter extends GameObject {
   int counter = 0;
 
   Emitter(position, this.strength) {
-    sprite = new Sprite("buffer", "emitter", game.engine.images["emitter"], position, 48, 48, anchor: new Vector(0.5, 0.5));
+    sprite = new Sprite("buffer", "emitter", Zei.images["emitter"], position, 48, 48, anchor: new Vector(0.5, 0.5));
   }
   
   static Emitter add(Vector position, int strength) {
     Emitter emitter = new Emitter(position, strength);
-    game.engine.addGameObject(emitter);
+    Zei.addGameObject(emitter);
     return emitter;
   }
    
@@ -34,7 +34,7 @@ class Emitter extends GameObject {
     Vector center = building.sprite.position;
     
     if (building.weaponTargetPosition == null && building.energy > 0) {
-      for (var emitter in game.engine.gameObjects) {
+      for (var emitter in Zei.gameObjects) {
         if (emitter is Emitter) {
           Vector emitterCenter = emitter.sprite.position;
   
@@ -60,7 +60,7 @@ class Emitter extends GameObject {
         building.operating = true;
       } else {
         building.operating = false;
-        for (var emitter in game.engine.gameObjects) {
+        for (var emitter in Zei.gameObjects) {
           if (emitter is Emitter) {
             if (building.weaponTargetPosition == emitter.sprite.position) {
               emitter.analyzer = null;
@@ -77,7 +77,7 @@ class Emitter extends GameObject {
     if (!game.won) {
       int emittersChecked = 0;
       List emitters = [];
-      for (var emitter in game.engine.gameObjects) {
+      for (var emitter in Zei.gameObjects) {
         if (emitter is Emitter) {
           emitters.add(emitter);        
         }
@@ -98,7 +98,7 @@ class Emitter extends GameObject {
   }
   
   static bool intersect(Rectangle rectangle) {  
-    for (var emitter in game.engine.gameObjects) {
+    for (var emitter in Zei.gameObjects) {
       if (emitter is Emitter) {
         Rectangle emitterRect = new Rectangle(emitter.sprite.position.x - 3 * game.tileSize / 2,
                                               emitter.sprite.position.y - 3 * game.tileSize / 2,

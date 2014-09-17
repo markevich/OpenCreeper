@@ -1,4 +1,4 @@
-part of zengine;
+part of zei;
 
 abstract class GameObject {
  

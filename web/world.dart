@@ -7,9 +7,9 @@ class World extends GameObject {
   static bool creeperDirty = true;
   
   World(int seed) {
-    size = new Vector(Engine.randomInt(64, 127, seed), Engine.randomInt(64, 127, seed));
+    size = new Vector(Zei.randomInt(64, 127, seed), Zei.randomInt(64, 127, seed));
     creeperCounter = 0;
-    //game.engine.gameObjects.add(this);
+    //Zei.gameObjects.add(this);
   }
   
   void createRandomLandscape() {

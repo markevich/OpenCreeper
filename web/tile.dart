@@ -22,7 +22,7 @@ class Tile {
       terraformProgress = 0;
       
       if (terraformNumber == null) {
-        terraformNumber = new Sprite("buffer", "terraform", game.engine.images["numbers"], position, 16, 16);
+        terraformNumber = new Sprite("buffer", "terraform", Zei.images["numbers"], position, 16, 16);
         terraformNumber.animated = true;
         terraformNumber.frame = terraformTarget;
       } else {
@@ -35,7 +35,7 @@ class Tile {
     terraformProgress = 0;
     terraformTarget = -1;
     if (terraformNumber != null) {
-      game.engine.renderer["buffer"].removeDisplayObject(terraformNumber); // alternatively it could just be set to 'visible = false'
+      Zei.renderer["buffer"].removeDisplayObject(terraformNumber); // alternatively it could just be set to 'visible = false'
       terraformNumber = null;
     }
   }
