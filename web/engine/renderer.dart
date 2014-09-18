@@ -15,10 +15,13 @@ class Renderer {
     context = view.getContext('2d');
   }
 
-  void clear({Color color}) {
-    if (color != null)
+  void clear([Color color]) {
+    if (color != null) {
       context.fillStyle = color.rgba;
-    context.clearRect(0, 0, view.width, view.height);
+      context.fillRect(0, 0, view.width, view.height);
+    } else {
+      context.clearRect(0, 0, view.width, view.height);
+    }
   }
   
   void enableMouse() {

@@ -22,6 +22,12 @@ class Rect extends DisplayObject {
     this.rendererName = rendererName;
   }
   
+  void rotate(int angle) {
+    rotation += angle;
+    if (rotation > 359)
+      rotation -= 359;
+  }
+  
   bool isHovered() {
     Vector relativePosition = Zei.renderer[rendererName].relativePosition(this.position);
     return (Zei.renderer[rendererName].mouse.position.x >= relativePosition.x - this.size.x * this.scale.x * this.anchor.x * Zei.renderer[rendererName].zoom &&
@@ -47,6 +53,12 @@ class Circle extends DisplayObject {
     scale = 1.0;
     Zei.renderer[rendererName].addDisplayObject(this);
     this.rendererName = rendererName;
+  }
+  
+  void rotate(int angle) {
+    rotation += angle;
+    if (rotation > 359)
+      rotation -= 359;
   }
   
   bool isHovered() {
