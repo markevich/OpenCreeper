@@ -45,7 +45,7 @@ class Packet extends GameObject {
   }
   
   void move() {  
-    sprite.position += Zei.calculateVelocity(sprite.position, currentTarget.position, Packet.baseSpeed * game.speed * speedMultiplier);
+    sprite.position += ((currentTarget.position - sprite.position).normalize() * Packet.baseSpeed * game.speed * speedMultiplier).clamp(currentTarget.position - sprite.position);
 
     if (sprite.position == currentTarget.position) {
       

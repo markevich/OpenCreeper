@@ -55,38 +55,32 @@ class Ship extends GameObject {
   }
   
   void turnToTarget() {
-    Vector delta = targetPosition - sprite.position;
-    double angleToTarget = Zei.rad2deg(atan2(delta.y, delta.x));
+    double angleToTarget = sprite.position.angleTo(targetPosition);
 
-    num turnRate = 1.5;
+    num shipRotation = 1.5;
     num absoluteDelta = (angleToTarget - sprite.rotation).abs();
+  
+    shipRotation = Zei.clamp(shipRotation, 0, absoluteDelta);
 
-    if (absoluteDelta < turnRate)
-      turnRate = absoluteDelta;
-
-    if (absoluteDelta <= 180)
+    if (absoluteDelta <= 180) // facing target
       if (angleToTarget < sprite.rotation)
-        sprite.rotation -= turnRate;
+        sprite.rotation -= shipRotation;
       else
-        sprite.rotation += turnRate;
-    else
+        sprite.rotation += shipRotation;
+    else // not facing target
       if (angleToTarget < sprite.rotation)
-        sprite.rotation += turnRate;
+        sprite.rotation += shipRotation;
       else
-        sprite.rotation -= turnRate;
+        sprite.rotation -= shipRotation;
 
     if (sprite.rotation > 180)
       sprite.rotation -= 360;
     if (sprite.rotation < -180)
-      sprite.rotation += 360;
+      sprite.rotation += 360; 
   }
 
-  void calculateVector() {
-    num x = cos(Zei.deg2rad(sprite.rotation));
-    num y = sin(Zei.deg2rad(sprite.rotation));
-
-    speed.x = x * Ship.baseSpeed * game.speed;
-    speed.y = y * Ship.baseSpeed * game.speed;
+  void calculateSpeed() {
+    speed = Zei.convertToVector(sprite.rotation) * Ship.baseSpeed * game.speed;
   }
   
   static void control(Vector position) {
@@ -183,7 +177,7 @@ class Ship extends GameObject {
       weaponCounter++;
 
       turnToTarget();
-      calculateVector();
+      calculateSpeed();
       
       sprite.position += speed;
       selectedCircle.position += speed;
@@ -227,7 +221,7 @@ class Ship extends GameObject {
     
     else if (status == "RETURNING") {
       turnToTarget();
-      calculateVector();
+      calculateSpeed();
 
       sprite.position += speed;
       selectedCircle.position += speed;

@@ -55,7 +55,7 @@ class Spore extends GameObject {
     }
     sprite.rotate(10);
 
-    sprite.position += Zei.calculateVelocity(sprite.position, targetPosition, Spore.baseSpeed * game.speed);
+    sprite.position += ((targetPosition - sprite.position).normalize() * Spore.baseSpeed * game.speed).clamp(targetPosition - sprite.position);
 
     if (sprite.position == targetPosition) {
       // if the target is reached explode and remove

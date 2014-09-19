@@ -123,7 +123,7 @@ class Sprite extends DisplayObject {
     frame++;    
   }
   
-  void rotate(int angle) {
+  void rotate(num angle) {
     rotation += angle;
     if (rotation > 359)
       rotation -= 359;

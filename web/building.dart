@@ -494,7 +494,7 @@ class Building extends GameObject {
 
     if (status == "MOVING") {
       if (moveTargetPosition.x != position.x || moveTargetPosition.y != position.y) {
-        position += Zei.calculateVelocity(position, moveTargetPosition, Building.baseSpeed * game.speed);
+        position += ((moveTargetPosition - position).normalize() * Building.baseSpeed * game.speed).clamp(moveTargetPosition - position);
       }    
       
       if (position.x > moveTargetPosition.x - 1 &&
@@ -807,13 +807,9 @@ class Building extends GameObject {
           }
 
           if (targets.length > 0) {
-            targets.shuffle();
-
-            var dx = targets[0].x * game.tileSize + game.tileSize / 2 - position.x;
-            var dy = targets[0].y * game.tileSize + game.tileSize / 2 - position.y;
-
-            targetAngle = Zei.rad2deg(atan2(dy, dx)).floor();
-            weaponTargetPosition = new Vector(targets[0].x, targets[0].y);
+            var target = Zei.randomElementOfList(targets);
+            targetAngle = position.angleTo(new Vector(target.x * game.tileSize + game.tileSize / 2, target.y * game.tileSize + game.tileSize / 2)).floor();
+            weaponTargetPosition = new Vector(target.x, target.y);
             rotating = true;
           }
         }

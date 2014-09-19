@@ -28,7 +28,7 @@ class Projectile extends GameObject {
   }
 
   void move() {
-    sprite.position += Zei.calculateVelocity(sprite.position, targetPosition, Projectile.baseSpeed * game.speed);
+    sprite.position += ((targetPosition - sprite.position).normalize() * Projectile.baseSpeed * game.speed).clamp(targetPosition - sprite.position);
 
     if (sprite.position == targetPosition) {
       // if the target is reached smoke and remove

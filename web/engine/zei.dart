@@ -113,26 +113,7 @@ class Zei {
       }
     }
   }
-  
-  /**
-   * Calculates the velocity between [position] and [targetPosition] with a given [multiplier]
-   */
-  static Vector calculateVelocity(Vector position, Vector targetPosition, num multiplier) {
-    Vector delta = targetPosition - position;
-    num distance = position.distanceTo(targetPosition);
-
-    Vector velocity = new Vector(
-        (delta.x / distance) * multiplier,
-        (delta.y / distance) * multiplier);
-
-    if (velocity.x.abs() > delta.x.abs())
-      velocity.x = delta.x;
-    if (velocity.y.abs() > delta.y.abs())
-      velocity.y = delta.y;
-    
-    return velocity;
-  }
-  
+   
   static void stopAnimations() {
     renderer.forEach((k, v) {
       for (int i = 0; i < v.layers.length; i++) {
@@ -157,16 +138,34 @@ class Zei {
     });
   }
   
-  static int randomInt(num from, num to, [num seed]) {
+  static Object randomElementOfList(List list) {
+    return list[Zei.randomInt(0, list.length - 1)];
+  }
+  
+  static num clamp(num value, num min, num max) {
+    return (value < min ? min : (value > max) ? max : value);
+  }
+  
+  static int randomInt(int from, int to, [int seed]) {
     var random = new Random(seed);
     return (random.nextInt(to - from + 1) + from);
   }
   
-  static num rad2deg(num angle) {
+  static int randomDouble(double from, double to, [int seed]) {
+      var random = new Random(seed);
+      return (random.nextDouble() * (to - from) + from);
+    }
+  
+  static num radToDeg(num angle) {
     return angle * 57.29577951308232;
   }
   
-  static num deg2rad(num angle) {
+  static num degToRad(num angle) {
     return angle * .017453292519943295;
+  }
+  
+  // converts an angle (in degrees) to a Vector
+  static Vector convertToVector(num angle) {
+    return new Vector(cos(Zei.degToRad(angle)), sin(Zei.degToRad(angle)));
   }
 }
