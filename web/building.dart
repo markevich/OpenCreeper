@@ -892,8 +892,8 @@ class Building extends GameObject {
         if (building.built && building.selected && building.canMove) {
           game.mouse.hideCursor();
           
-          Vector2 positionI = game.tiled2screen(game.hoveredTile) + new Vector2(8 * game.zoom, 8 * game.zoom);
-     
+          Vector2 positionI = game.convertToView("main", game.hoveredTile * Tile.size + new Vector2(Tile.size / 2 * game.zoom, Tile.size / 2 * game.zoom));
+          
           game.drawRangeBoxes(game.hoveredTile, building);
      
           if (game.canBePlaced(game.hoveredTile, building)) {
@@ -902,7 +902,7 @@ class Building extends GameObject {
               if (building2 is Building) {
                 if (building != building2) {
                   if (building.type == "base" || building2.type == "collector" || building2.type == "relay" || building2.type == "base") {
-                    Vector2 positionJ = game.real2screen(building2.position);
+                    Vector2 positionJ = game.convertToView("main", building2.position);
     
                     int allowedDistance = 10 * Tile.size;
                     if (building2.type == "relay" && building.type == "relay") {
@@ -937,7 +937,7 @@ class Building extends GameObject {
     
     for (var building in Zei.gameObjects) {
       if (building is Building) {
-        Vector2 realPosition = game.real2screen(building.position);
+        Vector2 realPosition = game.convertToView("main", building.position);
     
         if (Zei.renderer["buffer"].isVisible(building.sprite)) {
           // draw energy bar
@@ -978,7 +978,7 @@ class Building extends GameObject {
         // draw various stuff when operating
         if (building.operating) {
           if (building.type == "analyzer") {
-            Vector2 targetPosition = game.real2screen(building.weaponTargetPosition);
+            Vector2 targetPosition = game.convertToView("main", building.weaponTargetPosition);
             context
               ..strokeStyle = '#00f'
               ..lineWidth = 5 * game.zoom
@@ -991,7 +991,7 @@ class Building extends GameObject {
               ..stroke();
           }
           else if (building.type == "beam") {
-            Vector2 targetPosition = game.real2screen(building.weaponTargetPosition);
+            Vector2 targetPosition = game.convertToView("main", building.weaponTargetPosition);
             context
               ..strokeStyle = '#f00'
               ..lineWidth = 5 * game.zoom
@@ -1011,7 +1011,7 @@ class Building extends GameObject {
               ..restore();
           }
           else if (building.type == "terp") {
-            Vector2 targetPosition = game.tiled2screen(building.weaponTargetPosition);
+            Vector2 targetPosition = game.convertToView("main", building.weaponTargetPosition * Tile.size);
     
             context
               ..strokeStyle = '#f00'

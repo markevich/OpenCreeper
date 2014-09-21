@@ -1,7 +1,6 @@
 part of creeper;
 
 class Game {
-  //final int Tile.size = 16;
   int seed, terraformingHeight = 0, speed = 1;
   double zoom = 1.0;
   Timer running;
@@ -702,7 +701,7 @@ class Game {
 
           if (world.contains(positionCurrent)) {
             Vector2 positionCurrentCenter = new Vector2(positionCurrent.x * Tile.size + (Tile.size / 2), positionCurrent.y * Tile.size + (Tile.size / 2));
-            Vector2 drawPositionCurrent = game.tiled2screen(positionCurrent);
+            Vector2 drawPositionCurrent = game.convertToView("main", positionCurrent * Tile.size);
             
             int positionCurrentHeight = game.world.tiles[positionCurrent.x][positionCurrent.y].height;
 
@@ -960,7 +959,7 @@ class Game {
       CanvasRenderingContext2D context = Zei.renderer["buffer"].context;
        
       for (int i = 0; i < ghosts.length; i++) {
-        Vector2 drawPosition = game.tiled2screen(ghosts[i]);
+        Vector2 drawPosition = game.convertToView("main", ghosts[i] * Tile.size);
         Vector2 ghostICenter = drawPosition + new Vector2(8 * zoom, 8 * zoom);
   
         drawRangeBoxes(ghosts[i], UISymbol.activeSymbol.building);
@@ -994,7 +993,7 @@ class Game {
               if (building is Building) {
                 if (UISymbol.activeSymbol.building.type == "collector" || UISymbol.activeSymbol.building.type == "relay" ||
                     building.type == "collector" || building.type == "relay" || building.type == "base") {
-                  Vector2 buildingCenter = game.real2screen(building.position);
+                  Vector2 buildingCenter = game.convertToView("main", building.position);
   
                   int allowedDistance = 10 * Tile.size;
                   if (building.type == "relay" && UISymbol.activeSymbol.building.type == "relay") {
@@ -1020,14 +1019,14 @@ class Game {
             for (int j = 0; j < ghosts.length; j++) {
               if (j != i) {
                 if (UISymbol.activeSymbol.building.type == "collector" || UISymbol.activeSymbol.building.type == "relay") {
-                  Vector2 ghostKCenter = game.tiled2screen(ghosts[j]) + new Vector2(8 * game.zoom, 8 * game.zoom);
+                  Vector2 ghostKCenter = game.convertToView("main", ghosts[j] * Tile.size + new Vector2(Tile.size / 2 * game.zoom, Tile.size / 2 * game.zoom));
 
                   int allowedDistance = 10 * Tile.size;
                   if (UISymbol.activeSymbol.building.type == "relay") {
                     allowedDistance = 20 * Tile.size;
                   }
 
-                  Vector2 ghostJCenter = drawPosition + new Vector2(8 * game.zoom, 8 * game.zoom);
+                  Vector2 ghostJCenter = drawPosition + new Vector2(Tile.size / 2 * game.zoom, Tile.size / 2 * game.zoom);
                   if (ghostKCenter.distanceTo(ghostJCenter) <= allowedDistance * zoom) {
                     context
                       ..strokeStyle = '#000'
@@ -1076,25 +1075,12 @@ class Game {
 
     window.requestAnimationFrame(draw);
   }
-  
-  // converts tile coordinates to canvas coordinates, 5 usages
-  Vector2 tiled2screen(Vector2 vector) {
+   
+  // converts real coordinates to view coordinates (10 usages)
+  // used for graphics that are not managed by a renderer
+  Vector2 convertToView(String rendererName, Vector2 vector) {
    return new Vector2(
-       Zei.renderer["main"].view.width / 2 + (vector.x - game.scroll.x) * Tile.size * game.zoom,
-       Zei.renderer["main"].view.height / 2 + (vector.y - game.scroll.y) * Tile.size * game.zoom);
-  }
-  
-  // converts full coordinates to canvas coordinates, 5 usages
-  Vector2 real2screen(Vector2 vector) {
-   return new Vector2(
-       Zei.renderer["main"].view.width / 2 + (vector.x - game.scroll.x * Tile.size) * game.zoom,
-       Zei.renderer["main"].view.height / 2 + (vector.y - game.scroll.y * Tile.size) * game.zoom);
-  }
-  
-  // converts full coordinates to tile coordinates, 9 usages
-  Vector2 sreal2tiled(Vector2 vector) {
-   return new Vector2(
-       vector.x ~/ Tile.size,
-       vector.y ~/ Tile.size);
+       Zei.renderer[rendererName].view.width / 2 + (vector.x - game.scroll.x * Tile.size) * game.zoom,
+       Zei.renderer[rendererName].view.height / 2 + (vector.y - game.scroll.y * Tile.size) * game.zoom);
   }
 }
