@@ -10,7 +10,7 @@ class Building extends GameObject {
   Sprite sprite, cannon;
   Circle selectedCircle;
   Rect targetSymbol;
-  static final double baseSpeed = .5;
+  static final double baseVelocity = .5;
   int damageCounter = 0, collectCounter = 0;
   static Building base;
   static List<Packet> queue = new List<Packet>();
@@ -494,7 +494,7 @@ class Building extends GameObject {
 
     if (status == "MOVING") {
       if (moveTargetPosition.x != position.x || moveTargetPosition.y != position.y) {
-        position += ((moveTargetPosition - position).normalize() * Building.baseSpeed * game.speed).clamp(moveTargetPosition - position);
+        position += ((moveTargetPosition - position).normalize() * Building.baseVelocity * game.speed).clamp(moveTargetPosition - position);
       }    
       
       if (position.x > moveTargetPosition.x - 1 &&

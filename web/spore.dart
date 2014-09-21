@@ -1,7 +1,7 @@
 part of creeper;
 
 class Spore extends GameObject {
-  Vector targetPosition, speed = new Vector(0, 0);
+  Vector targetPosition;
   bool remove = false;
   num health = 500;
   int trailCounter = 0;

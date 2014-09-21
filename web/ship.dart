@@ -1,7 +1,7 @@
 part of creeper;
 
 class Ship extends GameObject {
-  Vector speed = new Vector(0, 0), targetPosition = new Vector(0, 0);
+  Vector velocity = new Vector(0, 0), targetPosition = new Vector(0, 0);
   String type, status = "IDLE"; // ATTACKING, RETURNING, RISING, FALLING
   bool remove = false, hovered = false, selected = false;
   int maxEnergy = 15, energy = 0, trailCounter = 0, weaponCounter = 0, flightCounter = 0;
@@ -80,7 +80,7 @@ class Ship extends GameObject {
   }
 
   void calculateSpeed() {
-    speed = Zei.convertToVector(sprite.rotation) * Ship.baseSpeed * game.speed;
+    velocity = Zei.convertToVector(sprite.rotation) * Ship.baseSpeed * game.speed;
   }
   
   static void control(Vector position) {
@@ -179,9 +179,9 @@ class Ship extends GameObject {
       turnToTarget();
       calculateSpeed();
       
-      sprite.position += speed;
-      selectedCircle.position += speed;
-      energyRect.position += speed;
+      sprite.position += velocity;
+      selectedCircle.position += velocity;
+      energyRect.position += velocity;
 
       if (sprite.position.x > targetPosition.x - 2 && sprite.position.x < targetPosition.x + 2 && sprite.position.y > targetPosition.y - 2 && sprite.position.y < targetPosition.y + 2) {
         if (weaponCounter >= 10) {
@@ -223,9 +223,9 @@ class Ship extends GameObject {
       turnToTarget();
       calculateSpeed();
 
-      sprite.position += speed;
-      selectedCircle.position += speed;
-      energyRect.position += speed;
+      sprite.position += velocity;
+      selectedCircle.position += velocity;
+      energyRect.position += velocity;
 
       if (sprite.position.x > targetPosition.x - 2 && sprite.position.x < targetPosition.x + 2 && sprite.position.y > targetPosition.y - 2 && sprite.position.y < targetPosition.y + 2) {
         sprite.position = home.position;

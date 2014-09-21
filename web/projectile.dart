@@ -1,7 +1,7 @@
 part of creeper;
 
 class Projectile extends GameObject {
-  Vector targetPosition, speed = new Vector(0, 0);
+  Vector targetPosition;
   bool remove = false;
   Sprite sprite;
   static num baseSpeed = 7;

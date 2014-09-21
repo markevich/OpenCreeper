@@ -1,7 +1,7 @@
 part of creeper;
 
 class Shell extends GameObject {
-  Vector targetPosition, speed = new Vector(0, 0);
+  Vector targetPosition;
   bool remove = false;
   int trailCounter = 0;
   Sprite sprite;

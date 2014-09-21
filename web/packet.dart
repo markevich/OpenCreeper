@@ -1,10 +1,9 @@
 part of creeper;
 
 class Packet extends GameObject {
-  Vector speed = new Vector(0, 0);
   String type;
   bool remove = false;
-  num speedMultiplier = 1;
+  num velocityMultiplier = 1;
   Building target, currentTarget;
   Sprite sprite;
   static num baseSpeed = 3;
@@ -45,7 +44,7 @@ class Packet extends GameObject {
   }
   
   void move() {  
-    sprite.position += ((currentTarget.position - sprite.position).normalize() * Packet.baseSpeed * game.speed * speedMultiplier).clamp(currentTarget.position - sprite.position);
+    sprite.position += ((currentTarget.position - sprite.position).normalize() * Packet.baseSpeed * game.speed * velocityMultiplier).clamp(currentTarget.position - sprite.position);
 
     if (sprite.position == currentTarget.position) {
       
@@ -106,14 +105,14 @@ class Packet extends GameObject {
 
       // adjust speed if packet is travelling between relays
       if (next.gameObject.type == "relay") {
-        speedMultiplier = 2;
+        velocityMultiplier = 2;
       } else {
-        speedMultiplier = 1;
+        velocityMultiplier = 1;
       }
 
       // reduce speed for collection
       if (type == "collection")
-        speedMultiplier /= 4;
+        velocityMultiplier /= 4;
 
       currentTarget = next.gameObject;
       return true;
