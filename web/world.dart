@@ -42,7 +42,7 @@ class World extends GameObject {
   }
   
   Tile getTile(Vector2 position) {
-    return tiles[position.x ~/ game.tileSize][position.y ~/ game.tileSize];
+    return tiles[position.x ~/ Tile.size][position.y ~/ Tile.size];
   }  
   
   void update() {

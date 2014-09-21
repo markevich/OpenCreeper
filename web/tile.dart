@@ -1,6 +1,7 @@
 part of creeper;
 
 class Tile {
+  static final int size = 16;
   num creep, newcreep;
   Building collector;
   int height, index, terraformTarget, terraformProgress;
@@ -38,5 +39,11 @@ class Tile {
       Zei.renderer["buffer"].removeDisplayObject(terraformNumber); // alternatively it could just be set to 'visible = false'
       terraformNumber = null;
     }
+  }
+  
+  static Vector2 position(Vector2 vector) {
+    return new Vector2(
+           vector.x ~/ size,
+           vector.y ~/ size);
   }
 }

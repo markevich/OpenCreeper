@@ -34,7 +34,7 @@ class Emitter extends GameObject {
     if (building.weaponTargetPosition == null && building.energy > 0) {
       for (var emitter in Zei.gameObjects) {
         if (emitter is Emitter) { 
-          if (emitter.sprite.position.distanceTo(building.sprite.position) <= building.weaponRadius * game.tileSize) {
+          if (emitter.sprite.position.distanceTo(building.sprite.position) <= building.weaponRadius * Tile.size) {
             if (emitter.analyzer == null) {
               emitter.analyzer = building;
               building.weaponTargetPosition = emitter.sprite.position;
@@ -93,10 +93,10 @@ class Emitter extends GameObject {
   static bool intersect(Rectangle rectangle) {  
     for (var emitter in Zei.gameObjects) {
       if (emitter is Emitter) {
-        Rectangle emitterRect = new Rectangle(emitter.sprite.position.x - 3 * game.tileSize / 2,
-                                              emitter.sprite.position.y - 3 * game.tileSize / 2,
-                                              3 * game.tileSize - 1,
-                                              3 * game.tileSize - 1);        
+        Rectangle emitterRect = new Rectangle(emitter.sprite.position.x - 3 * Tile.size / 2,
+                                              emitter.sprite.position.y - 3 * Tile.size / 2,
+                                              3 * Tile.size - 1,
+                                              3 * Tile.size - 1);        
         if (rectangle.intersects(emitterRect)) {
           return true;
         }

@@ -25,9 +25,9 @@ class Connection {
         if (Building != building2 && building.status == "IDLE" &&
             (building2.type == "collector" || building2.type == "relay" || building.type == "collector" || building.type == "relay" || building.type == "base")) {
   
-          num allowedDistance = 10 * game.tileSize;
+          num allowedDistance = 10 * Tile.size;
           if (building.type == "relay" && building2.type == "relay") {
-            allowedDistance = 20 * game.tileSize;
+            allowedDistance = 20 * Tile.size;
           }
   
           if (building2.position.distanceTo(building.position) <= allowedDistance) {

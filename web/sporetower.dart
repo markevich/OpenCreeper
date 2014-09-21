@@ -47,10 +47,10 @@ class Sporetower extends GameObject {
   static bool intersect(Rectangle rectangle) { 
     for (var sporetower in Zei.gameObjects) {
       if (sporetower is Sporetower) {
-        Rectangle sporetowerRect = new Rectangle(sporetower.sprite.position.x - 3 * game.tileSize / 2,
-                                                 sporetower.sprite.position.y - 3 * game.tileSize / 2,
-                                                 3 * game.tileSize - 1,
-                                                 3 * game.tileSize - 1);     
+        Rectangle sporetowerRect = new Rectangle(sporetower.sprite.position.x - 3 * Tile.size / 2,
+                                                 sporetower.sprite.position.y - 3 * Tile.size / 2,
+                                                 3 * Tile.size - 1,
+                                                 3 * Tile.size - 1);     
         if (rectangle.intersects(sporetowerRect)) {
           return true;
         }

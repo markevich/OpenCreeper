@@ -6,8 +6,8 @@ void onMouseMove(MouseEvent evt) {
   if (game != null) {
     game.oldHoveredTile = game.hoveredTile;
     game.hoveredTile = new Vector2(
-          ((game.mouse.position.x - game.mouse.renderer.view.width / 2) / (game.tileSize * game.zoom)).floor() + game.scroll.x,
-          ((game.mouse.position.y - game.mouse.renderer.view.height / 2) / (game.tileSize * game.zoom)).floor() + game.scroll.y);
+          ((game.mouse.position.x - game.mouse.renderer.view.width / 2) / (Tile.size * game.zoom)).floor() + game.scroll.x,
+          ((game.mouse.position.y - game.mouse.renderer.view.height / 2) / (Tile.size * game.zoom)).floor() + game.scroll.y);
     game.updateVariousInfo();
     
     game.mouseScrolling = new Vector2.empty();
@@ -22,16 +22,16 @@ void onMouseMove(MouseEvent evt) {
     if (game.mode == "TERRAFORM") { 
       if (game.world.contains(game.hoveredTile)) {
         
-        Rectangle currentRect = new Rectangle(game.hoveredTile.x * game.tileSize,
-                                              game.hoveredTile.y * game.tileSize,
-                                              game.tileSize - 1,
-                                              game.tileSize - 1); 
+        Rectangle currentRect = new Rectangle(game.hoveredTile.x * Tile.size,
+                                              game.hoveredTile.y * Tile.size,
+                                              Tile.size - 1,
+                                              Tile.size - 1); 
         
         // check for building/emitter/sporetower on that position
         if (!Building.intersect(currentRect) &&
             !Emitter.intersect(currentRect) &&
             !Sporetower.intersect(currentRect)) {
-          game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].flagTerraform(game.hoveredTile * game.tileSize);
+          game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].flagTerraform(game.hoveredTile * Tile.size);
         }
       }
     }
@@ -90,8 +90,8 @@ void onKeyDown(KeyboardEvent evt) {
 
   // DEBUG: add explosion
   if (evt.keyCode == KeyCode.V) {
-    Explosion.add(new Vector2(game.hoveredTile.x * game.tileSize + 8, game.hoveredTile.y * game.tileSize + 8));
-    Zei.playSound("explosion", game.hoveredTile * game.tileSize, game.scroll, game.zoom);
+    Explosion.add(new Vector2(game.hoveredTile.x * Tile.size + 8, game.hoveredTile.y * Tile.size + 8));
+    Zei.playSound("explosion", game.hoveredTile * Tile.size, game.scroll, game.zoom);
   }
   
   // DEBUG: lower terrain
@@ -219,16 +219,16 @@ void onMouseDown(MouseEvent evt) {
     if (game.mode == "TERRAFORM") {
       if (game.world.contains(game.hoveredTile)) {
         
-        Rectangle currentRect = new Rectangle(game.hoveredTile.x * game.tileSize,
-            game.hoveredTile.y * game.tileSize,
-                                              game.tileSize - 1,
-                                              game.tileSize - 1); 
+        Rectangle currentRect = new Rectangle(game.hoveredTile.x * Tile.size,
+                                              game.hoveredTile.y * Tile.size,
+                                              Tile.size - 1,
+                                              Tile.size - 1); 
         
         // check for building/emitter/sporetower on that position
         if (!Building.intersect(currentRect) &&
             !Emitter.intersect(currentRect) &&
             !Sporetower.intersect(currentRect)) {
-          game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].flagTerraform(game.hoveredTile * game.tileSize);
+          game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].flagTerraform(game.hoveredTile * Tile.size);
         }
       }
     }

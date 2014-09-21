@@ -173,7 +173,7 @@ class Building extends GameObject {
       needsEnergy = true;
     }
     
-    targetSymbol = new Rect("buffer", "targetsymbol", new Vector2.empty(), new Vector2(size * game.tileSize, size * game.tileSize), 1, new Color.green(), null, visible: false, anchor: new Vector2(0.5, 0.5));
+    targetSymbol = new Rect("buffer", "targetsymbol", new Vector2.empty(), new Vector2(size * Tile.size, size * Tile.size), 1, new Color.green(), null, visible: false, anchor: new Vector2(0.5, 0.5));
     
     Connection.add(this);
   }
@@ -372,9 +372,9 @@ class Building extends GameObject {
             building.rotating = false;
             building.weaponTargetPosition = null;
             building.status = "RISING";
-            building.moveTargetPosition = (position * game.tileSize) + new Vector2(8, 8);
+            building.moveTargetPosition = (position * Tile.size) + new Vector2(8, 8);
             building.targetSymbol.visible = true;
-            building.targetSymbol.position = (position * game.tileSize) + new Vector2(8, 8);
+            building.targetSymbol.position = (position * Tile.size) + new Vector2(8, 8);
             Connection.remove(building);
           }
         }
@@ -392,17 +392,17 @@ class Building extends GameObject {
         Rectangle buildingRect = null;
         // check flying buildings
         if (building.status != "IDLE") {
-          buildingRect = new Rectangle(building.moveTargetPosition.x - building.size * game.tileSize / 2,
-                                       building.moveTargetPosition.y - building.size * game.tileSize / 2,
-                                       building.size * game.tileSize - 1,
-                                       building.size * game.tileSize - 1);  
+          buildingRect = new Rectangle(building.moveTargetPosition.x - building.size * Tile.size / 2,
+                                       building.moveTargetPosition.y - building.size * Tile.size / 2,
+                                       building.size * Tile.size - 1,
+                                       building.size * Tile.size - 1);  
         } 
         // check stationary buildings
         else { 
-          buildingRect = new Rectangle(building.position.x - building.size * game.tileSize / 2,
-                                       building.position.y - building.size * game.tileSize / 2,
-                                       building.size * game.tileSize - 1,
-                                       building.size * game.tileSize - 1);  
+          buildingRect = new Rectangle(building.position.x - building.size * Tile.size / 2,
+                                       building.position.y - building.size * Tile.size / 2,
+                                       building.size * Tile.size - 1,
+                                       building.size * Tile.size - 1);  
         }
         if (rectangle.intersects(buildingRect)) {
           return true;
@@ -428,9 +428,9 @@ class Building extends GameObject {
             // it must either be the target or be built
             if (building == target || (building.built && (building.type == "collector" || building.type == "relay"))) {
   
-                int allowedDistance = 10 * game.tileSize;
+                int allowedDistance = 10 * Tile.size;
                 if (type == "relay" && building.type == "relay") {
-                  allowedDistance = 20 * game.tileSize;
+                  allowedDistance = 20 * Tile.size;
                 }
                 
                 if (position.distanceTo(building.position) <= allowedDistance) {
@@ -515,7 +515,7 @@ class Building extends GameObject {
 
       for (int i = -(size ~/ 2); i <= (size ~/ 2); i++) {
         for (int j = -(size ~/ 2); j <= -(size ~/ 2); j++) {
-          Vector2 tempPosition = position + new Vector2(i * game.tileSize, j * game.tileSize);
+          Vector2 tempPosition = position + new Vector2(i * Tile.size, j * Tile.size);
           Tile tile = game.world.getTile(tempPosition);
           if (tile.creep > 0) {
             health -= tile.creep / 10;
@@ -534,13 +534,13 @@ class Building extends GameObject {
 
       for (int i = -weaponRadius; i <= weaponRadius; i++) {
         for (int j = -weaponRadius; j <= weaponRadius; j++) {
-          Vector2 tempPosition = position + new Vector2(i * game.tileSize, j * game.tileSize);
-          if (game.world.contains(tempPosition / game.tileSize)) {  
+          Vector2 tempPosition = position + new Vector2(i * Tile.size, j * Tile.size);
+          if (game.world.contains(tempPosition / Tile.size)) {  
             var distance = position.distanceTo(tempPosition + new Vector2(8, 8));
-            if (distance < game.tileSize * 10) {
+            if (distance < Tile.size * 10) {
               Tile tile = game.world.getTile(tempPosition);
               if (tile.creep > 0) {
-                tile.creep -= distance / game.tileSize * .1; // the closer to the shield the more creep is removed
+                tile.creep -= distance / Tile.size * .1; // the closer to the shield the more creep is removed
                 tile.creep = Zei.clamp(tile.creep, 0, 1000);
                 World.creeperDirty = true;
               }
@@ -595,11 +595,11 @@ class Building extends GameObject {
 
       for (int i = -5; i < 7; i++) {
         for (int j = -5; j < 7; j++) {
-          Vector2 tempPosition = position + new Vector2(i * game.tileSize, j * game.tileSize);
-          if (game.world.contains(tempPosition / game.tileSize)) {
+          Vector2 tempPosition = position + new Vector2(i * Tile.size, j * Tile.size);
+          if (game.world.contains(tempPosition / Tile.size)) {
             int tileHeight = game.world.getTile(tempPosition).height;
 
-            if (position.distanceTo(tempPosition + new Vector2(8, 8)) < game.tileSize * 6) {
+            if (position.distanceTo(tempPosition + new Vector2(8, 8)) < Tile.size * 6) {
               if (tileHeight == height) {
                 if (game.world.getTile(tempPosition).collector == this)
                   collectedEnergy += 1;
@@ -646,14 +646,14 @@ class Building extends GameObject {
     for (int i = -5; i < 7; i++) {
       for (int j = -5; j < 7; j++) {
 
-        var tiledPosition = game.real2tiled(position);
+        var tiledPosition = Tile.position(position);
         Vector2 positionCurrent = new Vector2(tiledPosition.x + i, tiledPosition.y + j);
 
         if (game.world.contains(positionCurrent)) {
-          Vector2 positionCurrentCenter = new Vector2(positionCurrent.x * game.tileSize + (game.tileSize / 2), positionCurrent.y * game.tileSize + (game.tileSize / 2));
+          Vector2 positionCurrentCenter = new Vector2(positionCurrent.x * Tile.size + (Tile.size / 2), positionCurrent.y * Tile.size + (Tile.size / 2));
           int tileHeight = game.world.tiles[positionCurrent.x][positionCurrent.y].height;
 
-          if (position.distanceTo(positionCurrentCenter) < game.tileSize * 6) {
+          if (position.distanceTo(positionCurrentCenter) < Tile.size * 6) {
             if (tileHeight == height) {
               if (action == "add") {
                 game.world.tiles[positionCurrent.x][positionCurrent.y].collector = this;
@@ -666,7 +666,7 @@ class Building extends GameObject {
                     if (building != this && building.type == "collector") {
                       int heightK = game.world.getTile(building.position).height;
                       Vector2 centerBuildingK = building.position;
-                      if (centerBuildingK.distanceTo(positionCurrentCenter) < game.tileSize * 6) {
+                      if (centerBuildingK.distanceTo(positionCurrentCenter) < Tile.size * 6) {
                         if (tileHeight == heightK) {
                           game.world.tiles[positionCurrent.x][positionCurrent.y].collector = building;
                           break;
@@ -702,7 +702,7 @@ class Building extends GameObject {
         if (weaponTargetPosition == null) {
           int lowestTile = 10;
           
-          var positionTiled = game.real2tiled(position);
+          var positionTiled = Tile.position(position);
           for (int i = -weaponRadius; i <= weaponRadius; i++) {
             for (int j = -weaponRadius; j <= weaponRadius; j++) {
 
@@ -711,7 +711,7 @@ class Building extends GameObject {
               if (game.world.contains(tilePosition) && game.world.tiles[tilePosition.x][tilePosition.y].terraformTarget > -1 && game.world.tiles[tilePosition.x][tilePosition.y].creep == 0) {
                 int tileHeight = game.world.tiles[tilePosition.x][tilePosition.y].height;
                 
-                if (tileHeight <= lowestTile && (tilePosition * game.tileSize + new Vector2(8, 8)).distanceTo(position) <= weaponRadius * game.tileSize) {
+                if (tileHeight <= lowestTile && (tilePosition * Tile.size + new Vector2(8, 8)).distanceTo(position) <= weaponRadius * Tile.size) {
                   lowestTile = tileHeight;
                   weaponTargetPosition = new Vector2(tilePosition.x, tilePosition.y);
                 }
@@ -782,7 +782,7 @@ class Building extends GameObject {
           List targets = new List();
 
           // find closest random target
-          var targetPositionTiled = game.real2tiled(position);
+          var targetPositionTiled = Tile.position(position);
           for (int i = -weaponRadius; i <= weaponRadius; i++) {
             for (int j = -weaponRadius; j <= weaponRadius; j++) {
 
@@ -793,9 +793,9 @@ class Building extends GameObject {
                 int tileHeight = game.world.tiles[tilePosition.x][tilePosition.y].height;
                 if (tileHeight <= height) {
 
-                  num distance = (tilePosition * game.tileSize + new Vector2(8, 8)).distanceTo(position);
+                  num distance = (tilePosition * Tile.size + new Vector2(8, 8)).distanceTo(position);
 
-                  if (distance <= pow(weaponRadius * game.tileSize, 2) && distance <= closestDistance) {
+                  if (distance <= pow(weaponRadius * Tile.size, 2) && distance <= closestDistance) {
                     closestDistance = distance;
                     targets.add(tilePosition);
                   }
@@ -806,7 +806,7 @@ class Building extends GameObject {
 
           if (targets.length > 0) {
             var target = Zei.randomElementOfList(targets);
-            targetAngle = position.angleTo(new Vector2(target.x * game.tileSize + game.tileSize / 2, target.y * game.tileSize + game.tileSize / 2)).floor();
+            targetAngle = position.angleTo(new Vector2(target.x * Tile.size + Tile.size / 2, target.y * Tile.size + Tile.size / 2)).floor();
             weaponTargetPosition = new Vector2(target.x, target.y);
             rotating = true;
           }
@@ -844,7 +844,7 @@ class Building extends GameObject {
             rotating = false;
             energy -= 1;
             operating = true;
-            Projectile.add(position, new Vector2(weaponTargetPosition.x * game.tileSize + game.tileSize / 2, weaponTargetPosition.y * game.tileSize + game.tileSize / 2), targetAngle);
+            Projectile.add(position, new Vector2(weaponTargetPosition.x * Tile.size + Tile.size / 2, weaponTargetPosition.y * Tile.size + Tile.size / 2), targetAngle);
             Zei.playSound("laser", position, game.scroll, game.zoom);
           }
         }
@@ -856,13 +856,13 @@ class Building extends GameObject {
           // find most creep in range
           Vector2 target = null;
           var highestCreep = 0;
-          var tiledPosition = game.real2tiled(position);
+          var tiledPosition = Tile.position(position);
           for (int i = tiledPosition.x - weaponRadius; i <= tiledPosition.x + weaponRadius; i++) {
             for (int j = tiledPosition.y - weaponRadius; j <= tiledPosition.y + weaponRadius; j++) {
               if (game.world.contains(new Vector2(i, j))) {
-                var distance = pow((i * game.tileSize + game.tileSize / 2) - position.x, 2) + pow((j * game.tileSize + game.tileSize / 2) - position.y, 2);
+                var distance = pow((i * Tile.size + Tile.size / 2) - position.x, 2) + pow((j * Tile.size + Tile.size / 2) - position.y, 2);
 
-                if (distance <= pow(weaponRadius * game.tileSize, 2) && game.world.tiles[i][j].creep > 0 && game.world.tiles[i][j].creep >= highestCreep) {
+                if (distance <= pow(weaponRadius * Tile.size, 2) && game.world.tiles[i][j].creep > 0 && game.world.tiles[i][j].creep >= highestCreep) {
                   highestCreep = game.world.tiles[i][j].creep;
                   target = new Vector2(i, j);
                 }
@@ -871,7 +871,7 @@ class Building extends GameObject {
           }
           if (target != null) {
             Zei.playSound("shot", position, game.scroll, game.zoom);
-            Shell.add(position, new Vector2(target.x * game.tileSize + game.tileSize / 2, target.y * game.tileSize + game.tileSize / 2));
+            Shell.add(position, new Vector2(target.x * Tile.size + Tile.size / 2, target.y * Tile.size + Tile.size / 2));
             energy -= 1;
           }
         }
@@ -904,9 +904,9 @@ class Building extends GameObject {
                   if (building.type == "base" || building2.type == "collector" || building2.type == "relay" || building2.type == "base") {
                     Vector2 positionJ = game.real2screen(building2.position);
     
-                    int allowedDistance = 10 * game.tileSize;
+                    int allowedDistance = 10 * Tile.size;
                     if (building2.type == "relay" && building.type == "relay") {
-                      allowedDistance = 20 * game.tileSize;
+                      allowedDistance = 20 * Tile.size;
                     }
     
                     if (positionJ.distanceTo(positionI) <= allowedDistance * game.zoom) {
@@ -943,18 +943,18 @@ class Building extends GameObject {
           // draw energy bar
           if (building.needsEnergy) {
             context.fillStyle = '#f00';
-            context.fillRect(realPosition.x - (building.size * game.tileSize / 2 - 2) * game.zoom,
-                             realPosition.y - (building.size * game.tileSize / 2 - 4) * game.zoom,
-                             ((building.size * game.tileSize * game.zoom - 4) / building.maxEnergy) * building.energy,
+            context.fillRect(realPosition.x - (building.size * Tile.size / 2 - 2) * game.zoom,
+                             realPosition.y - (building.size * Tile.size / 2 - 4) * game.zoom,
+                             ((building.size * Tile.size * game.zoom - 4) / building.maxEnergy) * building.energy,
                              3 * game.zoom);
           }
     
           // draw health bar (only if health is below maxHealth)
           if (building.health < building.maxHealth) {
             context.fillStyle = '#0f0';
-            context.fillRect(realPosition.x - (building.size * game.tileSize / 2 - 2) * game.zoom,
-                             realPosition.y + (building.size * game.tileSize / 2 - 4) * game.zoom,
-                             ((building.size * game.tileSize * game.zoom - 4) / building.maxHealth) * building.health,
+            context.fillRect(realPosition.x - (building.size * Tile.size / 2 - 2) * game.zoom,
+                             realPosition.y + (building.size * Tile.size / 2 - 4) * game.zoom,
+                             ((building.size * Tile.size * game.zoom - 4) / building.maxHealth) * building.health,
                              3 * game.zoom);
           }
     
@@ -964,13 +964,13 @@ class Building extends GameObject {
             context.lineWidth = 2 * game.zoom;
     
             context.beginPath();
-            context.arc(realPosition.x, realPosition.y, (game.tileSize / 2) * building.size, 0, PI * 2, true);
+            context.arc(realPosition.x, realPosition.y, (Tile.size / 2) * building.size, 0, PI * 2, true);
             context.closePath();
             context.stroke();
     
             context.beginPath();
-            context.moveTo(realPosition.x - (game.tileSize * building.size / 3), realPosition.y + (game.tileSize * building.size / 3));
-            context.lineTo(realPosition.x + (game.tileSize * building.size / 3), realPosition.y - (game.tileSize * building.size / 3));
+            context.moveTo(realPosition.x - (Tile.size * building.size / 3), realPosition.y + (Tile.size * building.size / 3));
+            context.lineTo(realPosition.x + (Tile.size * building.size / 3), realPosition.y - (Tile.size * building.size / 3));
             context.stroke();
           }
         }

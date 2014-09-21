@@ -36,15 +36,15 @@ class Projectile extends GameObject {
 
       Smoke.add(targetPosition);
       
-      Vector2 targetPositionTiled = game.real2tiled(targetPosition);
+      Vector2 targetPositionTiled = Tile.position(targetPosition);
       for (int i = -1; i <= 1; i++) {
         for (int j = -1; j <= 1; j++) {
 
           Vector2 tilePosition = targetPositionTiled + new Vector2(i, j);
 
           if (game.world.contains(tilePosition)) {
-            if ((tilePosition * game.tileSize + new Vector2(8, 8)).distanceTo(targetPosition) <= game.tileSize * 4) {
-              Tile tile = game.world.getTile(tilePosition * game.tileSize);
+            if ((tilePosition * Tile.size + new Vector2(8, 8)).distanceTo(targetPosition) <= Tile.size * 4) {
+              Tile tile = game.world.getTile(tilePosition * Tile.size);
               tile.creep -= 1;
               tile.creep = Zei.clamp(tile.creep, 0, 1000);
               World.creeperDirty = true;

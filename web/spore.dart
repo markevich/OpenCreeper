@@ -32,14 +32,14 @@ class Spore extends GameObject {
     // find spore in range
     for (var spore in Zei.gameObjects) {
       if (spore is Spore) {      
-        if (building.sprite.position.distanceTo(spore.sprite.position) <= building.weaponRadius * game.tileSize) {
+        if (building.sprite.position.distanceTo(spore.sprite.position) <= building.weaponRadius * Tile.size) {
           building.weaponTargetPosition = spore.sprite.position;
           building.energy -= .05;
           building.operating = true;
           spore.health -= 2;
           if (spore.health <= 0) {
             spore.remove = true;
-            Zei.playSound("explosion", game.real2tiled(spore.sprite.position), game.scroll, game.zoom);
+            Zei.playSound("explosion", Tile.position(spore.sprite.position), game.scroll, game.zoom);
             Explosion.add(spore.sprite.position);
           }
         }
@@ -60,7 +60,7 @@ class Spore extends GameObject {
     if (sprite.position == targetPosition) {
       // if the target is reached explode and remove
       remove = true;
-      Vector2 targetPositionTiled = game.real2tiled(targetPosition);
+      Vector2 targetPositionTiled = Tile.position(targetPosition);
       Zei.playSound("explosion", targetPosition, game.scroll, game.zoom);
 
       for (int i = -2; i <= 2; i++) {
@@ -69,8 +69,8 @@ class Spore extends GameObject {
           Vector2 tilePosition = targetPositionTiled + new Vector2(i, j);
           
           if (game.world.contains(tilePosition)) {
-            if ((tilePosition * game.tileSize + new Vector2(8, 8)).distanceTo(targetPosition) <= game.tileSize * 2) {
-              Tile tile = game.world.getTile(tilePosition * game.tileSize);             
+            if ((tilePosition * Tile.size + new Vector2(8, 8)).distanceTo(targetPosition) <= Tile.size * 2) {
+              Tile tile = game.world.getTile(tilePosition * Tile.size);             
               tile.creep += .5;
             }
           }

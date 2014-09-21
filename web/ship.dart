@@ -84,7 +84,7 @@ class Ship extends GameObject {
   }
   
   static void control(Vector2 position) {
-    position = position * game.tileSize;
+    position = position * Tile.size;
     position += new Vector2(8, 8);
     
     select();
@@ -188,7 +188,7 @@ class Ship extends GameObject {
           weaponCounter = 0;
           energy -= 1;
 
-          Vector2 targetPositionTiled = game.real2tiled(targetPosition);
+          Vector2 targetPositionTiled = Tile.position(targetPosition);
           Explosion.add(targetPosition);
           Zei.playSound("explosion", targetPosition, game.scroll, game.zoom);
 
@@ -198,8 +198,8 @@ class Ship extends GameObject {
               Vector2 tilePosition = targetPositionTiled + new Vector2(i, j);
 
               if (game.world.contains(tilePosition)) {
-                if ((tilePosition * game.tileSize + new Vector2(8, 8)).distanceTo(targetPosition) <= game.tileSize * 3) {
-                  Tile tile = game.world.getTile(tilePosition * game.tileSize);
+                if ((tilePosition * Tile.size + new Vector2(8, 8)).distanceTo(targetPosition) <= Tile.size * 3) {
+                  Tile tile = game.world.getTile(tilePosition * Tile.size);
 
                   tile.creep -= 5;
                   tile.creep = Zei.clamp(tile.creep, 0, 1000);

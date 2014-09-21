@@ -42,7 +42,7 @@ class Shell extends GameObject {
     if (sprite.position == targetPosition) {
       remove = true;
 
-      Vector2 targetPositionTiled = game.real2tiled(targetPosition);
+      Vector2 targetPositionTiled = Tile.position(targetPosition);
       Explosion.add(targetPosition);
       Zei.playSound("explosion", targetPosition, game.scroll, game.zoom);
 
@@ -52,8 +52,8 @@ class Shell extends GameObject {
           Vector2 tilePosition = targetPositionTiled + new Vector2(i, j);
           
           if (game.world.contains(tilePosition)) {
-            if ((tilePosition * game.tileSize + new Vector2(8, 8)).distanceTo(targetPosition) <= game.tileSize * 4) {
-              Tile tile = game.world.getTile(tilePosition * game.tileSize);
+            if ((tilePosition * Tile.size + new Vector2(8, 8)).distanceTo(targetPosition) <= Tile.size * 4) {
+              Tile tile = game.world.getTile(tilePosition * Tile.size);
               
               tile.creep -= 10;
               tile.creep = Zei.clamp(tile.creep, 0, 1000);
