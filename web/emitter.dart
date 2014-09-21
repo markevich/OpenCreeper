@@ -30,24 +30,17 @@ class Emitter extends GameObject {
     }
   }
   
-  static void find(Building building) {
-    Vector2 center = building.sprite.position;
-    
+  static void find(Building building) {   
     if (building.weaponTargetPosition == null && building.energy > 0) {
       for (var emitter in Zei.gameObjects) {
-        if (emitter is Emitter) {
-          Vector2 emitterCenter = emitter.sprite.position;
-  
-          num distance = pow(emitterCenter.x - center.x, 2) + pow(emitterCenter.y - center.y, 2);
-  
-          if (distance <= pow(building.weaponRadius * game.tileSize, 2)) {
+        if (emitter is Emitter) { 
+          if (emitter.sprite.position.distanceTo(building.sprite.position) <= building.weaponRadius * game.tileSize) {
             if (emitter.analyzer == null) {
               emitter.analyzer = building;
               building.weaponTargetPosition = emitter.sprite.position;
               break;
             }
           }
-  
         }
       }
     }

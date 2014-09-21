@@ -46,8 +46,7 @@ class Projectile extends GameObject {
             if ((tilePosition * game.tileSize + new Vector2(8, 8)).distanceTo(targetPosition) <= game.tileSize * 4) {
               Tile tile = game.world.getTile(tilePosition * game.tileSize);
               tile.creep -= 1;
-              if (tile.creep < 0)
-                tile.creep = 0;
+              tile.creep = Zei.clamp(tile.creep, 0, 1000);
               World.creeperDirty = true;
             }
           }

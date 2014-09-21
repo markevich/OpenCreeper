@@ -79,12 +79,10 @@ class Packet extends GameObject {
         } else if (type == "energy") {
           target.energy += 4;
           target.energyRequests -= 4;
-          if (target.energy > target.maxEnergy)
-            target.energy = target.maxEnergy;
+          target.energy = Zei.clamp(target.energy, 0, target.maxEnergy);
         } else if (type == "collection") {
           Building.base.energy += 1;
-          if (Building.base.energy > Building.base.maxEnergy)
-            Building.base.energy = Building.base.maxEnergy;
+          Building.base.energy = Zei.clamp(Building.base.energy, 0, Building.base.maxEnergy);
           game.updateEnergyElement();
         }
       } else {
@@ -123,12 +121,10 @@ class Packet extends GameObject {
       // reduce target requests
       if (type == "energy") {
         target.energyRequests -= 4;
-        if (target.energyRequests < 0)
-          target.energyRequests = 0;
+        target.energyRequests = Zei.clamp(target.energyRequests, 0, 100);
       } else if (type == "health") {
         target.healthRequests--;
-        if (target.healthRequests < 0)
-          target.healthRequests = 0;
+        target.healthRequests = Zei.clamp(target.healthRequests, 0, 100);
       }
       remove = true;
       return false;

@@ -541,9 +541,7 @@ class Building extends GameObject {
               Tile tile = game.world.getTile(tempPosition);
               if (tile.creep > 0) {
                 tile.creep -= distance / game.tileSize * .1; // the closer to the shield the more creep is removed
-                if (tile.creep < 0) {
-                  tile.creep = 0;
-                }
+                tile.creep = Zei.clamp(tile.creep, 0, 1000);
                 World.creeperDirty = true;
               }
             }

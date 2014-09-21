@@ -56,8 +56,7 @@ class Shell extends GameObject {
               Tile tile = game.world.getTile(tilePosition * game.tileSize);
               
               tile.creep -= 10;
-              if (tile.creep < 0)
-                tile.creep = 0;
+              tile.creep = Zei.clamp(tile.creep, 0, 1000);
               World.creeperDirty = true;
             }
           }
