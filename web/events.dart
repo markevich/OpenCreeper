@@ -5,12 +5,12 @@ void onMouseMove(MouseEvent evt) {
   
   if (game != null) {
     game.oldHoveredTile = game.hoveredTile;
-    game.hoveredTile = new Vector(
+    game.hoveredTile = new Vector2(
           ((game.mouse.position.x - game.mouse.renderer.view.width / 2) / (game.tileSize * game.zoom)).floor() + game.scroll.x,
           ((game.mouse.position.y - game.mouse.renderer.view.height / 2) / (game.tileSize * game.zoom)).floor() + game.scroll.y);
     game.updateVariousInfo();
     
-    game.mouseScrolling = new Vector.empty();
+    game.mouseScrolling = new Vector2.empty();
     if (game.mouse.position.x == 0) game.mouseScrolling.x = -1;
     else if (game.mouse.position.x == game.mouse.renderer.view.width - 1) game.mouseScrolling.x = 1;   
     if (game.mouse.position.y == 0) game.mouseScrolling.y = -1;
@@ -90,7 +90,7 @@ void onKeyDown(KeyboardEvent evt) {
 
   // DEBUG: add explosion
   if (evt.keyCode == KeyCode.V) {
-    Explosion.add(new Vector(game.hoveredTile.x * game.tileSize + 8, game.hoveredTile.y * game.tileSize + 8));
+    Explosion.add(new Vector2(game.hoveredTile.x * game.tileSize + 8, game.hoveredTile.y * game.tileSize + 8));
     Zei.playSound("explosion", game.hoveredTile * game.tileSize, game.scroll, game.zoom);
   }
   
@@ -100,11 +100,11 @@ void onKeyDown(KeyboardEvent evt) {
       game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].height--;
       List tilesToRedraw = new List();
       tilesToRedraw
-        ..add(new Vector(game.hoveredTile.x, game.hoveredTile.y))
-        ..add(new Vector(game.hoveredTile.x - 1, game.hoveredTile.y))
-        ..add(new Vector(game.hoveredTile.x, game.hoveredTile.y - 1))
-        ..add(new Vector(game.hoveredTile.x + 1, game.hoveredTile.y))
-        ..add(new Vector(game.hoveredTile.x, game.hoveredTile.y + 1));
+        ..add(new Vector2(game.hoveredTile.x, game.hoveredTile.y))
+        ..add(new Vector2(game.hoveredTile.x - 1, game.hoveredTile.y))
+        ..add(new Vector2(game.hoveredTile.x, game.hoveredTile.y - 1))
+        ..add(new Vector2(game.hoveredTile.x + 1, game.hoveredTile.y))
+        ..add(new Vector2(game.hoveredTile.x, game.hoveredTile.y + 1));
       game.redrawTerrain(tilesToRedraw);
     }
   }
@@ -115,11 +115,11 @@ void onKeyDown(KeyboardEvent evt) {
       game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].height++;
       List tilesToRedraw = new List();
       tilesToRedraw
-        ..add(new Vector(game.hoveredTile.x, game.hoveredTile.y))
-        ..add(new Vector(game.hoveredTile.x - 1, game.hoveredTile.y))
-        ..add(new Vector(game.hoveredTile.x, game.hoveredTile.y - 1))
-        ..add(new Vector(game.hoveredTile.x + 1, game.hoveredTile.y))
-        ..add(new Vector(game.hoveredTile.x, game.hoveredTile.y + 1));
+        ..add(new Vector2(game.hoveredTile.x, game.hoveredTile.y))
+        ..add(new Vector2(game.hoveredTile.x - 1, game.hoveredTile.y))
+        ..add(new Vector2(game.hoveredTile.x, game.hoveredTile.y - 1))
+        ..add(new Vector2(game.hoveredTile.x + 1, game.hoveredTile.y))
+        ..add(new Vector2(game.hoveredTile.x, game.hoveredTile.y + 1));
       game.redrawTerrain(tilesToRedraw);
     }
   }
@@ -129,11 +129,11 @@ void onKeyDown(KeyboardEvent evt) {
     game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].height = -1;
     List tilesToRedraw = new List();
     tilesToRedraw
-      ..add(new Vector(game.hoveredTile.x, game.hoveredTile.y))
-      ..add(new Vector(game.hoveredTile.x - 1, game.hoveredTile.y))
-      ..add(new Vector(game.hoveredTile.x, game.hoveredTile.y - 1))
-      ..add(new Vector(game.hoveredTile.x + 1, game.hoveredTile.y))
-      ..add(new Vector(game.hoveredTile.x, game.hoveredTile.y + 1));
+      ..add(new Vector2(game.hoveredTile.x, game.hoveredTile.y))
+      ..add(new Vector2(game.hoveredTile.x - 1, game.hoveredTile.y))
+      ..add(new Vector2(game.hoveredTile.x, game.hoveredTile.y - 1))
+      ..add(new Vector2(game.hoveredTile.x + 1, game.hoveredTile.y))
+      ..add(new Vector2(game.hoveredTile.x, game.hoveredTile.y + 1));
     game.redrawTerrain(tilesToRedraw);
   }
 

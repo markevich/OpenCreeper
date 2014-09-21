@@ -104,7 +104,7 @@ class Route {
  * Node used for A*
  */
 class ZNode {
-  Vector position;
+  Vector2 position;
   ZNode parent;
   int g = 0, h = 0, f = 0;
   var gameObject, target;

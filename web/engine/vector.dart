@@ -1,40 +1,40 @@
 part of zei;
 
-class Vector {
+class Vector2 {
   num x, y;
 
-  Vector(this.x, this.y);
-  Vector.empty() : this(0, 0);
+  Vector2(this.x, this.y);
+  Vector2.empty() : this(0, 0);
 
-  Vector operator +(Vector other) => new Vector(x + other.x, y + other.y);
-  Vector operator -(Vector other) => new Vector(x - other.x, y - other.y);
-  Vector operator *(num other) => new Vector(x * other, y * other);
-  Vector operator /(num other) => new Vector(x / other, y / other);
-  bool operator ==(Vector other) => (x == other.x && y == other.y);
+  Vector2 operator +(Vector2 other) => new Vector2(x + other.x, y + other.y);
+  Vector2 operator -(Vector2 other) => new Vector2(x - other.x, y - other.y);
+  Vector2 operator *(num other) => new Vector2(x * other, y * other);
+  Vector2 operator /(num other) => new Vector2(x / other, y / other);
+  bool operator ==(Vector2 other) => (x == other.x && y == other.y);
 
   String toString() {
     return "$x/$y";
   }
 
-  num distanceTo(Vector other) {
+  num distanceTo(Vector2 other) {
     return sqrt(pow(x - other.x, 2) + pow(y - other.y, 2));
   }
   
   num magnitude() {
-    return new Vector.empty().distanceTo(this);
+    return new Vector2.empty().distanceTo(this);
   }
   
-  // returns absolute angle to another vector in degrees
-  num angleTo(Vector other) {   
+  // returns absolute angle to another Vector2 in degrees
+  num angleTo(Vector2 other) {   
     return Zei.radToDeg(atan2(other.y - y, other.x - x));
   }
   
-  Vector normalize() {   
+  Vector2 normalize() {   
     var mag = magnitude();
-    return new Vector(x / mag, y / mag);
+    return new Vector2(x / mag, y / mag);
   }
    
-  Vector clamp(Vector max) {
+  Vector2 clamp(Vector2 max) {
     if (x.abs() > max.x.abs())
       x = max.x;
     if (y.abs() > max.y.abs())
@@ -43,17 +43,17 @@ class Vector {
   }
   
   // 2 vectors facing same direction > 0, perpendicular = 0, different direction < 0
-  num dotProduct(Vector other) {
+  num dotProduct(Vector2 other) {
     return (x * other.x + y * other.y);
   }
   
-  // calculates a perpendicular vector
-  Vector getNormal() {
-    return new Vector(y, -x);    
+  // calculates a perpendicular Vector2
+  Vector2 getNormal() {
+    return new Vector2(y, -x);    
   }
   
-  Vector negate() {
-   return new Vector(-x, -y);
+  Vector2 negate() {
+   return new Vector2(-x, -y);
   }
 }
 

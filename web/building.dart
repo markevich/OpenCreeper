@@ -1,7 +1,7 @@
 part of creeper;
 
 class Building extends GameObject {
-  Vector position, scale = new Vector(1, 1), moveTargetPosition, weaponTargetPosition, speed = new Vector(0, 0);
+  Vector2 position, scale = new Vector2(1, 1), moveTargetPosition, weaponTargetPosition, speed = new Vector2(0, 0);
   String type, status = "IDLE"; // MOVING, RISING, FALLING
   bool operating = false, selected = false, hovered = false, built = false, active = true, canMove = false, needsEnergy = false, rotating = false;
   num health, maxHealth = 0, energy, maxEnergy = 0, healthRequests = 0, energyRequests = 0, rotation = 0;
@@ -88,7 +88,7 @@ class Building extends GameObject {
   Building(position, imageID) {
     type = imageID;
     this.position = position;
-    sprite = new Sprite("buffer", "building", Zei.images[imageID], position, 48, 48, anchor: new Vector(0.5, 0.5), alpha: 0.5);
+    sprite = new Sprite("buffer", "building", Zei.images[imageID], position, 48, 48, anchor: new Vector2(0.5, 0.5), alpha: 0.5);
 
     selectedCircle = new Circle("buffer", "selectedcircle", position, 24, 2, null, new Color.white(), visible: false);
       
@@ -97,7 +97,7 @@ class Building extends GameObject {
     energy = 0;
     
     if (type == "base") {
-      sprite.size = new Vector(144, 144);
+      sprite.size = new Vector2(144, 144);
       sprite.alpha = 1.0;
       selectedCircle.radius = 72;
       health = 40;
@@ -155,7 +155,7 @@ class Building extends GameObject {
       needsEnergy = true;
       energyCounter = 15;
       
-      cannon = new Sprite("buffer", "buildinggun", Zei.images["cannongun"], position, 48, 48, anchor: new Vector(0.5, 0.5), alpha: 0.5);
+      cannon = new Sprite("buffer", "buildinggun", Zei.images["cannongun"], position, 48, 48, anchor: new Vector2(0.5, 0.5), alpha: 0.5);
     }
     else if (type == "mortar") {
       maxHealth = game.debug == true ? 1 : 40;
@@ -173,7 +173,7 @@ class Building extends GameObject {
       needsEnergy = true;
     }
     
-    targetSymbol = new Rect("buffer", "targetsymbol", new Vector.empty(), new Vector(size * game.tileSize, size * game.tileSize), 1, new Color.green(), null, visible: false, anchor: new Vector(0.5, 0.5));
+    targetSymbol = new Rect("buffer", "targetsymbol", new Vector2.empty(), new Vector2(size * game.tileSize, size * game.tileSize), 1, new Color.green(), null, visible: false, anchor: new Vector2(0.5, 0.5));
     
     Connection.add(this);
   }
@@ -181,8 +181,8 @@ class Building extends GameObject {
   /**
    * Adds a building of a given [type] at the given [position].
    */
-  static Building add(Vector position, String type) {
-    position = position * 16 + new Vector(8, 8);
+  static Building add(Vector2 position, String type) {
+    position = position * 16 + new Vector2(8, 8);
     Building building = new Building(position, type);
     if (type == "base") base = building;
     Zei.addGameObject(building);
@@ -361,7 +361,7 @@ class Building extends GameObject {
     }
   }
   
-  static void reposition(Vector position) { 
+  static void reposition(Vector2 position) { 
     for (var building in Zei.gameObjects) {
       if (building is Building) {
         if (building.built && building.selected && building.canMove) {
@@ -372,9 +372,9 @@ class Building extends GameObject {
             building.rotating = false;
             building.weaponTargetPosition = null;
             building.status = "RISING";
-            building.moveTargetPosition = (position * game.tileSize) + new Vector(8, 8);
+            building.moveTargetPosition = (position * game.tileSize) + new Vector2(8, 8);
             building.targetSymbol.visible = true;
-            building.targetSymbol.position = (position * game.tileSize) + new Vector(8, 8);
+            building.targetSymbol.position = (position * game.tileSize) + new Vector2(8, 8);
             Connection.remove(building);
           }
         }
@@ -482,7 +482,7 @@ class Building extends GameObject {
       if (flightCounter <= 0) {
         flightCounter = 0;
         status = "IDLE";
-        scale = new Vector(1.0, 1.0);
+        scale = new Vector2(1.0, 1.0);
         targetSymbol.visible = false;
         updateDisplayObjects();
         Connection.add(this);
@@ -515,7 +515,7 @@ class Building extends GameObject {
 
       for (int i = -(size ~/ 2); i <= (size ~/ 2); i++) {
         for (int j = -(size ~/ 2); j <= -(size ~/ 2); j++) {
-          Vector tempPosition = position + new Vector(i * game.tileSize, j * game.tileSize);
+          Vector2 tempPosition = position + new Vector2(i * game.tileSize, j * game.tileSize);
           Tile tile = game.world.getTile(tempPosition);
           if (tile.creep > 0) {
             health -= tile.creep / 10;
@@ -534,9 +534,9 @@ class Building extends GameObject {
 
       for (int i = -weaponRadius; i <= weaponRadius; i++) {
         for (int j = -weaponRadius; j <= weaponRadius; j++) {
-          Vector tempPosition = position + new Vector(i * game.tileSize, j * game.tileSize);
+          Vector2 tempPosition = position + new Vector2(i * game.tileSize, j * game.tileSize);
           if (game.world.contains(tempPosition / game.tileSize)) {  
-            var distance = position.distanceTo(tempPosition + new Vector(8, 8));
+            var distance = position.distanceTo(tempPosition + new Vector2(8, 8));
             if (distance < game.tileSize * 10) {
               Tile tile = game.world.getTile(tempPosition);
               if (tile.creep > 0) {
@@ -597,11 +597,11 @@ class Building extends GameObject {
 
       for (int i = -5; i < 7; i++) {
         for (int j = -5; j < 7; j++) {
-          Vector tempPosition = position + new Vector(i * game.tileSize, j * game.tileSize);
+          Vector2 tempPosition = position + new Vector2(i * game.tileSize, j * game.tileSize);
           if (game.world.contains(tempPosition / game.tileSize)) {
             int tileHeight = game.world.getTile(tempPosition).height;
 
-            if (position.distanceTo(tempPosition + new Vector(8, 8)) < game.tileSize * 6) {
+            if (position.distanceTo(tempPosition + new Vector2(8, 8)) < game.tileSize * 6) {
               if (tileHeight == height) {
                 if (game.world.getTile(tempPosition).collector == this)
                   collectedEnergy += 1;
@@ -649,10 +649,10 @@ class Building extends GameObject {
       for (int j = -5; j < 7; j++) {
 
         var tiledPosition = game.real2tiled(position);
-        Vector positionCurrent = new Vector(tiledPosition.x + i, tiledPosition.y + j);
+        Vector2 positionCurrent = new Vector2(tiledPosition.x + i, tiledPosition.y + j);
 
         if (game.world.contains(positionCurrent)) {
-          Vector positionCurrentCenter = new Vector(positionCurrent.x * game.tileSize + (game.tileSize / 2), positionCurrent.y * game.tileSize + (game.tileSize / 2));
+          Vector2 positionCurrentCenter = new Vector2(positionCurrent.x * game.tileSize + (game.tileSize / 2), positionCurrent.y * game.tileSize + (game.tileSize / 2));
           int tileHeight = game.world.tiles[positionCurrent.x][positionCurrent.y].height;
 
           if (position.distanceTo(positionCurrentCenter) < game.tileSize * 6) {
@@ -667,7 +667,7 @@ class Building extends GameObject {
                   if (building is Building) {
                     if (building != this && building.type == "collector") {
                       int heightK = game.world.getTile(building.position).height;
-                      Vector centerBuildingK = building.position;
+                      Vector2 centerBuildingK = building.position;
                       if (centerBuildingK.distanceTo(positionCurrentCenter) < game.tileSize * 6) {
                         if (tileHeight == heightK) {
                           game.world.tiles[positionCurrent.x][positionCurrent.y].collector = building;
@@ -708,14 +708,14 @@ class Building extends GameObject {
           for (int i = -weaponRadius; i <= weaponRadius; i++) {
             for (int j = -weaponRadius; j <= weaponRadius; j++) {
 
-              Vector tilePosition = positionTiled + new Vector(i, j);
+              Vector2 tilePosition = positionTiled + new Vector2(i, j);
               
               if (game.world.contains(tilePosition) && game.world.tiles[tilePosition.x][tilePosition.y].terraformTarget > -1 && game.world.tiles[tilePosition.x][tilePosition.y].creep == 0) {
                 int tileHeight = game.world.tiles[tilePosition.x][tilePosition.y].height;
                 
-                if (tileHeight <= lowestTile && (tilePosition * game.tileSize + new Vector(8, 8)).distanceTo(position) <= weaponRadius * game.tileSize) {
+                if (tileHeight <= lowestTile && (tilePosition * game.tileSize + new Vector2(8, 8)).distanceTo(position) <= weaponRadius * game.tileSize) {
                   lowestTile = tileHeight;
-                  weaponTargetPosition = new Vector(tilePosition.x, tilePosition.y);
+                  weaponTargetPosition = new Vector2(tilePosition.x, tilePosition.y);
                 }
               }
             }
@@ -788,14 +788,14 @@ class Building extends GameObject {
           for (int i = -weaponRadius; i <= weaponRadius; i++) {
             for (int j = -weaponRadius; j <= weaponRadius; j++) {
 
-              Vector tilePosition = targetPositionTiled + new Vector(i, j);
+              Vector2 tilePosition = targetPositionTiled + new Vector2(i, j);
 
               // cannons can only shoot at tiles not higher than themselves
               if (game.world.contains(tilePosition) && game.world.tiles[tilePosition.x][tilePosition.y].creep > 0) {
                 int tileHeight = game.world.tiles[tilePosition.x][tilePosition.y].height;
                 if (tileHeight <= height) {
 
-                  num distance = (tilePosition * game.tileSize + new Vector(8, 8)).distanceTo(position);
+                  num distance = (tilePosition * game.tileSize + new Vector2(8, 8)).distanceTo(position);
 
                   if (distance <= pow(weaponRadius * game.tileSize, 2) && distance <= closestDistance) {
                     closestDistance = distance;
@@ -808,8 +808,8 @@ class Building extends GameObject {
 
           if (targets.length > 0) {
             var target = Zei.randomElementOfList(targets);
-            targetAngle = position.angleTo(new Vector(target.x * game.tileSize + game.tileSize / 2, target.y * game.tileSize + game.tileSize / 2)).floor();
-            weaponTargetPosition = new Vector(target.x, target.y);
+            targetAngle = position.angleTo(new Vector2(target.x * game.tileSize + game.tileSize / 2, target.y * game.tileSize + game.tileSize / 2)).floor();
+            weaponTargetPosition = new Vector2(target.x, target.y);
             rotating = true;
           }
         }
@@ -846,7 +846,7 @@ class Building extends GameObject {
             rotating = false;
             energy -= 1;
             operating = true;
-            Projectile.add(position, new Vector(weaponTargetPosition.x * game.tileSize + game.tileSize / 2, weaponTargetPosition.y * game.tileSize + game.tileSize / 2), targetAngle);
+            Projectile.add(position, new Vector2(weaponTargetPosition.x * game.tileSize + game.tileSize / 2, weaponTargetPosition.y * game.tileSize + game.tileSize / 2), targetAngle);
             Zei.playSound("laser", position, game.scroll, game.zoom);
           }
         }
@@ -856,24 +856,24 @@ class Building extends GameObject {
         energyCounter =- 200;
 
           // find most creep in range
-          Vector target = null;
+          Vector2 target = null;
           var highestCreep = 0;
           var tiledPosition = game.real2tiled(position);
           for (int i = tiledPosition.x - weaponRadius; i <= tiledPosition.x + weaponRadius; i++) {
             for (int j = tiledPosition.y - weaponRadius; j <= tiledPosition.y + weaponRadius; j++) {
-              if (game.world.contains(new Vector(i, j))) {
+              if (game.world.contains(new Vector2(i, j))) {
                 var distance = pow((i * game.tileSize + game.tileSize / 2) - position.x, 2) + pow((j * game.tileSize + game.tileSize / 2) - position.y, 2);
 
                 if (distance <= pow(weaponRadius * game.tileSize, 2) && game.world.tiles[i][j].creep > 0 && game.world.tiles[i][j].creep >= highestCreep) {
                   highestCreep = game.world.tiles[i][j].creep;
-                  target = new Vector(i, j);
+                  target = new Vector2(i, j);
                 }
               }
             }
           }
           if (target != null) {
             Zei.playSound("shot", position, game.scroll, game.zoom);
-            Shell.add(position, new Vector(target.x * game.tileSize + game.tileSize / 2, target.y * game.tileSize + game.tileSize / 2));
+            Shell.add(position, new Vector2(target.x * game.tileSize + game.tileSize / 2, target.y * game.tileSize + game.tileSize / 2));
             energy -= 1;
           }
         }
@@ -894,7 +894,7 @@ class Building extends GameObject {
         if (building.built && building.selected && building.canMove) {
           game.mouse.hideCursor();
           
-          Vector positionI = game.tiled2screen(game.hoveredTile) + new Vector(8 * game.zoom, 8 * game.zoom);
+          Vector2 positionI = game.tiled2screen(game.hoveredTile) + new Vector2(8 * game.zoom, 8 * game.zoom);
      
           game.drawRangeBoxes(game.hoveredTile, building);
      
@@ -904,7 +904,7 @@ class Building extends GameObject {
               if (building2 is Building) {
                 if (building != building2) {
                   if (building.type == "base" || building2.type == "collector" || building2.type == "relay" || building2.type == "base") {
-                    Vector positionJ = game.real2screen(building2.position);
+                    Vector2 positionJ = game.real2screen(building2.position);
     
                     int allowedDistance = 10 * game.tileSize;
                     if (building2.type == "relay" && building.type == "relay") {
@@ -939,7 +939,7 @@ class Building extends GameObject {
     
     for (var building in Zei.gameObjects) {
       if (building is Building) {
-        Vector realPosition = game.real2screen(building.position);
+        Vector2 realPosition = game.real2screen(building.position);
     
         if (Zei.renderer["buffer"].isVisible(building.sprite)) {
           // draw energy bar
@@ -980,7 +980,7 @@ class Building extends GameObject {
         // draw various stuff when operating
         if (building.operating) {
           if (building.type == "analyzer") {
-            Vector targetPosition = game.real2screen(building.weaponTargetPosition);
+            Vector2 targetPosition = game.real2screen(building.weaponTargetPosition);
             context
               ..strokeStyle = '#00f'
               ..lineWidth = 5 * game.zoom
@@ -993,7 +993,7 @@ class Building extends GameObject {
               ..stroke();
           }
           else if (building.type == "beam") {
-            Vector targetPosition = game.real2screen(building.weaponTargetPosition);
+            Vector2 targetPosition = game.real2screen(building.weaponTargetPosition);
             context
               ..strokeStyle = '#f00'
               ..lineWidth = 5 * game.zoom
@@ -1013,7 +1013,7 @@ class Building extends GameObject {
               ..restore();
           }
           else if (building.type == "terp") {
-            Vector targetPosition = game.tiled2screen(building.weaponTargetPosition);
+            Vector2 targetPosition = game.tiled2screen(building.weaponTargetPosition);
     
             context
               ..strokeStyle = '#f00'

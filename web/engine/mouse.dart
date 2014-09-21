@@ -1,10 +1,10 @@
 part of zei;
 
 class Mouse {
-  Vector position = new Vector.empty();
+  Vector2 position = new Vector2.empty();
   bool overCanvas = true;
   int buttonPressed = 0;
-  Vector dragStart;
+  Vector2 dragStart;
   Renderer renderer;
   String cursor;
   

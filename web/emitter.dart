@@ -7,10 +7,10 @@ class Emitter extends GameObject {
   int counter = 0;
 
   Emitter(position, this.strength) {
-    sprite = new Sprite("buffer", "emitter", Zei.images["emitter"], position, 48, 48, anchor: new Vector(0.5, 0.5));
+    sprite = new Sprite("buffer", "emitter", Zei.images["emitter"], position, 48, 48, anchor: new Vector2(0.5, 0.5));
   }
   
-  static Emitter add(Vector position, int strength) {
+  static Emitter add(Vector2 position, int strength) {
     Emitter emitter = new Emitter(position, strength);
     Zei.addGameObject(emitter);
     return emitter;
@@ -31,12 +31,12 @@ class Emitter extends GameObject {
   }
   
   static void find(Building building) {
-    Vector center = building.sprite.position;
+    Vector2 center = building.sprite.position;
     
     if (building.weaponTargetPosition == null && building.energy > 0) {
       for (var emitter in Zei.gameObjects) {
         if (emitter is Emitter) {
-          Vector emitterCenter = emitter.sprite.position;
+          Vector2 emitterCenter = emitter.sprite.position;
   
           num distance = pow(emitterCenter.x - center.x, 2) + pow(emitterCenter.y - center.y, 2);
   

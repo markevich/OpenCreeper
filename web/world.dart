@@ -2,12 +2,12 @@ part of creeper;
 
 class World extends GameObject {
   List tiles;
-  Vector size;
+  Vector2 size;
   int creeperCounter;
   static bool creeperDirty = true;
   
   World(int seed) {
-    size = new Vector(Zei.randomInt(64, 127, seed), Zei.randomInt(64, 127, seed));
+    size = new Vector2(Zei.randomInt(64, 127, seed), Zei.randomInt(64, 127, seed));
     creeperCounter = 0;
     //Zei.gameObjects.add(this);
   }
@@ -37,11 +37,11 @@ class World extends GameObject {
   /**
    * Checks if a given [position] in world coordinates is contained within the world
    */
-  bool contains(Vector position) {
+  bool contains(Vector2 position) {
     return (position.x > -1 && position.x < size.x && position.y > -1 && position.y < size.y);
   }
   
-  Tile getTile(Vector position) {
+  Tile getTile(Vector2 position) {
     return tiles[position.x ~/ game.tileSize][position.y ~/ game.tileSize];
   }  
   

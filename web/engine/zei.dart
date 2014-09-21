@@ -96,7 +96,7 @@ class Zei {
     });
   }
 
-  static void playSound(String name, [Vector position, Vector center, double zoom]) { // position is in real coordinates
+  static void playSound(String name, [Vector2 position, Vector2 center, double zoom]) { // position is in real coordinates
     num volume = 1;
     
     // given a position adjust sound volume based on it and the current zoom
@@ -165,7 +165,7 @@ class Zei {
   }
   
   // converts an angle (in degrees) to a Vector
-  static Vector convertToVector(num angle) {
-    return new Vector(cos(Zei.degToRad(angle)), sin(Zei.degToRad(angle)));
+  static Vector2 convertToVector(num angle) {
+    return new Vector2(cos(Zei.degToRad(angle)), sin(Zei.degToRad(angle)));
   }
 }

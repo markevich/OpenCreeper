@@ -16,7 +16,7 @@ class Tile {
     terraformNumber = null;
   }
   
-  void flagTerraform(Vector position) {   
+  void flagTerraform(Vector2 position) {   
     if (height != game.terraformingHeight) {
       terraformTarget = game.terraformingHeight;
       terraformProgress = 0;

@@ -8,17 +8,17 @@ class UserInterface {
   }
   
   void setupSymbols() {
-    UISymbol.add(new Vector(0, 0), new Building.template("cannon"), KeyCode.Q);
-    UISymbol.add(new Vector(81, 0), new Building.template("collector"), KeyCode.W);
-    UISymbol.add(new Vector(2 * 81, 0), new Building.template("reactor"), KeyCode.E);
-    UISymbol.add(new Vector(3 * 81, 0), new Building.template("storage"), KeyCode.R);
-    UISymbol.add(new Vector(4 * 81, 0), new Building.template("shield"), KeyCode.T);
-    UISymbol.add(new Vector(5 * 81, 0), new Building.template("analyzer"), KeyCode.Z);
-    UISymbol.add(new Vector(0, 56), new Building.template("relay"), KeyCode.A);
-    UISymbol.add(new Vector(81, 56), new Building.template("mortar"), KeyCode.S);
-    UISymbol.add(new Vector(2 * 81, 56), new Building.template("beam"), KeyCode.D);
-    UISymbol.add(new Vector(3 * 81, 56), new Building.template("bomber"), KeyCode.F);
-    UISymbol.add(new Vector(4 * 81, 56), new Building.template("terp"), KeyCode.G);
+    UISymbol.add(new Vector2(0, 0), new Building.template("cannon"), KeyCode.Q);
+    UISymbol.add(new Vector2(81, 0), new Building.template("collector"), KeyCode.W);
+    UISymbol.add(new Vector2(2 * 81, 0), new Building.template("reactor"), KeyCode.E);
+    UISymbol.add(new Vector2(3 * 81, 0), new Building.template("storage"), KeyCode.R);
+    UISymbol.add(new Vector2(4 * 81, 0), new Building.template("shield"), KeyCode.T);
+    UISymbol.add(new Vector2(5 * 81, 0), new Building.template("analyzer"), KeyCode.Z);
+    UISymbol.add(new Vector2(0, 56), new Building.template("relay"), KeyCode.A);
+    UISymbol.add(new Vector2(81, 56), new Building.template("mortar"), KeyCode.S);
+    UISymbol.add(new Vector2(2 * 81, 56), new Building.template("beam"), KeyCode.D);
+    UISymbol.add(new Vector2(3 * 81, 56), new Building.template("bomber"), KeyCode.F);
+    UISymbol.add(new Vector2(4 * 81, 56), new Building.template("terp"), KeyCode.G);
   }
   
   /**

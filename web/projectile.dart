@@ -1,16 +1,16 @@
 part of creeper;
 
 class Projectile extends GameObject {
-  Vector targetPosition;
+  Vector2 targetPosition;
   bool remove = false;
   Sprite sprite;
   static num baseSpeed = 7;
 
   Projectile(position, this.targetPosition, rotation) {
-    sprite = new Sprite("buffer", "projectile", Zei.images["projectile"], position, 16, 16, anchor: new Vector(0.5, 0.5), rotation: rotation);
+    sprite = new Sprite("buffer", "projectile", Zei.images["projectile"], position, 16, 16, anchor: new Vector2(0.5, 0.5), rotation: rotation);
   }
   
-  static void add(Vector position, Vector targetPosition, num rotation) {
+  static void add(Vector2 position, Vector2 targetPosition, num rotation) {
     Projectile projectile = new Projectile(position, targetPosition, rotation);
     Zei.addGameObject(projectile);
   }
@@ -36,14 +36,14 @@ class Projectile extends GameObject {
 
       Smoke.add(targetPosition);
       
-      Vector targetPositionTiled = game.real2tiled(targetPosition);
+      Vector2 targetPositionTiled = game.real2tiled(targetPosition);
       for (int i = -1; i <= 1; i++) {
         for (int j = -1; j <= 1; j++) {
 
-          Vector tilePosition = targetPositionTiled + new Vector(i, j);
+          Vector2 tilePosition = targetPositionTiled + new Vector2(i, j);
 
           if (game.world.contains(tilePosition)) {
-            if ((tilePosition * game.tileSize + new Vector(8, 8)).distanceTo(targetPosition) <= game.tileSize * 4) {
+            if ((tilePosition * game.tileSize + new Vector2(8, 8)).distanceTo(targetPosition) <= game.tileSize * 4) {
               Tile tile = game.world.getTile(tilePosition * game.tileSize);
               tile.creep -= 1;
               if (tile.creep < 0)

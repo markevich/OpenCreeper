@@ -5,11 +5,11 @@ class Sporetower extends GameObject {
   int sporeCounter = 0;
 
   Sporetower(position) {
-    sprite = new Sprite("buffer", "sporetower", Zei.images["sporetower"], position, 48, 48, anchor: new Vector(0.5, 0.5));
+    sprite = new Sprite("buffer", "sporetower", Zei.images["sporetower"], position, 48, 48, anchor: new Vector2(0.5, 0.5));
     reset();
   }
    
-  static Sporetower add(Vector position) {
+  static Sporetower add(Vector2 position) {
     Sporetower sporetower = new Sporetower(position);
     Zei.addGameObject(sporetower);
     return sporetower;

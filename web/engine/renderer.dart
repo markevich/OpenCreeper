@@ -5,7 +5,7 @@ class Renderer {
   CanvasRenderingContext2D context;
   int top, left, bottom, right;
   double zoom = 1.0;
-  Vector position = new Vector.empty();
+  Vector2 position = new Vector2.empty();
   List<Layer> layers = new List();
   Mouse mouse;
 
@@ -49,7 +49,7 @@ class Renderer {
     this.zoom = zoom;
   }
   
-  void updatePosition(Vector position) {
+  void updatePosition(Vector2 position) {
     this.position = position;
   }
   
@@ -110,7 +110,7 @@ class Renderer {
                                        displayObject.size.y * 16);       
       return renderer.intersects(object); 
     } else if (displayObject is Circle) {    
-      Vector size = new Vector(displayObject.radius * displayObject.scale, displayObject.radius * displayObject.scale);     
+      Vector2 size = new Vector2(displayObject.radius * displayObject.scale, displayObject.radius * displayObject.scale);     
       Rectangle object = new Rectangle(displayObject.position.x - (size.x * 16 / 2),
                                        displayObject.position.y - (size.y * 16 / 2),
                                        size.x * 16,
@@ -125,8 +125,8 @@ class Renderer {
     return false;
   }
   
-  Vector relativePosition(Vector vector) {
-   return new Vector(
+  Vector2 relativePosition(Vector2 vector) {
+   return new Vector2(
        view.width / 2 + (vector.x - position.x) * zoom,
        view.height / 2 + (vector.y - position.y) * zoom);
   }
@@ -140,7 +140,7 @@ class Renderer {
 
             // render sprite
             if (displayObject is Sprite) {
-              Vector relativePos = relativePosition(displayObject.position);
+              Vector2 relativePos = relativePosition(displayObject.position);
 
               if (displayObject.alpha != 1.0)
                 context.globalAlpha = displayObject.alpha;
@@ -191,7 +191,7 @@ class Renderer {
 
             // render rectangle
             else if (displayObject is Rect) {
-              Vector relativePos = relativePosition(displayObject.position);
+              Vector2 relativePos = relativePosition(displayObject.position);
 
               context.lineWidth = displayObject.lineWidth * zoom;
               if (displayObject.rotation != 0) {
@@ -233,7 +233,7 @@ class Renderer {
 
             // render circle
             else if (displayObject is Circle) {
-              Vector relativePos = relativePosition(displayObject.position);
+              Vector2 relativePos = relativePosition(displayObject.position);
 
               context.lineWidth = displayObject.lineWidth * zoom;
               if (displayObject.rotation != 0) {
@@ -275,8 +275,8 @@ class Renderer {
 
             // render line
             else if (displayObject is Line) {
-              Vector relativePosFrom = relativePosition(displayObject.from);
-              Vector relativePosTo = relativePosition(displayObject.to);
+              Vector2 relativePosFrom = relativePosition(displayObject.from);
+              Vector2 relativePosTo = relativePosition(displayObject.to);
 
               context.lineCap = 'round';
               context.lineWidth = displayObject.lineWidth * zoom;

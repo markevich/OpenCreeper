@@ -1,7 +1,7 @@
 part of creeper;
 
 class Spore extends GameObject {
-  Vector targetPosition;
+  Vector2 targetPosition;
   bool remove = false;
   num health = 500;
   int trailCounter = 0;
@@ -9,10 +9,10 @@ class Spore extends GameObject {
   static final int baseSpeed = 1;
 
   Spore(position, this.targetPosition) {   
-    sprite = new Sprite("buffer", "spore", Zei.images["spore"], position, 32, 32, anchor: new Vector(0.5, 0.5));
+    sprite = new Sprite("buffer", "spore", Zei.images["spore"], position, 32, 32, anchor: new Vector2(0.5, 0.5));
   }
    
-  static void add(Vector position, Vector targetPosition) {
+  static void add(Vector2 position, Vector2 targetPosition) {
     Spore spore = new Spore(position, targetPosition);
     Zei.addGameObject(spore);
   }
@@ -51,7 +51,7 @@ class Spore extends GameObject {
     trailCounter++;
     if (trailCounter == 10) {
       trailCounter = 0;
-      Smoke.add(new Vector(sprite.position.x, sprite.position.y - 16));
+      Smoke.add(new Vector2(sprite.position.x, sprite.position.y - 16));
     }
     sprite.rotate(10);
 
@@ -60,16 +60,16 @@ class Spore extends GameObject {
     if (sprite.position == targetPosition) {
       // if the target is reached explode and remove
       remove = true;
-      Vector targetPositionTiled = game.real2tiled(targetPosition);
+      Vector2 targetPositionTiled = game.real2tiled(targetPosition);
       Zei.playSound("explosion", targetPosition, game.scroll, game.zoom);
 
       for (int i = -2; i <= 2; i++) {
         for (int j = -2; j <= 2; j++) {
           
-          Vector tilePosition = targetPositionTiled + new Vector(i, j);
+          Vector2 tilePosition = targetPositionTiled + new Vector2(i, j);
           
           if (game.world.contains(tilePosition)) {
-            if ((tilePosition * game.tileSize + new Vector(8, 8)).distanceTo(targetPosition) <= game.tileSize * 2) {
+            if ((tilePosition * game.tileSize + new Vector2(8, 8)).distanceTo(targetPosition) <= game.tileSize * 2) {
               Tile tile = game.world.getTile(tilePosition * game.tileSize);             
               tile.creep += .5;
             }

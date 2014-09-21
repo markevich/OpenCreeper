@@ -7,9 +7,9 @@ class Game {
   Timer running;
   String mode;
   bool paused = false, won = false;
-  List<Vector> ghosts = new List<Vector>();
+  List<Vector2> ghosts = new List<Vector2>();
   World world;
-  Vector scroll = new Vector.empty(), mouseScrolling = new Vector.empty(), keyScrolling = new Vector.empty(), oldHoveredTile = new Vector.empty(), hoveredTile = new Vector.empty();
+  Vector2 scroll = new Vector2.empty(), mouseScrolling = new Vector2.empty(), keyScrolling = new Vector2.empty(), oldHoveredTile = new Vector2.empty(), hoveredTile = new Vector2.empty();
   Stopwatch stopwatch = new Stopwatch();
   Line tfLine1, tfLine2, tfLine3, tfLine4;
   Sprite tfNumber;
@@ -150,18 +150,18 @@ class Game {
     querySelector('#time').innerHtml = 'Time: 00:00';
     
     // create terraform lines and number used when terraforming is enabled
-    tfLine1 = new Line("buffer", "terraform", new Vector.empty(), new Vector.empty(), 1, new Color.white(), visible: false);
-    tfLine2 = new Line("buffer", "terraform", new Vector.empty(), new Vector.empty(), 1, new Color.white(), visible: false);
-    tfLine3 = new Line("buffer", "terraform", new Vector.empty(), new Vector.empty(), 1, new Color.white(), visible: false);
-    tfLine4 = new Line("buffer", "terraform", new Vector.empty(), new Vector.empty(), 1, new Color.white(), visible: false);
+    tfLine1 = new Line("buffer", "terraform", new Vector2.empty(), new Vector2.empty(), 1, new Color.white(), visible: false);
+    tfLine2 = new Line("buffer", "terraform", new Vector2.empty(), new Vector2.empty(), 1, new Color.white(), visible: false);
+    tfLine3 = new Line("buffer", "terraform", new Vector2.empty(), new Vector2.empty(), 1, new Color.white(), visible: false);
+    tfLine4 = new Line("buffer", "terraform", new Vector2.empty(), new Vector2.empty(), 1, new Color.white(), visible: false);
     
-    tfNumber = new Sprite("buffer", "terraform", Zei.images["numbers"], new Vector.empty(), 16, 16, animated: true, frame: terraformingHeight, visible: false);
+    tfNumber = new Sprite("buffer", "terraform", Zei.images["numbers"], new Vector2.empty(), 16, 16, animated: true, frame: terraformingHeight, visible: false);
     
     // create target cursor used when a ship is selected
-    targetCursor = new Sprite("buffer", "targetsymbol", Zei.images["targetcursor"], new Vector.empty(), 48, 48, visible: false, anchor: new Vector(0.5, 0.5));
+    targetCursor = new Sprite("buffer", "targetsymbol", Zei.images["targetcursor"], new Vector2.empty(), 48, 48, visible: false, anchor: new Vector2(0.5, 0.5));
     
     // rectangle that is drawn when repositioning a building
-    repositionRect = new Rect("buffer", "targetsymbol", new Vector(0, 0), new Vector(32, 32), 10, new Color.red(), null, visible: false);
+    repositionRect = new Rect("buffer", "targetsymbol", new Vector2(0, 0), new Vector2(32, 32), 10, new Color.red(), null, visible: false);
   }
   
   void updateTime(Timer _) {
@@ -276,13 +276,13 @@ class Game {
     world.createRandomLandscape();
 
     // create random base
-    Vector randomPosition = new Vector(
+    Vector2 randomPosition = new Vector2(
         Zei.randomInt(4, world.size.x - 5, seed + 1),
         Zei.randomInt(4, world.size.y - 5, seed + 1));
 
     scroll = randomPosition;
     for (var renderer in zoomableRenderers) {
-      Zei.renderer[renderer].updatePosition(new Vector(scroll.x * tileSize, scroll.y * tileSize));
+      Zei.renderer[renderer].updatePosition(new Vector2(scroll.x * tileSize, scroll.y * tileSize));
     }
 
     Building building = Building.add(randomPosition, "base");
@@ -292,7 +292,7 @@ class Game {
       height = 0;
     for (int i = -4; i <= 4; i++) {
       for (int j = -4; j <= 4; j++) {
-        this.world.getTile(building.position + new Vector(i * tileSize, j * tileSize)).height = height;
+        this.world.getTile(building.position + new Vector2(i * tileSize, j * tileSize)).height = height;
       }
     }
 
@@ -300,7 +300,7 @@ class Game {
       // create random emitters
       int number = Zei.randomInt(2, 3, seed);
       for (var l = 0; l < number; l++) {    
-        randomPosition = new Vector(
+        randomPosition = new Vector2(
             Zei.randomInt(1, world.size.x - 2, seed + Zei.randomInt(1, 1000, seed + l)) * tileSize + 8,
             Zei.randomInt(1, world.size.y - 2, seed + Zei.randomInt(1, 1000, seed + 1 + l)) * tileSize + 8);
     
@@ -311,7 +311,7 @@ class Game {
           height = 0;
         for (int i = -1; i <= 1; i++) {
           for (int j = -1; j <= 1; j++) {
-            world.getTile(emitter.sprite.position + new Vector(i * tileSize, j * tileSize)).height = height;
+            world.getTile(emitter.sprite.position + new Vector2(i * tileSize, j * tileSize)).height = height;
           }
         }
       }
@@ -319,7 +319,7 @@ class Game {
       // create random sporetowers
       number = Zei.randomInt(1, 2, seed + 1);
       for (var l = 0; l < number; l++) {
-        randomPosition = new Vector(
+        randomPosition = new Vector2(
             Zei.randomInt(1, world.size.x - 2, seed + 3 + Zei.randomInt(1, 1000, seed + 2 + l)) * tileSize + 8,
             Zei.randomInt(1, world.size.y - 2, seed + 3 + Zei.randomInt(1, 1000, seed + 3 + l)) * tileSize + 8);
     
@@ -330,7 +330,7 @@ class Game {
           height = 0;
         for (int i = -1; i <= 1; i++) {
           for (int j = -1; j <= 1; j++) {
-            world.getTile(sporetower.sprite.position + new Vector(i * tileSize, j * tileSize)).height = height;
+            world.getTile(sporetower.sprite.position + new Vector2(i * tileSize, j * tileSize)).height = height;
           }
         }
       }
@@ -509,7 +509,7 @@ class Game {
       int iS = tiles[i].x;
       int jS = tiles[i].y;
 
-      if (world.contains(new Vector(iS, jS))) {
+      if (world.contains(new Vector2(iS, jS))) {
         // recalculate index
         int index = -1;
         int indexAbove = -1;
@@ -561,7 +561,7 @@ class Game {
             tempContext[t].fillStyle = pattern;
   
             tempContext[t].save();
-            Vector translation = new Vector((iS * tileSize).floor(), (jS * tileSize).floor());
+            Vector2 translation = new Vector2((iS * tileSize).floor(), (jS * tileSize).floor());
             tempContext[t].translate(-translation.x, -translation.y);
   
             tempContext[t].fillRect(translation.x, translation.y, tileSize, tileSize);
@@ -599,7 +599,7 @@ class Game {
   /**
    * Checks if a [building] can be placed on a given [position]. // tileposition
    */
-  bool canBePlaced(Vector position, Building building) {
+  bool canBePlaced(Vector2 position, Building building) {
 
     if (game.world.contains(position)) {
       int height = game.world.tiles[position.x][position.y].height;
@@ -617,7 +617,7 @@ class Game {
       // check if all tiles have the same height and are not corners
       for (int i = position.x - (building.size ~/ 2); i <= position.x + (building.size ~/ 2); i++) {
         for (int j = position.y - (building.size ~/ 2); j <= position.y + (building.size ~/ 2); j++) {
-          if (world.contains(new Vector(i, j))) {
+          if (world.contains(new Vector2(i, j))) {
             int tileHeight = game.world.tiles[i][j].height;
             if (tileHeight < 0 || tileHeight != height) {
               return false;
@@ -672,7 +672,7 @@ class Game {
 
     if (mouseScrolling.x != 0 || mouseScrolling.y != 0 || keyScrolling.x != 0 || keyScrolling.y != 0) {
       for (var renderer in zoomableRenderers) {
-        Zei.renderer[renderer].updatePosition(new Vector(scroll.x * tileSize, scroll.y * tileSize));
+        Zei.renderer[renderer].updatePosition(new Vector2(scroll.x * tileSize, scroll.y * tileSize));
       }
       copyTerrain();
       drawCollection();
@@ -684,12 +684,12 @@ class Game {
   /**
    * Draws the range boxes around the [position] of a building.
    */
-  void drawRangeBoxes(Vector position, Building building) {
+  void drawRangeBoxes(Vector2 position, Building building) {
     CanvasRenderingContext2D context = Zei.renderer["buffer"].context;
     
     if (canBePlaced(position, building) && (building.type == "collector" || building.type == "cannon" || building.type == "mortar" || building.type == "shield" || building.type == "beam" || building.type == "terp" || building.type == "analyzer")) {
 
-      Vector positionCenter = new Vector(position.x * tileSize + (tileSize / 2), position.y * tileSize + (tileSize / 2));
+      Vector2 positionCenter = new Vector2(position.x * tileSize + (tileSize / 2), position.y * tileSize + (tileSize / 2));
       int positionHeight = game.world.tiles[position.x][position.y].height;
       
       context.save();
@@ -698,11 +698,11 @@ class Game {
       for (int i = -building.weaponRadius; i <= building.weaponRadius; i++) {
         for (int j = -building.weaponRadius; j <= building.weaponRadius; j++) {
 
-          Vector positionCurrent = position + new Vector(i, j);
+          Vector2 positionCurrent = position + new Vector2(i, j);
 
           if (world.contains(positionCurrent)) {
-            Vector positionCurrentCenter = new Vector(positionCurrent.x * tileSize + (tileSize / 2), positionCurrent.y * tileSize + (tileSize / 2));
-            Vector drawPositionCurrent = game.tiled2screen(positionCurrent);
+            Vector2 positionCurrentCenter = new Vector2(positionCurrent.x * tileSize + (tileSize / 2), positionCurrent.y * tileSize + (tileSize / 2));
+            Vector2 drawPositionCurrent = game.tiled2screen(positionCurrent);
             
             int positionCurrentHeight = game.world.tiles[positionCurrent.x][positionCurrent.y].height;
 
@@ -735,7 +735,7 @@ class Game {
     for (int i = -timesX; i <= timesX; i++) {
       for (int j = -timesY; j <= timesY; j++) {
 
-        Vector position = new Vector(i + scroll.x, j + scroll.y);
+        Vector2 position = new Vector2(i + scroll.x, j + scroll.y);
 
         if (world.contains(position)) {
           if (world.tiles[position.x][position.y].collector != null) {
@@ -775,7 +775,7 @@ class Game {
     for (int i = -timesX; i <= timesX; i++) {
       for (int j = -timesY; j <= timesY; j++) {
 
-        Vector position = new Vector(i + scroll.x, j + scroll.y);
+        Vector2 position = new Vector2(i + scroll.x, j + scroll.y);
         
         if (world.contains(position)) {
           
@@ -858,8 +858,8 @@ class Game {
   
             repositionRect.visible = true;
              
-            repositionRect.position = new Vector(hoveredTile.x * tileSize - (building.size * tileSize / 2) + 8, hoveredTile.y * tileSize - (building.size * tileSize / 2) + 8);
-            repositionRect.size = new Vector(building.size * tileSize, building.size * tileSize);
+            repositionRect.position = new Vector2(hoveredTile.x * tileSize - (building.size * tileSize / 2) + 8, hoveredTile.y * tileSize - (building.size * tileSize / 2) + 8);
+            repositionRect.size = new Vector2(building.size * tileSize, building.size * tileSize);
             if (canBePlaced)
               repositionRect.fillColor = new Color(0, 255, 0, 0.5);
             else
@@ -871,22 +871,22 @@ class Game {
       // update terraform info
       if (world.contains(hoveredTile)) {   
         if (mode == "TERRAFORM") {
-          Vector drawPosition = hoveredTile * tileSize;
+          Vector2 drawPosition = hoveredTile * tileSize;
           tfLine1
-            ..from = new Vector(0, drawPosition.y)
-            ..to = new Vector(world.size.y * tileSize, drawPosition.y)
+            ..from = new Vector2(0, drawPosition.y)
+            ..to = new Vector2(world.size.y * tileSize, drawPosition.y)
             ..visible = true;
           tfLine2
-            ..from = new Vector(0, drawPosition.y + tileSize)
-            ..to = new Vector(world.size.y * tileSize, drawPosition.y + tileSize)
+            ..from = new Vector2(0, drawPosition.y + tileSize)
+            ..to = new Vector2(world.size.y * tileSize, drawPosition.y + tileSize)
             ..visible = true;
           tfLine3
-            ..from = new Vector(drawPosition.x, 0)
-            ..to = new Vector(drawPosition.x, world.size.y * tileSize)
+            ..from = new Vector2(drawPosition.x, 0)
+            ..to = new Vector2(drawPosition.x, world.size.y * tileSize)
             ..visible = true;
           tfLine4
-            ..from = new Vector(drawPosition.x + tileSize, 0)
-            ..to = new Vector(drawPosition.x + tileSize, world.size.y * tileSize)
+            ..from = new Vector2(drawPosition.x + tileSize, 0)
+            ..to = new Vector2(drawPosition.x + tileSize, world.size.y * tileSize)
             ..visible = true;
           tfNumber
             ..position = hoveredTile * tileSize
@@ -898,7 +898,7 @@ class Game {
           tfLine4.visible = false;
           tfNumber.visible = false;
         }      
-        targetCursor.position = (hoveredTile * tileSize) + new Vector(8, 8);
+        targetCursor.position = (hoveredTile * tileSize) + new Vector2(8, 8);
       } else {
         tfLine1.visible = false;
         tfLine2.visible = false;
@@ -913,9 +913,9 @@ class Game {
       // calculate multiple ghosts when dragging
       if (mouse.dragStart != null && UISymbol.activeSymbol != null) {
         
-        Vector start = mouse.dragStart;
-        Vector end = hoveredTile;
-        Vector delta = end - start;
+        Vector2 start = mouse.dragStart;
+        Vector2 end = hoveredTile;
+        Vector2 delta = end - start;
         num distance = start.distanceTo(end);
         
         num buildingDistance = 3;
@@ -929,7 +929,7 @@ class Game {
         ghosts.add(start);
         
         for (int i = 1; i < times; i++) {
-          Vector ghostPosition = new Vector(
+          Vector2 ghostPosition = new Vector2(
               (start.x + (delta.x / distance) * i * buildingDistance).floor(),
               (start.y + (delta.y / distance) * i * buildingDistance).floor());
           
@@ -960,8 +960,8 @@ class Game {
       CanvasRenderingContext2D context = Zei.renderer["buffer"].context;
        
       for (int i = 0; i < ghosts.length; i++) {
-        Vector drawPosition = game.tiled2screen(ghosts[i]);
-        Vector ghostICenter = drawPosition + new Vector(8 * zoom, 8 * zoom);
+        Vector2 drawPosition = game.tiled2screen(ghosts[i]);
+        Vector2 ghostICenter = drawPosition + new Vector2(8 * zoom, 8 * zoom);
   
         drawRangeBoxes(ghosts[i], UISymbol.activeSymbol.building);
   
@@ -994,7 +994,7 @@ class Game {
               if (building is Building) {
                 if (UISymbol.activeSymbol.building.type == "collector" || UISymbol.activeSymbol.building.type == "relay" ||
                     building.type == "collector" || building.type == "relay" || building.type == "base") {
-                  Vector buildingCenter = game.real2screen(building.position);
+                  Vector2 buildingCenter = game.real2screen(building.position);
   
                   int allowedDistance = 10 * tileSize;
                   if (building.type == "relay" && UISymbol.activeSymbol.building.type == "relay") {
@@ -1020,14 +1020,14 @@ class Game {
             for (int j = 0; j < ghosts.length; j++) {
               if (j != i) {
                 if (UISymbol.activeSymbol.building.type == "collector" || UISymbol.activeSymbol.building.type == "relay") {
-                  Vector ghostKCenter = game.tiled2screen(ghosts[j]) + new Vector(8 * game.zoom, 8 * game.zoom);
+                  Vector2 ghostKCenter = game.tiled2screen(ghosts[j]) + new Vector2(8 * game.zoom, 8 * game.zoom);
 
                   int allowedDistance = 10 * tileSize;
                   if (UISymbol.activeSymbol.building.type == "relay") {
                     allowedDistance = 20 * tileSize;
                   }
 
-                  Vector ghostJCenter = drawPosition + new Vector(8 * game.zoom, 8 * game.zoom);
+                  Vector2 ghostJCenter = drawPosition + new Vector2(8 * game.zoom, 8 * game.zoom);
                   if (ghostKCenter.distanceTo(ghostJCenter) <= allowedDistance * zoom) {
                     context
                       ..strokeStyle = '#000'
@@ -1078,22 +1078,22 @@ class Game {
   }
   
   // converts tile coordinates to canvas coordinates, 5 usages
-  Vector tiled2screen(Vector vector) {
-   return new Vector(
+  Vector2 tiled2screen(Vector2 vector) {
+   return new Vector2(
        Zei.renderer["main"].view.width / 2 + (vector.x - game.scroll.x) * game.tileSize * game.zoom,
        Zei.renderer["main"].view.height / 2 + (vector.y - game.scroll.y) * game.tileSize * game.zoom);
   }
   
   // converts full coordinates to canvas coordinates, 5 usages
-  Vector real2screen(Vector vector) {
-   return new Vector(
+  Vector2 real2screen(Vector2 vector) {
+   return new Vector2(
        Zei.renderer["main"].view.width / 2 + (vector.x - game.scroll.x * game.tileSize) * game.zoom,
        Zei.renderer["main"].view.height / 2 + (vector.y - game.scroll.y * game.tileSize) * game.zoom);
   }
   
   // converts full coordinates to tile coordinates, 9 usages
-  Vector real2tiled(Vector vector) {
-   return new Vector(
+  Vector2 real2tiled(Vector2 vector) {
+   return new Vector2(
        vector.x ~/ game.tileSize,
        vector.y ~/ game.tileSize);
   }

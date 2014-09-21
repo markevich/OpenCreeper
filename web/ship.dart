@@ -1,7 +1,7 @@
 part of creeper;
 
 class Ship extends GameObject {
-  Vector velocity = new Vector(0, 0), targetPosition = new Vector(0, 0);
+  Vector2 velocity = new Vector2(0, 0), targetPosition = new Vector2(0, 0);
   String type, status = "IDLE"; // ATTACKING, RETURNING, RISING, FALLING
   bool remove = false, hovered = false, selected = false;
   int maxEnergy = 15, energy = 0, trailCounter = 0, weaponCounter = 0, flightCounter = 0;
@@ -12,13 +12,13 @@ class Ship extends GameObject {
   static final int baseSpeed = 1;
 
   Ship(position, imageID, this.type, this.home) {
-    sprite = new Sprite("buffer", "ship", Zei.images[imageID], position, 48, 48, anchor: new Vector(0.5, 0.5));
+    sprite = new Sprite("buffer", "ship", Zei.images[imageID], position, 48, 48, anchor: new Vector2(0.5, 0.5));
     selectedCircle = new Circle("buffer", "selectedcircle", position, 24, 2, null, new Color.white(), visible: false);
-    targetSymbol = new Sprite("buffer", "targetsymbol", Zei.images["targetcursor"], position, 48, 48, visible: false, anchor: new Vector(0.5, 0.5), alpha: 0.5);
-    energyRect = new Rect("buffer", "energybar", new Vector(position.x - 22, position.y - 20), new Vector(44 / maxEnergy * energy, 3), 1, new Color.red(), null);
+    targetSymbol = new Sprite("buffer", "targetsymbol", Zei.images["targetcursor"], position, 48, 48, visible: false, anchor: new Vector2(0.5, 0.5), alpha: 0.5);
+    energyRect = new Rect("buffer", "energybar", new Vector2(position.x - 22, position.y - 20), new Vector2(44 / maxEnergy * energy, 3), 1, new Color.red(), null);
   }
    
-  static Ship add(Vector position, String imageID, String type, Building home) {
+  static Ship add(Vector2 position, String imageID, String type, Building home) {
     Ship ship = new Ship(position, imageID, type, home);
     Zei.addGameObject(ship);
     return ship;
@@ -83,9 +83,9 @@ class Ship extends GameObject {
     velocity = Zei.convertToVector(sprite.rotation) * Ship.baseSpeed * game.speed;
   }
   
-  static void control(Vector position) {
+  static void control(Vector2 position) {
     position = position * game.tileSize;
-    position += new Vector(8, 8);
+    position += new Vector2(8, 8);
     
     select();
     
@@ -135,13 +135,13 @@ class Ship extends GameObject {
 
   void move() { 
     // update energy rect
-    energyRect.size = new Vector(44 / maxEnergy * energy, 3);
+    energyRect.size = new Vector2(44 / maxEnergy * energy, 3);
     
     if (status == "ATTACKING" || status == "RETURNING") {
       trailCounter++;
       if (trailCounter == 10) {
         trailCounter = 0;
-        Smoke.add(new Vector(sprite.position.x, sprite.position.y - 16));
+        Smoke.add(new Vector2(sprite.position.x, sprite.position.y - 16));
       }
     }
 
@@ -166,10 +166,10 @@ class Ship extends GameObject {
       }
       if (flightCounter == 0) {
         status = "IDLE";
-        targetPosition = new Vector.empty();
-        sprite.scale = new Vector(1.0, 1.0);
+        targetPosition = new Vector2.empty();
+        sprite.scale = new Vector2(1.0, 1.0);
         selectedCircle.scale = 1.0;
-        energyRect.scale = new Vector(1.0, 1.0);
+        energyRect.scale = new Vector2(1.0, 1.0);
       }
     }
     
@@ -188,17 +188,17 @@ class Ship extends GameObject {
           weaponCounter = 0;
           energy -= 1;
 
-          Vector targetPositionTiled = game.real2tiled(targetPosition);
+          Vector2 targetPositionTiled = game.real2tiled(targetPosition);
           Explosion.add(targetPosition);
           Zei.playSound("explosion", targetPosition, game.scroll, game.zoom);
 
           for (int i = -3; i <= 3; i++) {
             for (int j = -3; j <= 3; j++) {
 
-              Vector tilePosition = targetPositionTiled + new Vector(i, j);
+              Vector2 tilePosition = targetPositionTiled + new Vector2(i, j);
 
               if (game.world.contains(tilePosition)) {
-                if ((tilePosition * game.tileSize + new Vector(8, 8)).distanceTo(targetPosition) <= game.tileSize * 3) {
+                if ((tilePosition * game.tileSize + new Vector2(8, 8)).distanceTo(targetPosition) <= game.tileSize * 3) {
                   Tile tile = game.world.getTile(tilePosition * game.tileSize);
 
                   tile.creep -= 5;
