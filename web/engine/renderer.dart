@@ -120,7 +120,18 @@ class Renderer {
       // FIXME: a line might be partially visible although neither start nor end are visible
       return (renderer.containsPoint(new Point(displayObject.from.x, displayObject.from.y)) ||
               renderer.containsPoint(new Point(displayObject.to.x, displayObject.to.y)));
-    }
+    } else if (displayObject is Text) {   
+      context.font = "${displayObject.size * zoom}${displayObject.sizeUnit} ${displayObject.font}";
+      context.textAlign = displayObject.align; 
+      context.textBaseline = displayObject.verticalAlign;
+      var width = context.measureText(displayObject.text).width;
+      
+      Rectangle object = new Rectangle(displayObject.position.x - width,
+                                       displayObject.position.y - displayObject.size,
+                                       width * 2,
+                                       width * 2);  
+      return renderer.intersects(object);   
+    } 
     
     return false;
   }
@@ -270,6 +281,38 @@ class Renderer {
                   context.closePath();
                   context.stroke();
                 }
+              }
+            }
+            
+            // render text
+            else if (displayObject is Text) {
+              Vector2 relativePos = relativePosition(displayObject.position);
+              context.font = "${displayObject.size * zoom}${displayObject.sizeUnit} ${displayObject.font}";
+              context.textAlign = displayObject.align; 
+              context.textBaseline = displayObject.verticalAlign;
+             
+              if (displayObject.rotation != 0) {
+                context.save();
+                context.translate(relativePos.x, relativePos.y);
+                context.rotate(Zei.degToRad(displayObject.rotation));
+                if (displayObject.strokeColor != null) {    
+                  context.strokeStyle = displayObject.strokeColor.rgba;
+                  context.strokeText(displayObject.text, 0, 0); 
+                }
+                if (displayObject.fillColor != null) { // FIXME: fillColor not working?
+                  context.fillStyle = displayObject.fillColor.rgba;
+                  context.fillText(displayObject.text, 0, 0); 
+                }
+                context.restore();
+              } else {
+                if (displayObject.strokeColor != null){
+                  context.strokeStyle = displayObject.strokeColor.rgba;
+                  context.strokeText(displayObject.text, relativePos.x, relativePos.y);
+                }
+                if (displayObject.fillColor != null) {
+                  context.fillStyle = displayObject.fillColor.rgba;
+                  context.fillText(displayObject.text, relativePos.x, relativePos.y);
+                }               
               }
             }
 

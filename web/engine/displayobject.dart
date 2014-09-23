@@ -5,6 +5,35 @@ abstract class DisplayObject {
   bool visible = true;
 }
 
+class Text extends DisplayObject {
+  Vector2 position;
+  String sizeUnit, text, font, align, verticalAlign;
+  num size, rotation = 0;
+  Color fillColor, strokeColor;
+  String rendererName;
+  
+  Text(rendererName, layer, this.position, this.size, this.sizeUnit, this.font, this.fillColor, this.strokeColor, this.text, {String align: "left", String verticalAlign: "alphabetic", bool visible: true}) {
+    super.layer = layer;
+    super.visible = visible;
+    this.align = align;
+    this.verticalAlign = verticalAlign;
+    Zei.renderer[rendererName].addDisplayObject(this);
+    this.rendererName = rendererName;
+  }
+  
+  void rotate(num angle) {
+    rotation += angle;
+    if (rotation >= 360)
+      rotation -= 360;
+    else if (rotation < 0)
+      rotation += 360; 
+  }
+  
+  bool isHovered() {
+    return false;
+  }
+}
+
 class Rect extends DisplayObject {
   Vector2 position, size;
   int lineWidth;
@@ -22,10 +51,12 @@ class Rect extends DisplayObject {
     this.rendererName = rendererName;
   }
   
-  void rotate(int angle) {
+  void rotate(num angle) {
     rotation += angle;
-    if (rotation > 359)
-      rotation -= 359;
+    if (rotation >= 360)
+      rotation -= 360;
+    else if (rotation < 0)
+      rotation += 360; 
   }
   
   bool isHovered() {
@@ -55,10 +86,12 @@ class Circle extends DisplayObject {
     this.rendererName = rendererName;
   }
   
-  void rotate(int angle) {
+  void rotate(num angle) {
     rotation += angle;
-    if (rotation > 359)
-      rotation -= 359;
+    if (rotation >= 360)
+      rotation -= 360;
+    else if (rotation < 0)
+      rotation += 360; 
   }
   
   bool isHovered() {
@@ -125,8 +158,10 @@ class Sprite extends DisplayObject {
   
   void rotate(num angle) {
     rotation += angle;
-    if (rotation > 359)
-      rotation -= 359;
+    if (rotation >= 360)
+      rotation -= 360;
+    else if (rotation < 0)
+      rotation += 360; 
   }
   
   bool isHovered() {
