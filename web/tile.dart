@@ -5,7 +5,7 @@ class Tile {
   num creep, newcreep;
   Building collector;
   int height, index, terraformTarget, terraformProgress;
-  Sprite terraformNumber;
+  Zei.Sprite terraformNumber;
 
   Tile() {
     index = -1; // TODO: unused, maybe remove
@@ -17,13 +17,13 @@ class Tile {
     terraformNumber = null;
   }
   
-  void flagTerraform(Vector2 position) {   
+  void flagTerraform(Zei.Vector2 position) {   
     if (height != game.terraformingHeight) {
       terraformTarget = game.terraformingHeight;
       terraformProgress = 0;
       
       if (terraformNumber == null) {
-        terraformNumber = new Sprite("buffer", "terraform", Zei.images["numbers"], position, 16, 16);
+        terraformNumber = new Zei.Sprite("buffer", "terraform", Zei.images["numbers"], position, 16, 16);
         terraformNumber.animated = true;
         terraformNumber.frame = terraformTarget;
       } else {
@@ -41,8 +41,8 @@ class Tile {
     }
   }
   
-  static Vector2 position(Vector2 vector) {
-    return new Vector2(
+  static Zei.Vector2 position(Zei.Vector2 vector) {
+    return new Zei.Vector2(
            vector.x ~/ size,
            vector.y ~/ size);
   }

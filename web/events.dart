@@ -5,12 +5,12 @@ void onMouseMove(MouseEvent evt) {
   
   if (game != null) {
     game.oldHoveredTile = game.hoveredTile;
-    game.hoveredTile = new Vector2(
+    game.hoveredTile = new Zei.Vector2(
           ((game.mouse.position.x - game.mouse.renderer.view.width / 2) / (Tile.size * game.zoom)).floor() + game.scroll.x,
           ((game.mouse.position.y - game.mouse.renderer.view.height / 2) / (Tile.size * game.zoom)).floor() + game.scroll.y);
     game.updateVariousInfo();
     
-    game.mouseScrolling = new Vector2.empty();
+    game.mouseScrolling = new Zei.Vector2.empty();
     if (game.mouse.position.x == 0) game.mouseScrolling.x = -1;
     else if (game.mouse.position.x == game.mouse.renderer.view.width - 1) game.mouseScrolling.x = 1;   
     if (game.mouse.position.y == 0) game.mouseScrolling.y = -1;
@@ -90,7 +90,7 @@ void onKeyDown(KeyboardEvent evt) {
 
   // DEBUG: add explosion
   if (evt.keyCode == KeyCode.V) {
-    Explosion.add(new Vector2(game.hoveredTile.x * Tile.size + 8, game.hoveredTile.y * Tile.size + 8));
+    Explosion.add(new Zei.Vector2(game.hoveredTile.x * Tile.size + 8, game.hoveredTile.y * Tile.size + 8));
     Zei.playSound("explosion", game.hoveredTile * Tile.size, game.scroll, game.zoom);
   }
   
@@ -100,11 +100,11 @@ void onKeyDown(KeyboardEvent evt) {
       game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].height--;
       List tilesToRedraw = new List();
       tilesToRedraw
-        ..add(new Vector2(game.hoveredTile.x, game.hoveredTile.y))
-        ..add(new Vector2(game.hoveredTile.x - 1, game.hoveredTile.y))
-        ..add(new Vector2(game.hoveredTile.x, game.hoveredTile.y - 1))
-        ..add(new Vector2(game.hoveredTile.x + 1, game.hoveredTile.y))
-        ..add(new Vector2(game.hoveredTile.x, game.hoveredTile.y + 1));
+        ..add(new Zei.Vector2(game.hoveredTile.x, game.hoveredTile.y))
+        ..add(new Zei.Vector2(game.hoveredTile.x - 1, game.hoveredTile.y))
+        ..add(new Zei.Vector2(game.hoveredTile.x, game.hoveredTile.y - 1))
+        ..add(new Zei.Vector2(game.hoveredTile.x + 1, game.hoveredTile.y))
+        ..add(new Zei.Vector2(game.hoveredTile.x, game.hoveredTile.y + 1));
       game.redrawTerrain(tilesToRedraw);
     }
   }
@@ -115,11 +115,11 @@ void onKeyDown(KeyboardEvent evt) {
       game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].height++;
       List tilesToRedraw = new List();
       tilesToRedraw
-        ..add(new Vector2(game.hoveredTile.x, game.hoveredTile.y))
-        ..add(new Vector2(game.hoveredTile.x - 1, game.hoveredTile.y))
-        ..add(new Vector2(game.hoveredTile.x, game.hoveredTile.y - 1))
-        ..add(new Vector2(game.hoveredTile.x + 1, game.hoveredTile.y))
-        ..add(new Vector2(game.hoveredTile.x, game.hoveredTile.y + 1));
+        ..add(new Zei.Vector2(game.hoveredTile.x, game.hoveredTile.y))
+        ..add(new Zei.Vector2(game.hoveredTile.x - 1, game.hoveredTile.y))
+        ..add(new Zei.Vector2(game.hoveredTile.x, game.hoveredTile.y - 1))
+        ..add(new Zei.Vector2(game.hoveredTile.x + 1, game.hoveredTile.y))
+        ..add(new Zei.Vector2(game.hoveredTile.x, game.hoveredTile.y + 1));
       game.redrawTerrain(tilesToRedraw);
     }
   }
@@ -129,11 +129,11 @@ void onKeyDown(KeyboardEvent evt) {
     game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].height = -1;
     List tilesToRedraw = new List();
     tilesToRedraw
-      ..add(new Vector2(game.hoveredTile.x, game.hoveredTile.y))
-      ..add(new Vector2(game.hoveredTile.x - 1, game.hoveredTile.y))
-      ..add(new Vector2(game.hoveredTile.x, game.hoveredTile.y - 1))
-      ..add(new Vector2(game.hoveredTile.x + 1, game.hoveredTile.y))
-      ..add(new Vector2(game.hoveredTile.x, game.hoveredTile.y + 1));
+      ..add(new Zei.Vector2(game.hoveredTile.x, game.hoveredTile.y))
+      ..add(new Zei.Vector2(game.hoveredTile.x - 1, game.hoveredTile.y))
+      ..add(new Zei.Vector2(game.hoveredTile.x, game.hoveredTile.y - 1))
+      ..add(new Zei.Vector2(game.hoveredTile.x + 1, game.hoveredTile.y))
+      ..add(new Zei.Vector2(game.hoveredTile.x, game.hoveredTile.y + 1));
     game.redrawTerrain(tilesToRedraw);
   }
 

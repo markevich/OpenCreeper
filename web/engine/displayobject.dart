@@ -17,7 +17,7 @@ class Text extends DisplayObject {
     super.visible = visible;
     this.align = align;
     this.verticalAlign = verticalAlign;
-    Zei.renderer[rendererName].addDisplayObject(this);
+    renderer[rendererName].addDisplayObject(this);
     this.rendererName = rendererName;
   }
   
@@ -47,7 +47,7 @@ class Rect extends DisplayObject {
     super.layer = layer;
     super.visible = visible;
     if (anchor != null) this.anchor = anchor;
-    Zei.renderer[rendererName].addDisplayObject(this);
+    renderer[rendererName].addDisplayObject(this);
     this.rendererName = rendererName;
   }
   
@@ -60,11 +60,11 @@ class Rect extends DisplayObject {
   }
   
   bool isHovered() {
-    Vector2 relativePosition = Zei.renderer[rendererName].relativePosition(this.position);
-    return (Zei.renderer[rendererName].mouse.position.x >= relativePosition.x - this.size.x * this.scale.x * this.anchor.x * Zei.renderer[rendererName].zoom &&
-            Zei.renderer[rendererName].mouse.position.x <= relativePosition.x - this.size.x * this.scale.x * this.anchor.x * Zei.renderer[rendererName].zoom + this.size.x * this.scale.x * Zei.renderer[rendererName].zoom &&
-            Zei.renderer[rendererName].mouse.position.y >= relativePosition.y - this.size.y * this.scale.y * this.anchor.y * Zei.renderer[rendererName].zoom &&
-            Zei.renderer[rendererName].mouse.position.y <= relativePosition.y - this.size.y * this.scale.y * this.anchor.y * Zei.renderer[rendererName].zoom + this.size.y * this.scale.y * Zei.renderer[rendererName].zoom);
+    Vector2 relativePosition = renderer[rendererName].relativePosition(this.position);
+    return (renderer[rendererName].mouse.position.x >= relativePosition.x - this.size.x * this.scale.x * this.anchor.x * renderer[rendererName].zoom &&
+            renderer[rendererName].mouse.position.x <= relativePosition.x - this.size.x * this.scale.x * this.anchor.x * renderer[rendererName].zoom + this.size.x * this.scale.x * renderer[rendererName].zoom &&
+            renderer[rendererName].mouse.position.y >= relativePosition.y - this.size.y * this.scale.y * this.anchor.y * renderer[rendererName].zoom &&
+            renderer[rendererName].mouse.position.y <= relativePosition.y - this.size.y * this.scale.y * this.anchor.y * renderer[rendererName].zoom + this.size.y * this.scale.y * renderer[rendererName].zoom);
   }
 }
 
@@ -82,7 +82,7 @@ class Circle extends DisplayObject {
     super.layer = layer;
     super.visible = visible;
     scale = 1.0;
-    Zei.renderer[rendererName].addDisplayObject(this);
+    renderer[rendererName].addDisplayObject(this);
     this.rendererName = rendererName;
   }
   
@@ -95,8 +95,8 @@ class Circle extends DisplayObject {
   }
   
   bool isHovered() {
-    Vector2 relativePosition = Zei.renderer[rendererName].relativePosition(this.position);
-    return (Zei.renderer[rendererName].mouse.position.distanceTo(relativePosition) <= this.radius * Zei.renderer[rendererName].zoom);
+    Vector2 relativePosition = renderer[rendererName].relativePosition(this.position);
+    return (renderer[rendererName].mouse.position.distanceTo(relativePosition) <= this.radius * renderer[rendererName].zoom);
   }
 }
 
@@ -108,7 +108,7 @@ class Line extends DisplayObject {
   Line(rendererName, layer, this.from, this.to, this.lineWidth, this.color, {bool visible: true}) {
     super.layer = layer;
     super.visible = visible;
-    Zei.renderer[rendererName].addDisplayObject(this);
+    renderer[rendererName].addDisplayObject(this);
   }
   
   String toString() {
@@ -138,7 +138,7 @@ class Sprite extends DisplayObject {
     if (anchor != null) this.anchor = anchor;
     if (scale != null) this.scale = scale;
     size = new Vector2(width, height);
-    Zei.renderer[rendererName].addDisplayObject(this);
+    renderer[rendererName].addDisplayObject(this);
     this.rendererName = rendererName;
     if (animated)
       startAnimation();
@@ -165,10 +165,10 @@ class Sprite extends DisplayObject {
   }
   
   bool isHovered() {
-    Vector2 relativePosition = Zei.renderer[rendererName].relativePosition(this.position);
-    return (Zei.renderer[rendererName].mouse.position.x >= relativePosition.x - this.size.x * this.scale.x * this.anchor.x * Zei.renderer[rendererName].zoom &&
-            Zei.renderer[rendererName].mouse.position.x <= relativePosition.x - this.size.x * this.scale.x * this.anchor.x * Zei.renderer[rendererName].zoom + this.size.x * this.scale.x * Zei.renderer[rendererName].zoom &&
-            Zei.renderer[rendererName].mouse.position.y >= relativePosition.y - this.size.y * this.scale.y * this.anchor.y * Zei.renderer[rendererName].zoom &&
-            Zei.renderer[rendererName].mouse.position.y <= relativePosition.y - this.size.y * this.scale.y * this.anchor.y * Zei.renderer[rendererName].zoom + this.size.y * this.scale.y * Zei.renderer[rendererName].zoom);
+    Vector2 relativePosition = renderer[rendererName].relativePosition(this.position);
+    return (renderer[rendererName].mouse.position.x >= relativePosition.x - this.size.x * this.scale.x * this.anchor.x * renderer[rendererName].zoom &&
+            renderer[rendererName].mouse.position.x <= relativePosition.x - this.size.x * this.scale.x * this.anchor.x * renderer[rendererName].zoom + this.size.x * this.scale.x * renderer[rendererName].zoom &&
+            renderer[rendererName].mouse.position.y >= relativePosition.y - this.size.y * this.scale.y * this.anchor.y * renderer[rendererName].zoom &&
+            renderer[rendererName].mouse.position.y <= relativePosition.y - this.size.y * this.scale.y * this.anchor.y * renderer[rendererName].zoom + this.size.y * this.scale.y * renderer[rendererName].zoom);
   }
 }

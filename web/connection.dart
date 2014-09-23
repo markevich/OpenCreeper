@@ -2,17 +2,17 @@ part of creeper;
 
 class Connection {
   Building from, to;
-  Line line, line2;
+  Zei.Line line, line2;
   static List<Connection> connections = new List<Connection>();
   
   Connection(this.from, this.to) {
-    line = new Line("buffer", "connectionborder", this.from.position, this.to.position, 3, new Color.black());
+    line = new Zei.Line("buffer", "connectionborder", this.from.position, this.to.position, 3, new Zei.Color.black());
 
-    Color color = new Color(127, 127, 127);
+    Zei.Color color = new Zei.Color(127, 127, 127);
     if (from.built && to.built)
-      color = new Color.white();
+      color = new Zei.Color.white();
 
-    line2 = new Line("buffer", "connection", this.from.position, this.to.position, 2, color);
+    line2 = new Zei.Line("buffer", "connection", this.from.position, this.to.position, 2, color);
   }
   
   static void clear() {
@@ -63,7 +63,7 @@ class Connection {
   static void activate(Building building) {
     for (var connection in connections) {
       if ((connection.from == building || connection.to == building) && (connection.from.built && connection.to.built)) {
-        connection.line2.color = new Color.white();
+        connection.line2.color = new Zei.Color.white();
       }
     }
   }

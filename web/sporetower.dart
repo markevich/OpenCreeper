@@ -1,15 +1,15 @@
 part of creeper;
 
-class Sporetower extends GameObject {
-  Sprite sprite;
+class Sporetower extends Zei.GameObject {
+  Zei.Sprite sprite;
   int sporeCounter = 0;
 
   Sporetower(position) {
-    sprite = new Sprite("buffer", "sporetower", Zei.images["sporetower"], position, 48, 48, anchor: new Vector2(0.5, 0.5));
+    sprite = new Zei.Sprite("buffer", "sporetower", Zei.images["sporetower"], position, 48, 48, anchor: new Zei.Vector2(0.5, 0.5));
     reset();
   }
    
-  static Sporetower add(Vector2 position) {
+  static Sporetower add(Zei.Vector2 position) {
     Sporetower sporetower = new Sporetower(position);
     Zei.addGameObject(sporetower);
     return sporetower;

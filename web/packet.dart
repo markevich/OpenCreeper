@@ -1,15 +1,15 @@
 part of creeper;
 
-class Packet extends GameObject {
+class Packet extends Zei.GameObject {
   String type;
   bool remove = false;
   num velocityMultiplier = 1;
   Building target, currentTarget;
-  Sprite sprite;
+  Zei.Sprite sprite;
   static num baseSpeed = 3;
 
   Packet(this.currentTarget, this.target, this.type) {
-    sprite = new Sprite("buffer", "packet", Zei.images["packet_" + type], currentTarget.position, 16, 16, visible: false, anchor: new Vector2(0.5, 0.5));
+    sprite = new Zei.Sprite("buffer", "packet", Zei.images["packet_" + type], currentTarget.position, 16, 16, visible: false, anchor: new Zei.Vector2(0.5, 0.5));
   }
      
   void update() {
@@ -96,7 +96,7 @@ class Packet extends GameObject {
    */
   bool findRoute() {
     //Route route = Route.find(currentTarget, target);
-    var next = Route.find(currentTarget, target);
+    var next = Zei.Route.find(currentTarget, target);
 
     // if a route is left set the second element as the next node for the packet
     if (next != null) {

@@ -22,7 +22,7 @@ class UISymbol {
     Zei.renderer["main"].view.style.cursor = "url('images/Normal.cur') 2 2, pointer";
   }
   
-  static UISymbol add(Vector2 position, Building template, int keyCode) {
+  static UISymbol add(Zei.Vector2 position, Building template, int keyCode) {
     UISymbol symbol = new UISymbol(position, template, keyCode);
     symbols.add(symbol);
     return symbol;

@@ -4,7 +4,7 @@ import 'dart:html';
 import 'dart:math';
 import 'dart:async';
 
-import 'engine/zei.dart';
+import 'engine/zei.dart' as Zei;
 
 part 'world.dart';
 part 'tile.dart';

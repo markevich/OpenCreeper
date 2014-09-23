@@ -1,13 +1,13 @@
 part of creeper;
 
-class Explosion extends GameObject {
-  Sprite sprite;
+class Explosion extends Zei.GameObject {
+  Zei.Sprite sprite;
 
-  Explosion(Vector2 position) {
-    sprite = new Sprite("buffer", "explosion", Zei.images["explosion"], position, 64, 64, animated: true, animationFPS: 30, anchor: new Vector2(0.5, 0.5), rotation: Zei.randomInt(0, 359));
+  Explosion(Zei.Vector2 position) {
+    sprite = new Zei.Sprite("buffer", "explosion", Zei.images["explosion"], position, 64, 64, animated: true, animationFPS: 30, anchor: new Zei.Vector2(0.5, 0.5), rotation: Zei.randomInt(0, 359));
   }
   
-  static void add(Vector2 position) {
+  static void add(Zei.Vector2 position) {
     Explosion explosion = new Explosion(position);
     Zei.addGameObject(explosion);
   }

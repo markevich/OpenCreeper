@@ -26,7 +26,7 @@ class Vector2 {
   
   // returns absolute angle to another Vector2 in degrees
   num angleTo(Vector2 other) {   
-    return Zei.radToDeg(atan2(other.y - y, other.x - x));
+    return radToDeg(atan2(other.y - y, other.x - x));
   }
   
   Vector2 normalize() {   

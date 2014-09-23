@@ -159,7 +159,7 @@ class Renderer {
               if (displayObject.rotation != 0) {
                 context.save();
                 context.translate(relativePos.x, relativePos.y);
-                context.rotate(Zei.degToRad(displayObject.rotation));
+                context.rotate(degToRad(displayObject.rotation));
                 if (displayObject.animated)
                   context.drawImageScaledFromSource(displayObject.image,
                   (displayObject.frame % 8) * displayObject.size.x,
@@ -208,7 +208,7 @@ class Renderer {
               if (displayObject.rotation != 0) {
                 context.save();
                 context.translate(relativePos.x, relativePos.y);
-                context.rotate(Zei.degToRad(displayObject.rotation));
+                context.rotate(degToRad(displayObject.rotation));
                 if (displayObject.fillColor != null) {
                   context.fillStyle = displayObject.fillColor.rgba;
                   context.fillRect(-displayObject.size.x * displayObject.anchor.x * displayObject.scale.x * zoom,
@@ -250,18 +250,18 @@ class Renderer {
               if (displayObject.rotation != 0) {
                 context.save();
                 context.translate(relativePos.x, relativePos.y);
-                context.rotate(Zei.degToRad(displayObject.rotation));
+                context.rotate(degToRad(displayObject.rotation));
                 if (displayObject.fillColor != null) {
                   context.fillStyle = displayObject.fillColor.rgba;
                   context.beginPath();
-                  context.arc(0, 0, displayObject.radius * displayObject.scale * zoom, 0, Zei.degToRad(displayObject.degrees), true);
+                  context.arc(0, 0, displayObject.radius * displayObject.scale * zoom, 0, degToRad(displayObject.degrees), true);
                   context.closePath();
                   context.fill();
                 }
                 if (displayObject.strokeColor != null) {
                   context.strokeStyle = displayObject.strokeColor.rgba;
                   context.beginPath();
-                  context.arc(0, 0, displayObject.radius * displayObject.scale * zoom, 0, Zei.degToRad(displayObject.degrees), true);
+                  context.arc(0, 0, displayObject.radius * displayObject.scale * zoom, 0, degToRad(displayObject.degrees), true);
                   context.closePath();
                   context.stroke();
                 }
@@ -270,14 +270,14 @@ class Renderer {
                 if (displayObject.fillColor != null) {
                   context.fillStyle = displayObject.fillColor.rgba;
                   context.beginPath();
-                  context.arc(relativePos.x, relativePos.y, displayObject.radius * displayObject.scale * zoom, 0, Zei.degToRad(displayObject.degrees), true);
+                  context.arc(relativePos.x, relativePos.y, displayObject.radius * displayObject.scale * zoom, 0, degToRad(displayObject.degrees), true);
                   context.closePath();
                   context.fill();
                 }
                 if (displayObject.strokeColor != null) {
                   context.strokeStyle = displayObject.strokeColor.rgba;
                   context.beginPath();
-                  context.arc(relativePos.x, relativePos.y, displayObject.radius * displayObject.scale * zoom, 0, Zei.degToRad(displayObject.degrees), true);
+                  context.arc(relativePos.x, relativePos.y, displayObject.radius * displayObject.scale * zoom, 0, degToRad(displayObject.degrees), true);
                   context.closePath();
                   context.stroke();
                 }
@@ -294,7 +294,7 @@ class Renderer {
               if (displayObject.rotation != 0) {
                 context.save();
                 context.translate(relativePos.x, relativePos.y);
-                context.rotate(Zei.degToRad(displayObject.rotation));
+                context.rotate(degToRad(displayObject.rotation));
                 if (displayObject.strokeColor != null) {    
                   context.strokeStyle = displayObject.strokeColor.rgba;
                   context.strokeText(displayObject.text, 0, 0); 

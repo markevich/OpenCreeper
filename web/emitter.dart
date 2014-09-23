@@ -1,16 +1,16 @@
 part of creeper;
 
-class Emitter extends GameObject {
-  Sprite sprite;
+class Emitter extends Zei.GameObject {
+  Zei.Sprite sprite;
   int strength;
   Building analyzer;
   int counter = 0;
 
   Emitter(position, this.strength) {
-    sprite = new Sprite("buffer", "emitter", Zei.images["emitter"], position, 48, 48, anchor: new Vector2(0.5, 0.5));
+    sprite = new Zei.Sprite("buffer", "emitter", Zei.images["emitter"], position, 48, 48, anchor: new Zei.Vector2(0.5, 0.5));
   }
   
-  static Emitter add(Vector2 position, int strength) {
+  static Emitter add(Zei.Vector2 position, int strength) {
     Emitter emitter = new Emitter(position, strength);
     Zei.addGameObject(emitter);
     return emitter;
