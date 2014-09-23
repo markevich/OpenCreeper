@@ -32,8 +32,9 @@ class Game {
     
     this.friendly = friendly;
     
+    Zei.Audio.setChannels(5);
     List sounds = ["shot.wav", "click.wav", "explosion.wav", "failure.wav", "energy.wav", "laser.wav"];
-    Zei.loadSounds(sounds);
+    Zei.Audio.load(sounds);
     List images = ["analyzer", "numbers", "level0", "level1", "level2", "level3", "level4", "level5", "level6", "level7", "level8", "level9", "borders", "mask", "cannon",
                        "cannongun", "base", "collector", "reactor", "storage", "terp", "packet_collection", "packet_energy", "packet_health", "relay", "emitter", "creeper",
                        "mortar", "shell", "beam", "spore", "bomber", "bombership", "smoke", "explosion", "targetcursor", "sporetower", "forcefield", "shield", "projectile"];  
@@ -48,10 +49,10 @@ class Game {
     int width = window.innerWidth;
     int height = window.innerHeight;
     
-    Zei.createRenderer("main", width, height, "#canvasContainer");
+    Zei.Renderer.create("main", width, height, "#canvasContainer");
     Zei.renderer["main"].view.style.zIndex = "1";   
     
-    var buffer = Zei.createRenderer("buffer", width, height);
+    var buffer = Zei.Renderer.create("buffer", width, height);
     buffer.enableMouse();
     mouse = buffer.mouse;
     mouse.setCursor("url('images/Normal.cur') 2 2, pointer");
@@ -60,17 +61,17 @@ class Game {
                       "explosion", "smoke", "buildingflying", "ship", "shell", "spore", "buildinggunflying", "energybar"]);
    
     for (int i = 0; i < 10; i++) {
-      Zei.createRenderer("level$i", 128 * 16, 128 * 16);
+      Zei.Renderer.create("level$i", 128 * 16, 128 * 16);
     }
-    Zei.createRenderer("levelbuffer", 128 * 16, 128 * 16);
-    Zei.createRenderer("levelfinal", width, height, "#canvasContainer");
+    Zei.Renderer.create("levelbuffer", 128 * 16, 128 * 16);
+    Zei.Renderer.create("levelfinal", width, height, "#canvasContainer");
     
-    Zei.createRenderer("collection", width, height, "#canvasContainer");
+    Zei.Renderer.create("collection", width, height, "#canvasContainer");
     
-    Zei.createRenderer("creeperbuffer", width, height);
-    Zei.createRenderer("creeper", width, height, "#canvasContainer");
+    Zei.Renderer.create("creeperbuffer", width, height);
+    Zei.Renderer.create("creeper", width, height, "#canvasContainer");
     
-    Zei.createRenderer("gui", 780, 110, "#gui");
+    Zei.Renderer.create("gui", 780, 110, "#gui");
     
     // renderes affected when zooming
     zoomableRenderers = ["buffer", "collection", "creeperbuffer"];
@@ -179,6 +180,7 @@ class Game {
     paused = true;
     stopwatch.stop();
     Zei.stopAnimations();
+
   }
 
   void resume() {
@@ -191,6 +193,7 @@ class Game {
 
   void stop() {
     running.cancel();
+    window.cancelAnimationFrame(Zei.animationRequest);
   }
 
   void run() {

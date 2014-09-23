@@ -91,7 +91,7 @@ void onKeyDown(KeyboardEvent evt) {
   // DEBUG: add explosion
   if (evt.keyCode == KeyCode.V) {
     Explosion.add(new Zei.Vector2(game.hoveredTile.x * Tile.size + 8, game.hoveredTile.y * Tile.size + 8));
-    Zei.playSound("explosion", game.hoveredTile * Tile.size, game.scroll, game.zoom);
+    Zei.Audio.play("explosion", game.hoveredTile * Tile.size, game.scroll, game.zoom);
   }
   
   // DEBUG: lower terrain
@@ -199,7 +199,7 @@ void onClickGUI(MouseEvent evt) {
   Building.deselect();
   Ship.deselect();
   UISymbol.setActive();
-  Zei.playSound("click");
+  Zei.Audio.play("click");
 }
 
 void onDoubleClick(MouseEvent evt) {
@@ -259,9 +259,9 @@ void onMouseUp(MouseEvent evt) {
         }
       }
       if (soundSuccess)
-        Zei.playSound("click");
+        Zei.Audio.play("click");
       else
-        Zei.playSound("failure");
+        Zei.Audio.play("failure");
     }
   } else if (evt.which == 3) {
     game.mode = "DEFAULT";

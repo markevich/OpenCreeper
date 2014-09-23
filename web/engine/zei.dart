@@ -11,12 +11,12 @@ part 'vector.dart';
 part 'route.dart';
 part 'gameobject.dart';
 part 'color.dart';
+part 'audio.dart';
 
 num animationRequest;
 int TPS = 60; // ticks per second
 Timer resizeTimer;
 Map<String, Renderer> renderer = new Map();
-Map<String, List> sounds = new Map();
 Map<String, ImageElement> images = new Map();
 List<GameObject> gameObjects = new List<GameObject>();
 bool debug = false;
@@ -54,17 +54,6 @@ void clear() {
 }
 
 /**
- * Creates a renderer with a [name], [width], [height] and optionally adds it to a [container] in the DOM
- */
-Renderer createRenderer(String name, int width, int height, [String container]) {
-  renderer[name] = new Renderer(new CanvasElement(), width, height);
-  if (container != null)
-    querySelector(container).children.add(renderer[name].view);
-  renderer[name].updateRect(width, height);
-  return renderer[name];
-}
-
-/**
  * Loads all images.
  *
  * Uses a future to indicate when all images have been loaded.
@@ -85,34 +74,6 @@ Future loadImages(List filenames) {
   return completer.future; 
 }
 
-void loadSounds(List filenames) {   
-  filenames.forEach((filename) {
-    var name = filename.split(".")[0];
-    sounds[name] = new List();
-    for (int j = 0; j < 5; j++) {
-      sounds[name].add(new AudioElement("sounds/" + filename));
-    }
-  });
-}
-
-void playSound(String name, [Vector2 position, Vector2 center, double zoom]) { // position is in real coordinates
-  num volume = 1;
-  
-  // given a position adjust sound volume based on it and the current zoom
-  if (position != null && center != null && zoom != null) {
-    num distance = position.distanceTo(center * 16);
-    volume = (zoom / pow(distance / 200, 2)).clamp(0, 1);
-  }
-
-  for (int i = 0; i < 5; i++) {
-    if (sounds[name][i].ended == true || sounds[name][i].currentTime == 0) {
-      sounds[name][i].volume = volume;
-      sounds[name][i].play();
-      return;
-    }
-  }
-}
- 
 void stopAnimations() {
   renderer.forEach((k, v) {
     for (int i = 0; i < v.layers.length; i++) {

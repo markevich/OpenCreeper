@@ -39,7 +39,7 @@ class Spore extends Zei.GameObject {
           spore.health -= 2;
           if (spore.health <= 0) {
             spore.remove = true;
-            Zei.playSound("explosion", Tile.position(spore.sprite.position), game.scroll, game.zoom);
+            Zei.Audio.play("explosion", Tile.position(spore.sprite.position), game.scroll, game.zoom);
             Explosion.add(spore.sprite.position);
           }
         }
@@ -61,7 +61,7 @@ class Spore extends Zei.GameObject {
       // if the target is reached explode and remove
       remove = true;
       Zei.Vector2 targetPositionTiled = Tile.position(targetPosition);
-      Zei.playSound("explosion", targetPosition, game.scroll, game.zoom);
+      Zei.Audio.play("explosion", targetPosition, game.scroll, game.zoom);
 
       for (int i = -2; i <= 2; i++) {
         for (int j = -2; j <= 2; j++) {

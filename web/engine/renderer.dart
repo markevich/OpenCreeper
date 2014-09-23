@@ -14,6 +14,17 @@ class Renderer {
     view.style.position = "absolute";
     context = view.getContext('2d');
   }
+  
+  /**
+   * Creates a renderer with a [name], [width], [height] and optionally adds it to a [container] in the DOM
+   */
+  static Renderer create(String name, int width, int height, [String container]) {
+    renderer[name] = new Renderer(new CanvasElement(), width, height);
+    if (container != null)
+      querySelector(container).children.add(renderer[name].view);
+    renderer[name].updateRect(width, height);
+    return renderer[name];
+  }
 
   void clear([Color color]) {
     if (color != null) {

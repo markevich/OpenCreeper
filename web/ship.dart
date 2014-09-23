@@ -190,7 +190,7 @@ class Ship extends Zei.GameObject {
 
           Zei.Vector2 targetPositionTiled = Tile.position(targetPosition);
           Explosion.add(targetPosition);
-          Zei.playSound("explosion", targetPosition, game.scroll, game.zoom);
+          Zei.Audio.play("explosion", targetPosition, game.scroll, game.zoom);
 
           for (int i = -3; i <= 3; i++) {
             for (int j = -3; j <= 3; j++) {
