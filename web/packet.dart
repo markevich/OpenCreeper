@@ -2,7 +2,7 @@ part of creeper;
 
 class Packet extends Zei.GameObject {
   String type;
-  bool remove = false;
+  bool flagRemove = false;
   num velocityMultiplier = 1;
   Building target, currentTarget;
   Zei.Sprite sprite;
@@ -14,9 +14,9 @@ class Packet extends Zei.GameObject {
      
   void update() {
     if (!game.paused) {
-      if (remove) {
+      if (flagRemove) {
         Zei.renderer["buffer"].removeDisplayObject(sprite);
-        Zei.removeGameObject(this);
+        Zei.GameObject.remove(this);
       }
       else
         move();
@@ -24,10 +24,10 @@ class Packet extends Zei.GameObject {
   }
   
   static void removeWithTarget(building) {
-    for (var packet in Zei.gameObjects) {
+    for (var packet in Zei.GameObject.gameObjects) {
       if (packet is Packet) {
         if (packet.currentTarget == building || packet.target == building) {
-          packet.remove = true;
+          packet.flagRemove = true;
         }
       }
     }
@@ -39,7 +39,7 @@ class Packet extends Zei.GameObject {
   }
 
   void send() {
-    Zei.addGameObject(this);
+    Zei.GameObject.add(this);
     sprite.visible = true;
   }
   
@@ -50,13 +50,16 @@ class Packet extends Zei.GameObject {
       
       // if the final node was reached deliver and remove
       if (currentTarget == target) {
-        remove = true;
+        flagRemove = true;
         // deliver package
         if (type == "health") {
           target.health += 1;
+          target.healthBar.visible = true;
+          target.healthBar.size.x = ((target.size * Tile.size - 4) / target.maxHealth) * target.health;
           target.healthRequests--;
           if (target.health >= target.maxHealth) {
             target.health = target.maxHealth;
+            target.healthBar.visible = false;
             if (!target.built) {
               target.built = true;
               target.sprite.alpha = 1.0;
@@ -126,7 +129,7 @@ class Packet extends Zei.GameObject {
         target.healthRequests--;
         target.healthRequests = Zei.clamp(target.healthRequests, 0, 100);
       }
-      remove = true;
+      flagRemove = true;
       return false;
     }
   }

@@ -3,7 +3,7 @@ part of creeper;
 class Ship extends Zei.GameObject {
   Zei.Vector2 velocity = new Zei.Vector2(0, 0), targetPosition = new Zei.Vector2(0, 0);
   String type, status = "IDLE"; // ATTACKING, RETURNING, RISING, FALLING
-  bool remove = false, hovered = false, selected = false;
+  bool flagRemove = false, hovered = false, selected = false;
   int maxEnergy = 15, energy = 0, trailCounter = 0, weaponCounter = 0, flightCounter = 0;
   Building home;
   Zei.Sprite sprite, targetSymbol;
@@ -20,7 +20,7 @@ class Ship extends Zei.GameObject {
    
   static Ship add(Zei.Vector2 position, String imageID, String type, Building home) {
     Ship ship = new Ship(position, imageID, type, home);
-    Zei.addGameObject(ship);
+    Zei.GameObject.add(ship);
     return ship;
   }
   
@@ -33,7 +33,7 @@ class Ship extends Zei.GameObject {
   
   static void select() {
     // select a ship if hovered
-    for (var ship in Zei.gameObjects) {
+    for (var ship in Zei.GameObject.gameObjects) {
       if (ship is Ship) {
         if (ship.hovered) {
           ship.selected = true;
@@ -45,7 +45,7 @@ class Ship extends Zei.GameObject {
   }
   
   static void deselect() {
-    for (var ship in Zei.gameObjects) {
+    for (var ship in Zei.GameObject.gameObjects) {
       if (ship is Ship) {
         ship.selected = false;
         ship.selectedCircle.visible = false;
@@ -89,7 +89,7 @@ class Ship extends Zei.GameObject {
     
     select();
     
-    for (var ship in Zei.gameObjects) {
+    for (var ship in Zei.GameObject.gameObjects) {
       if (ship is Ship) {
            
         // control if selected

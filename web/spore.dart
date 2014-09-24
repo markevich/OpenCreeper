@@ -2,7 +2,7 @@ part of creeper;
 
 class Spore extends Zei.GameObject {
   Zei.Vector2 targetPosition;
-  bool remove = false;
+  bool flagRemove = false;
   num health = 500;
   int trailCounter = 0;
   Zei.Sprite sprite;
@@ -14,14 +14,14 @@ class Spore extends Zei.GameObject {
    
   static void add(Zei.Vector2 position, Zei.Vector2 targetPosition) {
     Spore spore = new Spore(position, targetPosition);
-    Zei.addGameObject(spore);
+    Zei.GameObject.add(spore);
   }
   
   void update() {
     if (!game.paused) {
-      if (remove) {
+      if (flagRemove) {
         Zei.renderer["buffer"].removeDisplayObject(sprite);
-        Zei.removeGameObject(this);
+        Zei.GameObject.remove(this);
       }
       else
         move();
@@ -30,15 +30,21 @@ class Spore extends Zei.GameObject {
   
   static void damage(Building building) {  
     // find spore in range
-    for (var spore in Zei.gameObjects) {
+    //for (var spore in Zei.GameObject.gameObjects) {
+    for (var i = Zei.GameObject.gameObjects.length - 1; i >= 0; i--) {
+      var spore = Zei.GameObject.gameObjects[i];
       if (spore is Spore) {      
-        if (building.sprite.position.distanceTo(spore.sprite.position) <= building.weaponRadius * Tile.size) {
+        if (building.sprite.position.distanceTo(spore.sprite.position) <= building.radius * Tile.size) {
           building.weaponTargetPosition = spore.sprite.position;
+          building.beamLineInner.to = spore.sprite.position;
+          building.beamLineOuter.to = spore.sprite.position;
+          building.beamLineInner.visible = true;
+          building.beamLineOuter.visible = true;
           building.energy -= .05;
           building.operating = true;
           spore.health -= 2;
           if (spore.health <= 0) {
-            spore.remove = true;
+            spore.flagRemove = true;
             Zei.Audio.play("explosion", Tile.position(spore.sprite.position), game.scroll, game.zoom);
             Explosion.add(spore.sprite.position);
           }
@@ -59,7 +65,7 @@ class Spore extends Zei.GameObject {
 
     if (sprite.position == targetPosition) {
       // if the target is reached explode and remove
-      remove = true;
+      flagRemove = true;
       Zei.Vector2 targetPositionTiled = Tile.position(targetPosition);
       Zei.Audio.play("explosion", targetPosition, game.scroll, game.zoom);
 

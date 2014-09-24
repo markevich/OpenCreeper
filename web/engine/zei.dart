@@ -18,7 +18,6 @@ int TPS = 60; // ticks per second
 Timer resizeTimer;
 Map<String, Renderer> renderer = new Map();
 Map<String, ImageElement> images = new Map();
-List<GameObject> gameObjects = new List<GameObject>();
 bool debug = false;
 
 void init({int TPS: 60, bool debug: false}) {
@@ -26,31 +25,10 @@ void init({int TPS: 60, bool debug: false}) {
   debug = debug;
 }
 
-void addGameObject(GameObject gameObject) {
-  gameObjects.add(gameObject);
-  if (debug) {
-    print("Added ${gameObject.runtimeType}");
-    print("# GameObjects: ${gameObjects.length}");
-  }
-}
-
-void removeGameObject(GameObject gameObject) {
-  gameObjects.remove(gameObject);
-  if (debug) {
-    print("Removed ${gameObject.runtimeType}");
-    print("# GameObjects: ${gameObjects.length}");
-  }
-}
-
-void update() {
-  for (int i = gameObjects.length - 1; i >= 0; i--) {
-    gameObjects[i].update();
-  }
-}
-
 void clear() {
-  gameObjects.clear();
-  renderer.forEach((k, v) => v.removeAllDisplayObjects());
+  GameObject.clear();
+  //Audio.clear();
+  Renderer.clearDisplayObjects();
 }
 
 /**
@@ -72,30 +50,6 @@ Future loadImages(List filenames) {
     });
   });
   return completer.future; 
-}
-
-void stopAnimations() {
-  renderer.forEach((k, v) {
-    for (int i = 0; i < v.layers.length; i++) {
-      for (int j = 0; j < v.layers[i].displayObjects.length; j++) {
-        if (v.layers[i].displayObjects[j] is Sprite && v.layers[i].displayObjects[j].animated) {
-          v.layers[i].displayObjects[j].stopAnimation();
-        }
-      }
-    }
-  });
-}
-
-void startAnimations() {
-  renderer.forEach((k, v) {
-    for (int i = 0; i < v.layers.length; i++) {
-      for (int j = 0; j < v.layers[i].displayObjects.length; j++) {
-        if (v.layers[i].displayObjects[j] is Sprite && v.layers[i].displayObjects[j].animated) {
-          v.layers[i].displayObjects[j].startAnimation();
-        }
-      }
-    }
-  });
 }
 
 Object randomElementOfList(List list) {

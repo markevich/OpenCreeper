@@ -9,13 +9,13 @@ class Explosion extends Zei.GameObject {
   
   static void add(Zei.Vector2 position) {
     Explosion explosion = new Explosion(position);
-    Zei.addGameObject(explosion);
+    Zei.GameObject.add(explosion);
   }
   
   void update() {
     if (sprite.frame == 44) {
       Zei.renderer["buffer"].removeDisplayObject(sprite);
-      Zei.removeGameObject(this);
+      Zei.GameObject.remove(this);
     }
   }
 }

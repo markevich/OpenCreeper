@@ -11,7 +11,7 @@ class Sporetower extends Zei.GameObject {
    
   static Sporetower add(Zei.Vector2 position) {
     Sporetower sporetower = new Sporetower(position);
-    Zei.addGameObject(sporetower);
+    Zei.GameObject.add(sporetower);
     return sporetower;
   }
   
@@ -32,7 +32,7 @@ class Sporetower extends Zei.GameObject {
   void spawn() {
     Building target = null;
     List buildings = [];
-    for (var building in Zei.gameObjects) {
+    for (var building in Zei.GameObject.gameObjects) {
       if (building is Building) {
         buildings.add(building);
       }
@@ -45,7 +45,7 @@ class Sporetower extends Zei.GameObject {
   
   
   static bool intersect(Rectangle rectangle) { 
-    for (var sporetower in Zei.gameObjects) {
+    for (var sporetower in Zei.GameObject.gameObjects) {
       if (sporetower is Sporetower) {
         Rectangle sporetowerRect = new Rectangle(sporetower.sprite.position.x - 3 * Tile.size / 2,
                                                  sporetower.sprite.position.y - 3 * Tile.size / 2,

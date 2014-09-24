@@ -106,7 +106,7 @@ class Route {
 class ZNode {
   Vector2 position;
   ZNode parent;
-  int g = 0, h = 0, f = 0;
+  num g = 0, h = 0, f = 0;
   var gameObject, target;
 
   ZNode(this.gameObject, this.target, [ZNode parent]) {

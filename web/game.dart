@@ -17,7 +17,7 @@ class Game {
   UserInterface ui;
   List zoomableRenderers;
   Zei.Mouse mouse;
-  var debug = false;
+  var debug = true;
   bool friendly;
   
   Game() {
@@ -37,7 +37,7 @@ class Game {
     Zei.Audio.load(sounds);
     List images = ["analyzer", "numbers", "level0", "level1", "level2", "level3", "level4", "level5", "level6", "level7", "level8", "level9", "borders", "mask", "cannon",
                        "cannongun", "base", "collector", "reactor", "storage", "terp", "packet_collection", "packet_energy", "packet_health", "relay", "emitter", "creeper",
-                       "mortar", "shell", "beam", "spore", "bomber", "bombership", "smoke", "explosion", "targetcursor", "sporetower", "forcefield", "shield", "projectile"];  
+                       "mortar", "shell", "beam", "spore", "bomber", "bombership", "smoke", "explosion", "targetcursor", "sporetower", "forcefield", "shield", "projectile", "inactive"];  
     Zei.loadImages(images).then((results) => init());    
     return this;
   }
@@ -57,8 +57,8 @@ class Game {
     mouse = buffer.mouse;
     mouse.setCursor("url('images/Normal.cur') 2 2, pointer");
     
-    buffer.setLayers(["terraform", "selectedcircle", "targetsymbol", "connectionborder", "connection", "building", "sporetower", "emitter", "projectile", "buildinggun", "packet",
-                      "explosion", "smoke", "buildingflying", "ship", "shell", "spore", "buildinggunflying", "energybar"]);
+    buffer.setLayers(["terraform", "selectedcircle", "targetsymbol", "connectionborder", "connection", "building", "buildinginfo", "sporetower", "emitter", "projectile", "buildinggun", "packet",
+                      "shield", "explosion", "smoke", "buildingflying", "buildinginfoflying", "ship", "shell", "spore", "buildinggunflying", "energybar"]);
    
     for (int i = 0; i < 10; i++) {
       Zei.Renderer.create("level$i", 128 * 16, 128 * 16);
@@ -72,7 +72,7 @@ class Game {
     Zei.Renderer.create("creeper", width, height, "#canvasContainer");
     
     Zei.Renderer.create("gui", 780, 110, "#gui");
-    
+       
     // renderes affected when zooming
     zoomableRenderers = ["buffer", "collection", "creeperbuffer"];
     
@@ -156,6 +156,7 @@ class Game {
     tfLine4 = new Zei.Line("buffer", "terraform", new Zei.Vector2.empty(), new Zei.Vector2.empty(), 1, new Zei.Color.white(), visible: false);
     
     tfNumber = new Zei.Sprite("buffer", "terraform", Zei.images["numbers"], new Zei.Vector2.empty(), 16, 16, animated: true, frame: terraformingHeight, visible: false);
+    tfNumber.stopAnimation();
     
     // create target cursor used when a ship is selected
     targetCursor = new Zei.Sprite("buffer", "targetsymbol", Zei.images["targetcursor"], new Zei.Vector2.empty(), 48, 48, visible: false, anchor: new Zei.Vector2(0.5, 0.5));
@@ -179,7 +180,7 @@ class Game {
     querySelector('#paused').style.display = 'block';
     paused = true;
     stopwatch.stop();
-    Zei.stopAnimations();
+    Zei.Renderer.stopAnimations();
 
   }
 
@@ -188,7 +189,7 @@ class Game {
     querySelector('#win').style.display = 'none';
     paused = false;
     stopwatch.start();
-    Zei.startAnimations();
+    Zei.Renderer.startAnimations();
   }
 
   void stop() {
@@ -653,7 +654,7 @@ class Game {
    * Is called by a periodic timer.
    */ 
   void update() {
-    Zei.update();
+    Zei.GameObject.updateAll();
     
     if (!paused) { 
       Building.updateQueue();
@@ -684,42 +685,39 @@ class Game {
   }
 
   /**
-   * Draws the range boxes around the [position] of a building.
+   * Updates the range boxes around the [position] of a building.
    */
-  void drawRangeBoxes(Zei.Vector2 position, Building building) {
-    CanvasRenderingContext2D context = Zei.renderer["buffer"].context;
-    
+  void updateRangeBoxes(Zei.Vector2 position, Building building) {
+       
     if (canBePlaced(position, building) && (building.type == "collector" || building.type == "cannon" || building.type == "mortar" || building.type == "shield" || building.type == "beam" || building.type == "terp" || building.type == "analyzer")) {
 
       Zei.Vector2 positionCenter = new Zei.Vector2(position.x * Tile.size + (Tile.size / 2), position.y * Tile.size + (Tile.size / 2));
       int positionHeight = game.world.tiles[position.x][position.y].height;
       
-      context.save();
-      context.globalAlpha = .35;
-
-      for (int i = -building.weaponRadius; i <= building.weaponRadius; i++) {
-        for (int j = -building.weaponRadius; j <= building.weaponRadius; j++) {
+      for (int i = -building.radius; i <= building.radius; i++) {
+        for (int j = -building.radius; j <= building.radius; j++) {
 
           Zei.Vector2 positionCurrent = position + new Zei.Vector2(i, j);
 
           if (world.contains(positionCurrent)) {
             Zei.Vector2 positionCurrentCenter = new Zei.Vector2(positionCurrent.x * Tile.size + (Tile.size / 2), positionCurrent.y * Tile.size + (Tile.size / 2));
-            Zei.Vector2 drawPositionCurrent = game.convertToView("main", positionCurrent * Tile.size);
             
             int positionCurrentHeight = game.world.tiles[positionCurrent.x][positionCurrent.y].height;
 
-            if (positionCenter.distanceTo(positionCurrentCenter) < building.weaponRadius * Tile.size) {
-              context.fillStyle = "#fff";
+            if (positionCenter.distanceTo(positionCurrentCenter) < building.radius * Tile.size) {
+              Tile tile = game.world.getTile(positionCurrent * Tile.size);
+              tile.rangeBox.visible = true;            
+
               if ((building.type == "collector" && positionCurrentHeight != positionHeight) ||
                   (building.type == "cannon" && positionCurrentHeight > positionHeight))
-                context.fillStyle = "#f00";
-              context.fillRect(drawPositionCurrent.x, drawPositionCurrent.y, Tile.size * zoom, Tile.size * zoom);
+                tile.rangeBox.fillColor = new Zei.Color(255, 0, 0, 0.35);
+              else {
+                tile.rangeBox.fillColor = new Zei.Color(255, 255, 255, 0.35);
+              }
             }
-
           }
         }
       }
-      context.restore();
     }
   }
 
@@ -851,7 +849,7 @@ class Game {
       
       // set visibility of reposition rect
       game.repositionRect.visible = false;
-      for (var building in Zei.gameObjects) {
+      for (var building in Zei.GameObject.gameObjects) {
         if (building is Building) {
           if (building.built && building.selected && building.canMove) {
             mouse.hideCursor();
@@ -960,12 +958,13 @@ class Game {
   void drawGhosts() {
     if (UISymbol.activeSymbol != null) {
       CanvasRenderingContext2D context = Zei.renderer["buffer"].context;
-       
+      
+      game.world.hideRangeBoxes();
       for (int i = 0; i < ghosts.length; i++) {
         Zei.Vector2 drawPosition = game.convertToView("main", ghosts[i] * Tile.size);
         Zei.Vector2 ghostICenter = drawPosition + new Zei.Vector2(8 * zoom, 8 * zoom);
   
-        drawRangeBoxes(ghosts[i], UISymbol.activeSymbol.building);
+        updateRangeBoxes(ghosts[i], UISymbol.activeSymbol.building);
   
         if (world.contains(ghosts[i])) {
           context.save();
@@ -992,7 +991,7 @@ class Game {
 
           if (ghostCanBePlaced) {
             // draw lines to other buildings
-            for (var building in Zei.gameObjects) {
+            for (var building in Zei.GameObject.gameObjects) {
               if (building is Building) {
                 if (UISymbol.activeSymbol.building.type == "collector" || UISymbol.activeSymbol.building.type == "relay" ||
                     building.type == "collector" || building.type == "relay" || building.type == "base") {
@@ -1061,7 +1060,6 @@ class Game {
     
     Zei.renderer["buffer"].clear();
     Zei.renderer["buffer"].draw();
-    Building.draw();
     
     if (World.creeperDirty) {
       drawCreeper();
@@ -1079,7 +1077,7 @@ class Game {
     window.requestAnimationFrame(draw);
   }
    
-  // converts real coordinates to view coordinates (10 usages)
+  // converts real coordinates to view coordinates (7 usages)
   // used for graphics that are not managed by a renderer
   Zei.Vector2 convertToView(String rendererName, Zei.Vector2 vector) {
    return new Zei.Vector2(

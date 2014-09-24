@@ -20,7 +20,7 @@ class Connection {
   }
   
   static void add(Building building2) {  
-    for (var building in Zei.gameObjects) {
+    for (var building in Zei.GameObject.gameObjects) {
       if (building is Building) {
         if (Building != building2 && building.status == "IDLE" &&
             (building2.type == "collector" || building2.type == "relay" || building.type == "collector" || building.type == "relay" || building.type == "base")) {

@@ -2,7 +2,7 @@ part of creeper;
 
 class Shell extends Zei.GameObject {
   Zei.Vector2 targetPosition;
-  bool remove = false;
+  bool flagRemove = false;
   int trailCounter = 0;
   Zei.Sprite sprite;
   static final num baseSpeed = 1.5;
@@ -13,15 +13,15 @@ class Shell extends Zei.GameObject {
   
   static Shell add(Zei.Vector2 position, Zei.Vector2 targetPosition) {
     Shell shell = new Shell(position, targetPosition);
-    Zei.addGameObject(shell);
+    Zei.GameObject.add(shell);
     return shell;
   }
   
   void update() {
     if (!game.paused) {
-      if (remove) {
+      if (flagRemove) {
         Zei.renderer["buffer"].removeDisplayObject(sprite);
-        Zei.removeGameObject(this);
+        Zei.GameObject.remove(this);
       }
       else
         move();
@@ -40,7 +40,7 @@ class Shell extends Zei.GameObject {
 
     // if the target is reached explode and remove
     if (sprite.position == targetPosition) {
-      remove = true;
+      flagRemove = true;
 
       Zei.Vector2 targetPositionTiled = Tile.position(targetPosition);
       Explosion.add(targetPosition);

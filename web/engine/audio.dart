@@ -4,6 +4,11 @@ class Audio {
   static Map<String, List> sounds = new Map();
   static int channels = 0;
   
+  static void clear() {
+    sounds.clear();
+    channels = 0;
+  }
+  
   static void setChannels(int number) {
     channels = number;
   }

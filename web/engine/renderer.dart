@@ -25,6 +25,34 @@ class Renderer {
     renderer[name].updateRect(width, height);
     return renderer[name];
   }
+  
+  static void clearDisplayObjects() {
+    renderer.forEach((k, v) => v.removeAllDisplayObjects());
+  }
+  
+  static void stopAnimations() {
+    renderer.forEach((k, v) {
+      for (int i = 0; i < v.layers.length; i++) {
+        for (int j = 0; j < v.layers[i].displayObjects.length; j++) {
+          if (v.layers[i].displayObjects[j] is Sprite && v.layers[i].displayObjects[j].animated) {
+            v.layers[i].displayObjects[j].stopAnimation();
+          }
+        }
+      }
+    });
+  }
+  
+  static void startAnimations() {
+    renderer.forEach((k, v) {
+      for (int i = 0; i < v.layers.length; i++) {
+        for (int j = 0; j < v.layers[i].displayObjects.length; j++) {
+          if (v.layers[i].displayObjects[j] is Sprite && v.layers[i].displayObjects[j].animated) {
+            v.layers[i].displayObjects[j].startAnimation();
+          }
+        }
+      }
+    });
+  }
 
   void clear([Color color]) {
     if (color != null) {

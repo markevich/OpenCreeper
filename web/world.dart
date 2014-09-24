@@ -1,7 +1,7 @@
 part of creeper;
 
 class World extends Zei.GameObject {
-  List tiles;
+  List<List<Tile>> tiles;
   Zei.Vector2 size;
   int creeperCounter;
   static bool creeperDirty = true;
@@ -17,7 +17,7 @@ class World extends Zei.GameObject {
     for (int i = 0; i < size.x; i++) {
       tiles[i] = new List<Tile>(size.y);
       for (int j = 0; j < size.y; j++) {
-        tiles[i][j] = new Tile();
+        tiles[i][j] = new Tile(i, j);
       }
     }
 
@@ -30,6 +30,14 @@ class World extends Zei.GameObject {
         if (height > 10)
           height = 10;
         tiles[i][j].height = height;
+      }
+    }
+  }
+  
+  void hideRangeBoxes() {
+    for (int i = 0; i < size.x; i++) {
+      for (int j = 0; j < size.y; j++) {
+        tiles[i][j].rangeBox.visible = false;
       }
     }
   }

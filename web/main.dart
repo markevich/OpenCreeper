@@ -29,7 +29,7 @@ Game game;
 
 void main() {
   game = new Game().start(
-      friendly: true // disables enemies
+      friendly: false // disables enemies
       //seed: 1 // use seed
       );
 }

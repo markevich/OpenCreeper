@@ -5,13 +5,15 @@ class Building extends Zei.GameObject {
   String type, status = "IDLE"; // MOVING, RISING, FALLING
   bool operating = false, selected = false, hovered = false, built = false, active = true, canMove = false, needsEnergy = false, rotating = false;
   num health, maxHealth = 0, energy, maxEnergy = 0, healthRequests = 0, energyRequests = 0, rotation = 0;
-  int targetAngle, weaponRadius = 0, size, collectedEnergy = 0, flightCounter = 0, requestCounter = 0, energyCounter = 0;
+  int targetAngle, radius = 0, size, collectedEnergy = 0, flightCounter = 0, requestCounter = 0, energyCounter = 0;
   Ship ship;
-  Zei.Sprite sprite, cannon;
+  Zei.Sprite sprite, cannon, shield, inactiveSprite;
   Zei.Circle selectedCircle;
-  Zei.Rect targetSymbol;
-  static final double baseVelocity = .5;
+  Zei.Rect targetSymbol, energyBar, healthBar;
+  Zei.Line analyzerLineInner, analyzerLineOuter, beamLineInner, beamLineOuter, terpLineInner, terpLineOuter;
   int damageCounter = 0, collectCounter = 0;
+  Spore beamTarget;
+  static final double baseVelocity = .5;
   static Building base;
   static List<Packet> queue = new List<Packet>();
 
@@ -27,21 +29,21 @@ class Building extends Zei.GameObject {
       maxEnergy = 20;
       canMove = true;
       needsEnergy = true;
-      weaponRadius = 10;
+      radius = 10;
     }
     else if (type == "terp") {
       maxHealth = 60;
       maxEnergy = 20;
       canMove = true;
       needsEnergy = true;
-      weaponRadius = 20;
+      radius = 20;
     }
     else if (type == "shield") {
       maxHealth = 75;
       maxEnergy = 20;
       canMove = true;
       needsEnergy = true;
-      weaponRadius = 10;
+      radius = 10;
     }
     else if (type == "bomber") {
       maxHealth = 75;
@@ -56,6 +58,7 @@ class Building extends Zei.GameObject {
     }
     else if (type == "collector") {
       maxHealth = 5;
+      radius = 6;
     }
     else if (type == "relay") {
       maxHealth = 10;
@@ -63,7 +66,7 @@ class Building extends Zei.GameObject {
     else if (type == "cannon") {
       maxHealth = 25;
       maxEnergy = 40;
-      weaponRadius = 10;
+      radius = 10;
       canMove = true;
       needsEnergy = true;
       energyCounter = 15;
@@ -71,7 +74,7 @@ class Building extends Zei.GameObject {
     else if (type == "mortar") {
       maxHealth = 40;
       maxEnergy = 20;
-      weaponRadius = 14;
+      radius = 14;
       canMove = true;
       needsEnergy = true;
       energyCounter = 200;
@@ -79,7 +82,7 @@ class Building extends Zei.GameObject {
     else if (type == "beam") {
       maxHealth = 20;
       maxEnergy = 10;
-      weaponRadius = 20;
+      radius = 20;
       canMove = true;
       needsEnergy = true;
     }
@@ -91,11 +94,11 @@ class Building extends Zei.GameObject {
     sprite = new Zei.Sprite("buffer", "building", Zei.images[imageID], position, 48, 48, anchor: new Zei.Vector2(0.5, 0.5), alpha: 0.5);
 
     selectedCircle = new Zei.Circle("buffer", "selectedcircle", position, 24, 2, null, new Zei.Color.white(), visible: false);
-      
+
     health = 0;
     size = 3;
     energy = 0;
-    
+        
     if (type == "base") {
       sprite.size = new Zei.Vector2(144, 144);
       sprite.alpha = 1.0;
@@ -114,21 +117,29 @@ class Building extends Zei.GameObject {
       maxEnergy = 20;
       canMove = true;
       needsEnergy = true;
-      weaponRadius = 10;
+      radius = 10;
+      
+      analyzerLineOuter = new Zei.Line("buffer", "projectile", position, new Zei.Vector2.empty(), 5, new Zei.Color.blue(), visible: false);
+      analyzerLineInner = new Zei.Line("buffer", "projectile", position, new Zei.Vector2.empty(), 3, new Zei.Color.white(), visible: false);      
     }
     else if (type == "terp") {
       maxHealth = game.debug == true ? 1 : 60;
       maxEnergy = 20;
       canMove = true;
       needsEnergy = true;
-      weaponRadius = 20;
+      radius = 20;
+      
+      terpLineOuter = new Zei.Line("buffer", "projectile", position, new Zei.Vector2.empty(), 5, new Zei.Color.green(), visible: false);
+      terpLineInner = new Zei.Line("buffer", "projectile", position, new Zei.Vector2.empty(), 3, new Zei.Color.white(), visible: false);  
     }
     else if (type == "shield") {
       maxHealth = game.debug == true ? 1 : 75;
       maxEnergy = 20;
       canMove = true;
       needsEnergy = true;
-      weaponRadius = 10;
+      radius = 10;
+      
+      shield = new Zei.Sprite("buffer", "shield", Zei.images["forcefield"], position, 336, 336, anchor: new Zei.Vector2(0.5, 0.5), alpha: 0.5, visible: false);
     }
     else if (type == "bomber") {
       maxHealth = game.debug == true ? 1 : 75;
@@ -143,6 +154,7 @@ class Building extends Zei.GameObject {
     }
     else if (type == "collector") {
       maxHealth = game.debug == true ? 1 : 5;
+      radius = 6;
     }
     else if (type == "relay") {
       maxHealth = game.debug == true ? 1 : 10;
@@ -150,7 +162,7 @@ class Building extends Zei.GameObject {
     else if (type == "cannon") {
       maxHealth = game.debug == true ? 1 : 25;
       maxEnergy = 40;
-      weaponRadius = 10;
+      radius = 10;
       canMove = true;
       needsEnergy = true;
       energyCounter = 15;
@@ -160,7 +172,7 @@ class Building extends Zei.GameObject {
     else if (type == "mortar") {
       maxHealth = game.debug == true ? 1 : 40;
       maxEnergy = 20;
-      weaponRadius = 14;
+      radius = 14;
       canMove = true;
       needsEnergy = true;
       energyCounter = 200;
@@ -168,12 +180,28 @@ class Building extends Zei.GameObject {
     else if (type == "beam") {
       maxHealth = game.debug == true ? 1 : 20;
       maxEnergy = 10;
-      weaponRadius = 20;
+      radius = 20;
       canMove = true;
       needsEnergy = true;
+      
+      beamLineOuter = new Zei.Line("buffer", "projectile", position, new Zei.Vector2.empty(), 5, new Zei.Color.red(), visible: false);
+      beamLineInner = new Zei.Line("buffer", "projectile", position, new Zei.Vector2.empty(), 3, new Zei.Color.white(), visible: false); 
     }
     
     targetSymbol = new Zei.Rect("buffer", "targetsymbol", new Zei.Vector2.empty(), new Zei.Vector2(size * Tile.size, size * Tile.size), 1, new Zei.Color.green(), null, visible: false, anchor: new Zei.Vector2(0.5, 0.5));
+     
+    if (needsEnergy) {
+      energyBar = new Zei.Rect("buffer", "buildinginfo", 
+                               position - new Zei.Vector2(size * Tile.size / 2 - 2, size * Tile.size / 2 - 4),
+                               new Zei.Vector2(((size * Tile.size - 4) / maxEnergy) * energy, 3),
+                               0, new Zei.Color.red(), null);
+    }
+    healthBar = new Zei.Rect("buffer", "buildinginfo", 
+                                   position - new Zei.Vector2(size * Tile.size / 2 - 2, -size * Tile.size / 2 + 7),
+                                   new Zei.Vector2(((size * Tile.size - 4) / maxHealth) * health, 3),
+                                   0, new Zei.Color.green(), null, visible: false); 
+    
+    inactiveSprite = new Zei.Sprite("buffer", "buildinginfo", Zei.images["inactive"], position, 144, 144, anchor: new Zei.Vector2(0.5, 0.5), visible: false, scale: new Zei.Vector2(1.0 / 9 * size, 1.0 / 9 * size));
     
     Connection.add(this);
   }
@@ -185,7 +213,7 @@ class Building extends Zei.GameObject {
     position = position * 16 + new Zei.Vector2(8, 8);
     Building building = new Building(position, type);
     if (type == "base") base = building;
-    Zei.addGameObject(building);
+    Zei.GameObject.add(building);
     return building;
   }
   
@@ -228,7 +256,7 @@ class Building extends Zei.GameObject {
     if (building.cannon != null)
       Zei.renderer["buffer"].removeDisplayObject(building.cannon);
 
-    Zei.gameObjects.remove(building);
+    Zei.GameObject.remove(building);
   }
   
   static void addToQueue(Packet packet) {
@@ -253,9 +281,9 @@ class Building extends Zei.GameObject {
   }
   
   static void removeSelected() {
-    for (var i = Zei.gameObjects.length - 1; i >= 0; i--) {
-      if (Zei.gameObjects[i] is Building) {
-        Building building = Zei.gameObjects[i];
+    for (var i = Zei.GameObject.gameObjects.length - 1; i >= 0; i--) {
+      if (Zei.GameObject.gameObjects[i] is Building) {
+        Building building = Zei.GameObject.gameObjects[i];
         if (building.selected) {
           if (building.type != "base")
             Building.remove(building);
@@ -267,7 +295,7 @@ class Building extends Zei.GameObject {
   static void select() {
     if (game.mode == "DEFAULT") {
       Building buildingSelected = null;
-      for (var building in Zei.gameObjects) {
+      for (var building in Zei.GameObject.gameObjects) {
         if (building is Building) {
           building.selected = building.hovered;
           if (building.selected) {
@@ -294,12 +322,13 @@ class Building extends Zei.GameObject {
   }
   
   static void deselect() {
-    for (var building in Zei.gameObjects) {
+    for (var building in Zei.GameObject.gameObjects) {
       if (building is Building) {
         building.selected = false;
         building.selectedCircle.visible = false;
       }
     }
+    game.world.hideRangeBoxes();
     querySelector('#deactivate').style.display = "none";
     querySelector('#activate').style.display = "none";
   }
@@ -310,7 +339,7 @@ class Building extends Zei.GameObject {
     if (!game.paused) {
       move();
       checkOperating();
-      shield();
+      shieldAction();
       requestPacket();
       
       // take damage
@@ -330,22 +359,35 @@ class Building extends Zei.GameObject {
   }
   
   static void activate() {
-    for (var building in Zei.gameObjects) {
+    for (var building in Zei.GameObject.gameObjects) {
       if (building is Building) {
         if (building.selected)
           building.active = true;
+          building.inactiveSprite.visible = false;
+        
+          if (building.type == "shield") {
+            building.shield.visible = true;
+          }
+          
+          if (building.type == "analyzer") {
+            building.analyzerLineInner.visible = true;
+            building.analyzerLineOuter.visible = true;
+          }
       }
     }
   }
   
   static void deactivate() {
-    for (var building in Zei.gameObjects) {
+    for (var building in Zei.GameObject.gameObjects) {
       if (building is Building) {
         if (building.selected) {
           building.active = false;
+          building.inactiveSprite.visible = true;
           
           if (building.type == "analyzer") {
-            for (var emitter in Zei.gameObjects) {
+            building.analyzerLineInner.visible = false;
+            building.analyzerLineOuter.visible = false;
+            for (var emitter in Zei.GameObject.gameObjects) {
               if (emitter is Emitter) {
                 if (building.weaponTargetPosition == emitter.sprite.position) {
                   emitter.analyzer = null;
@@ -356,13 +398,17 @@ class Building extends Zei.GameObject {
             }
           }
           
+          if (building.type == "shield") {
+            building.shield.visible = false;
+          }
+          
         }
       }
     }
   }
   
   static void reposition(Zei.Vector2 position) { 
-    for (var building in Zei.gameObjects) {
+    for (var building in Zei.GameObject.gameObjects) {
       if (building is Building) {
         if (building.built && building.selected && building.canMove) {
           // check if it can be placed
@@ -384,7 +430,7 @@ class Building extends Zei.GameObject {
   
   static bool intersect(Rectangle rectangle, [Building building2]) {  
     // check stationary buildings
-    for (var building in Zei.gameObjects) {
+    for (var building in Zei.GameObject.gameObjects) {
       if (building is Building) {
         if (building2 != null && building2 == building)
           continue;
@@ -419,7 +465,7 @@ class Building extends Zei.GameObject {
   List getNeighbours(Building target) {
     List neighbours = new List();
     
-    for (var building in Zei.gameObjects) {
+    for (var building in Zei.GameObject.gameObjects) {
       if (building is Building) {
         // must not be the same building
         if (building.position != position) {
@@ -470,6 +516,10 @@ class Building extends Zei.GameObject {
         Zei.renderer["buffer"].switchLayer(sprite, "buildingflying");
         if (cannon != null)
           Zei.renderer["buffer"].switchLayer(cannon, "buildinggunflying");
+        if (energyBar != null) {
+          Zei.renderer["buffer"].switchLayer(energyBar, "buildinginfoflying");
+        }
+        Zei.renderer["buffer"].switchLayer(healthBar, "buildinginfoflying");
       }
     }
     
@@ -489,12 +539,20 @@ class Building extends Zei.GameObject {
         Zei.renderer["buffer"].switchLayer(sprite, "building");
         if (cannon != null)
           Zei.renderer["buffer"].switchLayer(cannon, "buildinggun");
+        if (energyBar != null) {
+          Zei.renderer["buffer"].switchLayer(energyBar, "buildinginfo");
+        }
+        Zei.renderer["buffer"].switchLayer(healthBar, "buildinginfo");
       }
     }
 
     if (status == "MOVING") {
       if (moveTargetPosition.x != position.x || moveTargetPosition.y != position.y) {
         position += ((moveTargetPosition - position).normalize() * Building.baseVelocity * game.speed).clamp(moveTargetPosition - position);
+        if (energyBar != null) {
+          energyBar.position = position - new Zei.Vector2(size * Tile.size / 2 - 2, size * Tile.size / 2 - 4);
+        }
+        healthBar.position = position - new Zei.Vector2(size * Tile.size / 2 - 2, -size * Tile.size / 2 + 7);
       }    
       
       if (position.x > moveTargetPosition.x - 1 &&
@@ -502,6 +560,10 @@ class Building extends Zei.GameObject {
           position.y > moveTargetPosition.y - 1 &&
           position.y < moveTargetPosition.y + 1) {
         position = moveTargetPosition;
+        if (energyBar != null) {
+          energyBar.position = position - new Zei.Vector2(size * Tile.size / 2 - 2, size * Tile.size / 2 - 4);
+        }
+        healthBar.position = position - new Zei.Vector2(size * Tile.size / 2 - 2, -size * Tile.size / 2 + 7);
         status = "FALLING";
       }
       
@@ -513,6 +575,7 @@ class Building extends Zei.GameObject {
     // buildings can only be damaged while not moving
     if (status == "IDLE") {
 
+      var oldHealth = health;
       for (int i = -(size ~/ 2); i <= (size ~/ 2); i++) {
         for (int j = -(size ~/ 2); j <= -(size ~/ 2); j++) {
           Zei.Vector2 tempPosition = position + new Zei.Vector2(i * Tile.size, j * Tile.size);
@@ -522,6 +585,11 @@ class Building extends Zei.GameObject {
           }
         }
       }
+      
+      if (health != oldHealth) {
+        healthBar.visible = true;    
+        healthBar.size.x = ((size * Tile.size - 4) / maxHealth) * health;
+      }
 
       if (health < 0) {
         Building.remove(this);
@@ -529,11 +597,11 @@ class Building extends Zei.GameObject {
     }
   }
   
-  void shield() {
+  void shieldAction() {
     if (built && operating && type == "shield" && status == "IDLE") {
 
-      for (int i = -weaponRadius; i <= weaponRadius; i++) {
-        for (int j = -weaponRadius; j <= weaponRadius; j++) {
+      for (int i = -radius; i <= radius; i++) {
+        for (int j = -radius; j <= radius; j++) {
           Zei.Vector2 tempPosition = position + new Zei.Vector2(i * Tile.size, j * Tile.size);
           if (game.world.contains(tempPosition / Tile.size)) {  
             var distance = position.distanceTo(tempPosition + new Zei.Vector2(8, 8));
@@ -590,48 +658,50 @@ class Building extends Zei.GameObject {
   }
 
   void collectEnergy() {
-    if (type == "collector" && built) {
-      int height = game.world.getTile(position).height;
-
-      for (int i = -5; i < 7; i++) {
-        for (int j = -5; j < 7; j++) {
-          Zei.Vector2 tempPosition = position + new Zei.Vector2(i * Tile.size, j * Tile.size);
-          if (game.world.contains(tempPosition / Tile.size)) {
-            int tileHeight = game.world.getTile(tempPosition).height;
-
-            if (position.distanceTo(tempPosition + new Zei.Vector2(8, 8)) < Tile.size * 6) {
-              if (tileHeight == height) {
-                if (game.world.getTile(tempPosition).collector == this)
-                  collectedEnergy += 1;
+    if (active) {
+      if (type == "collector" && built) {
+        int height = game.world.getTile(position).height;
+  
+        for (int i = -5; i < 7; i++) {
+          for (int j = -5; j < 7; j++) {
+            Zei.Vector2 tempPosition = position + new Zei.Vector2(i * Tile.size, j * Tile.size);
+            if (game.world.contains(tempPosition / Tile.size)) {
+              int tileHeight = game.world.getTile(tempPosition).height;
+  
+              if (position.distanceTo(tempPosition + new Zei.Vector2(8, 8)) < Tile.size * 6) {
+                if (tileHeight == height) {
+                  if (game.world.getTile(tempPosition).collector == this)
+                    collectedEnergy += 1;
+                }
               }
             }
           }
         }
       }
-    }
-    
-    if (type == "reactor" && built) {
-      collectedEnergy += 50;
-    }
-    
-    if (type == "base") {
-      collectedEnergy += 100;
-    }
-
-    if (collectedEnergy >= 100) {
-      collectedEnergy -= 100;
-      if (type == "collector") {
-        Packet packet = new Packet(this, Building.base, "collection");
-        if (packet.findRoute())
-          packet.send();
-        else
-          Zei.renderer["buffer"].removeDisplayObject(packet.sprite);
+      
+      if (type == "reactor" && built) {
+        collectedEnergy += 50;
       }
-      if (type == "reactor" || type == "base") {
-        Building.base.energy += 1;
-        if (Building.base.energy > Building.base.maxEnergy)
-          Building.base.energy = Building.base.maxEnergy;
-        game.updateEnergyElement();
+      
+      if (type == "base") {
+        collectedEnergy += 100;
+      }
+  
+      if (collectedEnergy >= 100) {
+        collectedEnergy -= 100;
+        if (type == "collector") {
+          Packet packet = new Packet(this, Building.base, "collection");
+          if (packet.findRoute())
+            packet.send();
+          else
+            Zei.renderer["buffer"].removeDisplayObject(packet.sprite);
+        }
+        if (type == "reactor" || type == "base") {
+          Building.base.energy += 1;
+          if (Building.base.energy > Building.base.maxEnergy)
+            Building.base.energy = Building.base.maxEnergy;
+          game.updateEnergyElement();
+        }
       }
     }
   }
@@ -643,8 +713,8 @@ class Building extends Zei.GameObject {
   void updateCollection(String action) {
     int height = game.world.getTile(position).height;
 
-    for (int i = -5; i < 7; i++) {
-      for (int j = -5; j < 7; j++) {
+    for (int i = -radius; i <= radius; i++) {
+      for (int j = -radius; j <= radius; j++) {
 
         var tiledPosition = Tile.position(position);
         Zei.Vector2 positionCurrent = new Zei.Vector2(tiledPosition.x + i, tiledPosition.y + j);
@@ -661,7 +731,7 @@ class Building extends Zei.GameObject {
                 game.world.tiles[positionCurrent.x][positionCurrent.y].collector = null;
 
                 // check if another collector can take this tile
-                for (var building in Zei.gameObjects) {
+                for (var building in Zei.GameObject.gameObjects) {
                   if (building is Building) {
                     if (building != this && building.type == "collector") {
                       int heightK = game.world.getTile(building.position).height;
@@ -700,20 +770,24 @@ class Building extends Zei.GameObject {
       if (type == "terp" && energy > 0) {
         // find lowest tile
         if (weaponTargetPosition == null) {
+          terpLineInner.visible = false;
+          terpLineOuter.visible = false;
           int lowestTile = 10;
           
           var positionTiled = Tile.position(position);
-          for (int i = -weaponRadius; i <= weaponRadius; i++) {
-            for (int j = -weaponRadius; j <= weaponRadius; j++) {
+          for (int i = -radius; i <= radius; i++) {
+            for (int j = -radius; j <= radius; j++) {
 
               Zei.Vector2 tilePosition = positionTiled + new Zei.Vector2(i, j);
               
               if (game.world.contains(tilePosition) && game.world.tiles[tilePosition.x][tilePosition.y].terraformTarget > -1 && game.world.tiles[tilePosition.x][tilePosition.y].creep == 0) {
                 int tileHeight = game.world.tiles[tilePosition.x][tilePosition.y].height;
                 
-                if (tileHeight <= lowestTile && (tilePosition * Tile.size + new Zei.Vector2(8, 8)).distanceTo(position) <= weaponRadius * Tile.size) {
+                if (tileHeight <= lowestTile && (tilePosition * Tile.size + new Zei.Vector2(8, 8)).distanceTo(position) <= radius * Tile.size) {
                   lowestTile = tileHeight;
                   weaponTargetPosition = new Zei.Vector2(tilePosition.x, tilePosition.y);
+                  terpLineInner.to = weaponTargetPosition * Tile.size + new Zei.Vector2(8, 8);
+                  terpLineOuter.to = weaponTargetPosition * Tile.size + new Zei.Vector2(8, 8);
                 }
               }
             }
@@ -722,6 +796,8 @@ class Building extends Zei.GameObject {
           if (energyCounter >= 20) {
             energyCounter -=20;
             energy -= 1;
+            terpLineInner.visible = true;
+            terpLineOuter.visible = true;
           }
 
           operating = true;
@@ -758,17 +834,22 @@ class Building extends Zei.GameObject {
             }
 
             weaponTargetPosition = null;
-            operating = false;
+            //operating = false;
           }
         }
       }
 
-      else if (type == "shield" && energy > 0) {
-        if (energyCounter >= 20) {
-          energyCounter -= 20;
-          energy -= 1;
+      else if (type == "shield") {
+        shield.visible = false;
+        if (energy > 0) {
+          shield.visible = false;
+          if (energyCounter >= 20) {
+            energyCounter -= 20;
+            energy -= 1;
+          }
+          operating = true;
+          shield.visible = true;
         }
-        operating = true;
       }
 
       else if (type == "cannon" && energy > 0 && energyCounter >= 15) {
@@ -783,8 +864,8 @@ class Building extends Zei.GameObject {
 
           // find closest random target
           var targetPositionTiled = Tile.position(position);
-          for (int i = -weaponRadius; i <= weaponRadius; i++) {
-            for (int j = -weaponRadius; j <= weaponRadius; j++) {
+          for (int i = -radius; i <= radius; i++) {
+            for (int j = -radius; j <= radius; j++) {
 
               Zei.Vector2 tilePosition = targetPositionTiled + new Zei.Vector2(i, j);
 
@@ -795,7 +876,7 @@ class Building extends Zei.GameObject {
 
                   num distance = (tilePosition * Tile.size + new Zei.Vector2(8, 8)).distanceTo(position);
 
-                  if (distance <= pow(weaponRadius * Tile.size, 2) && distance <= closestDistance) {
+                  if (distance <= pow(radius * Tile.size, 2) && distance <= closestDistance) {
                     closestDistance = distance;
                     targets.add(tilePosition);
                   }
@@ -853,16 +934,16 @@ class Building extends Zei.GameObject {
       else if (type == "mortar" && energy > 0 && energyCounter >= 200) {
         energyCounter =- 200;
 
-          // find most creep in range
+        // find most creep in range
         Zei.Vector2 target = null;
           var highestCreep = 0;
           var tiledPosition = Tile.position(position);
-          for (int i = tiledPosition.x - weaponRadius; i <= tiledPosition.x + weaponRadius; i++) {
-            for (int j = tiledPosition.y - weaponRadius; j <= tiledPosition.y + weaponRadius; j++) {
+          for (int i = tiledPosition.x - radius; i <= tiledPosition.x + radius; i++) {
+            for (int j = tiledPosition.y - radius; j <= tiledPosition.y + radius; j++) {
               if (game.world.contains(new Zei.Vector2(i, j))) {
                 var distance = pow((i * Tile.size + Tile.size / 2) - position.x, 2) + pow((j * Tile.size + Tile.size / 2) - position.y, 2);
 
-                if (distance <= pow(weaponRadius * Tile.size, 2) && game.world.tiles[i][j].creep > 0 && game.world.tiles[i][j].creep >= highestCreep) {
+                if (distance <= pow(radius * Tile.size, 2) && game.world.tiles[i][j].creep > 0 && game.world.tiles[i][j].creep >= highestCreep) {
                   highestCreep = game.world.tiles[i][j].creep;
                   target = new Zei.Vector2(i, j);
                 }
@@ -876,29 +957,35 @@ class Building extends Zei.GameObject {
           }
         }
 
-      else if (type == "beam" && energy > 0 && energyCounter > 0) {
-        energyCounter = 0;
-
-        Spore.damage(this);
+      else if (type == "beam") {
+        beamLineInner.visible = false;
+        beamLineOuter.visible = false;
+        if (energy > 0 && energyCounter > 0) {
+          energyCounter = 0;  
+          Spore.damage(this);
+        }
       }
+      
+      energyBar.size.x = ((size * Tile.size - 4) / maxEnergy) * energy;
     }
   }
   
   static void drawRepositionInfo() {
     CanvasRenderingContext2D context = Zei.renderer["buffer"].context;
         
-    for (var building in Zei.gameObjects) {
+    for (var building in Zei.GameObject.gameObjects) {
       if (building is Building) {
         if (building.built && building.selected && building.canMove) {
           game.mouse.hideCursor();
           
           Zei.Vector2 positionI = game.convertToView("main", game.hoveredTile * Tile.size + new Zei.Vector2(Tile.size / 2 * game.zoom, Tile.size / 2 * game.zoom));
           
-          game.drawRangeBoxes(game.hoveredTile, building);
+          game.world.hideRangeBoxes();
+          game.updateRangeBoxes(game.hoveredTile, building);
      
           if (game.canBePlaced(game.hoveredTile, building)) {
             // draw lines to other buildings
-            for (var building2 in Zei.gameObjects) {
+            for (var building2 in Zei.GameObject.gameObjects) {
               if (building2 is Building) {
                 if (building != building2) {
                   if (building.type == "base" || building2.type == "collector" || building2.type == "relay" || building2.type == "base") {
@@ -930,103 +1017,5 @@ class Building extends Zei.GameObject {
         }
       }
     }
-  }
-
-  static void draw() {
-    CanvasRenderingContext2D context = Zei.renderer["buffer"].context;
-    
-    for (var building in Zei.gameObjects) {
-      if (building is Building) {
-        Zei.Vector2 realPosition = game.convertToView("main", building.position);
-    
-        if (Zei.renderer["buffer"].isVisible(building.sprite)) {
-          // draw energy bar
-          if (building.needsEnergy) {
-            context.fillStyle = '#f00';
-            context.fillRect(realPosition.x - (building.size * Tile.size / 2 - 2) * game.zoom,
-                             realPosition.y - (building.size * Tile.size / 2 - 4) * game.zoom,
-                             ((building.size * Tile.size * game.zoom - 4) / building.maxEnergy) * building.energy,
-                             3 * game.zoom);
-          }
-    
-          // draw health bar (only if health is below maxHealth)
-          if (building.health < building.maxHealth) {
-            context.fillStyle = '#0f0';
-            context.fillRect(realPosition.x - (building.size * Tile.size / 2 - 2) * game.zoom,
-                             realPosition.y + (building.size * Tile.size / 2 - 4) * game.zoom,
-                             ((building.size * Tile.size * game.zoom - 4) / building.maxHealth) * building.health,
-                             3 * game.zoom);
-          }
-    
-          // draw inactive sign
-          if (!building.active) {
-            context.strokeStyle = "#F00";
-            context.lineWidth = 2 * game.zoom;
-    
-            context.beginPath();
-            context.arc(realPosition.x, realPosition.y, (Tile.size / 2) * building.size, 0, PI * 2, true);
-            context.closePath();
-            context.stroke();
-    
-            context.beginPath();
-            context.moveTo(realPosition.x - (Tile.size * building.size / 3), realPosition.y + (Tile.size * building.size / 3));
-            context.lineTo(realPosition.x + (Tile.size * building.size / 3), realPosition.y - (Tile.size * building.size / 3));
-            context.stroke();
-          }
-        }
-    
-        // draw various stuff when operating
-        if (building.operating) {
-          if (building.type == "analyzer") {
-            Zei.Vector2 targetPosition = game.convertToView("main", building.weaponTargetPosition);
-            context
-              ..strokeStyle = '#00f'
-              ..lineWidth = 5 * game.zoom
-              ..beginPath()
-              ..moveTo(realPosition.x, realPosition.y)
-              ..lineTo(targetPosition.x, targetPosition.y)
-              ..stroke()
-              ..strokeStyle = '#fff'
-              ..lineWidth = 3 * game.zoom
-              ..stroke();
-          }
-          else if (building.type == "beam") {
-            Zei.Vector2 targetPosition = game.convertToView("main", building.weaponTargetPosition);
-            context
-              ..strokeStyle = '#f00'
-              ..lineWidth = 5 * game.zoom
-              ..beginPath()
-              ..moveTo(realPosition.x, realPosition.y)
-              ..lineTo(targetPosition.x, targetPosition.y)
-              ..stroke()
-              ..strokeStyle = '#fff'
-              ..lineWidth = 3 * game.zoom
-              ..stroke();
-          }
-          else if (building.type == "shield") {
-            context
-              ..save()
-              ..globalAlpha = .5
-              ..drawImageScaled(Zei.images["forcefield"], realPosition.x - 168 * game.zoom, realPosition.y - 168 * game.zoom, 336 * game.zoom, 336 * game.zoom)
-              ..restore();
-          }
-          else if (building.type == "terp") {
-            Zei.Vector2 targetPosition = game.convertToView("main", building.weaponTargetPosition * Tile.size);
-    
-            context
-              ..strokeStyle = '#f00'
-              ..lineWidth = 4 * game.zoom
-              ..beginPath()
-              ..moveTo(realPosition.x, realPosition.y)
-              ..lineTo(targetPosition.x + 8, targetPosition.y + 8)
-              ..stroke()
-              ..strokeStyle = '#fff'
-              ..lineWidth = 2 * game.zoom
-              ..stroke();
-          }
-        }
-      }
-    }
-
   }
 }

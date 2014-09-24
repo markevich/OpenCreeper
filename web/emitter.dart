@@ -12,7 +12,7 @@ class Emitter extends Zei.GameObject {
   
   static Emitter add(Zei.Vector2 position, int strength) {
     Emitter emitter = new Emitter(position, strength);
-    Zei.addGameObject(emitter);
+    Zei.GameObject.add(emitter);
     return emitter;
   }
    
@@ -31,29 +31,41 @@ class Emitter extends Zei.GameObject {
   }
   
   static void find(Building building) {   
+    // if building has no target find target
     if (building.weaponTargetPosition == null && building.energy > 0) {
-      for (var emitter in Zei.gameObjects) {
+      for (var emitter in Zei.GameObject.gameObjects) {
         if (emitter is Emitter) { 
-          if (emitter.sprite.position.distanceTo(building.sprite.position) <= building.weaponRadius * Tile.size) {
+          if (emitter.sprite.position.distanceTo(building.sprite.position) <= building.radius * Tile.size) {
             if (emitter.analyzer == null) {
               emitter.analyzer = building;
               building.weaponTargetPosition = emitter.sprite.position;
+              building.analyzerLineInner.to = emitter.sprite.position;
+              building.analyzerLineOuter.to = emitter.sprite.position;
               break;
             }
           }
         }
       }
     }
+    // else if it already has a target
     else {
+      // if it has energy operate
       if (building.energy > 0) {
         if (building.energyCounter > 20) {
           building.energyCounter = 0;
           building.energy -= 1;
         }
         building.operating = true;
-      } else {
+        building.analyzerLineInner.visible = true;
+        building.analyzerLineOuter.visible = true;  
+      }
+      // else stop operating
+      else {
         building.operating = false;
-        for (var emitter in Zei.gameObjects) {
+        building.analyzerLineInner.visible = false;
+        building.analyzerLineOuter.visible = false;
+        // clear target
+        for (var emitter in Zei.GameObject.gameObjects) {
           if (emitter is Emitter) {
             if (building.weaponTargetPosition == emitter.sprite.position) {
               emitter.analyzer = null;
@@ -70,7 +82,7 @@ class Emitter extends Zei.GameObject {
     if (!game.won) {
       int emittersChecked = 0;
       List emitters = [];
-      for (var emitter in Zei.gameObjects) {
+      for (var emitter in Zei.GameObject.gameObjects) {
         if (emitter is Emitter) {
           emitters.add(emitter);        
         }
@@ -91,7 +103,7 @@ class Emitter extends Zei.GameObject {
   }
   
   static bool intersect(Rectangle rectangle) {  
-    for (var emitter in Zei.gameObjects) {
+    for (var emitter in Zei.GameObject.gameObjects) {
       if (emitter is Emitter) {
         Rectangle emitterRect = new Rectangle(emitter.sprite.position.x - 3 * Tile.size / 2,
                                               emitter.sprite.position.y - 3 * Tile.size / 2,

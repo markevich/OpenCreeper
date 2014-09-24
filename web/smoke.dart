@@ -9,13 +9,13 @@ class Smoke extends Zei.GameObject {
    
   static void add(Zei.Vector2 position) {
     Smoke smoke = new Smoke(position);
-    Zei.addGameObject(smoke);
+    Zei.GameObject.add(smoke);
   }
   
   void update() {
     if (sprite.frame == 36) {
       Zei.renderer["buffer"].removeDisplayObject(sprite);
-      Zei.removeGameObject(this);
+      Zei.GameObject.remove(this);
     }
   }
 }
