@@ -9,7 +9,7 @@ class Packet extends Zei.GameObject {
   static num baseSpeed = 3;
 
   Packet(this.currentTarget, this.target, this.type) {
-    sprite = new Zei.Sprite("buffer", "packet", Zei.images["packet_" + type], currentTarget.position, 16, 16, visible: false, anchor: new Zei.Vector2(0.5, 0.5));
+    sprite = Zei.Sprite.create("buffer", "packet", Zei.images["packet_" + type], currentTarget.position, 16, 16, visible: false, anchor: new Zei.Vector2(0.5, 0.5));
   }
      
   void update() {

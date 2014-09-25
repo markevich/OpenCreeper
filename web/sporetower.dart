@@ -5,7 +5,7 @@ class Sporetower extends Zei.GameObject {
   int sporeCounter = 0;
 
   Sporetower(position) {
-    sprite = new Zei.Sprite("buffer", "sporetower", Zei.images["sporetower"], position, 48, 48, anchor: new Zei.Vector2(0.5, 0.5));
+    sprite = Zei.Sprite.create("buffer", "sporetower", Zei.images["sporetower"], position, 48, 48, anchor: new Zei.Vector2(0.5, 0.5));
     reset();
   }
    

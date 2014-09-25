@@ -7,7 +7,7 @@ class Projectile extends Zei.GameObject {
   static num baseSpeed = 7;
 
   Projectile(position, this.targetPosition, rotation) {
-    sprite = new Zei.Sprite("buffer", "projectile", Zei.images["projectile"], position, 16, 16, anchor: new Zei.Vector2(0.5, 0.5), rotation: rotation);
+    sprite = Zei.Sprite.create("buffer", "projectile", Zei.images["projectile"], position, 16, 16, anchor: new Zei.Vector2(0.5, 0.5), rotation: rotation);
   }
   
   static void add(Zei.Vector2 position, Zei.Vector2 targetPosition, num rotation) {

@@ -7,7 +7,7 @@ class Emitter extends Zei.GameObject {
   int counter = 0;
 
   Emitter(position, this.strength) {
-    sprite = new Zei.Sprite("buffer", "emitter", Zei.images["emitter"], position, 48, 48, anchor: new Zei.Vector2(0.5, 0.5));
+    sprite = Zei.Sprite.create("buffer", "emitter", Zei.images["emitter"], position, 48, 48, anchor: new Zei.Vector2(0.5, 0.5));
   }
   
   static Emitter add(Zei.Vector2 position, int strength) {

@@ -31,7 +31,7 @@ class Game {
       this.seed = seed;
     
     this.friendly = friendly;
-    
+       
     Zei.Audio.setChannels(5);
     List sounds = ["shot.wav", "click.wav", "explosion.wav", "failure.wav", "energy.wav", "laser.wav"];
     Zei.Audio.load(sounds);
@@ -150,19 +150,19 @@ class Game {
     querySelector('#time').innerHtml = 'Time: 00:00';
     
     // create terraform lines and number used when terraforming is enabled
-    tfLine1 = new Zei.Line("buffer", "terraform", new Zei.Vector2.empty(), new Zei.Vector2.empty(), 1, new Zei.Color.white(), visible: false);
-    tfLine2 = new Zei.Line("buffer", "terraform", new Zei.Vector2.empty(), new Zei.Vector2.empty(), 1, new Zei.Color.white(), visible: false);
-    tfLine3 = new Zei.Line("buffer", "terraform", new Zei.Vector2.empty(), new Zei.Vector2.empty(), 1, new Zei.Color.white(), visible: false);
-    tfLine4 = new Zei.Line("buffer", "terraform", new Zei.Vector2.empty(), new Zei.Vector2.empty(), 1, new Zei.Color.white(), visible: false);
+    tfLine1 = Zei.Line.create("buffer", "terraform", new Zei.Vector2.empty(), new Zei.Vector2.empty(), 1, new Zei.Color.white(), visible: false);
+    tfLine2 = Zei.Line.create("buffer", "terraform", new Zei.Vector2.empty(), new Zei.Vector2.empty(), 1, new Zei.Color.white(), visible: false);
+    tfLine3 = Zei.Line.create("buffer", "terraform", new Zei.Vector2.empty(), new Zei.Vector2.empty(), 1, new Zei.Color.white(), visible: false);
+    tfLine4 = Zei.Line.create("buffer", "terraform", new Zei.Vector2.empty(), new Zei.Vector2.empty(), 1, new Zei.Color.white(), visible: false);
     
-    tfNumber = new Zei.Sprite("buffer", "terraform", Zei.images["numbers"], new Zei.Vector2.empty(), 16, 16, animated: true, frame: terraformingHeight, visible: false);
+    tfNumber = Zei.Sprite.create("buffer", "terraform", Zei.images["numbers"], new Zei.Vector2.empty(), 16, 16, animated: true, frame: terraformingHeight, visible: false);
     tfNumber.stopAnimation();
     
     // create target cursor used when a ship is selected
-    targetCursor = new Zei.Sprite("buffer", "targetsymbol", Zei.images["targetcursor"], new Zei.Vector2.empty(), 48, 48, visible: false, anchor: new Zei.Vector2(0.5, 0.5));
+    targetCursor = Zei.Sprite.create("buffer", "targetsymbol", Zei.images["targetcursor"], new Zei.Vector2.empty(), 48, 48, visible: false, anchor: new Zei.Vector2(0.5, 0.5));
     
     // rectangle that is drawn when repositioning a building
-    repositionRect = new Zei.Rect("buffer", "targetsymbol", new Zei.Vector2(0, 0), new Zei.Vector2(32, 32), 10, new Zei.Color.red(), null, visible: false);
+    repositionRect = Zei.Rect.create("buffer", "targetsymbol", new Zei.Vector2(0, 0), new Zei.Vector2(32, 32), 10, new Zei.Color.red(), null, visible: false);
   }
   
   void updateTime(Timer _) {

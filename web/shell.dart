@@ -8,7 +8,7 @@ class Shell extends Zei.GameObject {
   static final num baseSpeed = 1.5;
 
   Shell(position, this.targetPosition) {
-    sprite = new Zei.Sprite("buffer", "shell", Zei.images["shell"], position, 16, 16, anchor: new Zei.Vector2(0.5, 0.5));
+    sprite = Zei.Sprite.create("buffer", "shell", Zei.images["shell"], position, 16, 16, anchor: new Zei.Vector2(0.5, 0.5));
   }
   
   static Shell add(Zei.Vector2 position, Zei.Vector2 targetPosition) {

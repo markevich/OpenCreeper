@@ -9,10 +9,16 @@ class Audio {
     channels = 0;
   }
   
+  /**
+   * Sets the number of available channels with a given [number].
+   */
   static void setChannels(int number) {
     channels = number;
   }
   
+  /**
+   * Loads a list of [filenames].
+   */
   static void load(List filenames) {   
     if (channels != 0) {
       filenames.forEach((filename) {
@@ -25,6 +31,10 @@ class Audio {
     }
   }
 
+  /**
+   * Plays a sound with a given [name] and optionally [position],
+   * [center] and [zoom] to control the volume.
+   */
   static void play(String name, [Vector2 position, Vector2 center, double zoom]) { // position is in real coordinates
     num volume = 1;
     

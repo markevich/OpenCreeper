@@ -9,7 +9,7 @@ class Spore extends Zei.GameObject {
   static final int baseSpeed = 1;
 
   Spore(position, this.targetPosition) {   
-    sprite = new Zei.Sprite("buffer", "spore", Zei.images["spore"], position, 32, 32, anchor: new Zei.Vector2(0.5, 0.5));
+    sprite = Zei.Sprite.create("buffer", "spore", Zei.images["spore"], position, 32, 32, anchor: new Zei.Vector2(0.5, 0.5));
   }
    
   static void add(Zei.Vector2 position, Zei.Vector2 targetPosition) {

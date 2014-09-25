@@ -25,6 +25,9 @@ void init({int TPS: 60, bool debug: false}) {
   debug = debug;
 }
 
+/**
+ * Clear engine of all game objects and display objects.
+ */
 void clear() {
   GameObject.clear();
   //Audio.clear();
@@ -52,33 +55,53 @@ Future loadImages(List filenames) {
   return completer.future; 
 }
 
+/**
+ * Returns a random element of a given [list].
+ */
 Object randomElementOfList(List list) {
   return list[randomInt(0, list.length - 1)];
 }
 
+/**
+ * Clamps a value to a [min] and [max] value.
+ */
 num clamp(num value, num min, num max) {
   return (value < min ? min : (value > max) ? max : value);
 }
 
+/**
+ * Returns a random int in the range [from] to [to], optionally with a [seed].
+ */
 int randomInt(int from, int to, [int seed]) {
   var random = new Random(seed);
   return (random.nextInt(to - from + 1) + from);
 }
 
+/**
+ * Returns a random double in the range [from] to [to], optionally with a [seed].
+ */
 int randomDouble(double from, double to, [int seed]) {
     var random = new Random(seed);
     return (random.nextDouble() * (to - from) + from);
   }
 
+/**
+ * Converts an [angle] in radians to degrees.
+ */
 num radToDeg(num angle) {
   return angle * 57.29577951308232;
 }
 
+/**
+ * Converts an [angle] in degrees to radians.
+ */
 num degToRad(num angle) {
   return angle * .017453292519943295;
 }
 
-// converts an angle (in degrees) to a Vector
+/**
+ * Converts an [angle] (in degrees) to a Vector2 representation
+ */ 
 Vector2 convertToVector(num angle) {
   return new Vector2(cos(degToRad(angle)), sin(degToRad(angle)));
 }

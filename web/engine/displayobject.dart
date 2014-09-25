@@ -17,10 +17,20 @@ class Text extends DisplayObject {
     super.visible = visible;
     this.align = align;
     this.verticalAlign = verticalAlign;
-    renderer[rendererName].addDisplayObject(this);
     this.rendererName = rendererName;
+    renderer[rendererName].addDisplayObject(this);
   }
   
+  /**
+   * Creates a text display object.
+   */
+  static Text create(rendererName, layer, position, size, sizeUnit, font, fillColor, strokeColor, text, {String align: "left", String verticalAlign: "alphabetic", bool visible: true}) {
+    return new Text(rendererName, layer, position, size, sizeUnit, font, fillColor, strokeColor, text, align: align, verticalAlign: verticalAlign, visible: visible);
+  }
+  
+  /**
+   * Rotates the text by a given [angle] in degrees.
+   */
   void rotate(num angle) {
     rotation += angle;
     if (rotation >= 360)
@@ -30,7 +40,7 @@ class Text extends DisplayObject {
   }
   
   bool isHovered() {
-    return false;
+    return false; // TODO
   }
 }
 
@@ -47,10 +57,20 @@ class Rect extends DisplayObject {
     super.layer = layer;
     super.visible = visible;
     if (anchor != null) this.anchor = anchor;
-    renderer[rendererName].addDisplayObject(this);
     this.rendererName = rendererName;
+    renderer[rendererName].addDisplayObject(this);
   }
   
+  /**
+   * Creates a rect display object.
+   */
+  static Rect create(rendererName, layer, position, size, lineWidth, fillColor, strokeColor, {bool visible: true, Vector2 anchor}) {
+    return new Rect(rendererName, layer, position, size, lineWidth, fillColor, strokeColor, visible: visible, anchor: anchor);  
+  }
+  
+  /**
+   * Rotates the rect by a given [angle] in degrees.
+   */
   void rotate(num angle) {
     rotation += angle;
     if (rotation >= 360)
@@ -75,17 +95,26 @@ class Circle extends DisplayObject {
   Color fillColor, strokeColor;
   num rotation = 0;
   int degrees = 360;
-  num scale;
+  num scale = 1.0;
   String rendererName;
 
   Circle(rendererName, layer, this.position, this.radius, this.lineWidth, this.fillColor, this.strokeColor, {bool visible: true}) {
     super.layer = layer;
     super.visible = visible;
-    scale = 1.0;
+    this.rendererName = rendererName;  
     renderer[rendererName].addDisplayObject(this);
-    this.rendererName = rendererName;
   }
   
+  /**
+   * Creates a circle display object.
+   */
+  static Circle create(rendererName, layer, position, radius, lineWidth, fillColor, strokeColor, {bool visible: true}) {
+    return new Circle(rendererName, layer, position, radius, lineWidth, fillColor, strokeColor, visible: visible);
+  }
+  
+  /**
+   * Rotates the circle by a given [angle] in degrees.
+   */
   void rotate(num angle) {
     rotation += angle;
     if (rotation >= 360)
@@ -109,6 +138,13 @@ class Line extends DisplayObject {
     super.layer = layer;
     super.visible = visible;
     renderer[rendererName].addDisplayObject(this);
+  }
+  
+  /**
+   * Creates a line display object.
+   */
+  static Line create(rendererName, layer, from, to, lineWidth, color, {bool visible: true}) {
+    return new Line(rendererName, layer, from, to, lineWidth, color, visible: visible);
   }
   
   String toString() {
@@ -144,6 +180,13 @@ class Sprite extends DisplayObject {
       startAnimation();
   }
   
+  /**
+   * Creates a sprite display object.
+   */
+  static Sprite create(rendererName, layer, image, position, width, height, {int frame: 0, bool animated: false, animationFPS: 30, bool visible: true, Vector2 anchor, num alpha: 1.0, num rotation: 0, Vector2 scale}) {
+    return new Sprite(rendererName, layer, image, position, width, height, frame: frame, animated: animated, animationFPS: animationFPS, visible: visible, anchor: anchor, alpha: alpha, rotation: rotation, scale: scale);
+  }
+  
   void stopAnimation() {
     animationTimer.cancel();
   }
@@ -156,6 +199,9 @@ class Sprite extends DisplayObject {
     frame++;    
   }
   
+  /**
+   * Rotates the sprite by a given [angle] in degrees.
+   */
   void rotate(num angle) {
     rotation += angle;
     if (rotation >= 360)

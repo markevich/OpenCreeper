@@ -19,7 +19,7 @@ class Tile {
     terraformNumber = null;
     pos = new Zei.Vector2(x * size, y * size);
     
-    rangeBox = new Zei.Rect("buffer", "terraform", pos, new Zei.Vector2(size, size), 0, new Zei.Color(255, 255, 255, 0.35), null, visible: false);
+    rangeBox = Zei.Rect.create("buffer", "terraform", pos, new Zei.Vector2(size, size), 0, new Zei.Color(255, 255, 255, 0.35), null, visible: false);
   }
     
   void flagTerraform(Zei.Vector2 position) {   
@@ -28,7 +28,7 @@ class Tile {
       terraformProgress = 0;
       
       if (terraformNumber == null) {
-        terraformNumber = new Zei.Sprite("buffer", "terraform", Zei.images["numbers"], position, 16, 16);
+        terraformNumber = Zei.Sprite.create("buffer", "terraform", Zei.images["numbers"], position, 16, 16);
         terraformNumber.animated = true;
         terraformNumber.frame = terraformTarget;
       } else {

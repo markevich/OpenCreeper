@@ -16,10 +16,16 @@ class Vector2 {
     return "$x/$y";
   }
 
+  /**
+   * Returns the distance from one vector to another
+   */
   num distanceTo(Vector2 other) {
     return sqrt(pow(x - other.x, 2) + pow(y - other.y, 2));
   }
   
+  /**
+   * Returns the magnitute of the current vector
+   */
   num magnitude() {
     return new Vector2.empty().distanceTo(this);
   }
@@ -29,11 +35,17 @@ class Vector2 {
     return radToDeg(atan2(other.y - y, other.x - x));
   }
   
+  /**
+   * Normalizes the current vector
+   */
   Vector2 normalize() {   
     var mag = magnitude();
     return new Vector2(x / mag, y / mag);
   }
-   
+  
+  /**
+   * Clamps a vector to an absolute max value
+   */
   Vector2 clamp(Vector2 max) {
     if (x.abs() > max.x.abs())
       x = max.x;
