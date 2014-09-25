@@ -299,7 +299,6 @@ void doneResizing() {
   Zei.renderer["buffer"].updateRect(width, height);
   Zei.renderer["levelfinal"].updateRect(width, height);
   Zei.renderer["collection"].updateRect(width, height);
-  Zei.renderer["creeperbuffer"].updateRect(width, height);
   Zei.renderer["creeper"].updateRect(width, height);
 
   Zei.renderer["gui"].top = Zei.renderer["gui"].view.offsetTop;

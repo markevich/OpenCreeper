@@ -49,7 +49,7 @@ class Game {
     int width = window.innerWidth;
     int height = window.innerHeight;
     
-    Zei.Renderer.create("main", width, height, "#canvasContainer");
+    Zei.Renderer.create("main", width, height, "body");
     Zei.renderer["main"].view.style.zIndex = "1";   
     
     var buffer = Zei.Renderer.create("buffer", width, height);
@@ -64,17 +64,16 @@ class Game {
       Zei.Renderer.create("level$i", 128 * 16, 128 * 16);
     }
     Zei.Renderer.create("levelbuffer", 128 * 16, 128 * 16);
-    Zei.Renderer.create("levelfinal", width, height, "#canvasContainer");
+    Zei.Renderer.create("levelfinal", width, height, "body");
     
-    Zei.Renderer.create("collection", width, height, "#canvasContainer");
+    Zei.Renderer.create("collection", width, height, "body");
     
-    Zei.Renderer.create("creeperbuffer", width, height);
-    Zei.Renderer.create("creeper", width, height, "#canvasContainer");
+    Zei.Renderer.create("creeper", width, height, "body");
     
     Zei.Renderer.create("gui", 780, 110, "#gui");
        
     // renderes affected when zooming
-    zoomableRenderers = ["buffer", "collection", "creeperbuffer"];
+    zoomableRenderers = ["buffer", "collection"];
     
     // create UI
     ui = new UserInterface(Zei.renderer["gui"]);
@@ -136,7 +135,7 @@ class Game {
     speed = 1;
     won = false;
     
-    createWorld();
+    world.create();
     drawCollection();
     
     stopwatch.reset();
@@ -269,74 +268,6 @@ class Game {
       copyTerrain();
       drawCollection();
       World.creeperDirty = true;
-    }
-  }
-
-  /**
-   * Creates a random world with base, emitters and sporetowers.
-   */
-  void createWorld() {
-    world.createRandomLandscape();
-
-    // create random base
-    Zei.Vector2 randomPosition = new Zei.Vector2(
-        Zei.randomInt(4, world.size.x - 5, seed + 1),
-        Zei.randomInt(4, world.size.y - 5, seed + 1));
-
-    scroll = randomPosition;
-    for (var renderer in zoomableRenderers) {
-      Zei.renderer[renderer].updatePosition(new Zei.Vector2(scroll.x * Tile.size, scroll.y * Tile.size));
-    }
-
-    Building building = Building.add(randomPosition, "base");
-
-    int height = this.world.getTile(building.position).height;
-    if (height < 0)
-      height = 0;
-    for (int i = -4; i <= 4; i++) {
-      for (int j = -4; j <= 4; j++) {
-        this.world.getTile(building.position + new Zei.Vector2(i * Tile.size, j * Tile.size)).height = height;
-      }
-    }
-
-    if (!friendly) {
-      // create random emitters
-      int number = Zei.randomInt(2, 3, seed);
-      for (var l = 0; l < number; l++) {    
-        randomPosition = new Zei.Vector2(
-            Zei.randomInt(1, world.size.x - 2, seed + Zei.randomInt(1, 1000, seed + l)) * Tile.size + 8,
-            Zei.randomInt(1, world.size.y - 2, seed + Zei.randomInt(1, 1000, seed + 1 + l)) * Tile.size + 8);
-    
-        Emitter emitter = Emitter.add(randomPosition, 25);
-    
-        height = world.getTile(emitter.sprite.position).height;
-        if (height < 0)
-          height = 0;
-        for (int i = -1; i <= 1; i++) {
-          for (int j = -1; j <= 1; j++) {
-            world.getTile(emitter.sprite.position + new Zei.Vector2(i * Tile.size, j * Tile.size)).height = height;
-          }
-        }
-      }
-  
-      // create random sporetowers
-      number = Zei.randomInt(1, 2, seed + 1);
-      for (var l = 0; l < number; l++) {
-        randomPosition = new Zei.Vector2(
-            Zei.randomInt(1, world.size.x - 2, seed + 3 + Zei.randomInt(1, 1000, seed + 2 + l)) * Tile.size + 8,
-            Zei.randomInt(1, world.size.y - 2, seed + 3 + Zei.randomInt(1, 1000, seed + 3 + l)) * Tile.size + 8);
-    
-        Sporetower sporetower = Sporetower.add(randomPosition);
-    
-        height = world.getTile(sporetower.sprite.position).height;
-        if (height < 0)
-          height = 0;
-        for (int i = -1; i <= 1; i++) {
-          for (int j = -1; j <= 1; j++) {
-            world.getTile(sporetower.sprite.position + new Zei.Vector2(i * Tile.size, j * Tile.size)).height = height;
-          }
-        }
-      }
     }
   }
 
@@ -767,10 +698,10 @@ class Game {
   }
 
   void drawCreeper() {
-    Zei.renderer["creeperbuffer"].clear();
+    Zei.renderer["creeper"].clear();
 
-    int timesX = (Zei.renderer["main"].view.width / 2 / Tile.size / zoom).ceil();
-    int timesY = (Zei.renderer["main"].view.height / 2 / Tile.size / zoom).ceil();
+    int timesX = (Zei.renderer["creeper"].view.width / 2 / Tile.size / zoom).ceil();
+    int timesY = (Zei.renderer["creeper"].view.height / 2 / Tile.size / zoom).ceil();
 
     for (int i = -timesX; i <= timesX; i++) {
       for (int j = -timesY; j <= timesY; j++) {
@@ -805,7 +736,7 @@ class Game {
                 right = 1;
   
               int index = (8 * down) + (4 * left) + (2 * up) + right;
-              Zei.renderer["creeperbuffer"].context.drawImageScaledFromSource(Zei.images["creeper"], index * Tile.size, 0, Tile.size, Tile.size, Zei.renderer["main"].view.width / 2 + i * Tile.size * zoom, Zei.renderer["main"].view.height / 2 + j * Tile.size * zoom, Tile.size * zoom, Tile.size * zoom);
+              Zei.renderer["creeper"].context.drawImageScaledFromSource(Zei.images["creeper"], index * Tile.size, 0, Tile.size, Tile.size, Zei.renderer["main"].view.width / 2 + i * Tile.size * zoom, Zei.renderer["main"].view.height / 2 + j * Tile.size * zoom, Tile.size * zoom, Tile.size * zoom);
               continue;
             }
             
@@ -832,16 +763,13 @@ class Game {
   
               int index = (8 * down) + (4 * left) + (2 * up) + right;
               if (index != 0)
-                Zei.renderer["creeperbuffer"].context.drawImageScaledFromSource(Zei.images["creeper"], index * Tile.size, 0, Tile.size, Tile.size, Zei.renderer["main"].view.width / 2 + i * Tile.size * zoom, Zei.renderer["main"].view.height / 2 + j * Tile.size * zoom, Tile.size * zoom, Tile.size * zoom);
+                Zei.renderer["creeper"].context.drawImageScaledFromSource(Zei.images["creeper"], index * Tile.size, 0, Tile.size, Tile.size, Zei.renderer["main"].view.width / 2 + i * Tile.size * zoom, Zei.renderer["main"].view.height / 2 + j * Tile.size * zoom, Tile.size * zoom, Tile.size * zoom);
             }
           }
         }
         
       }
     }
-    
-    Zei.renderer["creeper"].clear();
-    Zei.renderer["creeper"].context.drawImage(Zei.renderer["creeperbuffer"].view, 0, 0);
   }
   
   void updateVariousInfo() {
@@ -1077,7 +1005,7 @@ class Game {
     window.requestAnimationFrame(draw);
   }
    
-  // converts real coordinates to view coordinates (7 usages)
+  // converts real coordinates to view coordinates (5 usages)
   // used for graphics that are not managed by a renderer
   Zei.Vector2 convertToView(String rendererName, Zei.Vector2 vector) {
    return new Zei.Vector2(

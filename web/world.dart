@@ -9,7 +9,50 @@ class World extends Zei.GameObject {
   World(int seed) {
     size = new Zei.Vector2(Zei.randomInt(64, 127, seed), Zei.randomInt(64, 127, seed));
     creeperCounter = 0;
-    //Zei.gameObjects.add(this);
+  }
+  
+  /**
+  * Creates a random world with base, emitters and sporetowers.
+  */
+  void create() {
+    createRandomLandscape();
+
+    // create random base
+    Zei.Vector2 randomPosition = new Zei.Vector2(
+      Zei.randomInt(4, size.x - 5, game.seed + 1),
+      Zei.randomInt(4, size.y - 5, game.seed + 1));
+
+    game.scroll = randomPosition;
+    for (var renderer in game.zoomableRenderers) {
+      Zei.renderer[renderer].updatePosition(new Zei.Vector2(game.scroll.x * Tile.size, game.scroll.y * Tile.size));
+    }
+
+    Building building = Building.add(randomPosition, "base");
+    makeFlatSurface(building.position, 9);
+
+    if (!game.friendly) {
+      // create random emitters
+      int amount = Zei.randomInt(2, 3, game.seed);
+      for (var i = 0; i < amount; i++) {    
+         randomPosition = new Zei.Vector2(
+             Zei.randomInt(1, size.x - 2, game.seed + Zei.randomInt(1, 1000, game.seed + i)) * Tile.size + 8,
+             Zei.randomInt(1, size.y - 2, game.seed + Zei.randomInt(1, 1000, game.seed + 1 + i)) * Tile.size + 8);
+   
+        Emitter emitter = Emitter.add(randomPosition, 25);
+        makeFlatSurface(emitter.sprite.position, 3);    
+      }
+ 
+      // create random sporetowers
+      amount = Zei.randomInt(1, 2, game.seed + 1);
+      for (var i = 0; i < amount; i++) {
+        randomPosition = new Zei.Vector2(
+           Zei.randomInt(1, size.x - 2, game.seed + 3 + Zei.randomInt(1, 1000, game.seed + 2 + i)) * Tile.size + 8,
+           Zei.randomInt(1, size.y - 2, game.seed + 3 + Zei.randomInt(1, 1000, game.seed + 3 + i)) * Tile.size + 8);
+   
+        Sporetower sporetower = Sporetower.add(randomPosition);
+        makeFlatSurface(sporetower.sprite.position, 3);
+      }
+    }
   }
   
   void createRandomLandscape() {
@@ -30,6 +73,18 @@ class World extends Zei.GameObject {
         if (height > 10)
           height = 10;
         tiles[i][j].height = height;
+      }
+    }
+  }
+  
+  // makes a flat surface for base, emitters and spore towers when creating the world
+  void makeFlatSurface(position, size) {
+    int height = game.world.getTile(position).height;
+    if (height < 0)
+      height = 0;
+    for (int i = -size ~/ 2; i <= size ~/ 2; i++) {
+      for (int j = -size ~/ 2; j <= size ~/ 2; j++) {
+        game.world.getTile(position + new Zei.Vector2(i * Tile.size, j * Tile.size)).height = height;
       }
     }
   }

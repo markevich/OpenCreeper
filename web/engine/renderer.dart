@@ -8,6 +8,8 @@ class Renderer {
   Vector2 position = new Vector2.empty();
   List<Layer> layers = new List();
   Mouse mouse;
+  bool redraw = false;
+  bool autodraw = false; // TODO: set to 'true' later
 
   Renderer(this.view, width, height) {
     updateRect(width, height);

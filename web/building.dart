@@ -360,7 +360,7 @@ class Building extends Zei.GameObject {
       }
     }
   }
-  
+    
   static void activate() {
     for (var building in Zei.GameObject.gameObjects) {
       if (building is Building) {
