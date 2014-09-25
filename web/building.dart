@@ -13,6 +13,7 @@ class Building extends Zei.GameObject {
   Zei.Line analyzerLineInner, analyzerLineOuter, beamLineInner, beamLineOuter, terpLineInner, terpLineOuter;
   int damageCounter = 0, collectCounter = 0;
   Spore beamTarget;
+  double movementCost;
   static final double baseVelocity = .5;
   static Building base;
   static List<Packet> queue = new List<Packet>();
@@ -98,7 +99,8 @@ class Building extends Zei.GameObject {
     health = 0;
     size = 3;
     energy = 0;
-        
+    movementCost = 1.0;
+    
     if (type == "base") {
       sprite.size = new Zei.Vector2(144, 144);
       sprite.alpha = 1.0;
@@ -158,6 +160,7 @@ class Building extends Zei.GameObject {
     }
     else if (type == "relay") {
       maxHealth = game.debug == true ? 1 : 10;
+      movementCost = 0.5;
     }
     else if (type == "cannon") {
       maxHealth = game.debug == true ? 1 : 25;

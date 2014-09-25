@@ -9,8 +9,8 @@ class Route {
   Route();
 
   /*
- * Adds or updates a node with the position [x] and [y] and sets the [parent].
- */
+  * Adds or updates a node with the position [x] and [y] and sets the [parent].
+  */
   static void addOrUpdateNode(var gameObject, ZNode parent, GameObject end, open, closed) {
 
     // return if its already in the closed list
@@ -23,9 +23,10 @@ class Route {
     // update and return if its already in the open list
     for (var i = 0; i < open.length; i++) {
       if (open[i].gameObject.position.x == gameObject.position.x && open[i].gameObject.position.y == gameObject.position.y) {
-        if (parent.g + 10 < open[i].g) {
+        var cost = gameObject.position.distanceTo(parent.gameObject.position) * gameObject.movementCost;
+        if (parent.g + cost < open[i].g) {
           open[i].parent = parent;
-          open[i].g = parent.g + 10;
+          open[i].g = parent.g + cost;
           open[i].f = open[i].g + open[i].h;
         }
         return;
@@ -112,7 +113,7 @@ class ZNode {
   ZNode(this.gameObject, this.target, [ZNode parent]) {
     if (parent != null) {
       this.parent = parent;
-      g = parent.g + 10; // current movement cost
+      g = parent.g + gameObject.position.distanceTo(parent.gameObject.position) * gameObject.movementCost; // current movement cost
     }
     h = (gameObject.position.x - target.position.x).abs() + (gameObject.position.y - target.position.y).abs(); // heuristic movement cost to target (manhattan distance)
     f = g + h; // total movement cost
