@@ -31,9 +31,9 @@ class Packet extends Zei.GameObject {
         }
       }
     }
-    for (int i = Building.queue.length - 1; i >= 0; i--) {
-      if (Building.queue[i].currentTarget == building || Building.queue[i].target == building) {
-        Building.queue.remove(Building.queue[i]);
+    for (int i = Building.base.queue.length - 1; i >= 0; i--) {
+      if (Building.base.queue[i].currentTarget == building || Building.base.queue[i].target == building) {
+        Building.base.queue.remove(Building.base.queue[i]);
       }
     }
   }

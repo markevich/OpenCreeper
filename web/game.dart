@@ -3,7 +3,6 @@ part of creeper;
 class Game {
   int seed, terraformingHeight = 0, speed = 1;
   double zoom = 1.0;
-  Timer running;
   String mode;
   bool paused = false, won = false;
   List<Zei.Vector2> ghosts = new List<Zei.Vector2>();
@@ -89,7 +88,7 @@ class Game {
     drawTerrain();
     copyTerrain();
     setupEventHandler();
-    run();
+    Zei.run();
   }
   
   void setupEventHandler() {
@@ -129,7 +128,6 @@ class Game {
   void reset() {
     Zei.clear();
     UISymbol.reset();
-    Building.queue.clear();
     
     mode = "DEFAULT";
     speed = 1;
@@ -186,7 +184,6 @@ class Game {
     paused = true;
     stopwatch.stop();
     Zei.Renderer.stopAnimations();
-
   }
 
   void resume() {
@@ -196,28 +193,14 @@ class Game {
     stopwatch.start();
     Zei.Renderer.startAnimations();
   }
-
-  void stop() {
-    running.cancel();
-    Zei.stop();
-  }
-
-  void run() {
-    running = new Timer.periodic(new Duration(milliseconds: (1000 / Zei.TPS).floor()), (Timer timer) => updateAll());
-    Zei.run();
-  }
-  
-  void updateAll() {
-    game.update();
-  }
-
+ 
   void restart() {
     querySelector('#lose').style.display = 'none';
-    stop();
+    Zei.stop();
     reset();
     drawTerrain();
     copyTerrain();
-    run();
+    Zei.run();
   }
 
   void toggleTerraform() {
@@ -587,18 +570,6 @@ class Game {
   }
 
   /**
-   * Main update function which calls all other update functions.
-   * Is called by a periodic timer.
-   */ 
-  void update() {
-    Zei.GameObject.updateAll();
-    
-    if (!paused) { 
-      Building.updateQueue();
-    }
-  }
-
-  /**
    * Updates the range boxes around the [position] of a building.
    */
   void updateRangeBoxes(Zei.Vector2 position, Building building) {
@@ -783,19 +754,19 @@ class Game {
       if (world.contains(hoveredTile)) {   
         if (mode == "TERRAFORM") {
           Zei.Vector2 drawPosition = hoveredTile * Tile.size;
-          tfLine1
+          tfLine1 // first horizontal line
             ..from = new Zei.Vector2(0, drawPosition.y)
             ..to = new Zei.Vector2(world.size.y * Tile.size, drawPosition.y)
             ..visible = true;
-          tfLine2
+          tfLine2 // second horizontal line
             ..from = new Zei.Vector2(0, drawPosition.y + Tile.size)
             ..to = new Zei.Vector2(world.size.y * Tile.size, drawPosition.y + Tile.size)
             ..visible = true;
-          tfLine3
+          tfLine3 // first vertical line
             ..from = new Zei.Vector2(drawPosition.x, 0)
             ..to = new Zei.Vector2(drawPosition.x, world.size.y * Tile.size)
             ..visible = true;
-          tfLine4
+          tfLine4 // second vertical line
             ..from = new Zei.Vector2(drawPosition.x + Tile.size, 0)
             ..to = new Zei.Vector2(drawPosition.x + Tile.size, world.size.y * Tile.size)
             ..visible = true;

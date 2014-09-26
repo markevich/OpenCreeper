@@ -15,7 +15,7 @@ part 'audio.dart';
 
 num animationRequest;
 int TPS = 60; // ticks per second
-Timer resizeTimer;
+Timer resizeTimer, running;
 Map<String, Renderer> renderer = new Map();
 Map<String, ImageElement> images = new Map();
 bool debug = false;
@@ -26,15 +26,24 @@ void init({int TPS: 60, bool debug: false}) {
 }
 
 void run() {
+  running = new Timer.periodic(new Duration(milliseconds: (1000 / TPS).floor()), (Timer timer) => update());
   animationRequest = window.requestAnimationFrame(draw);
 }
 
 void stop() {
+  running.cancel();
   window.cancelAnimationFrame(animationRequest);
 }
 
 /**
- * Main drawing function which calls all other drawing functions.
+ * Main update function
+ */
+void update() {
+  GameObject.updateAll();
+}
+
+/**
+ * Main drawing function which instructs all Renderers.
  * Is called by requestAnimationFrame every frame.
  */
 void draw(num _) {  

@@ -16,7 +16,7 @@ class Building extends Zei.GameObject {
   double movementCost;
   static final double baseVelocity = .5;
   static Building base;
-  static List<Packet> queue = new List<Packet>();
+  List<Packet> queue; // only used for base
   static Building selectedBuilding;
   static List<Zei.Line> repositionLines = new List<Zei.Line>();
 
@@ -115,6 +115,7 @@ class Building extends Zei.GameObject {
       energy = 20;
       maxEnergy = 20;
       needsEnergy = true;
+      queue = new List();
     }   
     else if (type == "analyzer") {
       maxHealth = game.debug == true ? 1 : 80;
@@ -236,7 +237,7 @@ class Building extends Zei.GameObject {
     if (building.type == "base") {
       querySelector('#lose').style.display = "block";
       game.stopwatch.stop();
-      game.stop();
+      Zei.stop();
     }
     if (building.type == "collector") {
       if (building.built)
@@ -265,26 +266,9 @@ class Building extends Zei.GameObject {
   }
   
   static void addToQueue(Packet packet) {
-    queue.add(packet);
+    base.queue.add(packet);
   }
-  
-  /**
-   * Updates the packet queue of the base.
-   * 
-   * If the base has energy the first packet is removed from
-   * the queue and sent to its target (FIFO).
-   */
-  static void updateQueue() {
-    for (int i = queue.length - 1; i >= 0; i--) {
-      if (base.energy > 0) {
-        base.energy--;
-        game.updateEnergyElement();
-        Packet packet = queue.removeAt(0);
-        packet.send();
-      }
-    }
-  }
-  
+    
   static void removeSelected() {
     for (var i = Zei.GameObject.gameObjects.length - 1; i >= 0; i--) {
       if (Zei.GameObject.gameObjects[i] is Building) {
@@ -362,6 +346,21 @@ class Building extends Zei.GameObject {
         collectCounter -= 250;
         collectEnergy();
       }
+      
+      // Updates the packet queue of the base.
+      // If the base has energy the first packet is removed from
+      // the queue and sent to its target (FIFO).
+      if (queue != null) { // base
+        for (int i = queue.length - 1; i >= 0; i--) {
+          if (energy > 0) {
+            energy--;
+            game.updateEnergyElement();
+            Packet packet = queue.removeAt(0);
+            packet.send();
+          }
+        }
+      }
+
     }
   }
     
