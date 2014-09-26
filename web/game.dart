@@ -8,7 +8,7 @@ class Game {
   bool paused = false, won = false;
   List<Zei.Vector2> ghosts = new List<Zei.Vector2>();
   World world;
-  Zei.Vector2 scroll = new Zei.Vector2.empty(), mouseScrolling = new Zei.Vector2.empty(), keyScrolling = new Zei.Vector2.empty(), oldHoveredTile = new Zei.Vector2.empty(), hoveredTile = new Zei.Vector2.empty();
+  Zei.Vector2 oldHoveredTile = new Zei.Vector2.empty(), hoveredTile = new Zei.Vector2.empty();
   Stopwatch stopwatch = new Stopwatch();
   Zei.Line tfLine1, tfLine2, tfLine3, tfLine4;
   Zei.Sprite tfNumber;
@@ -17,6 +17,7 @@ class Game {
   UserInterface ui;
   List zoomableRenderers;
   Zei.Mouse mouse;
+  Scroller scroller;
   var debug = true;
   bool friendly;
   static List<Zei.DisplayObject> ghostDisplayObjects = new List<Zei.DisplayObject>();
@@ -50,33 +51,32 @@ class Game {
     int width = window.innerWidth;
     int height = window.innerHeight;
     
-    Zei.Renderer.create("main", width, height, "body");
-    Zei.renderer["main"].view.style.zIndex = "1";   
-    
-    var buffer = Zei.Renderer.create("buffer", width, height);
-    buffer.enableMouse();
-    mouse = buffer.mouse;
+    var main = Zei.Renderer.create("main", width, height, container: "body");
+    main.view.style.zIndex = "1";   
+    main.enableMouse();
+    mouse = main.mouse;
     mouse.setCursor("url('images/Normal.cur') 2 2, pointer");
-    
-    buffer.setLayers(["terraform", "selectedcircle", "targetsymbol", "connectionborder", "connection", "building", "buildinginfo", "sporetower", "emitter", "projectile", "buildinggun", "packet",
-                      "shield", "explosion", "smoke", "buildingflying", "buildinginfoflying", "ship", "shell", "spore", "buildinggunflying", "energybar"]);
+    game.scroller = new Scroller();
+       
+    main.setLayers(["terraform", "selectedcircle", "targetsymbol", "connectionborder", "connection", "building", "buildinginfo", "sporetower", "emitter", "projectile", "buildinggun", "packet",
+                    "shield", "explosion", "smoke", "buildingflying", "buildinginfoflying", "ship", "shell", "spore", "buildinggunflying", "energybar"]);
    
     for (int i = 0; i < 10; i++) {
-      Zei.Renderer.create("level$i", 128 * 16, 128 * 16);
+      Zei.Renderer.create("level$i", 128 * 16, 128 * 16, autodraw: false);
     }
-    Zei.Renderer.create("levelbuffer", 128 * 16, 128 * 16);
-    Zei.Renderer.create("levelfinal", width, height, "body");
+    Zei.Renderer.create("levelbuffer", 128 * 16, 128 * 16, autodraw: false);
+    Zei.Renderer.create("levelfinal", width, height, container: "body", autodraw: false);
     
-    Zei.Renderer.create("collection", width, height, "body");
+    Zei.Renderer.create("collection", width, height, container: "body", autodraw: false);
     
-    Zei.Renderer.create("creeper", width, height, "body");
+    Zei.Renderer.create("creeper", width, height, container: "body", autodraw: false);
     
-    var guiRenderer = Zei.Renderer.create("gui", 780, 110, "#gui");
+    var guiRenderer = Zei.Renderer.create("gui", 780, 110, container: "#gui");
     guiRenderer.setLayers(["default"]);
     guiRenderer.updatePosition(new Zei.Vector2(390, 55));
        
     // renderes affected when zooming
-    zoomableRenderers = ["buffer", "collection"];
+    zoomableRenderers = ["main", "collection"];
     
     world = new World(seed);
   
@@ -119,7 +119,7 @@ class Game {
 
     document
       ..onKeyDown.listen((event) => onKeyDown(event))
-      ..onKeyUp.listen((event) => onKeyUp(event))
+      //..onKeyUp.listen((event) => onKeyUp(event))
       ..onContextMenu.listen((event) => event.preventDefault());
 
     window
@@ -138,6 +138,9 @@ class Game {
     world.create();
     drawCollection();
     
+    Zei.GameObject.add(world);
+    Zei.GameObject.add(game.scroller);
+    
     stopwatch.reset();
     stopwatch.start();
     var oneSecond = new Duration(seconds:1);
@@ -152,19 +155,19 @@ class Game {
     ui = new UserInterface(Zei.renderer["gui"]);
     
     // create terraform lines and number used when terraforming is enabled
-    tfLine1 = Zei.Line.create("buffer", "terraform", new Zei.Vector2.empty(), new Zei.Vector2.empty(), 1, new Zei.Color.white(), visible: false);
-    tfLine2 = Zei.Line.create("buffer", "terraform", new Zei.Vector2.empty(), new Zei.Vector2.empty(), 1, new Zei.Color.white(), visible: false);
-    tfLine3 = Zei.Line.create("buffer", "terraform", new Zei.Vector2.empty(), new Zei.Vector2.empty(), 1, new Zei.Color.white(), visible: false);
-    tfLine4 = Zei.Line.create("buffer", "terraform", new Zei.Vector2.empty(), new Zei.Vector2.empty(), 1, new Zei.Color.white(), visible: false);
+    tfLine1 = Zei.Line.create("main", "terraform", new Zei.Vector2.empty(), new Zei.Vector2.empty(), 1, new Zei.Color.white(), visible: false);
+    tfLine2 = Zei.Line.create("main", "terraform", new Zei.Vector2.empty(), new Zei.Vector2.empty(), 1, new Zei.Color.white(), visible: false);
+    tfLine3 = Zei.Line.create("main", "terraform", new Zei.Vector2.empty(), new Zei.Vector2.empty(), 1, new Zei.Color.white(), visible: false);
+    tfLine4 = Zei.Line.create("main", "terraform", new Zei.Vector2.empty(), new Zei.Vector2.empty(), 1, new Zei.Color.white(), visible: false);
     
-    tfNumber = Zei.Sprite.create("buffer", "terraform", Zei.images["numbers"], new Zei.Vector2.empty(), 16, 16, animated: true, frame: terraformingHeight, visible: false);
+    tfNumber = Zei.Sprite.create("main", "terraform", Zei.images["numbers"], new Zei.Vector2.empty(), 16, 16, animated: true, frame: terraformingHeight, visible: false);
     tfNumber.stopAnimation();
     
     // create target cursor used when a ship is selected
-    targetCursor = Zei.Sprite.create("buffer", "targetsymbol", Zei.images["targetcursor"], new Zei.Vector2.empty(), 48, 48, visible: false, anchor: new Zei.Vector2(0.5, 0.5));
+    targetCursor = Zei.Sprite.create("main", "targetsymbol", Zei.images["targetcursor"], new Zei.Vector2.empty(), 48, 48, visible: false, anchor: new Zei.Vector2(0.5, 0.5));
     
     // rectangle that is drawn when repositioning a building
-    repositionRect = Zei.Rect.create("buffer", "targetsymbol", new Zei.Vector2(0, 0), new Zei.Vector2(32, 32), 10, new Zei.Color.red(), null, visible: false);
+    repositionRect = Zei.Rect.create("main", "targetsymbol", new Zei.Vector2(0, 0), new Zei.Vector2(32, 32), 10, new Zei.Color.red(), null, visible: false);
   }
   
   void updateTime(Timer _) {
@@ -196,12 +199,12 @@ class Game {
 
   void stop() {
     running.cancel();
-    window.cancelAnimationFrame(Zei.animationRequest);
+    Zei.stop();
   }
 
   void run() {
     running = new Timer.periodic(new Duration(milliseconds: (1000 / Zei.TPS).floor()), (Timer timer) => updateAll());
-    Zei.animationRequest = window.requestAnimationFrame(draw);
+    Zei.run();
   }
   
   void updateAll() {
@@ -394,15 +397,15 @@ class Game {
 
   /**
    * After scrolling, zooming, or tile redrawing the terrain is copied
-   * to the visible buffer.
+   * to the "main" renderer.
    */
   void copyTerrain() {
     Zei.renderer["levelfinal"].clear();
 
     var targetLeft = 0;
     var targetTop = 0;
-    var sourceLeft = scroll.x * Tile.size - Zei.renderer["main"].view.width / 2 / zoom;
-    var sourceTop = scroll.y * Tile.size - Zei.renderer["main"].view.height / 2 / zoom;
+    var sourceLeft = scroller.scroll.x * Tile.size - Zei.renderer["main"].view.width / 2 / zoom;
+    var sourceTop = scroller.scroll.y * Tile.size - Zei.renderer["main"].view.height / 2 / zoom;
     if (sourceLeft < 0) {
       targetLeft = -sourceLeft * zoom;
       sourceLeft = 0;
@@ -592,29 +595,6 @@ class Game {
     
     if (!paused) { 
       Building.updateQueue();
-      game.world.update(); // FIXME: find out why this doesn't work automatically since the world is a gameobject
-      if (!game.friendly)
-        Emitter.checkWinningCondition();
-    }
-
-    // scroll left or right   
-    scroll.x += mouseScrolling.x + keyScrolling.x;
-    if (scroll.x < 0) scroll.x = 0;
-    else if (scroll.x > world.size.x) scroll.x = world.size.x;
-
-    // scroll up or down
-    scroll.y += mouseScrolling.y + keyScrolling.y;
-    if (scroll.y < 0) scroll.y = 0;
-    else if (scroll.y > world.size.y) scroll.y = world.size.y;
-
-    if (mouseScrolling.x != 0 || mouseScrolling.y != 0 || keyScrolling.x != 0 || keyScrolling.y != 0) {
-      for (var renderer in zoomableRenderers) {
-        Zei.renderer[renderer].updatePosition(new Zei.Vector2(scroll.x * Tile.size, scroll.y * Tile.size));
-      }
-      copyTerrain();
-      drawCollection();
-      updateVariousInfo();
-      World.creeperDirty = true;
     }
   }
 
@@ -669,7 +649,7 @@ class Game {
     for (int i = -timesX; i <= timesX; i++) {
       for (int j = -timesY; j <= timesY; j++) {
 
-        Zei.Vector2 position = new Zei.Vector2(i + scroll.x, j + scroll.y);
+        Zei.Vector2 position = new Zei.Vector2(i + scroller.scroll.x, j + scroller.scroll.y);
 
         if (world.contains(position)) {
           if (world.tiles[position.x][position.y].collector != null) {
@@ -709,7 +689,7 @@ class Game {
     for (int i = -timesX; i <= timesX; i++) {
       for (int j = -timesY; j <= timesY; j++) {
 
-        Zei.Vector2 position = new Zei.Vector2(i + scroll.x, j + scroll.y);
+        Zei.Vector2 position = new Zei.Vector2(i + scroller.scroll.x, j + scroller.scroll.y);
         
         if (world.contains(position)) {
           
@@ -881,7 +861,7 @@ class Game {
       
       // remove current ghost display objects
       for (var i = 0; i < ghostDisplayObjects.length; i++) {
-        Zei.renderer["buffer"].removeDisplayObject(ghostDisplayObjects[i]);
+        Zei.renderer["main"].removeDisplayObject(ghostDisplayObjects[i]);
       }
       ghostDisplayObjects.clear();
       
@@ -891,9 +871,9 @@ class Game {
           
           Zei.Vector2 ghostCenter = ghosts[i] * Tile.size + new Zei.Vector2(Tile.size / 2, Tile.size / 2);
           
-          ghostDisplayObjects.add(Zei.Sprite.create("buffer", "terraform", Zei.images[UISymbol.activeSymbol.building.type], ghosts[i] * Tile.size + new Zei.Vector2(Tile.size / 2, Tile.size / 2), UISymbol.activeSymbol.building.size * Tile.size, UISymbol.activeSymbol.building.size * Tile.size, alpha: 0.5, anchor: new Zei.Vector2(0.5, 0.5)));
+          ghostDisplayObjects.add(Zei.Sprite.create("main", "terraform", Zei.images[UISymbol.activeSymbol.building.type], ghosts[i] * Tile.size + new Zei.Vector2(Tile.size / 2, Tile.size / 2), UISymbol.activeSymbol.building.size * Tile.size, UISymbol.activeSymbol.building.size * Tile.size, alpha: 0.5, anchor: new Zei.Vector2(0.5, 0.5)));
           if (UISymbol.activeSymbol.building.type == "cannon")
-            ghostDisplayObjects.add(Zei.Sprite.create("buffer", "terraform", Zei.images["cannongun"], ghosts[i] * Tile.size + new Zei.Vector2(Tile.size / 2, Tile.size / 2), UISymbol.activeSymbol.building.size * Tile.size, UISymbol.activeSymbol.building.size * Tile.size, alpha: 0.5, anchor: new Zei.Vector2(0.5, 0.5)));
+            ghostDisplayObjects.add(Zei.Sprite.create("main", "terraform", Zei.images["cannongun"], ghosts[i] * Tile.size + new Zei.Vector2(Tile.size / 2, Tile.size / 2), UISymbol.activeSymbol.building.size * Tile.size, UISymbol.activeSymbol.building.size * Tile.size, alpha: 0.5, anchor: new Zei.Vector2(0.5, 0.5)));
         
           // create colored red or green box
           bool ghostCanBePlaced = canBePlaced(ghosts[i], UISymbol.activeSymbol.building);
@@ -904,7 +884,7 @@ class Game {
           } else {
             color = new Zei.Color(255, 0, 0, 0.5);
           }
-          ghostDisplayObjects.add(Zei.Rect.create("buffer", "terraform", ghosts[i] * Tile.size + new Zei.Vector2(Tile.size / 2, Tile.size / 2), new Zei.Vector2(UISymbol.activeSymbol.building.size * Tile.size, UISymbol.activeSymbol.building.size * Tile.size), 4, null, color, anchor: new Zei.Vector2(0.5, 0.5)));
+          ghostDisplayObjects.add(Zei.Rect.create("main", "terraform", ghosts[i] * Tile.size + new Zei.Vector2(Tile.size / 2, Tile.size / 2), new Zei.Vector2(UISymbol.activeSymbol.building.size * Tile.size, UISymbol.activeSymbol.building.size * Tile.size), 4, null, color, anchor: new Zei.Vector2(0.5, 0.5)));
           
           // create lines to other buildings
           for (var building in Zei.GameObject.gameObjects) {
@@ -918,8 +898,8 @@ class Game {
                 }
   
                 if (ghostCenter.distanceTo(building.position) <= allowedDistance) {
-                  ghostDisplayObjects.add(Zei.Line.create("buffer", "connection", ghostCenter, building.position, 3, new Zei.Color(0, 0, 0, 0.5)));
-                  ghostDisplayObjects.add(Zei.Line.create("buffer", "connection", ghostCenter, building.position, 2, new Zei.Color(0, 255, 0, 0.5)));
+                  ghostDisplayObjects.add(Zei.Line.create("main", "connection", ghostCenter, building.position, 3, new Zei.Color(0, 0, 0, 0.5)));
+                  ghostDisplayObjects.add(Zei.Line.create("main", "connection", ghostCenter, building.position, 2, new Zei.Color(0, 255, 0, 0.5)));
                 }
               }
             }
@@ -937,8 +917,8 @@ class Game {
   
                 Zei.Vector2 ghostJCenter = ghosts[j] * Tile.size + new Zei.Vector2(Tile.size / 2, Tile.size / 2);
                 if (ghostCenter.distanceTo(ghostJCenter) <= allowedDistance) {
-                  ghostDisplayObjects.add(Zei.Line.create("buffer", "connection", ghostCenter, ghostJCenter, 2, new Zei.Color(0, 0, 0, 0.5)));
-                  ghostDisplayObjects.add(Zei.Line.create("buffer", "connection", ghostCenter, ghostJCenter, 1, new Zei.Color(255, 255, 255, 0.5)));
+                  ghostDisplayObjects.add(Zei.Line.create("main", "connection", ghostCenter, ghostJCenter, 2, new Zei.Color(0, 0, 0, 0.5)));
+                  ghostDisplayObjects.add(Zei.Line.create("main", "connection", ghostCenter, ghostJCenter, 1, new Zei.Color(255, 255, 255, 0.5)));
                 }
               }
             }
@@ -947,22 +927,5 @@ class Game {
         }
       }
     }
-  }
-  
-  /**
-   * Main drawing function which calls all other drawing functions.
-   * Is called by requestAnimationFrame every frame.
-   */
-  void draw(num _) {  
-    Zei.renderer["gui"].clear();
-    Zei.renderer["gui"].draw();
-    
-    Zei.renderer["buffer"].clear();
-    Zei.renderer["buffer"].draw();
-    
-    Zei.renderer["main"].clear();
-    Zei.renderer["main"].context.drawImage(Zei.renderer["buffer"].view, 0, 0);
-
-    window.requestAnimationFrame(draw);
   }
 }

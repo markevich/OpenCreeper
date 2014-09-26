@@ -9,21 +9,25 @@ class Renderer {
   List<Layer> layers = new List();
   Mouse mouse;
   bool redraw = false;
-  bool autodraw = false; // TODO: set to 'true' later
+  bool autodraw = true;
+  static List<Renderer> renderers = new List();
 
   Renderer(this.view, width, height) {
     updateRect(width, height);
     view.style.position = "absolute";
     context = view.getContext('2d');
+    this.autodraw = autodraw;
+    renderers.add(this);
   }
   
   /**
    * Creates a renderer with a [name], [width], [height] and optionally adds it to a [container] in the DOM
    */
-  static Renderer create(String name, int width, int height, [String container]) {
+  static Renderer create(String name, int width, int height, {container: null, autodraw: true}) {
     renderer[name] = new Renderer(new CanvasElement(), width, height);
     if (container != null)
       querySelector(container).children.add(renderer[name].view);
+    renderer[name].autodraw = autodraw;
     renderer[name].updateRect(width, height);
     return renderer[name];
   }

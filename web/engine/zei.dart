@@ -25,6 +25,28 @@ void init({int TPS: 60, bool debug: false}) {
   debug = debug;
 }
 
+void run() {
+  animationRequest = window.requestAnimationFrame(draw);
+}
+
+void stop() {
+  window.cancelAnimationFrame(animationRequest);
+}
+
+/**
+ * Main drawing function which calls all other drawing functions.
+ * Is called by requestAnimationFrame every frame.
+ */
+void draw(num _) {  
+  for (Renderer renderer in Renderer.renderers) {
+    if (renderer.autodraw) {
+      renderer.clear();
+      renderer.draw();
+    }
+  }
+  window.requestAnimationFrame(draw);
+}
+
 /**
  * Clear engine of all game objects and display objects.
  */

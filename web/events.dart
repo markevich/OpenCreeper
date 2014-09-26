@@ -6,15 +6,9 @@ void onMouseMove(MouseEvent evt) {
   if (game != null) {
     game.oldHoveredTile = game.hoveredTile;
     game.hoveredTile = new Zei.Vector2(
-          ((game.mouse.position.x - game.mouse.renderer.view.width / 2) / (Tile.size * game.zoom)).floor() + game.scroll.x,
-          ((game.mouse.position.y - game.mouse.renderer.view.height / 2) / (Tile.size * game.zoom)).floor() + game.scroll.y);
+          ((game.mouse.position.x - game.mouse.renderer.view.width / 2) / (Tile.size * game.zoom)).floor() + game.scroller.scroll.x,
+          ((game.mouse.position.y - game.mouse.renderer.view.height / 2) / (Tile.size * game.zoom)).floor() + game.scroller.scroll.y);
     game.updateVariousInfo();
-    
-    game.mouseScrolling = new Zei.Vector2.empty();
-    if (game.mouse.position.x == 0) game.mouseScrolling.x = -1;
-    else if (game.mouse.position.x == game.mouse.renderer.view.width - 1) game.mouseScrolling.x = 1;   
-    if (game.mouse.position.y == 0) game.mouseScrolling.y = -1;
-    else if (game.mouse.position.y == game.mouse.renderer.view.height - 1) game.mouseScrolling.y = 1;
   }
   
   // flag for terraforming
@@ -79,19 +73,10 @@ void onKeyDown(KeyboardEvent evt) {
     game.mouse.showCursor();
   }
 
-  if (evt.keyCode == KeyCode.LEFT)
-    game.keyScrolling.x = -1;
-  if (evt.keyCode == KeyCode.UP)
-    game.keyScrolling.y = -1;
-  if (evt.keyCode == KeyCode.RIGHT)
-    game.keyScrolling.x = 1;
-  if (evt.keyCode == KeyCode.DOWN)
-    game.keyScrolling.y = 1;
-
   // DEBUG: add explosion
   if (evt.keyCode == KeyCode.V) {
     Explosion.add(new Zei.Vector2(game.hoveredTile.x * Tile.size + 8, game.hoveredTile.y * Tile.size + 8));
-    Zei.Audio.play("explosion", game.hoveredTile * Tile.size, game.scroll, game.zoom);
+    Zei.Audio.play("explosion", game.hoveredTile * Tile.size, game.scroller.scroll, game.zoom);
   }
   
   // DEBUG: lower terrain
@@ -174,13 +159,6 @@ void onKeyDown(KeyboardEvent evt) {
 
   }
 
-}
-
-void onKeyUp(KeyboardEvent evt) {
-  if (evt.keyCode == KeyCode.LEFT || evt.keyCode == KeyCode.RIGHT)
-    game.keyScrolling.x = 0;
-  if (evt.keyCode == KeyCode.UP || evt.keyCode == KeyCode.DOWN)
-    game.keyScrolling.y = 0;
 }
 
 void onEnter(evt) {
@@ -296,7 +274,7 @@ void doneResizing() {
   var height = window.innerHeight;
 
   Zei.renderer["main"].updateRect(width, height);
-  Zei.renderer["buffer"].updateRect(width, height);
+  //Zei.renderer["buffer"].updateRect(width, height);
   Zei.renderer["levelfinal"].updateRect(width, height);
   Zei.renderer["collection"].updateRect(width, height);
   Zei.renderer["creeper"].updateRect(width, height);

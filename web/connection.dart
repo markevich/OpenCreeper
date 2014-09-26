@@ -6,13 +6,13 @@ class Connection {
   static List<Connection> connections = new List<Connection>();
   
   Connection(this.from, this.to) {
-    line = Zei.Line.create("buffer", "connectionborder", this.from.position, this.to.position, 3, new Zei.Color.black());
+    line = Zei.Line.create("main", "connectionborder", this.from.position, this.to.position, 3, new Zei.Color.black());
 
     Zei.Color color = new Zei.Color(127, 127, 127);
     if (from.built && to.built)
       color = new Zei.Color.white();
 
-    line2 = Zei.Line.create("buffer", "connection", this.from.position, this.to.position, 2, color);
+    line2 = Zei.Line.create("main", "connection", this.from.position, this.to.position, 2, color);
   }
   
   static void clear() {
@@ -44,8 +44,8 @@ class Connection {
   static void remove(Building building) {
     for (int i = connections.length - 1; i >= 0; i--) {
       if (connections[i].from == building || connections[i].to == building) {
-        Zei.renderer["buffer"].removeDisplayObject(connections[i].line);
-        Zei.renderer["buffer"].removeDisplayObject(connections[i].line2);
+        Zei.renderer["main"].removeDisplayObject(connections[i].line);
+        Zei.renderer["main"].removeDisplayObject(connections[i].line2);
         connections.removeAt(i);
       }
     }

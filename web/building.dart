@@ -94,9 +94,9 @@ class Building extends Zei.GameObject {
   Building(position, imageID) {
     type = imageID;
     this.position = position;
-    sprite = Zei.Sprite.create("buffer", "building", Zei.images[imageID], position, 48, 48, anchor: new Zei.Vector2(0.5, 0.5), alpha: 0.5);
+    sprite = Zei.Sprite.create("main", "building", Zei.images[imageID], position, 48, 48, anchor: new Zei.Vector2(0.5, 0.5), alpha: 0.5);
 
-    selectedCircle = Zei.Circle.create("buffer", "selectedcircle", position, 24, 2, null, new Zei.Color.white(), visible: false);
+    selectedCircle = Zei.Circle.create("main", "selectedcircle", position, 24, 2, null, new Zei.Color.white(), visible: false);
 
     health = 0;
     size = 3;
@@ -123,8 +123,8 @@ class Building extends Zei.GameObject {
       needsEnergy = true;
       radius = 10;
       
-      analyzerLineOuter = Zei.Line.create("buffer", "projectile", position, new Zei.Vector2.empty(), 5, new Zei.Color.blue(), visible: false);
-      analyzerLineInner = Zei.Line.create("buffer", "projectile", position, new Zei.Vector2.empty(), 3, new Zei.Color.white(), visible: false);      
+      analyzerLineOuter = Zei.Line.create("main", "projectile", position, new Zei.Vector2.empty(), 5, new Zei.Color.blue(), visible: false);
+      analyzerLineInner = Zei.Line.create("main", "projectile", position, new Zei.Vector2.empty(), 3, new Zei.Color.white(), visible: false);      
     }
     else if (type == "terp") {
       maxHealth = game.debug == true ? 1 : 60;
@@ -133,8 +133,8 @@ class Building extends Zei.GameObject {
       needsEnergy = true;
       radius = 20;
       
-      terpLineOuter = Zei.Line.create("buffer", "projectile", position, new Zei.Vector2.empty(), 5, new Zei.Color.green(), visible: false);
-      terpLineInner = Zei.Line.create("buffer", "projectile", position, new Zei.Vector2.empty(), 3, new Zei.Color.white(), visible: false);  
+      terpLineOuter = Zei.Line.create("main", "projectile", position, new Zei.Vector2.empty(), 5, new Zei.Color.green(), visible: false);
+      terpLineInner = Zei.Line.create("main", "projectile", position, new Zei.Vector2.empty(), 3, new Zei.Color.white(), visible: false);  
     }
     else if (type == "shield") {
       maxHealth = game.debug == true ? 1 : 75;
@@ -143,7 +143,7 @@ class Building extends Zei.GameObject {
       needsEnergy = true;
       radius = 10;
       
-      shield = Zei.Sprite.create("buffer", "shield", Zei.images["forcefield"], position, 336, 336, anchor: new Zei.Vector2(0.5, 0.5), alpha: 0.5, visible: false);
+      shield = Zei.Sprite.create("main", "shield", Zei.images["forcefield"], position, 336, 336, anchor: new Zei.Vector2(0.5, 0.5), alpha: 0.5, visible: false);
     }
     else if (type == "bomber") {
       maxHealth = game.debug == true ? 1 : 75;
@@ -172,7 +172,7 @@ class Building extends Zei.GameObject {
       needsEnergy = true;
       energyCounter = 15;
       
-      cannon = Zei.Sprite.create("buffer", "buildinggun", Zei.images["cannongun"], position, 48, 48, anchor: new Zei.Vector2(0.5, 0.5), alpha: 0.5);
+      cannon = Zei.Sprite.create("main", "buildinggun", Zei.images["cannongun"], position, 48, 48, anchor: new Zei.Vector2(0.5, 0.5), alpha: 0.5);
     }
     else if (type == "mortar") {
       maxHealth = game.debug == true ? 1 : 40;
@@ -189,24 +189,24 @@ class Building extends Zei.GameObject {
       canMove = true;
       needsEnergy = true;
       
-      beamLineOuter = Zei.Line.create("buffer", "projectile", position, new Zei.Vector2.empty(), 5, new Zei.Color.red(), visible: false);
-      beamLineInner = Zei.Line.create("buffer", "projectile", position, new Zei.Vector2.empty(), 3, new Zei.Color.white(), visible: false); 
+      beamLineOuter = Zei.Line.create("main", "projectile", position, new Zei.Vector2.empty(), 5, new Zei.Color.red(), visible: false);
+      beamLineInner = Zei.Line.create("main", "projectile", position, new Zei.Vector2.empty(), 3, new Zei.Color.white(), visible: false); 
     }
     
-    targetSymbol = Zei.Rect.create("buffer", "targetsymbol", new Zei.Vector2.empty(), new Zei.Vector2(size * Tile.size, size * Tile.size), 1, new Zei.Color.green(), null, visible: false, anchor: new Zei.Vector2(0.5, 0.5));
+    targetSymbol = Zei.Rect.create("main", "targetsymbol", new Zei.Vector2.empty(), new Zei.Vector2(size * Tile.size, size * Tile.size), 1, new Zei.Color.green(), null, visible: false, anchor: new Zei.Vector2(0.5, 0.5));
      
     if (needsEnergy) {
-      energyBar = Zei.Rect.create("buffer", "buildinginfo", 
+      energyBar = Zei.Rect.create("main", "buildinginfo", 
                                position - new Zei.Vector2(size * Tile.size / 2 - 2, size * Tile.size / 2 - 4),
                                new Zei.Vector2(((size * Tile.size - 4) / maxEnergy) * energy, 3),
                                0, new Zei.Color.red(), null);
     }
-    healthBar = Zei.Rect.create("buffer", "buildinginfo", 
+    healthBar = Zei.Rect.create("main", "buildinginfo", 
                                    position - new Zei.Vector2(size * Tile.size / 2 - 2, -size * Tile.size / 2 + 7),
                                    new Zei.Vector2(((size * Tile.size - 4) / maxHealth) * health, 3),
                                    0, new Zei.Color.green(), null, visible: false); 
     
-    inactiveSprite = Zei.Sprite.create("buffer", "buildinginfo", Zei.images["inactive"], position, 144, 144, anchor: new Zei.Vector2(0.5, 0.5), visible: false, scale: new Zei.Vector2(1.0 / 9 * size, 1.0 / 9 * size));
+    inactiveSprite = Zei.Sprite.create("main", "buildinginfo", Zei.images["inactive"], position, 144, 144, anchor: new Zei.Vector2(0.5, 0.5), visible: false, scale: new Zei.Vector2(1.0 / 9 * size, 1.0 / 9 * size));
     
     Connection.add(this);
   }
@@ -230,7 +230,7 @@ class Building extends Zei.GameObject {
     // only explode building when it has been built
     if (building.built) {
       Explosion.add(building.position);
-      Zei.Audio.play("explosion", building.position, game.scroll, game.zoom);
+      Zei.Audio.play("explosion", building.position, game.scroller.scroll, game.zoom);
     }
 
     if (building.type == "base") {
@@ -255,11 +255,11 @@ class Building extends Zei.GameObject {
     
     Connection.remove(building);
 
-    Zei.renderer["buffer"].removeDisplayObject(building.sprite);
-    Zei.renderer["buffer"].removeDisplayObject(building.selectedCircle);
-    Zei.renderer["buffer"].removeDisplayObject(building.targetSymbol);
+    Zei.renderer["main"].removeDisplayObject(building.sprite);
+    Zei.renderer["main"].removeDisplayObject(building.selectedCircle);
+    Zei.renderer["main"].removeDisplayObject(building.targetSymbol);
     if (building.cannon != null)
-      Zei.renderer["buffer"].removeDisplayObject(building.cannon);
+      Zei.renderer["main"].removeDisplayObject(building.cannon);
 
     Zei.GameObject.remove(building);
   }
@@ -520,13 +520,13 @@ class Building extends Zei.GameObject {
       if (flightCounter >= 25) {
         flightCounter = 25;
         status = "MOVING";
-        Zei.renderer["buffer"].switchLayer(sprite, "buildingflying");
+        Zei.renderer["main"].switchLayer(sprite, "buildingflying");
         if (cannon != null)
-          Zei.renderer["buffer"].switchLayer(cannon, "buildinggunflying");
+          Zei.renderer["main"].switchLayer(cannon, "buildinggunflying");
         if (energyBar != null) {
-          Zei.renderer["buffer"].switchLayer(energyBar, "buildinginfoflying");
+          Zei.renderer["main"].switchLayer(energyBar, "buildinginfoflying");
         }
-        Zei.renderer["buffer"].switchLayer(healthBar, "buildinginfoflying");
+        Zei.renderer["main"].switchLayer(healthBar, "buildinginfoflying");
       }
     }
     
@@ -543,13 +543,13 @@ class Building extends Zei.GameObject {
         targetSymbol.visible = false;
         updateDisplayObjects();
         Connection.add(this);
-        Zei.renderer["buffer"].switchLayer(sprite, "building");
+        Zei.renderer["main"].switchLayer(sprite, "building");
         if (cannon != null)
-          Zei.renderer["buffer"].switchLayer(cannon, "buildinggun");
+          Zei.renderer["main"].switchLayer(cannon, "buildinggun");
         if (energyBar != null) {
-          Zei.renderer["buffer"].switchLayer(energyBar, "buildinginfo");
+          Zei.renderer["main"].switchLayer(energyBar, "buildinginfo");
         }
-        Zei.renderer["buffer"].switchLayer(healthBar, "buildinginfo");
+        Zei.renderer["main"].switchLayer(healthBar, "buildinginfo");
       }
     }
 
@@ -701,7 +701,7 @@ class Building extends Zei.GameObject {
           if (packet.findRoute())
             packet.send();
           else
-            Zei.renderer["buffer"].removeDisplayObject(packet.sprite);
+            Zei.renderer["main"].removeDisplayObject(packet.sprite);
         }
         if (type == "reactor" || type == "base") {
           Building.base.energy += 1;
@@ -933,7 +933,7 @@ class Building extends Zei.GameObject {
             energy -= 1;
             operating = true;
             Projectile.add(position, new Zei.Vector2(weaponTargetPosition.x * Tile.size + Tile.size / 2, weaponTargetPosition.y * Tile.size + Tile.size / 2), targetAngle);
-            Zei.Audio.play("laser", position, game.scroll, game.zoom);
+            Zei.Audio.play("laser", position, game.scroller.scroll, game.zoom);
           }
         }
       }
@@ -958,7 +958,7 @@ class Building extends Zei.GameObject {
             }
           }
           if (target != null) {
-            Zei.Audio.play("shot", position, game.scroll, game.zoom);
+            Zei.Audio.play("shot", position, game.scroller.scroll, game.zoom);
             Shell.add(position, new Zei.Vector2(target.x * Tile.size + Tile.size / 2, target.y * Tile.size + Tile.size / 2));
             energy -= 1;
           }
@@ -988,7 +988,7 @@ class Building extends Zei.GameObject {
               
         // remove current reposition lines
         for (var i = 0; i < repositionLines.length; i++) {
-          Zei.renderer["buffer"].removeDisplayObject(repositionLines[i]);
+          Zei.renderer["main"].removeDisplayObject(repositionLines[i]);
         }
         repositionLines.clear();
         
@@ -1005,8 +1005,8 @@ class Building extends Zei.GameObject {
                   }
 
                   if (tileCenter.distanceTo(building.position) <= allowedDistance) {
-                    repositionLines.add(Zei.Line.create("buffer", "connection", tileCenter, building.position, 3, new Zei.Color.black()));
-                    repositionLines.add(Zei.Line.create("buffer", "connection", tileCenter, building.position, 2, new Zei.Color.green()));
+                    repositionLines.add(Zei.Line.create("main", "connection", tileCenter, building.position, 3, new Zei.Color.black()));
+                    repositionLines.add(Zei.Line.create("main", "connection", tileCenter, building.position, 2, new Zei.Color.green()));
                   }
                 }
               }

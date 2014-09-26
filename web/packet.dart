@@ -9,13 +9,13 @@ class Packet extends Zei.GameObject {
   static num baseSpeed = 3;
 
   Packet(this.currentTarget, this.target, this.type) {
-    sprite = Zei.Sprite.create("buffer", "packet", Zei.images["packet_" + type], currentTarget.position, 16, 16, visible: false, anchor: new Zei.Vector2(0.5, 0.5));
+    sprite = Zei.Sprite.create("main", "packet", Zei.images["packet_" + type], currentTarget.position, 16, 16, visible: false, anchor: new Zei.Vector2(0.5, 0.5));
   }
      
   void update() {
     if (!game.paused) {
       if (flagRemove) {
-        Zei.renderer["buffer"].removeDisplayObject(sprite);
+        Zei.renderer["main"].removeDisplayObject(sprite);
         Zei.GameObject.remove(this);
       }
       else
@@ -68,7 +68,7 @@ class Packet extends Zei.GameObject {
                 target.cannon.alpha = 1.0;
               if (target.type == "collector") {
                 target.updateCollection("add");
-                Zei.Audio.play("energy", target.position, game.scroll, game.zoom);
+                Zei.Audio.play("energy", target.position, game.scroller.scroll, game.zoom);
               }
               if (target.type == "storage")
                 Building.base.maxEnergy += 20;

@@ -24,12 +24,13 @@ part 'explosion.dart';
 part 'connection.dart';
 part 'userinterface.dart';
 part 'uisymbol.dart';
+part 'scroller.dart';
 
 Game game;
 
 void main() {
   game = new Game().start(
-      friendly: false // disables enemies
+      friendly: true // disables enemies
       //seed: 1 // use seed
       );
 }

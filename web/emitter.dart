@@ -5,9 +5,12 @@ class Emitter extends Zei.GameObject {
   int strength;
   Building analyzer;
   int counter = 0;
+  static int numberOfEmitters = 0;
+  static List<Emitter> deadEmitters = new List();
 
   Emitter(position, this.strength) {
-    sprite = Zei.Sprite.create("buffer", "emitter", Zei.images["emitter"], position, 48, 48, anchor: new Zei.Vector2(0.5, 0.5));
+    sprite = Zei.Sprite.create("main", "emitter", Zei.images["emitter"], position, 48, 48, anchor: new Zei.Vector2(0.5, 0.5));
+    numberOfEmitters++;
   }
   
   static Emitter add(Zei.Vector2 position, int strength) {
@@ -26,6 +29,28 @@ class Emitter extends Zei.GameObject {
           game.world.getTile(sprite.position).creep += strength; //game.world.tiles[sprite.position.x + 1][sprite.position.y + 1].creep += strength;
           World.creeperDirty = true;
         }
+      }
+      
+      // check winning condition
+      if (!game.won)  {
+        // get current amount of dead emitters
+        if (analyzer != null) {
+          if (deadEmitters.indexOf(this) == -1)
+            deadEmitters.add(this);
+        } else {
+          if (deadEmitters.indexOf(this) != -1)
+            deadEmitters.removeAt(deadEmitters.indexOf(this));
+        }
+        
+        // if all emitters are dead the game is won!
+        if (deadEmitters.length == numberOfEmitters) {
+          // TODO: 10 seconds countdown
+          querySelector('#win').style.display = "block";
+          game.stopwatch.stop();
+          //game.stop();
+          game.paused = true;
+          game.won = true;
+        } 
       }
     }
   }
@@ -75,30 +100,6 @@ class Emitter extends Zei.GameObject {
           }
         }
       }
-    }
-  }
-  
-  static void checkWinningCondition() {
-    if (!game.won) {
-      int emittersChecked = 0;
-      List emitters = [];
-      for (var emitter in Zei.GameObject.gameObjects) {
-        if (emitter is Emitter) {
-          emitters.add(emitter);        
-        }
-      }
-      for (int i = 0; i < emitters.length; i++) {
-        if (emitters[i].analyzer != null)
-          emittersChecked++;
-      }
-      if (emittersChecked == emitters.length) {
-        // TODO: 10 seconds countdown
-        querySelector('#win').style.display = "block";
-        game.stopwatch.stop();
-        //game.stop();
-        game.paused = true;
-        game.won = true;
-      } 
     }
   }
   

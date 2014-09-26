@@ -8,7 +8,7 @@ class Shell extends Zei.GameObject {
   static final num baseSpeed = 1.5;
 
   Shell(position, this.targetPosition) {
-    sprite = Zei.Sprite.create("buffer", "shell", Zei.images["shell"], position, 16, 16, anchor: new Zei.Vector2(0.5, 0.5));
+    sprite = Zei.Sprite.create("main", "shell", Zei.images["shell"], position, 16, 16, anchor: new Zei.Vector2(0.5, 0.5));
   }
   
   static Shell add(Zei.Vector2 position, Zei.Vector2 targetPosition) {
@@ -20,7 +20,7 @@ class Shell extends Zei.GameObject {
   void update() {
     if (!game.paused) {
       if (flagRemove) {
-        Zei.renderer["buffer"].removeDisplayObject(sprite);
+        Zei.renderer["main"].removeDisplayObject(sprite);
         Zei.GameObject.remove(this);
       }
       else
@@ -44,7 +44,7 @@ class Shell extends Zei.GameObject {
 
       Zei.Vector2 targetPositionTiled = Tile.position(targetPosition);
       Explosion.add(targetPosition);
-      Zei.Audio.play("explosion", targetPosition, game.scroll, game.zoom);
+      Zei.Audio.play("explosion", targetPosition, game.scroller.scroll, game.zoom);
 
       for (int i = -4; i <= 4; i++) {
         for (int j = -4; j <= 4; j++) {

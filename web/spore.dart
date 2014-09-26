@@ -9,7 +9,7 @@ class Spore extends Zei.GameObject {
   static final int baseSpeed = 1;
 
   Spore(position, this.targetPosition) {   
-    sprite = Zei.Sprite.create("buffer", "spore", Zei.images["spore"], position, 32, 32, anchor: new Zei.Vector2(0.5, 0.5));
+    sprite = Zei.Sprite.create("main", "spore", Zei.images["spore"], position, 32, 32, anchor: new Zei.Vector2(0.5, 0.5));
   }
    
   static void add(Zei.Vector2 position, Zei.Vector2 targetPosition) {
@@ -20,7 +20,7 @@ class Spore extends Zei.GameObject {
   void update() {
     if (!game.paused) {
       if (flagRemove) {
-        Zei.renderer["buffer"].removeDisplayObject(sprite);
+        Zei.renderer["main"].removeDisplayObject(sprite);
         Zei.GameObject.remove(this);
       }
       else
@@ -45,7 +45,7 @@ class Spore extends Zei.GameObject {
           spore.health -= 2;
           if (spore.health <= 0) {
             spore.flagRemove = true;
-            Zei.Audio.play("explosion", Tile.position(spore.sprite.position), game.scroll, game.zoom);
+            Zei.Audio.play("explosion", Tile.position(spore.sprite.position), game.scroller.scroll, game.zoom);
             Explosion.add(spore.sprite.position);
           }
         }
@@ -67,7 +67,7 @@ class Spore extends Zei.GameObject {
       // if the target is reached explode and remove
       flagRemove = true;
       Zei.Vector2 targetPositionTiled = Tile.position(targetPosition);
-      Zei.Audio.play("explosion", targetPosition, game.scroll, game.zoom);
+      Zei.Audio.play("explosion", targetPosition, game.scroller.scroll, game.zoom);
 
       for (int i = -2; i <= 2; i++) {
         for (int j = -2; j <= 2; j++) {
