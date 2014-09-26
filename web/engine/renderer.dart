@@ -112,8 +112,11 @@ class Renderer {
   
   void removeDisplayObject(DisplayObject displayObject) {
     for (Layer layer in layers) {
-      if (layer.name == displayObject.layer)
-        layer.displayObjects.removeAt(layer.displayObjects.indexOf(displayObject));
+      if (layer.name == displayObject.layer) {
+        var index = layer.displayObjects.indexOf(displayObject);
+        if (index != -1)
+          layer.displayObjects.removeAt(index);
+      }
     }
   }
   
@@ -139,23 +142,23 @@ class Renderer {
                                        view.height / zoom);
   
     if (displayObject is Sprite) {     
-      Rectangle object = new Rectangle(displayObject.position.x - (displayObject.size.x * 16 / 2),
-                                       displayObject.position.y - (displayObject.size.y * 16 / 2),
-                                       displayObject.size.x * 16,
-                                       displayObject.size.y * 16);        
+      Rectangle object = new Rectangle(displayObject.position.x - (displayObject.size.x / 2),
+                                       displayObject.position.y - (displayObject.size.y / 2),
+                                       displayObject.size.x,
+                                       displayObject.size.y);        
       return renderer.intersects(object);       
     } else if (displayObject is Rect) {    
-      Rectangle object = new Rectangle(displayObject.position.x - (displayObject.size.x * 16 / 2),
-                                       displayObject.position.y - (displayObject.size.y * 16 / 2),
-                                       displayObject.size.x * 16,
-                                       displayObject.size.y * 16);       
+      Rectangle object = new Rectangle(displayObject.position.x - (displayObject.size.x / 2),
+                                       displayObject.position.y - (displayObject.size.y / 2),
+                                       displayObject.size.x,
+                                       displayObject.size.y);       
       return renderer.intersects(object); 
     } else if (displayObject is Circle) {    
       Vector2 size = new Vector2(displayObject.radius * displayObject.scale, displayObject.radius * displayObject.scale);     
-      Rectangle object = new Rectangle(displayObject.position.x - (size.x * 16 / 2),
-                                       displayObject.position.y - (size.y * 16 / 2),
-                                       size.x * 16,
-                                       size.y * 16);          
+      Rectangle object = new Rectangle(displayObject.position.x - (size.x / 2),
+                                       displayObject.position.y - (size.y / 2),
+                                       size.x,
+                                       size.y);          
       return renderer.intersects(object);
     } else if (displayObject is Line) {   
       // FIXME: a line might be partially visible although neither start nor end are visible

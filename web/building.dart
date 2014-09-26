@@ -17,6 +17,8 @@ class Building extends Zei.GameObject {
   static final double baseVelocity = .5;
   static Building base;
   static List<Packet> queue = new List<Packet>();
+  static Building selectedBuilding;
+  static List<Zei.Line> repositionLines = new List<Zei.Line>();
 
   Building.template(imageID) {
     type = imageID;  
@@ -297,20 +299,21 @@ class Building extends Zei.GameObject {
   
   static void select() {
     if (game.mode == "DEFAULT") {
-      Building buildingSelected = null;
+      selectedBuilding = null;
       for (var building in Zei.GameObject.gameObjects) {
         if (building is Building) {
           building.selected = building.hovered;
           if (building.selected) {
-            buildingSelected = building;
+            selectedBuilding = building;
             building.selectedCircle.visible = true;
           } else {
             building.selectedCircle.visible = false;
           }
         }
       }
-      if (buildingSelected != null) {
-        if (buildingSelected.active) {
+      if (selectedBuilding != null) {
+        game.mouse.hideCursor();
+        if (selectedBuilding.active) {
           querySelector('#deactivate').style.display = "block";
           querySelector('#activate').style.display = "none";
         } else {
@@ -344,6 +347,7 @@ class Building extends Zei.GameObject {
       checkOperating();
       shieldAction();
       requestPacket();
+      checkReposition();
       
       // take damage
       damageCounter += 1 * game.speed;
@@ -973,52 +977,43 @@ class Building extends Zei.GameObject {
     }
   }
   
-  static void drawRepositionInfo() {
-    CanvasRenderingContext2D context = Zei.renderer["buffer"].context;
+  static void checkReposition() {
+    if (selectedBuilding != null) {
+      //if (game.hoveredTile != game.oldHoveredTile) { // FIXME: repositionLines not always updated
+        game.world.hideRangeBoxes();
+        game.updateRangeBoxes(game.hoveredTile, selectedBuilding);
         
-    for (var building in Zei.GameObject.gameObjects) {
-      if (building is Building) {
-        if (building.built && building.selected && building.canMove) {
-          game.mouse.hideCursor();
-          
-          Zei.Vector2 positionI = game.convertToView("main", game.hoveredTile * Tile.size + new Zei.Vector2(Tile.size / 2 * game.zoom, Tile.size / 2 * game.zoom));
-          
-          game.world.hideRangeBoxes();
-          game.updateRangeBoxes(game.hoveredTile, building);
-     
-          if (game.canBePlaced(game.hoveredTile, building)) {
-            // draw lines to other buildings
-            for (var building2 in Zei.GameObject.gameObjects) {
-              if (building2 is Building) {
-                if (building != building2) {
-                  if (building.type == "base" || building2.type == "collector" || building2.type == "relay" || building2.type == "base") {
-                    Zei.Vector2 positionJ = game.convertToView("main", building2.position);
-    
-                    int allowedDistance = 10 * Tile.size;
-                    if (building2.type == "relay" && building.type == "relay") {
-                      allowedDistance = 20 * Tile.size;
-                    }
-    
-                    if (positionJ.distanceTo(positionI) <= allowedDistance * game.zoom) {
-                      context
-                        ..strokeStyle = '#000'
-                        ..lineWidth = 3 * game.zoom
-                        ..beginPath()
-                        ..moveTo(positionJ.x, positionJ.y)
-                        ..lineTo(positionI.x, positionI.y)
-                        ..stroke()
-                        ..strokeStyle = '#0f0'
-                        ..lineWidth = 2 * game.zoom
-                        ..stroke();
-                    }
+        // get drawing center of hovered tile
+        Zei.Vector2 tileCenter = game.hoveredTile * Tile.size + new Zei.Vector2(Tile.size / 2, Tile.size / 2);
+              
+        // remove current reposition lines
+        for (var i = 0; i < repositionLines.length; i++) {
+          Zei.renderer["buffer"].removeDisplayObject(repositionLines[i]);
+        }
+        repositionLines.clear();
+        
+        if (game.canBePlaced(game.hoveredTile, selectedBuilding)) {
+          // create new reposition lines
+          for (var building in Zei.GameObject.gameObjects) {
+            if (building is Building) {
+              if (selectedBuilding != building) {
+                if (selectedBuilding.type == "base" || building.type == "collector" || building.type == "relay" || building.type == "base") {
+
+                  int allowedDistance = 10 * Tile.size;
+                  if (building.type == "relay" && selectedBuilding.type == "relay") {
+                    allowedDistance = 20 * Tile.size;
+                  }
+
+                  if (tileCenter.distanceTo(building.position) <= allowedDistance) {
+                    repositionLines.add(Zei.Line.create("buffer", "connection", tileCenter, building.position, 3, new Zei.Color.black()));
+                    repositionLines.add(Zei.Line.create("buffer", "connection", tileCenter, building.position, 2, new Zei.Color.green()));
                   }
                 }
               }
             }
           }
-  
         }
-      }
-    }
+      //}
+    }    
   }
 }

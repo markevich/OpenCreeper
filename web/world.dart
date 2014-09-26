@@ -157,6 +157,11 @@ class World extends Zei.GameObject {
       }
 
     }
+    
+    if (creeperDirty) {
+      game.drawCreeper();
+      creeperDirty = false;
+    }
   }
 
   /**

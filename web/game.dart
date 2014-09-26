@@ -19,6 +19,7 @@ class Game {
   Zei.Mouse mouse;
   var debug = true;
   bool friendly;
+  static List<Zei.DisplayObject> ghostDisplayObjects = new List<Zei.DisplayObject>();
   
   Game() {
     Zei.init(TPS: 60, debug: false);
@@ -70,13 +71,12 @@ class Game {
     
     Zei.Renderer.create("creeper", width, height, "body");
     
-    Zei.Renderer.create("gui", 780, 110, "#gui");
+    var guiRenderer = Zei.Renderer.create("gui", 780, 110, "#gui");
+    guiRenderer.setLayers(["default"]);
+    guiRenderer.updatePosition(new Zei.Vector2(390, 55));
        
     // renderes affected when zooming
     zoomableRenderers = ["buffer", "collection"];
-    
-    // create UI
-    ui = new UserInterface(Zei.renderer["gui"]);
     
     world = new World(seed);
   
@@ -147,6 +147,9 @@ class Game {
     updateEnergyElement();
     updateSpeedElement();
     querySelector('#time').innerHtml = 'Time: 00:00';
+    
+    // create UI
+    ui = new UserInterface(Zei.renderer["gui"]);
     
     // create terraform lines and number used when terraforming is enabled
     tfLine1 = Zei.Line.create("buffer", "terraform", new Zei.Vector2.empty(), new Zei.Vector2.empty(), 1, new Zei.Color.white(), visible: false);
@@ -875,141 +878,91 @@ class Game {
           }
         }
       }
-    }
-  }
-
-  /**
-   * When a building from the GUI is selected this draws some info
-   * whether it can be build on the current tile, the range as
-   * white boxes and connections to other buildings
-   */
-  void drawGhosts() {
-    if (UISymbol.activeSymbol != null) {
-      CanvasRenderingContext2D context = Zei.renderer["buffer"].context;
       
-      game.world.hideRangeBoxes();
-      for (int i = 0; i < ghosts.length; i++) {
-        Zei.Vector2 drawPosition = game.convertToView("main", ghosts[i] * Tile.size);
-        Zei.Vector2 ghostICenter = drawPosition + new Zei.Vector2(8 * zoom, 8 * zoom);
-  
-        updateRangeBoxes(ghosts[i], UISymbol.activeSymbol.building);
-  
-        if (world.contains(ghosts[i])) {
-          context.save();
-          context.globalAlpha = .5;
-  
-          // draw building
-          context.drawImageScaled(Zei.images[UISymbol.activeSymbol.building.type], drawPosition.x - Tile.size * zoom, drawPosition.y - Tile.size * zoom, UISymbol.activeSymbol.building.size * Tile.size * zoom, UISymbol.activeSymbol.building.size * Tile.size * zoom);
+      // remove current ghost display objects
+      for (var i = 0; i < ghostDisplayObjects.length; i++) {
+        Zei.renderer["buffer"].removeDisplayObject(ghostDisplayObjects[i]);
+      }
+      ghostDisplayObjects.clear();
+      
+      if (UISymbol.activeSymbol != null) {
+        // create new ghost sprites
+        for (var i = 0; i < ghosts.length; i++) {
+          
+          Zei.Vector2 ghostCenter = ghosts[i] * Tile.size + new Zei.Vector2(Tile.size / 2, Tile.size / 2);
+          
+          ghostDisplayObjects.add(Zei.Sprite.create("buffer", "terraform", Zei.images[UISymbol.activeSymbol.building.type], ghosts[i] * Tile.size + new Zei.Vector2(Tile.size / 2, Tile.size / 2), UISymbol.activeSymbol.building.size * Tile.size, UISymbol.activeSymbol.building.size * Tile.size, alpha: 0.5, anchor: new Zei.Vector2(0.5, 0.5)));
           if (UISymbol.activeSymbol.building.type == "cannon")
-            context.drawImageScaled(Zei.images["cannongun"], drawPosition.x - Tile.size * zoom, drawPosition.y - Tile.size * zoom, 48 * zoom, 48 * zoom);
-  
-          // draw green or red box
-          // make sure there isn't a building on this tile yet
+            ghostDisplayObjects.add(Zei.Sprite.create("buffer", "terraform", Zei.images["cannongun"], ghosts[i] * Tile.size + new Zei.Vector2(Tile.size / 2, Tile.size / 2), UISymbol.activeSymbol.building.size * Tile.size, UISymbol.activeSymbol.building.size * Tile.size, alpha: 0.5, anchor: new Zei.Vector2(0.5, 0.5)));
+        
+          // create colored red or green box
           bool ghostCanBePlaced = canBePlaced(ghosts[i], UISymbol.activeSymbol.building);
-
+  
+          Zei.Color color;
           if (ghostCanBePlaced) {
-            context.strokeStyle = "#0f0";
+            color = new Zei.Color(0, 255, 0, 0.5);
           } else {
-            context.strokeStyle = "#f00";
+            color = new Zei.Color(255, 0, 0, 0.5);
           }
-          context.lineWidth = 4 * zoom;
-          context.strokeRect(drawPosition.x - Tile.size * zoom, drawPosition.y - Tile.size * zoom, Tile.size * UISymbol.activeSymbol.building.size * zoom, Tile.size * UISymbol.activeSymbol.building.size * zoom);
+          ghostDisplayObjects.add(Zei.Rect.create("buffer", "terraform", ghosts[i] * Tile.size + new Zei.Vector2(Tile.size / 2, Tile.size / 2), new Zei.Vector2(UISymbol.activeSymbol.building.size * Tile.size, UISymbol.activeSymbol.building.size * Tile.size), 4, null, color, anchor: new Zei.Vector2(0.5, 0.5)));
+          
+          // create lines to other buildings
+          for (var building in Zei.GameObject.gameObjects) {
+            if (building is Building) {
+              if (UISymbol.activeSymbol.building.type == "collector" || UISymbol.activeSymbol.building.type == "relay" ||
+                building.type == "collector" || building.type == "relay" || building.type == "base") {
   
-          context.restore();
-
-          if (ghostCanBePlaced) {
-            // draw lines to other buildings
-            for (var building in Zei.GameObject.gameObjects) {
-              if (building is Building) {
-                if (UISymbol.activeSymbol.building.type == "collector" || UISymbol.activeSymbol.building.type == "relay" ||
-                    building.type == "collector" || building.type == "relay" || building.type == "base") {
-                  Zei.Vector2 buildingCenter = game.convertToView("main", building.position);
-  
-                  int allowedDistance = 10 * Tile.size;
-                  if (building.type == "relay" && UISymbol.activeSymbol.building.type == "relay") {
-                    allowedDistance = 20 * Tile.size;
-                  }
-  
-                  if (buildingCenter.distanceTo(ghostICenter) <= allowedDistance * zoom) {
-                    context
-                      ..strokeStyle = '#000'
-                      ..lineWidth = 3 * game.zoom
-                      ..beginPath()
-                      ..moveTo(buildingCenter.x, buildingCenter.y)
-                      ..lineTo(ghostICenter.x, ghostICenter.y)
-                      ..stroke()
-                      ..strokeStyle = '#0f0'
-                      ..lineWidth = 2 * game.zoom
-                      ..stroke();
-                  }
+                int allowedDistance = 10 * Tile.size;
+                if (building.type == "relay" && UISymbol.activeSymbol.building.type == "relay") {
+                  allowedDistance = 20 * Tile.size;
                 }
-              }
-            }
-            // draw lines to other ghosts
-            for (int j = 0; j < ghosts.length; j++) {
-              if (j != i) {
-                if (UISymbol.activeSymbol.building.type == "collector" || UISymbol.activeSymbol.building.type == "relay") {
-                  Zei.Vector2 ghostKCenter = game.convertToView("main", ghosts[j] * Tile.size + new Zei.Vector2(Tile.size / 2 * game.zoom, Tile.size / 2 * game.zoom));
-
-                  int allowedDistance = 10 * Tile.size;
-                  if (UISymbol.activeSymbol.building.type == "relay") {
-                    allowedDistance = 20 * Tile.size;
-                  }
-
-                  Zei.Vector2 ghostJCenter = drawPosition + new Zei.Vector2(Tile.size / 2 * game.zoom, Tile.size / 2 * game.zoom);
-                  if (ghostKCenter.distanceTo(ghostJCenter) <= allowedDistance * zoom) {
-                    context
-                      ..strokeStyle = '#000'
-                      ..lineWidth = 2 * game.zoom
-                      ..beginPath()
-                      ..moveTo(ghostKCenter.x, ghostKCenter.y)
-                      ..lineTo(ghostJCenter.x, ghostJCenter.y)
-                      ..stroke()
-                      ..strokeStyle = '#fff'
-                      ..lineWidth = 1 * game.zoom
-                      ..stroke();
-                  }
+  
+                if (ghostCenter.distanceTo(building.position) <= allowedDistance) {
+                  ghostDisplayObjects.add(Zei.Line.create("buffer", "connection", ghostCenter, building.position, 3, new Zei.Color(0, 0, 0, 0.5)));
+                  ghostDisplayObjects.add(Zei.Line.create("buffer", "connection", ghostCenter, building.position, 2, new Zei.Color(0, 255, 0, 0.5)));
                 }
               }
             }
           }
+          
+          // create lines to other ghosts
+          for (int j = 0; j < ghosts.length; j++) {
+            if (j != i) {
+              if (UISymbol.activeSymbol.building.type == "collector" || UISymbol.activeSymbol.building.type == "relay") {
+  
+                int allowedDistance = 10 * Tile.size;
+                if (UISymbol.activeSymbol.building.type == "relay") {
+                  allowedDistance = 20 * Tile.size;
+                }
+  
+                Zei.Vector2 ghostJCenter = ghosts[j] * Tile.size + new Zei.Vector2(Tile.size / 2, Tile.size / 2);
+                if (ghostCenter.distanceTo(ghostJCenter) <= allowedDistance) {
+                  ghostDisplayObjects.add(Zei.Line.create("buffer", "connection", ghostCenter, ghostJCenter, 2, new Zei.Color(0, 0, 0, 0.5)));
+                  ghostDisplayObjects.add(Zei.Line.create("buffer", "connection", ghostCenter, ghostJCenter, 1, new Zei.Color(255, 255, 255, 0.5)));
+                }
+              }
+            }
+          }
+          
         }
       }
     }
-
   }
   
   /**
    * Main drawing function which calls all other drawing functions.
    * Is called by requestAnimationFrame every frame.
    */
-  void draw(num _) {   
-    ui.draw();
+  void draw(num _) {  
+    Zei.renderer["gui"].clear();
+    Zei.renderer["gui"].draw();
     
     Zei.renderer["buffer"].clear();
     Zei.renderer["buffer"].draw();
     
-    if (World.creeperDirty) {
-      drawCreeper();
-      World.creeperDirty = false;
-    }
-
-    if (mouse.overCanvas) {
-      Building.drawRepositionInfo();
-      drawGhosts();
-    }
-
     Zei.renderer["main"].clear();
     Zei.renderer["main"].context.drawImage(Zei.renderer["buffer"].view, 0, 0);
 
     window.requestAnimationFrame(draw);
-  }
-   
-  // converts real coordinates to view coordinates (5 usages)
-  // used for graphics that are not managed by a renderer
-  Zei.Vector2 convertToView(String rendererName, Zei.Vector2 vector) {
-   return new Zei.Vector2(
-       Zei.renderer[rendererName].view.width / 2 + (vector.x - game.scroll.x * Tile.size) * game.zoom,
-       Zei.renderer[rendererName].view.height / 2 + (vector.y - game.scroll.y * Tile.size) * game.zoom);
   }
 }

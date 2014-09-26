@@ -1,10 +1,22 @@
 part of creeper;
 
-class UserInterface {
+class UserInterface extends Zei.GameObject {
   Zei.Renderer renderer;
+  Zei.Rect tileHeight, creeperHeight;
+  Zei.Text totalCreeper;
   
   UserInterface(this.renderer) {
     setupSymbols(); 
+    tileHeight = Zei.Rect.create("gui", "default", new Zei.Vector2(555, 110), new Zei.Vector2(25, 0), 0, new Zei.Color(205, 133, 63), null);
+    creeperHeight = Zei.Rect.create("gui", "default", new Zei.Vector2(555, 110), new Zei.Vector2(25, 0), 0, new Zei.Color(100, 150, 255), null);
+    totalCreeper = Zei.Text.create("gui", "default", new Zei.Vector2(605, 10), 9, "px", "Verdana" , new Zei.Color.white(), null, "0.00");
+    
+    for (var i = 0; i < 10; i++) {
+      Zei.Text.create("gui", "default", new Zei.Vector2(550, 110 - i * 10), 9, "px", "Verdana" , new Zei.Color.white(), null, (i + 1).toString(), align: "right");
+      Zei.Line.create("gui", "default", new Zei.Vector2(555, 110 - i * 10), new Zei.Vector2(580, 110 - i * 10), 1, new Zei.Color.white());    
+    }
+    
+    Zei.GameObject.add(this);
   }
   
   void setupSymbols() {
@@ -21,43 +33,15 @@ class UserInterface {
     UISymbol.add(new Zei.Vector2(4 * 81, 56), new Building.template("terp"), KeyCode.G);
   }
   
-  /**
-   * Draws the GUI with symbols, height and creep meter.
-   */
-  void draw() {
-    CanvasRenderingContext2D context = renderer.context;
-    
-    renderer.clear();
-    for (int i = 0; i < UISymbol.symbols.length; i++) {
-      UISymbol.symbols[i].draw();
-    }
-
+  void update() {      
     if (game.world.contains(game.hoveredTile)) {
-
-      num total = game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].creep;
-
-      // draw height and creep meter
-      context
-        ..fillStyle = '#fff'
-        ..font = '9px'
-        ..textAlign = 'right'
-        ..strokeStyle = '#fff'
-        ..lineWidth = 1
-        ..fillStyle = "rgba(205, 133, 63, 1)"
-        ..fillRect(555, 110, 25, -game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].height * 10 - 10)
-        ..fillStyle = "rgba(100, 150, 255, 1)"
-        ..fillRect(555, 110 - game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].height * 10 - 10, 25, -total * 10)
-        ..fillStyle = "rgba(255, 255, 255, 1)";
-      for (int i = 1; i < 11; i++) {
-        context
-          ..fillText(i.toString(), 550, 120 - i * 10)
-          ..beginPath()
-          ..moveTo(555, 120 - i * 10)
-          ..lineTo(580, 120 - i * 10)
-          ..stroke();
-      }
-      context.textAlign = 'left';
-      context.fillText(total.toStringAsFixed(2), 605, 10);
+      tileHeight.position.y = 110 - game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].height * 10;
+      tileHeight.size.y = game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].height * 10;
+      
+      creeperHeight.position.y = 110 - game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].height * 10 - game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].creep * 10;
+      creeperHeight.size.y = game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].creep * 10;
+      
+      totalCreeper.text = game.world.tiles[game.hoveredTile.x][game.hoveredTile.y].creep.toStringAsFixed(2);
     }
   }
   
