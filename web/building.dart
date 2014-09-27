@@ -9,7 +9,7 @@ class Building extends Zei.GameObject {
   Ship ship;
   Zei.Sprite sprite, cannon, shield, inactiveSprite;
   Zei.Circle selectedCircle;
-  Zei.Rect targetSymbol, energyBar, healthBar;
+  Zei.Rect targetSymbol, energyBar, healthBar, repositionRect;
   Zei.Line analyzerLineInner, analyzerLineOuter, beamLineInner, beamLineOuter, terpLineInner, terpLineOuter;
   int damageCounter = 0, collectCounter = 0;
   Spore beamTarget;
@@ -17,9 +17,8 @@ class Building extends Zei.GameObject {
   static final double baseVelocity = .5;
   static Building base;
   List<Packet> queue; // only used for base
-  static Building selectedBuilding;
   static List<Zei.Line> repositionLines = new List<Zei.Line>();
-
+ 
   Building.template(imageID) {
     type = imageID;  
     
@@ -195,7 +194,8 @@ class Building extends Zei.GameObject {
     }
     
     targetSymbol = Zei.Rect.create("main", "targetsymbol", new Zei.Vector2.empty(), new Zei.Vector2(size * Tile.size, size * Tile.size), 1, new Zei.Color.green(), null, visible: false, anchor: new Zei.Vector2(0.5, 0.5));
-     
+    repositionRect = Zei.Rect.create("main", "targetsymbol", new Zei.Vector2.empty(), new Zei.Vector2(size * Tile.size, size * Tile.size), 10, new Zei.Color.red(), null, visible: false, anchor: new Zei.Vector2(0.5, 0.5));
+    
     if (needsEnergy) {
       energyBar = Zei.Rect.create("main", "buildinginfo", 
                                position - new Zei.Vector2(size * Tile.size / 2 - 2, size * Tile.size / 2 - 4),
@@ -283,30 +283,24 @@ class Building extends Zei.GameObject {
   
   static void select() {
     if (game.mode == "DEFAULT") {
-      selectedBuilding = null;
+      querySelector('#deactivate').style.display = "none";
+      querySelector('#activate').style.display = "none";
       for (var building in Zei.GameObject.gameObjects) {
         if (building is Building) {
           building.selected = building.hovered;
           if (building.selected) {
-            selectedBuilding = building;
             building.selectedCircle.visible = true;
+            building.repositionRect.visible = true;
+            if (building.active) {
+              querySelector('#deactivate').style.display = "block";
+            } else {
+              querySelector('#activate').style.display = "block";
+            }
           } else {
             building.selectedCircle.visible = false;
+            building.repositionRect.visible = false;
           }
         }
-      }
-      if (selectedBuilding != null) {
-        game.mouse.hideCursor();
-        if (selectedBuilding.active) {
-          querySelector('#deactivate').style.display = "block";
-          querySelector('#activate').style.display = "none";
-        } else {
-          querySelector('#deactivate').style.display = "none";
-          querySelector('#activate').style.display = "block";
-        }
-      } else {
-        querySelector('#deactivate').style.display = "none";
-        querySelector('#activate').style.display = "none";
       }
     }
   }
@@ -316,6 +310,7 @@ class Building extends Zei.GameObject {
       if (building is Building) {
         building.selected = false;
         building.selectedCircle.visible = false;
+        building.repositionRect.visible = false;
       }
     }
     game.world.hideRangeBoxes();
@@ -760,7 +755,7 @@ class Building extends Zei.GameObject {
       }
     }
 
-    game.drawCollection();
+    game.world.drawCollection();
   }
 
   void checkOperating() {
@@ -833,7 +828,7 @@ class Building extends Zei.GameObject {
                 ..add(new Zei.Vector3(weaponTargetPosition.x, weaponTargetPosition.y + 1, height));
             }
 
-            game.redrawTerrain(tilesToRedraw);
+            game.world.redrawTiles(tilesToRedraw);
 
             if (height == game.world.tiles[weaponTargetPosition.x][weaponTargetPosition.y].terraformTarget) {
               game.world.tiles[weaponTargetPosition.x][weaponTargetPosition.y].unflagTerraform();
@@ -976,43 +971,51 @@ class Building extends Zei.GameObject {
     }
   }
   
-  static void checkReposition() {
-    if (selectedBuilding != null) {
+  void checkReposition() { 
+    if (selected && built && canMove) {
       //if (game.hoveredTile != game.oldHoveredTile) { // FIXME: repositionLines not always updated
-        game.world.hideRangeBoxes();
-        game.updateRangeBoxes(game.hoveredTile, selectedBuilding);
-        
-        // get drawing center of hovered tile
-        Zei.Vector2 tileCenter = game.hoveredTile * Tile.size + new Zei.Vector2(Tile.size / 2, Tile.size / 2);
-              
-        // remove current reposition lines
-        for (var i = 0; i < repositionLines.length; i++) {
-          Zei.renderer["main"].removeDisplayObject(repositionLines[i]);
-        }
-        repositionLines.clear();
-        
-        if (game.canBePlaced(game.hoveredTile, selectedBuilding)) {
-          // create new reposition lines
-          for (var building in Zei.GameObject.gameObjects) {
-            if (building is Building) {
-              if (selectedBuilding != building) {
-                if (selectedBuilding.type == "base" || building.type == "collector" || building.type == "relay" || building.type == "base") {
-
-                  int allowedDistance = 10 * Tile.size;
-                  if (building.type == "relay" && selectedBuilding.type == "relay") {
-                    allowedDistance = 20 * Tile.size;
-                  }
-
-                  if (tileCenter.distanceTo(building.position) <= allowedDistance) {
-                    repositionLines.add(Zei.Line.create("main", "connection", tileCenter, building.position, 3, new Zei.Color.black()));
-                    repositionLines.add(Zei.Line.create("main", "connection", tileCenter, building.position, 2, new Zei.Color.green()));
-                  }
+      game.world.hideRangeBoxes();
+      game.updateRangeBoxes(game.hoveredTile, this);
+      
+      // get drawing center of hovered tile
+      Zei.Vector2 tileCenter = game.hoveredTile * Tile.size + new Zei.Vector2(Tile.size / 2, Tile.size / 2);
+      
+      repositionRect.visible = true;
+      repositionRect.position = tileCenter;
+      
+      // remove current reposition lines
+      for (var i = 0; i < repositionLines.length; i++) {
+        Zei.renderer["main"].removeDisplayObject(repositionLines[i]);
+      }
+      repositionLines.clear();
+      
+      if (game.canBePlaced(game.hoveredTile, this)) {
+        // set reposition rect to green
+        repositionRect.fillColor = new Zei.Color(0, 255, 0, 0.5);
+        // create new reposition lines
+        for (var building in Zei.GameObject.gameObjects) {
+          if (building is Building) {
+            if (this != building) {
+              if (type == "base" || building.type == "collector" || building.type == "relay" || building.type == "base") {
+  
+                int allowedDistance = 10 * Tile.size;
+                if (building.type == "relay" && type == "relay") {
+                  allowedDistance = 20 * Tile.size;
+                }
+  
+                if (tileCenter.distanceTo(building.position) <= allowedDistance) {
+                  repositionLines.add(Zei.Line.create("main", "connection", tileCenter, building.position, 3, new Zei.Color.black()));
+                  repositionLines.add(Zei.Line.create("main", "connection", tileCenter, building.position, 2, new Zei.Color.green()));
                 }
               }
             }
           }
         }
+      } else {
+        // set reposition rect to red
+        repositionRect.fillColor = new Zei.Color(255, 0, 0, 0.5);
+      }
       //}
-    }    
-  }
+    }
+  }    
 }

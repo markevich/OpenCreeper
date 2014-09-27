@@ -32,8 +32,8 @@ class Scroller extends Zei.GameObject {
       for (var renderer in game.zoomableRenderers) {
         Zei.renderer[renderer].updatePosition(new Zei.Vector2(scroll.x * Tile.size, scroll.y * Tile.size));
       }
-      game.copyTerrain();
-      game.drawCollection();
+      game.world.copyTiles();
+      game.world.drawCollection();
       //game.updateVariousInfo();
       World.creeperDirty = true;
     }

@@ -9,10 +9,6 @@ class Game {
   World world;
   Zei.Vector2 oldHoveredTile = new Zei.Vector2.empty(), hoveredTile = new Zei.Vector2.empty();
   Stopwatch stopwatch = new Stopwatch();
-  Zei.Line tfLine1, tfLine2, tfLine3, tfLine4;
-  Zei.Sprite tfNumber;
-  Zei.Sprite targetCursor;
-  Zei.Rect repositionRect;
   UserInterface ui;
   List zoomableRenderers;
   Zei.Mouse mouse;
@@ -76,17 +72,15 @@ class Game {
        
     // renderes affected when zooming
     zoomableRenderers = ["main", "collection"];
-    
-    world = new World(seed);
-  
+     
     var music = new AudioElement("sounds/music.ogg");
     music.loop = true;
     music.volume = 0.25;
     music.onCanPlay.listen((event) => music.play()); // TODO: find out why this is not working
      
     reset();
-    drawTerrain();
-    copyTerrain();
+    world.drawTiles();
+    world.copyTiles();
     setupEventHandler();
     Zei.run();
   }
@@ -133,12 +127,11 @@ class Game {
     speed = 1;
     won = false;
     
+    world = new World(seed);
     world.create();
-    drawCollection();
-    
     Zei.GameObject.add(world);
     Zei.GameObject.add(game.scroller);
-    
+       
     stopwatch.reset();
     stopwatch.start();
     var oneSecond = new Duration(seconds:1);
@@ -152,20 +145,7 @@ class Game {
     // create UI
     ui = new UserInterface(Zei.renderer["gui"]);
     
-    // create terraform lines and number used when terraforming is enabled
-    tfLine1 = Zei.Line.create("main", "terraform", new Zei.Vector2.empty(), new Zei.Vector2.empty(), 1, new Zei.Color.white(), visible: false);
-    tfLine2 = Zei.Line.create("main", "terraform", new Zei.Vector2.empty(), new Zei.Vector2.empty(), 1, new Zei.Color.white(), visible: false);
-    tfLine3 = Zei.Line.create("main", "terraform", new Zei.Vector2.empty(), new Zei.Vector2.empty(), 1, new Zei.Color.white(), visible: false);
-    tfLine4 = Zei.Line.create("main", "terraform", new Zei.Vector2.empty(), new Zei.Vector2.empty(), 1, new Zei.Color.white(), visible: false);
-    
-    tfNumber = Zei.Sprite.create("main", "terraform", Zei.images["numbers"], new Zei.Vector2.empty(), 16, 16, animated: true, frame: terraformingHeight, visible: false);
-    tfNumber.stopAnimation();
-    
-    // create target cursor used when a ship is selected
-    targetCursor = Zei.Sprite.create("main", "targetsymbol", Zei.images["targetcursor"], new Zei.Vector2.empty(), 48, 48, visible: false, anchor: new Zei.Vector2(0.5, 0.5));
-    
-    // rectangle that is drawn when repositioning a building
-    repositionRect = Zei.Rect.create("main", "targetsymbol", new Zei.Vector2(0, 0), new Zei.Vector2(32, 32), 10, new Zei.Color.red(), null, visible: false);
+    Ship.init();
   }
   
   void updateTime(Timer _) {
@@ -198,8 +178,8 @@ class Game {
     querySelector('#lose').style.display = 'none';
     Zei.stop();
     reset();
-    drawTerrain();
-    copyTerrain();
+    world.drawTiles();
+    world.copyTiles();
     Zei.run();
   }
 
@@ -207,11 +187,11 @@ class Game {
     if (mode == "TERRAFORM") {
       mode = "DEFAULT";
       querySelector("#terraform").attributes['value'] = "Terraform Off";
-      tfNumber.visible = false;
+      world.tfNumber.visible = false;
     } else {
       mode = "TERRAFORM";
       querySelector("#terraform").attributes['value'] = "Terraform On";
-      tfNumber.visible = true;
+      world.tfNumber.visible = true;
     }
   }
 
@@ -241,8 +221,8 @@ class Game {
       for (var renderer in zoomableRenderers) {
         Zei.renderer[renderer].updateZoom(zoom);
       }
-      copyTerrain();
-      drawCollection();
+      world.copyTiles();
+      world.drawCollection();
       World.creeperDirty = true;
     }
   }
@@ -254,269 +234,19 @@ class Game {
       for (var renderer in zoomableRenderers) {
         Zei.renderer[renderer].updateZoom(zoom);
       }
-      copyTerrain();
-      drawCollection();
+      world.copyTiles();
+      world.drawCollection();
       World.creeperDirty = true;
     }
   }
-
-  /**
-   * Draws the complete terrain.
-   * This method is only called ONCE at the start of the game.
-   */
-  void drawTerrain() {
-    // 1st pass - draw masks
-    for (int i = 0; i < world.size.x; i++) {
-      for (int j = 0; j < world.size.y; j++) {
-        int indexAbove = -1;
-        for (int k = 9; k > -1; k--) {
-        
-          if (k <= world.tiles[i][j].height) {
-
-            // calculate index
-            int up = 0, down = 0, left = 0, right = 0;
-            if (j - 1 < 0)
-              up = 0;
-            else if (world.tiles[i][j - 1].height >= k)
-              up = 1;
-            if (j + 1 > world.size.y - 1)
-              down = 0;
-            else if (world.tiles[i][j + 1].height >= k)
-              down = 1;
-            if (i - 1 < 0)
-              left = 0;
-            else if (world.tiles[i - 1][j].height >= k)
-              left = 1;
-            if (i + 1 > world.size.x - 1)
-              right = 0;
-            else if (world.tiles[i + 1][j].height >= k)
-              right = 1;
-
-            // save index
-            int index = (8 * down) + (4 * left) + (2 * up) + right;
-            if (k == world.tiles[i][j].height)
-              world.tiles[i][j].index = index;
-            
-            if (k < 9) {
-              // skip tiles that are identical to the one above
-              if (index == indexAbove)
-                continue;
-              // skip tiles that are not visible
-              if (indexAbove == 5 || indexAbove == 7 || indexAbove == 10 || indexAbove == 11 ||
-                  indexAbove == 13 || indexAbove == 14 || indexAbove == 15)
-                continue;
-            }
-            
-            indexAbove = index;
-           
-            Zei.renderer["level$k"].context.drawImageScaledFromSource(Zei.images["mask"], index * (Tile.size + 6) + 3, (Tile.size + 6) + 3, Tile.size, Tile.size, i * Tile.size, j * Tile.size, Tile.size, Tile.size);
-          }
-        }
-      }
-    }
-
-    // 2nd pass - draw textures
-    for (int i = 0; i < 10; i++) {
-      CanvasPattern pattern = Zei.renderer["level$i"].context.createPatternFromImage(Zei.images["level$i"], 'repeat');
-      Zei.renderer["level$i"].context.globalCompositeOperation = 'source-in';
-      Zei.renderer["level$i"].context.fillStyle = pattern;
-      Zei.renderer["level$i"].context.fillRect(0, 0, Zei.renderer["level$i"].view.width, Zei.renderer["level$i"].view.height);
-      Zei.renderer["level$i"].context.globalCompositeOperation = 'source-over';
-    }
-
-    // 3rd pass - draw borders
-    for (int i = 0; i < world.size.x; i++) {
-      for (int j = 0; j < world.size.y; j++) {
-        int indexAbove = -1;
-        for (int k = 9; k > -1; k--) {
-           
-          if (k <= world.tiles[i][j].height) {
-
-            // calculate index
-            int up = 0, down = 0, left = 0, right = 0;
-            if (j - 1 < 0)
-              up = 0;
-            else if (world.tiles[i][j - 1].height >= k)
-              up = 1;
-            if (j + 1 > world.size.y - 1)
-              down = 0;
-            else if (world.tiles[i][j + 1].height >= k)
-              down = 1;
-            if (i - 1 < 0)
-              left = 0;
-            else if (world.tiles[i - 1][j].height >= k)
-              left = 1;
-            if (i + 1 > world.size.x - 1)
-              right = 0;
-            else if (world.tiles[i + 1][j].height >= k)
-              right = 1;
-            
-            int index = (8 * down) + (4 * left) + (2 * up) + right;
-          
-            if (k < 9) {
-              // skip tiles that are identical to the one above
-              if (index == indexAbove)
-                continue;
-              // skip tiles that are not visible
-              if (indexAbove == 5 || indexAbove == 7 || indexAbove == 10 || indexAbove == 11 ||
-                  indexAbove == 13 || indexAbove == 14 || indexAbove == 15)
-                continue;
-            }
-            
-            indexAbove = index;
   
-            Zei.renderer["level$k"].context.drawImageScaledFromSource(Zei.images["borders"], index * (Tile.size + 6) + 2, 2, Tile.size + 2, Tile.size + 2, i * Tile.size, j * Tile.size, (Tile.size + 2), (Tile.size + 2));       
-          }
-        }
-      }
-    }
-
-    Zei.renderer["levelbuffer"].clear();
-    for (int k = 0; k < 10; k++) {
-      Zei.renderer["levelbuffer"].context.drawImage(Zei.renderer["level$k"].view, 0, 0);
-    }
-    querySelector('#loading').style.display = 'none';
+  void updateEnergyElement() {
+    if (Building.base != null)
+      querySelector('#energy').innerHtml = "Energy: ${Building.base.energy.toString()}/${Building.base.maxEnergy.toString()}";
   }
 
-  /**
-   * After scrolling, zooming, or tile redrawing the terrain is copied
-   * to the "main" renderer.
-   */
-  void copyTerrain() {
-    Zei.renderer["levelfinal"].clear();
-
-    var targetLeft = 0;
-    var targetTop = 0;
-    var sourceLeft = scroller.scroll.x * Tile.size - Zei.renderer["main"].view.width / 2 / zoom;
-    var sourceTop = scroller.scroll.y * Tile.size - Zei.renderer["main"].view.height / 2 / zoom;
-    if (sourceLeft < 0) {
-      targetLeft = -sourceLeft * zoom;
-      sourceLeft = 0;
-    }
-    if (sourceTop < 0) {
-      targetTop = -sourceTop * zoom;
-      sourceTop = 0;
-    }
-
-    var targetWidth = Zei.renderer["main"].view.width;
-    var targetHeight = Zei.renderer["main"].view.height;
-    var sourceWidth = Zei.renderer["main"].view.width / zoom;
-    var sourceHeight = Zei.renderer["main"].view.height / zoom;
-    if (sourceLeft + sourceWidth > world.size.x * Tile.size) {
-      targetWidth -= (sourceLeft + sourceWidth - world.size.x * Tile.size) * zoom;
-      sourceWidth = world.size.x * Tile.size - sourceLeft;
-    }
-    if (sourceTop + sourceHeight > world.size.y * Tile.size) {
-      targetHeight -= (sourceTop + sourceHeight - world.size.y * Tile.size) * zoom;
-      sourceHeight = world.size.y * Tile.size - sourceTop;
-    }
-    Zei.renderer["levelfinal"].context.drawImageScaledFromSource(Zei.renderer["levelbuffer"].view, sourceLeft, sourceTop, sourceWidth, sourceHeight, targetLeft, targetTop, targetWidth, targetHeight);
-  }
-
-  /**
-   * Takes a list of [tiles] and redraws them.
-   * This is used when the terrain height of a tile has been changed by a Terp.
-   */
-  void redrawTerrain(List tiles) {
-    List tempCanvas = [];
-    List tempContext = [];
-    for (int t = 0; t < 10; t++) {
-      tempCanvas.add(new CanvasElement());
-      tempCanvas[t].width = Tile.size;
-      tempCanvas[t].height = Tile.size;
-      tempContext.add(tempCanvas[t].getContext('2d'));
-    }
-
-    for (int i = 0; i < tiles.length; i++) {
-
-      int iS = tiles[i].x;
-      int jS = tiles[i].y;
-
-      if (world.contains(new Zei.Vector2(iS, jS))) {
-        // recalculate index
-        int index = -1;
-        int indexAbove = -1;
-        for (int t = 9; t > -1; t--) {
-          if (t <= world.tiles[iS][jS].height) {
-    
-            int up = 0, down = 0, left = 0, right = 0;
-            if (jS - 1 < 0)
-              up = 0;
-            else if (world.tiles[iS][jS - 1].height >= t)
-              up = 1;
-            if (jS + 1 > world.size.y - 1)
-              down = 0;
-            else if (world.tiles[iS][jS + 1].height >= t)
-              down = 1;
-            if (iS - 1 < 0)
-              left = 0;
-            else if (world.tiles[iS - 1][jS].height >= t)
-              left = 1;
-            if (iS + 1 > world.size.x - 1)
-              right = 0;
-            else if (world.tiles[iS + 1][jS].height >= t)
-              right = 1;
-    
-            // save index for later use
-            index = (8 * down) + (4 * left) + (2 * up) + right;
-          }
-              
-          //if (index > -1) {
-            tempContext[t].clearRect(0, 0, Tile.size, Tile.size);
-            
-            // redraw mask          
-            if (t < 9) {
-              // skip tiles that are identical to the one above
-              if (index == indexAbove)
-                continue;
-              // skip tiles that are not visible
-              if (indexAbove == 5 || indexAbove == 7 || indexAbove == 10 || indexAbove == 11 ||
-                  indexAbove == 13 || indexAbove == 14 || indexAbove == 15)
-                continue;
-            }
-            
-            tempContext[t].drawImageScaledFromSource(Zei.images["mask"], index * (Tile.size + 6) + 3, (Tile.size + 6) + 3, Tile.size, Tile.size, 0, 0, Tile.size, Tile.size);
-  
-            // redraw pattern
-            var pattern = tempContext[t].createPatternFromImage(Zei.images["level$t"], 'repeat');
-  
-            tempContext[t].globalCompositeOperation = 'source-in';
-            tempContext[t].fillStyle = pattern;
-  
-            tempContext[t].save();
-            Zei.Vector2 translation = new Zei.Vector2((iS * Tile.size).floor(), (jS * Tile.size).floor());
-            tempContext[t].translate(-translation.x, -translation.y);
-  
-            tempContext[t].fillRect(translation.x, translation.y, Tile.size, Tile.size);
-            tempContext[t].restore();
-  
-            tempContext[t].globalCompositeOperation = 'source-over';
-  
-            // redraw borders
-            if (t < 9) {
-              // skip tiles that are identical to the one above
-              if (index == indexAbove)
-                continue;
-              // skip tiles that are not visible
-              if (indexAbove == 5 || indexAbove == 7 || indexAbove == 10 || indexAbove == 11 ||
-                  indexAbove == 13 || indexAbove == 14 || indexAbove == 15)
-                continue;
-            }
-            
-            tempContext[t].drawImageScaledFromSource(Zei.images["borders"], index * (Tile.size + 6) + 2, 2, Tile.size + 2, Tile.size + 2, 0, 0, (Tile.size + 2), (Tile.size + 2));         
-          //}
-          
-          // set above index
-          indexAbove = index;
-        }
-  
-        Zei.renderer["levelbuffer"].context.clearRect(iS * Tile.size, jS * Tile.size, Tile.size, Tile.size);
-        for (int t = 0; t < 10; t++) {
-          Zei.renderer["levelbuffer"].context.drawImageScaledFromSource(tempCanvas[t], 0, 0, Tile.size, Tile.size, iS * Tile.size, jS * Tile.size, Tile.size, Tile.size);
-        }
-      }
-    }
-    copyTerrain();
+  void updateSpeedElement() {
+    querySelector("#speed").innerHtml = "Speed: ${speed.toString()}x";
   }
 
   /**
@@ -560,15 +290,6 @@ class Game {
     }
   }
   
-  void updateEnergyElement() {
-    if (Building.base != null)
-      querySelector('#energy').innerHtml = "Energy: ${Building.base.energy.toString()}/${Building.base.maxEnergy.toString()}";
-  }
-
-  void updateSpeedElement() {
-    querySelector("#speed").innerHtml = "Speed: ${speed.toString()}x";
-  }
-
   /**
    * Updates the range boxes around the [position] of a building.
    */
@@ -606,192 +327,12 @@ class Game {
     }
   }
 
-  /**
-   * Draws the green collection areas of collectors.
-   */
-  void drawCollection() {
-    Zei.renderer["collection"].clear();
-    Zei.renderer["collection"].context.save();
-    Zei.renderer["collection"].context.globalAlpha = .5;
-
-    int timesX = (Zei.renderer["main"].view.width / 2 / Tile.size / zoom).ceil();
-    int timesY = (Zei.renderer["main"].view.height / 2 / Tile.size / zoom).ceil();
-
-    for (int i = -timesX; i <= timesX; i++) {
-      for (int j = -timesY; j <= timesY; j++) {
-
-        Zei.Vector2 position = new Zei.Vector2(i + scroller.scroll.x, j + scroller.scroll.y);
-
-        if (world.contains(position)) {
-          if (world.tiles[position.x][position.y].collector != null) {
-            int up = 0, down = 0, left = 0, right = 0;
-            if (position.y - 1 < 0)
-              up = 0;
-            else
-              up = world.tiles[position.x][position.y - 1].collector != null ? 1 : 0;
-            if (position.y + 1 > world.size.y - 1)
-              down = 0;
-            else
-              down = world.tiles[position.x][position.y + 1].collector != null ? 1 : 0;
-            if (position.x - 1 < 0)
-              left = 0;
-            else
-              left = world.tiles[position.x - 1][position.y].collector != null ? 1 : 0;
-            if (position.x + 1 > world.size.x - 1)
-              right = 0;
-            else
-              right = world.tiles[position.x + 1][position.y].collector != null ? 1 : 0;
-
-            int index = (8 * down) + (4 * left) + (2 * up) + right;
-            Zei.renderer["collection"].context.drawImageScaledFromSource(Zei.images["mask"], index * (Tile.size + 6) + 3, (Tile.size + 6) + 3, Tile.size, Tile.size, Zei.renderer["main"].view.width / 2 + i * Tile.size * zoom, Zei.renderer["main"].view.height / 2 + j * Tile.size * zoom, Tile.size * zoom, Tile.size * zoom);
-          }
-        }
-      }
-    }
-    Zei.renderer["collection"].context.restore();
-  }
-
-  void drawCreeper() {
-    Zei.renderer["creeper"].clear();
-
-    int timesX = (Zei.renderer["creeper"].view.width / 2 / Tile.size / zoom).ceil();
-    int timesY = (Zei.renderer["creeper"].view.height / 2 / Tile.size / zoom).ceil();
-
-    for (int i = -timesX; i <= timesX; i++) {
-      for (int j = -timesY; j <= timesY; j++) {
-
-        Zei.Vector2 position = new Zei.Vector2(i + scroller.scroll.x, j + scroller.scroll.y);
-        
-        if (world.contains(position)) {
-          
-          int height = world.tiles[position.x][position.y].height;
-          
-          // TODO: don't redraw everything each frame
-          for (var t = 0; t <= 9; t++) {
-
-            if (world.tiles[position.x][position.y].creep > t) {
-              
-              int up = 0, down = 0, left = 0, right = 0;
-              if (position.y - 1 < 0)
-                up = 0;
-              else if (world.tiles[position.x][position.y - 1].creep > t || world.tiles[position.x][position.y - 1].height > height)
-                up = 1;
-              if (position.y + 1 > world.size.y - 1)
-                down = 0;
-              else if (world.tiles[position.x][position.y + 1].creep > t || world.tiles[position.x][position.y + 1].height > height)
-                down = 1;
-              if (position.x - 1 < 0)
-                left = 0;
-              else if (world.tiles[position.x - 1][position.y].creep > t || world.tiles[position.x - 1][position.y].height > height)
-                left = 1;
-              if (position.x + 1 > world.size.x - 1)
-                right = 0;
-              else if (world.tiles[position.x + 1][position.y].creep > t || world.tiles[position.x + 1][position.y].height > height)
-                right = 1;
-  
-              int index = (8 * down) + (4 * left) + (2 * up) + right;
-              Zei.renderer["creeper"].context.drawImageScaledFromSource(Zei.images["creeper"], index * Tile.size, 0, Tile.size, Tile.size, Zei.renderer["main"].view.width / 2 + i * Tile.size * zoom, Zei.renderer["main"].view.height / 2 + j * Tile.size * zoom, Tile.size * zoom, Tile.size * zoom);
-              continue;
-            }
-            
-            if (t < 9) {
-              int ind = world.tiles[position.x][position.y].index;
-              bool indexOk = (ind != 5 && ind != 7 && ind != 10 && ind != 11 && ind != 13 && ind != 14 && ind != 14);
-              int up = 0, down = 0, left = 0, right = 0;
-              if (position.y - 1 < 0)
-                up = 0;
-              else if (world.tiles[position.x][position.y - 1].creep > t && indexOk && world.tiles[position.x][position.y - 1].height < height)
-                up = 1;
-              if (position.y + 1 > world.size.y - 1)
-                down = 0;
-              else if (world.tiles[position.x][position.y + 1].creep > t && indexOk && world.tiles[position.x][position.y + 1].height < height)
-                down = 1;
-              if (position.x - 1 < 0)
-                left = 0;
-              else if (world.tiles[position.x - 1][position.y].creep > t && indexOk && world.tiles[position.x - 1][position.y].height < height)
-                left = 1;
-              if (position.x + 1 > world.size.x - 1)
-                right = 0;
-              else if (world.tiles[position.x + 1][position.y].creep > t && indexOk && world.tiles[position.x + 1][position.y].height < height)
-                right = 1;
-  
-              int index = (8 * down) + (4 * left) + (2 * up) + right;
-              if (index != 0)
-                Zei.renderer["creeper"].context.drawImageScaledFromSource(Zei.images["creeper"], index * Tile.size, 0, Tile.size, Tile.size, Zei.renderer["main"].view.width / 2 + i * Tile.size * zoom, Zei.renderer["main"].view.height / 2 + j * Tile.size * zoom, Tile.size * zoom, Tile.size * zoom);
-            }
-          }
-        }
-        
-      }
-    }
-  }
-  
   void updateVariousInfo() {
     if (hoveredTile != oldHoveredTile) {
-      
-      // set visibility of reposition rect
-      game.repositionRect.visible = false;
-      for (var building in Zei.GameObject.gameObjects) {
-        if (building is Building) {
-          if (building.built && building.selected && building.canMove) {
-            mouse.hideCursor();
-            
-            bool canBePlaced = game.canBePlaced(game.hoveredTile, building);
-  
-            repositionRect.visible = true;
-             
-            repositionRect.position = new Zei.Vector2(hoveredTile.x * Tile.size - (building.size * Tile.size / 2) + 8, hoveredTile.y * Tile.size - (building.size * Tile.size / 2) + 8);
-            repositionRect.size = new Zei.Vector2(building.size * Tile.size, building.size * Tile.size);
-            if (canBePlaced)
-              repositionRect.fillColor = new Zei.Color(0, 255, 0, 0.5);
-            else
-              repositionRect.fillColor = new Zei.Color(255, 0, 0, 0.5);
-          }
-        }
-      }
-         
-      // update terraform info
-      if (world.contains(hoveredTile)) {   
-        if (mode == "TERRAFORM") {
-          Zei.Vector2 drawPosition = hoveredTile * Tile.size;
-          tfLine1 // first horizontal line
-            ..from = new Zei.Vector2(0, drawPosition.y)
-            ..to = new Zei.Vector2(world.size.y * Tile.size, drawPosition.y)
-            ..visible = true;
-          tfLine2 // second horizontal line
-            ..from = new Zei.Vector2(0, drawPosition.y + Tile.size)
-            ..to = new Zei.Vector2(world.size.y * Tile.size, drawPosition.y + Tile.size)
-            ..visible = true;
-          tfLine3 // first vertical line
-            ..from = new Zei.Vector2(drawPosition.x, 0)
-            ..to = new Zei.Vector2(drawPosition.x, world.size.y * Tile.size)
-            ..visible = true;
-          tfLine4 // second vertical line
-            ..from = new Zei.Vector2(drawPosition.x + Tile.size, 0)
-            ..to = new Zei.Vector2(drawPosition.x + Tile.size, world.size.y * Tile.size)
-            ..visible = true;
-          tfNumber
-            ..position = hoveredTile * Tile.size
-            ..visible = true;       
-        } else {
-          tfLine1.visible = false;
-          tfLine2.visible = false;
-          tfLine3.visible = false;
-          tfLine4.visible = false;
-          tfNumber.visible = false;
-        }      
-        targetCursor.position = (hoveredTile * Tile.size) + new Zei.Vector2(8, 8);
-      } else {
-        tfLine1.visible = false;
-        tfLine2.visible = false;
-        tfLine3.visible = false;
-        tfLine4.visible = false;
-        tfNumber.visible = false;
-      }
-      
+               
       // recalculate ghosts (semi-transparent building when placing a new building)
-      ghosts.clear(); // ghosts are all the placeholders to build
-      
+      ghosts.clear();
+           
       // calculate multiple ghosts when dragging
       if (mouse.dragStart != null && UISymbol.activeSymbol != null) {
         
@@ -837,8 +378,11 @@ class Game {
       ghostDisplayObjects.clear();
       
       if (UISymbol.activeSymbol != null) {
+        game.world.hideRangeBoxes();
         // create new ghost sprites
         for (var i = 0; i < ghosts.length; i++) {
+          
+          game.updateRangeBoxes(ghosts[i], UISymbol.activeSymbol.building);
           
           Zei.Vector2 ghostCenter = ghosts[i] * Tile.size + new Zei.Vector2(Tile.size / 2, Tile.size / 2);
           
@@ -857,39 +401,41 @@ class Game {
           }
           ghostDisplayObjects.add(Zei.Rect.create("main", "terraform", ghosts[i] * Tile.size + new Zei.Vector2(Tile.size / 2, Tile.size / 2), new Zei.Vector2(UISymbol.activeSymbol.building.size * Tile.size, UISymbol.activeSymbol.building.size * Tile.size), 4, null, color, anchor: new Zei.Vector2(0.5, 0.5)));
           
-          // create lines to other buildings
-          for (var building in Zei.GameObject.gameObjects) {
-            if (building is Building) {
-              if (UISymbol.activeSymbol.building.type == "collector" || UISymbol.activeSymbol.building.type == "relay" ||
-                building.type == "collector" || building.type == "relay" || building.type == "base") {
-  
-                int allowedDistance = 10 * Tile.size;
-                if (building.type == "relay" && UISymbol.activeSymbol.building.type == "relay") {
-                  allowedDistance = 20 * Tile.size;
-                }
-  
-                if (ghostCenter.distanceTo(building.position) <= allowedDistance) {
-                  ghostDisplayObjects.add(Zei.Line.create("main", "connection", ghostCenter, building.position, 3, new Zei.Color(0, 0, 0, 0.5)));
-                  ghostDisplayObjects.add(Zei.Line.create("main", "connection", ghostCenter, building.position, 2, new Zei.Color(0, 255, 0, 0.5)));
+          if (ghostCanBePlaced) {
+            // create lines to other buildings
+            for (var building in Zei.GameObject.gameObjects) {
+              if (building is Building) {
+                if (UISymbol.activeSymbol.building.type == "collector" || UISymbol.activeSymbol.building.type == "relay" ||
+                  building.type == "collector" || building.type == "relay" || building.type == "base") {
+    
+                  int allowedDistance = 10 * Tile.size;
+                  if (building.type == "relay" && UISymbol.activeSymbol.building.type == "relay") {
+                    allowedDistance = 20 * Tile.size;
+                  }
+    
+                  if (ghostCenter.distanceTo(building.position) <= allowedDistance) {
+                    ghostDisplayObjects.add(Zei.Line.create("main", "connection", ghostCenter, building.position, 3, new Zei.Color(0, 0, 0, 0.5)));
+                    ghostDisplayObjects.add(Zei.Line.create("main", "connection", ghostCenter, building.position, 2, new Zei.Color(0, 255, 0, 0.5)));
+                  }
                 }
               }
             }
-          }
-          
-          // create lines to other ghosts
-          for (int j = 0; j < ghosts.length; j++) {
-            if (j != i) {
-              if (UISymbol.activeSymbol.building.type == "collector" || UISymbol.activeSymbol.building.type == "relay") {
-  
-                int allowedDistance = 10 * Tile.size;
-                if (UISymbol.activeSymbol.building.type == "relay") {
-                  allowedDistance = 20 * Tile.size;
-                }
-  
-                Zei.Vector2 ghostJCenter = ghosts[j] * Tile.size + new Zei.Vector2(Tile.size / 2, Tile.size / 2);
-                if (ghostCenter.distanceTo(ghostJCenter) <= allowedDistance) {
-                  ghostDisplayObjects.add(Zei.Line.create("main", "connection", ghostCenter, ghostJCenter, 2, new Zei.Color(0, 0, 0, 0.5)));
-                  ghostDisplayObjects.add(Zei.Line.create("main", "connection", ghostCenter, ghostJCenter, 1, new Zei.Color(255, 255, 255, 0.5)));
+            
+            // create lines to other ghosts
+            for (int j = 0; j < ghosts.length; j++) {
+              if (j != i) {
+                if (UISymbol.activeSymbol.building.type == "collector" || UISymbol.activeSymbol.building.type == "relay") {
+    
+                  int allowedDistance = 10 * Tile.size;
+                  if (UISymbol.activeSymbol.building.type == "relay") {
+                    allowedDistance = 20 * Tile.size;
+                  }
+    
+                  Zei.Vector2 ghostJCenter = ghosts[j] * Tile.size + new Zei.Vector2(Tile.size / 2, Tile.size / 2);
+                  if (ghostCenter.distanceTo(ghostJCenter) <= allowedDistance) {
+                    ghostDisplayObjects.add(Zei.Line.create("main", "connection", ghostCenter, ghostJCenter, 2, new Zei.Color(0, 0, 0, 0.5)));
+                    ghostDisplayObjects.add(Zei.Line.create("main", "connection", ghostCenter, ghostJCenter, 1, new Zei.Color(255, 255, 255, 0.5)));
+                  }
                 }
               }
             }

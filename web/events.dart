@@ -90,7 +90,7 @@ void onKeyDown(KeyboardEvent evt) {
         ..add(new Zei.Vector2(game.hoveredTile.x, game.hoveredTile.y - 1))
         ..add(new Zei.Vector2(game.hoveredTile.x + 1, game.hoveredTile.y))
         ..add(new Zei.Vector2(game.hoveredTile.x, game.hoveredTile.y + 1));
-      game.redrawTerrain(tilesToRedraw);
+      game.world.redrawTiles(tilesToRedraw);
     }
   }
 
@@ -105,7 +105,7 @@ void onKeyDown(KeyboardEvent evt) {
         ..add(new Zei.Vector2(game.hoveredTile.x, game.hoveredTile.y - 1))
         ..add(new Zei.Vector2(game.hoveredTile.x + 1, game.hoveredTile.y))
         ..add(new Zei.Vector2(game.hoveredTile.x, game.hoveredTile.y + 1));
-      game.redrawTerrain(tilesToRedraw);
+      game.world.redrawTiles(tilesToRedraw);
     }
   }
 
@@ -119,7 +119,7 @@ void onKeyDown(KeyboardEvent evt) {
       ..add(new Zei.Vector2(game.hoveredTile.x, game.hoveredTile.y - 1))
       ..add(new Zei.Vector2(game.hoveredTile.x + 1, game.hoveredTile.y))
       ..add(new Zei.Vector2(game.hoveredTile.x, game.hoveredTile.y + 1));
-    game.redrawTerrain(tilesToRedraw);
+    game.world.redrawTiles(tilesToRedraw);
   }
 
   // DEBUG: add creeper
@@ -154,7 +154,7 @@ void onKeyDown(KeyboardEvent evt) {
       if (game.terraformingHeight == -1) {
         game.terraformingHeight = 9;
       }
-      game.tfNumber.frame = game.terraformingHeight;
+      game.world.tfNumber.frame = game.terraformingHeight;
     }
 
   }
@@ -274,7 +274,6 @@ void doneResizing() {
   var height = window.innerHeight;
 
   Zei.renderer["main"].updateRect(width, height);
-  //Zei.renderer["buffer"].updateRect(width, height);
   Zei.renderer["levelfinal"].updateRect(width, height);
   Zei.renderer["collection"].updateRect(width, height);
   Zei.renderer["creeper"].updateRect(width, height);
@@ -283,8 +282,8 @@ void doneResizing() {
   Zei.renderer["gui"].left = Zei.renderer["gui"].view.offsetLeft;
 
   if (game != null) {
-    game.copyTerrain();
-    game.drawCollection();
-    game.drawCreeper();
+    game.world.copyTiles();
+    game.world.drawCollection();
+    game.world.drawCreeper();
   }
 }
