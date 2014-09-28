@@ -236,7 +236,7 @@ class Building extends Zei.GameObject {
 
     if (building.type == "base") {
       querySelector('#lose').style.display = "block";
-      game.stopwatch.stop();
+      game.ui.stopwatch.stop();
       Zei.stop();
     }
     if (building.type == "collector") {
@@ -245,7 +245,7 @@ class Building extends Zei.GameObject {
     }
     if (building.type == "storage") {
       Building.base.maxEnergy -= 10;
-      game.updateEnergyElement();
+      game.ui.updateElement("energy");
     }
     if (building.type == "speed") {
       Packet.baseSpeed /= 1.01;
@@ -299,6 +299,7 @@ class Building extends Zei.GameObject {
           } else {
             building.selectedCircle.visible = false;
             building.repositionRect.visible = false;
+            building.clearRepositionLines();
           }
         }
       }
@@ -311,6 +312,7 @@ class Building extends Zei.GameObject {
         building.selected = false;
         building.selectedCircle.visible = false;
         building.repositionRect.visible = false;
+        building.clearRepositionLines();
       }
     }
     game.world.hideRangeBoxes();
@@ -349,7 +351,7 @@ class Building extends Zei.GameObject {
         for (int i = queue.length - 1; i >= 0; i--) {
           if (energy > 0) {
             energy--;
-            game.updateEnergyElement();
+            game.ui.updateElement("energy");
             Packet packet = queue.removeAt(0);
             packet.send();
           }
@@ -413,7 +415,7 @@ class Building extends Zei.GameObject {
       if (building is Building) {
         if (building.built && building.selected && building.canMove) {
           // check if it can be placed
-          if (game.canBePlaced(position, building)) {
+          if (building.canBePlaced(position)) {
             game.mouse.showCursor();
             building.operating = false;
             building.rotating = false;
@@ -701,7 +703,7 @@ class Building extends Zei.GameObject {
           Building.base.energy += 1;
           if (Building.base.energy > Building.base.maxEnergy)
             Building.base.energy = Building.base.maxEnergy;
-          game.updateEnergyElement();
+          game.ui.updateElement("energy");
         }
       }
     }
@@ -971,25 +973,29 @@ class Building extends Zei.GameObject {
     }
   }
   
+  void clearRepositionLines() {
+    // remove current reposition lines
+    for (var i = 0; i < repositionLines.length; i++) {
+      Zei.renderer["main"].removeDisplayObject(repositionLines[i]);
+    }
+    repositionLines.clear();
+  }
+  
   void checkReposition() { 
     if (selected && built && canMove) {
       //if (game.hoveredTile != game.oldHoveredTile) { // FIXME: repositionLines not always updated
       game.world.hideRangeBoxes();
-      game.updateRangeBoxes(game.hoveredTile, this);
+      updateRangeBoxes(game.world.hoveredTile);
       
       // get drawing center of hovered tile
-      Zei.Vector2 tileCenter = game.hoveredTile * Tile.size + new Zei.Vector2(Tile.size / 2, Tile.size / 2);
+      Zei.Vector2 tileCenter = game.world.hoveredTile * Tile.size + new Zei.Vector2(Tile.size / 2, Tile.size / 2);
       
       repositionRect.visible = true;
       repositionRect.position = tileCenter;
       
-      // remove current reposition lines
-      for (var i = 0; i < repositionLines.length; i++) {
-        Zei.renderer["main"].removeDisplayObject(repositionLines[i]);
-      }
-      repositionLines.clear();
+      clearRepositionLines();
       
-      if (game.canBePlaced(game.hoveredTile, this)) {
+      if (canBePlaced(game.world.hoveredTile)) {
         // set reposition rect to green
         repositionRect.fillColor = new Zei.Color(0, 255, 0, 0.5);
         // create new reposition lines
@@ -1018,4 +1024,91 @@ class Building extends Zei.GameObject {
       //}
     }
   }    
+  
+  /**
+   * Updates the range boxes around the [position] of the building.
+   */
+  void updateRangeBoxes(Zei.Vector2 position) {
+       
+    if (canBePlaced(position) && (type == "collector" || type == "cannon" || type == "mortar" || type == "shield" || type == "beam" || type == "terp" || type == "analyzer")) {
+
+      Zei.Vector2 positionCenter = new Zei.Vector2(position.x * Tile.size + (Tile.size / 2), position.y * Tile.size + (Tile.size / 2));
+      int positionHeight = game.world.tiles[position.x][position.y].height;
+      
+      for (int i = -radius; i <= radius; i++) {
+        for (int j = -radius; j <= radius; j++) {
+
+          Zei.Vector2 positionCurrent = position + new Zei.Vector2(i, j);
+
+          if (game.world.contains(positionCurrent)) {
+            Zei.Vector2 positionCurrentCenter = new Zei.Vector2(positionCurrent.x * Tile.size + (Tile.size / 2), positionCurrent.y * Tile.size + (Tile.size / 2));
+            
+            int positionCurrentHeight = game.world.tiles[positionCurrent.x][positionCurrent.y].height;
+
+            if (positionCenter.distanceTo(positionCurrentCenter) < radius * Tile.size) {
+              Tile tile = game.world.getTile(positionCurrent * Tile.size);
+              tile.rangeBox.visible = true;            
+
+              if ((type == "collector" && positionCurrentHeight != positionHeight) ||
+                  (type == "cannon" && positionCurrentHeight > positionHeight))
+                tile.rangeBox.fillColor = new Zei.Color(255, 0, 0, 0.35);
+              else {
+                tile.rangeBox.fillColor = new Zei.Color(255, 255, 255, 0.35);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  /**
+   * Checks if a the building can be placed on a given [position]. // tileposition
+   */
+  bool canBePlaced(Zei.Vector2 position) {
+
+    if (game.world.contains(position)) {
+      int height = game.world.tiles[position.x][position.y].height;
+      
+      Rectangle currentRect = new Rectangle(position.x * Tile.size + 8 - size * Tile.size / 2,
+                                            position.y * Tile.size + 8 - size * Tile.size / 2,
+                                            size * Tile.size - 1,
+                                            size * Tile.size - 1);  
+          
+      // TODO: check for ghost collision
+      if (Building.intersect(currentRect, this) ||
+          Emitter.intersect(currentRect) ||
+          Sporetower.intersect(currentRect)) return false;
+           
+      // check if all tiles have the same height and are not corners
+      for (int i = position.x - (size ~/ 2); i <= position.x + (size ~/ 2); i++) {
+        for (int j = position.y - (size ~/ 2); j <= position.y + (size ~/ 2); j++) {
+          if (game.world.contains(new Zei.Vector2(i, j))) {
+            int tileHeight = game.world.tiles[i][j].height;
+            if (tileHeight < 0 || tileHeight != height) {
+              return false;
+            }
+            if (!(game.world.tiles[i][j].index == 7 || game.world.tiles[i][j].index == 11 || game.world.tiles[i][j].index == 13 || game.world.tiles[i][j].index == 14 || game.world.tiles[i][j].index == 15)) {
+              return false;
+            }
+          } else {
+            return false;
+          }
+        }
+      }
+      
+      return true;      
+    } else {
+      return false;
+    }
+  }
+  
+  void onMouseEvent(evt) {}
+  
+  void onKeyEvent(evt) {
+    if (evt.keyCode == KeyCode.DELETE) {
+      Building.removeSelected();
+    }
+  }
+  
 }

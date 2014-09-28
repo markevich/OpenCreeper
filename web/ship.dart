@@ -239,4 +239,12 @@ class Ship extends Zei.GameObject {
 
     targetSymbol.visible = ((status == "ATTACKING" || status == "RISING") && selected);
   }
+  
+  void onMouseEvent(evt) {
+    if (evt.type == "dblclick") {
+      Ship.select();
+    }
+  }
+  
+  void onKeyEvent(evt) {}
 }

@@ -54,4 +54,8 @@ class Projectile extends Zei.GameObject {
       }
     }
   }
+  
+  void onMouseEvent(evt) {}
+  
+  void onKeyEvent(evt) {}
 }

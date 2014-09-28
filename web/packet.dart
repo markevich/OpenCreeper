@@ -86,7 +86,7 @@ class Packet extends Zei.GameObject {
         } else if (type == "collection") {
           Building.base.energy += 1;
           Building.base.energy = Zei.clamp(Building.base.energy, 0, Building.base.maxEnergy);
-          game.updateEnergyElement();
+          game.ui.updateElement("energy");
         }
       } else {
         findRoute();
@@ -133,4 +133,8 @@ class Packet extends Zei.GameObject {
       return false;
     }
   }
+  
+  void onMouseEvent(evt) {}
+  
+  void onKeyEvent(evt) {}
 }

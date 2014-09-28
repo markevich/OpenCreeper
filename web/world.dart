@@ -3,10 +3,13 @@ part of creeper;
 class World extends Zei.GameObject {
   List<List<Tile>> tiles;
   Zei.Vector2 size;
-  int creeperCounter;
+  int creeperCounter, terraformingHeight = 0;
   static bool creeperDirty = true;
   Zei.Line tfLine1, tfLine2, tfLine3, tfLine4;
   Zei.Sprite tfNumber;
+  List<Zei.Vector2> ghosts = new List<Zei.Vector2>();
+  List<Zei.DisplayObject> ghostDisplayObjects = new List<Zei.DisplayObject>();
+  Zei.Vector2 oldHoveredTile = new Zei.Vector2.empty(), hoveredTile = new Zei.Vector2.empty();
   
   World(int seed) {
     size = new Zei.Vector2(Zei.randomInt(64, 127, seed), Zei.randomInt(64, 127, seed));
@@ -18,8 +21,21 @@ class World extends Zei.GameObject {
     tfLine3 = Zei.Line.create("main", "terraform", new Zei.Vector2.empty(), new Zei.Vector2.empty(), 1, new Zei.Color.white(), visible: false);
     tfLine4 = Zei.Line.create("main", "terraform", new Zei.Vector2.empty(), new Zei.Vector2.empty(), 1, new Zei.Color.white(), visible: false);
     
-    tfNumber = Zei.Sprite.create("main", "terraform", Zei.images["numbers"], new Zei.Vector2.empty(), 16, 16, animated: true, frame: game.terraformingHeight, visible: false);
+    tfNumber = Zei.Sprite.create("main", "terraform", Zei.images["numbers"], new Zei.Vector2.empty(), 16, 16, animated: true, frame: terraformingHeight, visible: false);
     tfNumber.stopAnimation();
+    
+    int width = window.innerWidth;
+    int height = window.innerHeight;
+    
+    for (int i = 0; i < 10; i++) {
+      Zei.Renderer.create("level$i", 128 * 16, 128 * 16, autodraw: false);
+    }
+    Zei.Renderer.create("levelbuffer", 128 * 16, 128 * 16, autodraw: false);
+    Zei.Renderer.create("levelfinal", width, height, container: "body", autodraw: false);
+    
+    Zei.Renderer.create("collection", width, height, container: "body", autodraw: false);
+    
+    Zei.Renderer.create("creeper", width, height, container: "body", autodraw: false);
   }
   
   /**
@@ -175,9 +191,9 @@ class World extends Zei.GameObject {
     }
     
     // update terraform display objects
-    if (contains(game.hoveredTile)) {   
+    if (contains(game.world.hoveredTile)) {   
       if (game.mode == "TERRAFORM") {
-        Zei.Vector2 drawPosition = game.hoveredTile * Tile.size;
+        Zei.Vector2 drawPosition = game.world.hoveredTile * Tile.size;
         tfLine1 // first horizontal line
           ..from = new Zei.Vector2(0, drawPosition.y)
           ..to = new Zei.Vector2(size.y * Tile.size, drawPosition.y)
@@ -195,7 +211,7 @@ class World extends Zei.GameObject {
           ..to = new Zei.Vector2(drawPosition.x + Tile.size, size.y * Tile.size)
           ..visible = true;
         tfNumber
-          ..position = game.hoveredTile * Tile.size
+          ..position = game.world.hoveredTile * Tile.size
           ..visible = true;       
       } else {
         tfLine1.visible = false;
@@ -211,6 +227,9 @@ class World extends Zei.GameObject {
       tfLine4.visible = false;
       tfNumber.visible = false;
     }
+    
+    // update ghosts
+    updateGhosts();
   }
 
   /**
@@ -614,6 +633,367 @@ class World extends Zei.GameObject {
         }
        
       }
+    }
+  }
+  
+  void clearGhosts() {
+    ghosts.clear();
+    // remove current ghost display objects
+    for (var i = 0; i < ghostDisplayObjects.length; i++) {
+      Zei.renderer["main"].removeDisplayObject(ghostDisplayObjects[i]);
+    }
+    ghostDisplayObjects.clear();
+  }
+  
+  // recalculate ghosts (semi-transparent placeholders when placing a new building)
+  void updateGhosts() {
+    if (UISymbol.activeSymbol != null) {
+    //if (game.hoveredTile != game.oldHoveredTile) {
+               
+      clearGhosts();
+           
+      // calculate multiple ghosts when dragging
+      if (game.mouse.dragStart != null) {
+        
+        Zei.Vector2 start = game.mouse.dragStart;
+        Zei.Vector2 end = game.world.hoveredTile;
+        Zei.Vector2 delta = end - start;
+        num distance = start.distanceTo(end);
+        
+        num buildingDistance = 3;
+        if (UISymbol.activeSymbol.building.type == "collector")
+          buildingDistance = 9;
+        else if (UISymbol.activeSymbol.building.type == "relay")
+          buildingDistance = 18;
+        
+        num times = distance ~/ buildingDistance + 1;
+        
+        ghosts.add(start);
+        
+        for (int i = 1; i < times; i++) {
+          Zei.Vector2 ghostPosition = new Zei.Vector2(
+              (start.x + (delta.x / distance) * i * buildingDistance).floor(),
+              (start.y + (delta.y / distance) * i * buildingDistance).floor());
+          
+          if (contains(ghostPosition)) {
+            ghosts.add(ghostPosition);
+          }
+        }
+        if (contains(end)) {
+          ghosts.add(end);
+        }
+      } else { // single ghost at cursor position
+        //if (game.mouse.overCanvas) {
+          if (contains(game.world.hoveredTile)) {
+            ghosts.add(game.world.hoveredTile);
+          }
+        //}
+      }
+      
+      if (UISymbol.activeSymbol != null) {
+        game.world.hideRangeBoxes();
+        // create new ghost sprites
+        for (var i = 0; i < ghosts.length; i++) {
+          
+          UISymbol.activeSymbol.building.updateRangeBoxes(ghosts[i]);
+          
+          Zei.Vector2 ghostCenter = ghosts[i] * Tile.size + new Zei.Vector2(Tile.size / 2, Tile.size / 2);
+          
+          ghostDisplayObjects.add(Zei.Sprite.create("main", "terraform", Zei.images[UISymbol.activeSymbol.building.type], ghosts[i] * Tile.size + new Zei.Vector2(Tile.size / 2, Tile.size / 2), UISymbol.activeSymbol.building.size * Tile.size, UISymbol.activeSymbol.building.size * Tile.size, alpha: 0.5, anchor: new Zei.Vector2(0.5, 0.5)));
+          if (UISymbol.activeSymbol.building.type == "cannon")
+            ghostDisplayObjects.add(Zei.Sprite.create("main", "terraform", Zei.images["cannongun"], ghosts[i] * Tile.size + new Zei.Vector2(Tile.size / 2, Tile.size / 2), UISymbol.activeSymbol.building.size * Tile.size, UISymbol.activeSymbol.building.size * Tile.size, alpha: 0.5, anchor: new Zei.Vector2(0.5, 0.5)));
+        
+          // create colored red or green box
+          bool ghostCanBePlaced = UISymbol.activeSymbol.building.canBePlaced(ghosts[i]);
+  
+          Zei.Color color;
+          if (ghostCanBePlaced) {
+            color = new Zei.Color(0, 255, 0, 0.5);
+          } else {
+            color = new Zei.Color(255, 0, 0, 0.5);
+          }
+          ghostDisplayObjects.add(Zei.Rect.create("main", "terraform", ghosts[i] * Tile.size + new Zei.Vector2(Tile.size / 2, Tile.size / 2), new Zei.Vector2(UISymbol.activeSymbol.building.size * Tile.size, UISymbol.activeSymbol.building.size * Tile.size), 4, null, color, anchor: new Zei.Vector2(0.5, 0.5)));
+          
+          if (ghostCanBePlaced) {
+            // create lines to other buildings
+            for (var building in Zei.GameObject.gameObjects) {
+              if (building is Building) {
+                if (UISymbol.activeSymbol.building.type == "collector" || UISymbol.activeSymbol.building.type == "relay" ||
+                  building.type == "collector" || building.type == "relay" || building.type == "base") {
+    
+                  int allowedDistance = 10 * Tile.size;
+                  if (building.type == "relay" && UISymbol.activeSymbol.building.type == "relay") {
+                    allowedDistance = 20 * Tile.size;
+                  }
+    
+                  if (ghostCenter.distanceTo(building.position) <= allowedDistance) {
+                    ghostDisplayObjects.add(Zei.Line.create("main", "connection", ghostCenter, building.position, 3, new Zei.Color(0, 0, 0, 0.5)));
+                    ghostDisplayObjects.add(Zei.Line.create("main", "connection", ghostCenter, building.position, 2, new Zei.Color(0, 255, 0, 0.5)));
+                  }
+                }
+              }
+            }
+            
+            // create lines to other ghosts
+            for (int j = 0; j < ghosts.length; j++) {
+              if (j != i) {
+                if (UISymbol.activeSymbol.building.type == "collector" || UISymbol.activeSymbol.building.type == "relay") {
+    
+                  int allowedDistance = 10 * Tile.size;
+                  if (UISymbol.activeSymbol.building.type == "relay") {
+                    allowedDistance = 20 * Tile.size;
+                  }
+    
+                  Zei.Vector2 ghostJCenter = ghosts[j] * Tile.size + new Zei.Vector2(Tile.size / 2, Tile.size / 2);
+                  if (ghostCenter.distanceTo(ghostJCenter) <= allowedDistance) {
+                    ghostDisplayObjects.add(Zei.Line.create("main", "connection", ghostCenter, ghostJCenter, 2, new Zei.Color(0, 0, 0, 0.5)));
+                    ghostDisplayObjects.add(Zei.Line.create("main", "connection", ghostCenter, ghostJCenter, 1, new Zei.Color(255, 255, 255, 0.5)));
+                  }
+                }
+              }
+            }
+          }
+          
+        }
+      }
+    }
+  }
+  
+  void onMouseEvent(evt) {
+    if (evt.type == "mousemove") {
+      game.mouse.update(evt);
+        
+      if (game != null) {
+        game.world.oldHoveredTile = game.world.hoveredTile;
+        game.world.hoveredTile = new Zei.Vector2(
+              ((game.mouse.position.x - game.mouse.renderer.view.width / 2) / (Tile.size * game.zoom)).floor() + game.scroller.scroll.x,
+              ((game.mouse.position.y - game.mouse.renderer.view.height / 2) / (Tile.size * game.zoom)).floor() + game.scroller.scroll.y);
+      }
+      
+      // flag for terraforming
+      if (evt.which == 1 /*game.mouse.buttonPressed == 1*/) {
+        if (game.mode == "TERRAFORM") { 
+          if (game.world.contains(game.world.hoveredTile)) {
+            
+            Rectangle currentRect = new Rectangle(game.world.hoveredTile.x * Tile.size,
+                                                  game.world.hoveredTile.y * Tile.size,
+                                                  Tile.size - 1,
+                                                  Tile.size - 1); 
+            
+            // check for building/emitter/sporetower on that position
+            if (!Building.intersect(currentRect) &&
+                !Emitter.intersect(currentRect) &&
+                !Sporetower.intersect(currentRect)) {
+              game.world.tiles[game.world.hoveredTile.x][game.world.hoveredTile.y].flagTerraform(game.world.hoveredTile * Tile.size);
+            }
+          }
+        }
+      }
+    }
+    else if (evt.type == "mouseenter") {
+      //game.mouse.overCanvas = true;
+    }
+    else if (evt.type == "mouseleave") {
+      //game.mouse.overCanvas = false;
+    }
+    else if (evt.type == "mousewheel") {
+      if (evt.deltaY > 0) {
+        //scroll down
+        game.zoomOut();
+      } else {
+        //scroll up
+        game.zoomIn();
+      }
+      //prevent page fom scrolling
+      evt.preventDefault();
+    }
+    else if (evt.type == "mousedown") {
+      game.mouse.buttonPressed = evt.which;
+        
+      if (evt.which == 1) {   
+        
+        if (game.mouse.dragStart == null) {
+          game.mouse.dragStart = game.world.hoveredTile;
+        }  
+        
+        // flag for terraforming 
+        if (game.mode == "TERRAFORM") {
+          if (game.world.contains(game.world.hoveredTile)) {
+            
+            Rectangle currentRect = new Rectangle(game.world.hoveredTile.x * Tile.size,
+                                                  game.world.hoveredTile.y * Tile.size,
+                                                  Tile.size - 1,
+                                                  Tile.size - 1); 
+            
+            // check for building/emitter/sporetower on that position
+            if (!Building.intersect(currentRect) &&
+                !Emitter.intersect(currentRect) &&
+                !Sporetower.intersect(currentRect)) {
+              game.world.tiles[game.world.hoveredTile.x][game.world.hoveredTile.y].flagTerraform(game.world.hoveredTile * Tile.size);
+            }
+          }
+        }
+      }
+    }
+    else if (evt.type == "mouseup") {
+      game.mouse.buttonPressed = 0;
+        
+      if (evt.which == 1) {
+        Ship.control(game.world.hoveredTile);
+        Building.reposition(game.world.hoveredTile);
+        Building.select();
+
+        game.mouse.dragStart = null;
+
+        // when there is an active symbol place building
+        if (UISymbol.activeSymbol != null) {
+          String type = UISymbol.activeSymbol.building.type.substring(0, 1).toUpperCase() + UISymbol.activeSymbol.building.type.substring(1);
+          
+          // if at least one ghost can be placed play matching sound
+          bool soundSuccess = false;
+          for (int i = 0; i < game.world.ghosts.length; i++) {
+            if (UISymbol.activeSymbol.building.canBePlaced(game.world.ghosts[i])) {
+              Building.add(game.world.ghosts[i], UISymbol.activeSymbol.building.type);
+              soundSuccess = true;
+            }
+          }
+          if (soundSuccess)
+            Zei.Audio.play("click");
+          else
+            Zei.Audio.play("failure");
+        }
+      } else if (evt.which == 3) {
+        game.mode = "DEFAULT";
+        Building.deselect();
+        Ship.deselect();
+        UISymbol.reset();
+        querySelector("#terraform").attributes['value'] = "Terraform Off";
+        game.world.clearGhosts();
+      }
+    }
+  }
+  
+  void onKeyEvent(evt) {
+    // select uisymbol
+    UISymbol.select(evt);
+    
+    // increase game speed
+    if (evt.keyCode == KeyCode.F1) {
+      game.faster();
+      evt.preventDefault();
+    }
+    
+    // decrease game speed
+    if (evt.keyCode == KeyCode.F2) {
+      game.slower();
+      evt.preventDefault();
+    }
+    
+    // delete building
+    if (evt.keyCode == KeyCode.DELETE) {
+      Building.removeSelected();
+    }
+    
+    // pause/resume
+    if (evt.keyCode == KeyCode.PAUSE || evt.keyCode == KeyCode.TAB) {
+      if (game.paused)
+        game.resume();
+      else
+        game.pause();
+    }
+    
+    // deselect all
+    if (evt.keyCode == KeyCode.ESC || evt.keyCode == KeyCode.SPACE) {
+      UISymbol.deselect();
+      Building.deselect();
+      Ship.deselect();
+      game.mouse.showCursor();
+    }
+    
+    // DEBUG: add explosion
+    if (evt.keyCode == KeyCode.V) {
+      Explosion.add(new Zei.Vector2(game.world.hoveredTile.x * Tile.size + 8, game.world.hoveredTile.y * Tile.size + 8));
+      Zei.Audio.play("explosion", game.world.hoveredTile * Tile.size, game.scroller.scroll, game.zoom);
+    }
+    
+    // DEBUG: lower terrain
+    if (evt.keyCode == KeyCode.N) {
+      if (game.world.tiles[game.world.hoveredTile.x][game.world.hoveredTile.y].height > -1) {
+        game.world.tiles[game.world.hoveredTile.x][game.world.hoveredTile.y].height--;
+        List tilesToRedraw = new List();
+        tilesToRedraw
+          ..add(new Zei.Vector2(game.world.hoveredTile.x, game.world.hoveredTile.y))
+          ..add(new Zei.Vector2(game.world.hoveredTile.x - 1, game.world.hoveredTile.y))
+          ..add(new Zei.Vector2(game.world.hoveredTile.x, game.world.hoveredTile.y - 1))
+          ..add(new Zei.Vector2(game.world.hoveredTile.x + 1, game.world.hoveredTile.y))
+          ..add(new Zei.Vector2(game.world.hoveredTile.x, game.world.hoveredTile.y + 1));
+        game.world.redrawTiles(tilesToRedraw);
+      }
+    }
+    
+    // DEBUG: raise terrain
+    if (evt.keyCode == KeyCode.M) {
+      if (game.world.tiles[game.world.hoveredTile.x][game.world.hoveredTile.y].height < 9) {
+        game.world.tiles[game.world.hoveredTile.x][game.world.hoveredTile.y].height++;
+        List tilesToRedraw = new List();
+        tilesToRedraw
+          ..add(new Zei.Vector2(game.world.hoveredTile.x, game.world.hoveredTile.y))
+          ..add(new Zei.Vector2(game.world.hoveredTile.x - 1, game.world.hoveredTile.y))
+          ..add(new Zei.Vector2(game.world.hoveredTile.x, game.world.hoveredTile.y - 1))
+          ..add(new Zei.Vector2(game.world.hoveredTile.x + 1, game.world.hoveredTile.y))
+          ..add(new Zei.Vector2(game.world.hoveredTile.x, game.world.hoveredTile.y + 1));
+        game.world.redrawTiles(tilesToRedraw);
+      }
+    }
+    
+    // DEBUG: clear terrain
+    if (evt.keyCode == KeyCode.B) {
+      game.world.tiles[game.world.hoveredTile.x][game.world.hoveredTile.y].height = -1;
+      List tilesToRedraw = new List();
+      tilesToRedraw
+        ..add(new Zei.Vector2(game.world.hoveredTile.x, game.world.hoveredTile.y))
+        ..add(new Zei.Vector2(game.world.hoveredTile.x - 1, game.world.hoveredTile.y))
+        ..add(new Zei.Vector2(game.world.hoveredTile.x, game.world.hoveredTile.y - 1))
+        ..add(new Zei.Vector2(game.world.hoveredTile.x + 1, game.world.hoveredTile.y))
+        ..add(new Zei.Vector2(game.world.hoveredTile.x, game.world.hoveredTile.y + 1));
+      game.world.redrawTiles(tilesToRedraw);
+    }
+    
+    // DEBUG: add creeper
+    if (evt.keyCode == KeyCode.X) {
+      if (game.world.tiles[game.world.hoveredTile.x][game.world.hoveredTile.y].height > -1) {
+        game.world.tiles[game.world.hoveredTile.x][game.world.hoveredTile.y].creep++;
+        World.creeperDirty = true;
+      }
+    }
+    
+    // DEBUG: remove creeper
+    if (evt.keyCode == KeyCode.C) {
+      if (game.world.tiles[game.world.hoveredTile.x][game.world.hoveredTile.y].creep > 0) {
+        game.world.tiles[game.world.hoveredTile.x][game.world.hoveredTile.y].creep--;
+        if (game.world.tiles[game.world.hoveredTile.x][game.world.hoveredTile.y].creep < 0)
+          game.world.tiles[game.world.hoveredTile.x][game.world.hoveredTile.y].creep = 0;
+        World.creeperDirty = true;
+      }
+    }
+    
+    // select height for terraforming
+    if (game.mode == "TERRAFORM") {
+    
+      // remove terraform
+      if (evt.keyCode == KeyCode.DELETE) {
+        game.world.tiles[game.world.hoveredTile.x][game.world.hoveredTile.y].unflagTerraform();
+      }
+    
+      // set terraform value
+      if (evt.keyCode >= 48 && evt.keyCode <= 57) {
+        game.world.terraformingHeight = evt.keyCode - 49;
+        if (game.world.terraformingHeight == -1) {
+          game.world.terraformingHeight = 9;
+        }
+        game.world.tfNumber.frame = game.world.terraformingHeight;
+      }
+    
     }
   }
 

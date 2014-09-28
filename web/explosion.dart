@@ -18,4 +18,8 @@ class Explosion extends Zei.GameObject {
       Zei.GameObject.remove(this);
     }
   }
+  
+  void onMouseEvent(evt) {}
+  
+  void onKeyEvent(evt) {}
 }

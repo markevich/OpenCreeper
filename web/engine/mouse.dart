@@ -2,7 +2,7 @@ part of zei;
 
 class Mouse {
   Vector2 position = new Vector2.empty();
-  bool overCanvas = true;
+  //bool overCanvas = true;
   int buttonPressed = 0;
   Vector2 dragStart;
   Renderer renderer;

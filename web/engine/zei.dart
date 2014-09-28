@@ -23,6 +23,19 @@ bool debug = false;
 void init({int TPS: 60, bool debug: false}) {
   TPS = TPS;
   debug = debug;
+  
+  // disable context menu
+  document.onContextMenu.listen((event) => event.preventDefault());
+  
+  document
+        ..onKeyDown.listen((event) => onKeyEvent(event))
+        ..onKeyUp.listen((event) => onKeyEvent(event));
+}
+
+void onKeyEvent(KeyboardEvent evt) {
+  for (int i = 0; i < GameObject.gameObjects.length; i++) {
+    GameObject.gameObjects[i].onKeyEvent(evt);
+  }
 }
 
 void run() {

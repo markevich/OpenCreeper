@@ -85,4 +85,8 @@ class Spore extends Zei.GameObject {
       World.creeperDirty = true;
     }
   }
+  
+  void onMouseEvent(evt) {}
+  
+  void onKeyEvent(evt) {}
 }

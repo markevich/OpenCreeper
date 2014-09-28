@@ -23,8 +23,8 @@ class Tile {
   }
     
   void flagTerraform(Zei.Vector2 position) {   
-    if (height != game.terraformingHeight) {
-      terraformTarget = game.terraformingHeight;
+    if (height != game.world.terraformingHeight) {
+      terraformTarget = game.world.terraformingHeight;
       terraformProgress = 0;
       
       if (terraformNumber == null) {

@@ -56,5 +56,9 @@ class Scroller extends Zei.GameObject {
     if (evt.keyCode == KeyCode.UP || evt.keyCode == KeyCode.DOWN)
       keyScrolling.y = 0;
   }
+  
+  void onMouseEvent(evt) {}
+  
+  void onKeyEvent(evt) {}
 
 }

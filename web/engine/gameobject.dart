@@ -2,6 +2,8 @@ part of zei;
 
 abstract class GameObject {
   update();
+  onMouseEvent(evt);
+  onKeyEvent(evt);
   
   static List<GameObject> gameObjects = new List<GameObject>();
   

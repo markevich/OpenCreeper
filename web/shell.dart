@@ -65,4 +65,8 @@ class Shell extends Zei.GameObject {
 
     }
   }
+  
+  void onMouseEvent(evt) {}
+  
+  void onKeyEvent(evt) {}
 }

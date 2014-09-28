@@ -58,4 +58,8 @@ class Sporetower extends Zei.GameObject {
     }
     return false;
   }
+  
+  void onMouseEvent(evt) {}
+  
+  void onKeyEvent(evt) {}
 }

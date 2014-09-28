@@ -46,7 +46,7 @@ class Emitter extends Zei.GameObject {
         if (deadEmitters.length == numberOfEmitters) {
           // TODO: 10 seconds countdown
           querySelector('#win').style.display = "block";
-          game.stopwatch.stop();
+          game.ui.stopwatch.stop();
           //game.stop();
           game.paused = true;
           game.won = true;
@@ -117,4 +117,8 @@ class Emitter extends Zei.GameObject {
     }
     return false;
   }
+  
+  void onMouseEvent(evt) {}
+  
+  void onKeyEvent(evt) {}
 }
