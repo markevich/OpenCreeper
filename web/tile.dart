@@ -8,6 +8,7 @@ class Tile {
   Zei.Sprite terraformNumber;
   Zei.Rect rangeBox;
   Zei.Vector2 pos;
+  double collectionAlpha = .25;
 
   Tile(x, y) {
     index = -1; // TODO: unused, maybe remove

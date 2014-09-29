@@ -8,7 +8,7 @@ class Building extends Zei.GameObject {
   int targetAngle, radius = 0, size, collectedEnergy = 0, flightCounter = 0, requestCounter = 0, energyCounter = 0;
   Ship ship;
   Zei.Sprite sprite, cannon, shield, inactiveSprite;
-  Zei.Circle selectedCircle;
+  Zei.Sprite selectedCircle;
   Zei.Rect targetSymbol, energyBar, healthBar, repositionRect;
   Zei.Line analyzerLineInner, analyzerLineOuter, beamLineInner, beamLineOuter, terpLineInner, terpLineOuter;
   int damageCounter = 0, collectCounter = 0;
@@ -88,14 +88,13 @@ class Building extends Zei.GameObject {
       canMove = true;
       needsEnergy = true;
     }
+    active = false;
   }
   
   Building(position, imageID) {
     type = imageID;
     this.position = position;
     sprite = Zei.Sprite.create("main", "building", Zei.images[imageID], position, 48, 48, anchor: new Zei.Vector2(0.5, 0.5), alpha: 0.5);
-
-    selectedCircle = Zei.Circle.create("main", "selectedcircle", position, 24, 2, null, new Zei.Color.white(), visible: false);
 
     health = 0;
     size = 3;
@@ -105,7 +104,6 @@ class Building extends Zei.GameObject {
     if (type == "base") {
       sprite.size = new Zei.Vector2(144, 144);
       sprite.alpha = 1.0;
-      selectedCircle.radius = 72;
       health = 40;
       maxHealth = 40;
       built = true;
@@ -208,6 +206,7 @@ class Building extends Zei.GameObject {
                                    0, new Zei.Color.green(), null, visible: false); 
     
     inactiveSprite = Zei.Sprite.create("main", "buildinginfo", Zei.images["inactive"], position, 144, 144, anchor: new Zei.Vector2(0.5, 0.5), visible: false, scale: new Zei.Vector2(1.0 / 9 * size, 1.0 / 9 * size));
+    selectedCircle = Zei.Sprite.create("main", "selectedcircle", Zei.images["selectionCircle"], position, 144, 144, anchor: new Zei.Vector2(0.5, 0.5), visible: false, scale: new Zei.Vector2(1.0 / 9 * size, 1.0 / 9 * size));
     
     Connection.add(this);
   }
@@ -219,7 +218,14 @@ class Building extends Zei.GameObject {
     position = position * 16 + new Zei.Vector2(8, 8);
     Building building = new Building(position, type);
     if (type == "base") base = building;
-    Zei.GameObject.add(building);
+    
+    // clear terraforming below position
+    for (int i = -building.size ~/ 2; i <= building.size ~/ 2; i++) {
+      for (int j = -building.size ~/ 2; j <= building.size ~/ 2; j++) {
+        game.world.getTile(position + new Zei.Vector2(i * Tile.size, j * Tile.size)).unflagTerraform();
+      }
+    }
+    
     return building;
   }
   
@@ -286,11 +292,12 @@ class Building extends Zei.GameObject {
       querySelector('#deactivate').style.display = "none";
       querySelector('#activate').style.display = "none";
       for (var building in Zei.GameObject.gameObjects) {
-        if (building is Building) {
+        if (building is Building && building.active) {
           building.selected = building.hovered;
           if (building.selected) {
             building.selectedCircle.visible = true;
-            building.repositionRect.visible = true;
+            if (building.canMove)
+              building.repositionRect.visible = true;
             if (building.active) {
               querySelector('#deactivate').style.display = "block";
             } else {
@@ -308,7 +315,7 @@ class Building extends Zei.GameObject {
   
   static void deselect() {
     for (var building in Zei.GameObject.gameObjects) {
-      if (building is Building) {
+      if (building is Building && building.active) {
         building.selected = false;
         building.selectedCircle.visible = false;
         building.repositionRect.visible = false;
@@ -321,7 +328,8 @@ class Building extends Zei.GameObject {
   }
    
   void update() {
-    hovered = this.sprite.isHovered();
+    hovered = sprite.isHovered();
+    selectedCircle.rotate(1);
     
     if (!game.paused) {
       move();
@@ -339,11 +347,11 @@ class Building extends Zei.GameObject {
 
       // collect energy
       collectCounter += 1 * game.speed;
-      if (collectCounter > 250) {
-        collectCounter -= 250;
+      if (collectCounter > 25) {
+        collectCounter -= 25;
         collectEnergy();
       }
-      
+            
       // Updates the packet queue of the base.
       // If the base has energy the first packet is removed from
       // the queue and sent to its target (FIFO).
@@ -363,7 +371,7 @@ class Building extends Zei.GameObject {
     
   static void activate() {
     for (var building in Zei.GameObject.gameObjects) {
-      if (building is Building) {
+      if (building is Building && building.active) {
         if (building.selected)
           building.active = true;
           building.inactiveSprite.visible = false;
@@ -382,7 +390,7 @@ class Building extends Zei.GameObject {
   
   static void deactivate() {
     for (var building in Zei.GameObject.gameObjects) {
-      if (building is Building) {
+      if (building is Building && building.active) {
         if (building.selected) {
           building.active = false;
           building.inactiveSprite.visible = true;
@@ -434,7 +442,7 @@ class Building extends Zei.GameObject {
   static bool intersect(Rectangle rectangle, [Building building2]) {  
     // check stationary buildings
     for (var building in Zei.GameObject.gameObjects) {
-      if (building is Building) {
+      if (building is Building && building.active) {
         if (building2 != null && building2 == building)
           continue;
         
@@ -469,7 +477,7 @@ class Building extends Zei.GameObject {
     List neighbours = new List();
     
     for (var building in Zei.GameObject.gameObjects) {
-      if (building is Building) {
+      if (building is Building && building.active) {
         // must not be the same building
         if (building.position != position) {
           // must be idle
@@ -498,7 +506,7 @@ class Building extends Zei.GameObject {
     sprite.scale = scale;
     
     selectedCircle.position = position;
-    selectedCircle.scale = scale.x;
+    selectedCircle.scale = scale;
     
     if (cannon != null) {
       cannon.position = position;
@@ -659,39 +667,56 @@ class Building extends Zei.GameObject {
       Building.addToQueue(packet);
     }
   }
+  
+  void updateCollectorFields() {
+    for (int i = -radius; i <= radius; i++) {
+      for (int j = -radius; j <= radius; j++) {
+        Zei.Vector2 tempPosition = position + new Zei.Vector2(i * Tile.size, j * Tile.size);
+        if (game.world.contains(tempPosition / Tile.size)) {
+          if (game.world.getTile(tempPosition).collector == this) {
+            game.world.getTile(tempPosition).collectionAlpha = .25 + Zei.clamp(collectedEnergy / 2000, 0, 0.5);
+          }
+        }
+      }
+    }
+  }
 
   void collectEnergy() {
     if (active) {
       if (type == "collector" && built) {
         int height = game.world.getTile(position).height;
   
-        for (int i = -5; i < 7; i++) {
-          for (int j = -5; j < 7; j++) {
+        for (int i = -radius; i <= radius; i++) {
+          for (int j = -radius; j <= radius; j++) {
             Zei.Vector2 tempPosition = position + new Zei.Vector2(i * Tile.size, j * Tile.size);
             if (game.world.contains(tempPosition / Tile.size)) {
               int tileHeight = game.world.getTile(tempPosition).height;
   
-              if (position.distanceTo(tempPosition + new Zei.Vector2(8, 8)) < Tile.size * 6) {
+              if (position.distanceTo(tempPosition + new Zei.Vector2(8, 8)) <= radius * Tile.size) {
                 if (tileHeight == height) {
-                  if (game.world.getTile(tempPosition).collector == this)
+                  if (game.world.getTile(tempPosition).collector == this) {
                     collectedEnergy += 1;
+                  }
                 }
               }
             }
           }
         }
+        
+        updateCollectorFields();
       }
       
       if (type == "reactor" && built) {
-        collectedEnergy += 50;
+        collectedEnergy += 500;
       }
       
       if (type == "base") {
-        collectedEnergy += 100;
+        collectedEnergy += 1000;
       }
   
-      if (collectedEnergy >= 100) {
-        collectedEnergy -= 100;
+      if (collectedEnergy >= 1000) {
+        collectedEnergy = 0;
+        updateCollectorFields();
         if (type == "collector") {
           Packet packet = new Packet(this, Building.base, "collection");
           if (packet.findRoute())
@@ -735,7 +760,7 @@ class Building extends Zei.GameObject {
 
                 // check if another collector can take this tile
                 for (var building in Zei.GameObject.gameObjects) {
-                  if (building is Building) {
+                  if (building is Building && building.active) {
                     if (building != this && building.type == "collector") {
                       int heightK = game.world.getTile(building.position).height;
                       Zei.Vector2 centerBuildingK = building.position;
@@ -846,8 +871,8 @@ class Building extends Zei.GameObject {
         shield.visible = false;
         if (energy > 0) {
           shield.visible = false;
-          if (energyCounter >= 20) {
-            energyCounter -= 20;
+          if (energyCounter >= 40) {
+            energyCounter -= 40;
             energy -= 1;
           }
           operating = true;
@@ -1000,7 +1025,7 @@ class Building extends Zei.GameObject {
         repositionRect.fillColor = new Zei.Color(0, 255, 0, 0.5);
         // create new reposition lines
         for (var building in Zei.GameObject.gameObjects) {
-          if (building is Building) {
+          if (building is Building && building.active) {
             if (this != building) {
               if (type == "base" || building.type == "collector" || building.type == "relay" || building.type == "base") {
   

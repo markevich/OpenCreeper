@@ -11,7 +11,6 @@ class Sporetower extends Zei.GameObject {
    
   static Sporetower add(Zei.Vector2 position) {
     Sporetower sporetower = new Sporetower(position);
-    Zei.GameObject.add(sporetower);
     return sporetower;
   }
   

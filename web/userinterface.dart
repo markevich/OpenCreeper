@@ -5,6 +5,8 @@ class UserInterface extends Zei.GameObject {
   Zei.Rect tileHeight, creeperHeight;
   Zei.Text totalCreeper;
   Stopwatch stopwatch = new Stopwatch();
+  bool hovered = false;
+  Zei.Vector2 mousePosition = new Zei.Vector2.empty();
   
   UserInterface() {
     renderer = Zei.Renderer.create("gui", 780, 110, container: "#gui");
@@ -20,9 +22,7 @@ class UserInterface extends Zei.GameObject {
       Zei.Text.create("gui", "default", new Zei.Vector2(550, 110 - i * 10), 9, "px", "Verdana" , new Zei.Color.white(), null, (i + 1).toString(), align: "right");
       Zei.Line.create("gui", "default", new Zei.Vector2(555, 110 - i * 10), new Zei.Vector2(580, 110 - i * 10), 1, new Zei.Color.white());    
     }
-    
-    Zei.GameObject.add(this);
-    
+        
     var oneSecond = new Duration(seconds: 1);
     new Timer.periodic(oneSecond, updateStopwatch);
     querySelector('#time').innerHtml = 'Time: 00:00';
@@ -96,19 +96,34 @@ class UserInterface extends Zei.GameObject {
     String second = (s <= 9) ? '0$s' : '$s';
     querySelector('#time').innerHtml = 'Time: $minute:$second';
   }
-  
+   
   void onMouseEvent(evt) {
     if (evt.type == "mousemove") {
+      mousePosition = new Zei.Vector2(
+        (evt.client.x - renderer.view.getBoundingClientRect().left).toInt(),
+        (evt.client.y - renderer.view.getBoundingClientRect().top).toInt());
+      
+      if (mousePosition.x >= 0 && mousePosition.x <= 780 && mousePosition.y >= 0 && mousePosition.y <= 110) {
+        hovered = true;
+      } else {
+        hovered = false;
+      }
       UISymbol.checkHovered(evt);
     }
+    else if (evt.type == "mouseenter") {
+      hovered = true;
+    }
     else if (evt.type == "mouseleave") {
+      hovered = false;
       UISymbol.dehover();
     }
     else if (evt.type == "click") {
-      //Building.deselect();
-      Ship.deselect();
-      UISymbol.setActive();
-      Zei.Audio.play("click");
+      if (hovered) {
+        Building.deselect();
+        Ship.deselect();
+        UISymbol.setActive();
+        Zei.Audio.play("click");
+      }
     }
   }
   

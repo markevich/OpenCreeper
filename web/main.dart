@@ -16,7 +16,6 @@ part 'shell.dart';
 part 'projectile.dart';
 part 'spore.dart';
 part 'ship.dart';
-part 'events.dart';
 part 'emitter.dart';
 part 'sporetower.dart';
 part 'smoke.dart';
@@ -30,7 +29,7 @@ Game game;
 
 void main() {
   game = new Game().start(
-      friendly: true // disables enemies
+      friendly: false // disables enemies
       //seed: 1 // use seed
       );
 }

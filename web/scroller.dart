@@ -34,7 +34,6 @@ class Scroller extends Zei.GameObject {
       }
       game.world.copyTiles();
       game.world.drawCollection();
-      //game.updateVariousInfo();
       World.creeperDirty = true;
     }
   }

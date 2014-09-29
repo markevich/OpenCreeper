@@ -10,6 +10,7 @@ class Packet extends Zei.GameObject {
 
   Packet(this.currentTarget, this.target, this.type) {
     sprite = Zei.Sprite.create("main", "packet", Zei.images["packet_" + type], currentTarget.position, 16, 16, visible: false, anchor: new Zei.Vector2(0.5, 0.5));
+    this.active = false;
   }
      
   void update() {
@@ -39,7 +40,8 @@ class Packet extends Zei.GameObject {
   }
 
   void send() {
-    Zei.GameObject.add(this);
+    //Zei.GameObject.add(this);
+    this.active = true;
     sprite.visible = true;
   }
   

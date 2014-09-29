@@ -12,7 +12,6 @@ class Projectile extends Zei.GameObject {
   
   static void add(Zei.Vector2 position, Zei.Vector2 targetPosition, num rotation) {
     Projectile projectile = new Projectile(position, targetPosition, rotation);
-    Zei.GameObject.add(projectile);
   }
    
   void update() {

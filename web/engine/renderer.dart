@@ -18,15 +18,6 @@ class Renderer {
     context = view.getContext('2d');
     this.autodraw = autodraw;
     renderers.add(this);
-    view
-      ..onMouseMove.listen((event) => onMouseEvent(event))
-      ..onMouseEnter.listen((event) => onMouseEvent(event))
-      ..onMouseLeave.listen((event) => onMouseEvent(event))
-      ..onClick.listen((event) => onMouseEvent(event))
-      ..onMouseWheel.listen((event) => onMouseEvent(event))
-      ..onDoubleClick.listen((event) => onMouseEvent(event))
-      ..onMouseDown.listen((event) => onMouseEvent(event))
-      ..onMouseUp.listen((event) => onMouseEvent(event));
   }
   
   /**
@@ -42,13 +33,7 @@ class Renderer {
           
     return renderer[name];
   }
-  
-  void onMouseEvent(MouseEvent evt) {
-    for (int i = 0; i < GameObject.gameObjects.length; i++) {
-      GameObject.gameObjects[i].onMouseEvent(evt);
-    }
-  }
-  
+   
   static void clearDisplayObjects() {
     renderer.forEach((k, v) => v.removeAllDisplayObjects());
   }

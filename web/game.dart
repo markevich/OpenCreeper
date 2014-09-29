@@ -10,7 +10,8 @@ class Game {
   List zoomableRenderers;
   Zei.Mouse mouse;
   Scroller scroller;
-  var debug = true;
+  Timer resizeTimer;
+  bool debug = true;
   bool friendly;
   
   Game() {
@@ -28,7 +29,7 @@ class Game {
     Zei.Audio.setChannels(5);
     List sounds = ["shot.wav", "click.wav", "explosion.wav", "failure.wav", "energy.wav", "laser.wav"];
     Zei.Audio.load(sounds);
-    List images = ["analyzer", "numbers", "level0", "level1", "level2", "level3", "level4", "level5", "level6", "level7", "level8", "level9", "borders", "mask", "cannon",
+    List images = ["selectionCircle", "analyzer", "numbers", "level0", "level1", "level2", "level3", "level4", "level5", "level6", "level7", "level8", "level9", "borders", "mask", "cannon",
                        "cannongun", "base", "collector", "reactor", "storage", "terp", "packet_collection", "packet_energy", "packet_health", "relay", "emitter", "creeper",
                        "mortar", "shell", "beam", "spore", "bomber", "bombership", "smoke", "explosion", "targetcursor", "sporetower", "forcefield", "shield", "projectile", "inactive"];  
     Zei.loadImages(images).then((results) => init());    
@@ -45,14 +46,12 @@ class Game {
     var main = Zei.Renderer.create("main", width, height, container: "body");
     main.view.style.zIndex = "1";   
     main.enableMouse();     
-    main.setLayers(["terraform", "selectedcircle", "targetsymbol", "connectionborder", "connection", "building", "buildinginfo", "sporetower", "emitter", "projectile", "buildinggun", "packet",
+    main.setLayers(["terraform", "targetsymbol", "connectionborder", "connection", "building", "selectedcircle", "buildinginfo", "sporetower", "emitter", "projectile", "buildinggun", "packet",
                     "shield", "explosion", "smoke", "buildingflying", "buildinginfoflying", "ship", "shell", "spore", "buildinggunflying", "energybar"]);
     
     mouse = main.mouse;
     mouse.setCursor("url('images/Normal.cur') 2 2, pointer");
-    
-    scroller = new Scroller();
-             
+                  
     // renderes affected when zooming
     zoomableRenderers = ["main", "collection"];
      
@@ -64,13 +63,36 @@ class Game {
     reset();
     world.drawTiles();
     world.copyTiles();
-    setupEventHandler();
+    
+    window.onResize.listen((event) => onResize(event));
+    
     Zei.run();
   }
   
-  void setupEventHandler() {   
-    window
-      ..onResize.listen((event) => onResize(event));
+  void onResize(evt) {
+    // delay the resizing to avoid it being called multiple times
+    if (resizeTimer != null)
+      resizeTimer.cancel();
+    resizeTimer = new Timer(new Duration(milliseconds: 250), doneResizing);
+  }
+
+  void doneResizing() {
+    var width = window.innerWidth;
+    var height = window.innerHeight;
+
+    Zei.renderer["main"].updateRect(width, height);
+    Zei.renderer["levelfinal"].updateRect(width, height);
+    Zei.renderer["collection"].updateRect(width, height);
+    Zei.renderer["creeper"].updateRect(width, height);
+
+    Zei.renderer["gui"].top = Zei.renderer["gui"].view.offsetTop;
+    Zei.renderer["gui"].left = Zei.renderer["gui"].view.offsetLeft;
+
+    if (game != null) {
+      game.world.copyTiles();
+      game.world.drawCollection();
+      game.world.drawCreeper();
+    }
   }
 
   void reset() {
@@ -79,11 +101,10 @@ class Game {
     mode = "DEFAULT";
     speed = 1;
     won = false;
-    
+
+    scroller = new Scroller();
     world = new World(seed);
     world.create();
-    Zei.GameObject.add(world);
-    Zei.GameObject.add(game.scroller);
           
     // create UI
     ui = new UserInterface();

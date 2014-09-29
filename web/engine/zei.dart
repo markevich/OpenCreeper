@@ -15,7 +15,7 @@ part 'audio.dart';
 
 num animationRequest;
 int TPS = 60; // ticks per second
-Timer resizeTimer, running;
+Timer running;
 Map<String, Renderer> renderer = new Map();
 Map<String, ImageElement> images = new Map();
 bool debug = false;
@@ -30,11 +30,27 @@ void init({int TPS: 60, bool debug: false}) {
   document
         ..onKeyDown.listen((event) => onKeyEvent(event))
         ..onKeyUp.listen((event) => onKeyEvent(event));
+  
+  document
+    ..onMouseMove.listen((event) => onMouseEvent(event))
+    ..onMouseEnter.listen((event) => onMouseEvent(event))
+    ..onMouseLeave.listen((event) => onMouseEvent(event))
+    ..onClick.listen((event) => onMouseEvent(event))
+    ..onMouseWheel.listen((event) => onMouseEvent(event))
+    ..onDoubleClick.listen((event) => onMouseEvent(event))
+    ..onMouseDown.listen((event) => onMouseEvent(event))
+    ..onMouseUp.listen((event) => onMouseEvent(event));
 }
 
 void onKeyEvent(KeyboardEvent evt) {
   for (int i = 0; i < GameObject.gameObjects.length; i++) {
     GameObject.gameObjects[i].onKeyEvent(evt);
+  }
+}
+
+void onMouseEvent(MouseEvent evt) {
+  for (int i = 0; i < GameObject.gameObjects.length; i++) {
+    GameObject.gameObjects[i].onMouseEvent(evt);
   }
 }
 

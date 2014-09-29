@@ -1,11 +1,18 @@
 part of zei;
 
 abstract class GameObject {
+  // only active game objects will be processed by the update loop
+  bool active = true;
+  
   update();
   onMouseEvent(evt);
   onKeyEvent(evt);
   
   static List<GameObject> gameObjects = new List<GameObject>();
+  
+  GameObject() {
+    add(this);
+  }
   
   /**
    * Adds a game object.
@@ -34,7 +41,8 @@ abstract class GameObject {
    */
   static void updateAll() {
     for (int i = gameObjects.length - 1; i >= 0; i--) {
-      gameObjects[i].update();
+      if (gameObjects[i].active)
+        gameObjects[i].update();
     }
   }
   

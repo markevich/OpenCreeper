@@ -25,7 +25,6 @@ class Ship extends Zei.GameObject {
    
   static Ship add(Zei.Vector2 position, String imageID, String type, Building home) {
     Ship ship = new Ship(position, imageID, type, home);
-    Zei.GameObject.add(ship);
     return ship;
   }
   

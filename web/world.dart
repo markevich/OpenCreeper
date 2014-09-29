@@ -190,6 +190,8 @@ class World extends Zei.GameObject {
       creeperDirty = false;
     }
     
+    game.world.drawCollection();
+    
     // update terraform display objects
     if (contains(game.world.hoveredTile)) {   
       if (game.mode == "TERRAFORM") {
@@ -379,7 +381,7 @@ class World extends Zei.GameObject {
    * Takes a list of [tiles] and redraws them.
    * This is used when the terrain height of a tile has been changed by a Terp.
    */
-  void redrawTiles(List tiles) {
+  void redrawTiles(List redrawtiles) {
     List tempCanvas = [];
     List tempContext = [];
     for (int t = 0; t < 10; t++) {
@@ -389,10 +391,10 @@ class World extends Zei.GameObject {
       tempContext.add(tempCanvas[t].getContext('2d'));
     }
 
-    for (int i = 0; i < tiles.length; i++) {
+    for (int i = 0; i < redrawtiles.length; i++) {
 
-      int iS = tiles[i].x;
-      int jS = tiles[i].y;
+      int iS = redrawtiles[i].x;
+      int jS = redrawtiles[i].y;
 
       if (contains(new Zei.Vector2(iS, jS))) {
         // recalculate index
@@ -521,8 +523,7 @@ class World extends Zei.GameObject {
    */
   void drawCollection() {
     Zei.renderer["collection"].clear();
-    Zei.renderer["collection"].context.save();
-    Zei.renderer["collection"].context.globalAlpha = .5;
+
 
     int timesX = (Zei.renderer["collection"].view.width / 2 / Tile.size / game.zoom).ceil();
     int timesY = (Zei.renderer["collection"].view.height / 2 / Tile.size / game.zoom).ceil();
@@ -534,6 +535,10 @@ class World extends Zei.GameObject {
 
         if (contains(position)) {
           if (tiles[position.x][position.y].collector != null) {
+            
+            Zei.renderer["collection"].context.save();
+            Zei.renderer["collection"].context.globalAlpha = tiles[position.x][position.y].collectionAlpha; //.25;
+            
             int up = 0, down = 0, left = 0, right = 0;
             if (position.y - 1 < 0)
               up = 0;
@@ -554,11 +559,13 @@ class World extends Zei.GameObject {
 
             int index = (8 * down) + (4 * left) + (2 * up) + right;
             Zei.renderer["collection"].context.drawImageScaledFromSource(Zei.images["mask"], index * (Tile.size + 6) + 3, (Tile.size + 6) + 3, Tile.size, Tile.size, Zei.renderer["main"].view.width / 2 + i * Tile.size * game.zoom, Zei.renderer["main"].view.height / 2 + j * Tile.size * game.zoom, Tile.size * game.zoom, Tile.size * game.zoom);
+          
+            Zei.renderer["collection"].context.restore();
           }
         }
       }
     }
-    Zei.renderer["collection"].context.restore();
+    
   }
   
   void drawCreeper() {
@@ -647,7 +654,7 @@ class World extends Zei.GameObject {
   
   // recalculate ghosts (semi-transparent placeholders when placing a new building)
   void updateGhosts() {
-    if (UISymbol.activeSymbol != null) {
+    if (!game.ui.hovered && UISymbol.activeSymbol != null) {
     //if (game.hoveredTile != game.oldHoveredTile) {
                
       clearGhosts();
@@ -717,7 +724,7 @@ class World extends Zei.GameObject {
           if (ghostCanBePlaced) {
             // create lines to other buildings
             for (var building in Zei.GameObject.gameObjects) {
-              if (building is Building) {
+              if (building is Building && building.active) {
                 if (UISymbol.activeSymbol.building.type == "collector" || UISymbol.activeSymbol.building.type == "relay" ||
                   building.type == "collector" || building.type == "relay" || building.type == "base") {
     
@@ -842,9 +849,9 @@ class World extends Zei.GameObject {
         Ship.control(game.world.hoveredTile);
         Building.reposition(game.world.hoveredTile);
         Building.select();
-
+  
         game.mouse.dragStart = null;
-
+  
         // when there is an active symbol place building
         if (UISymbol.activeSymbol != null) {
           String type = UISymbol.activeSymbol.building.type.substring(0, 1).toUpperCase() + UISymbol.activeSymbol.building.type.substring(1);

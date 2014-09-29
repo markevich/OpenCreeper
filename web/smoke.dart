@@ -9,7 +9,6 @@ class Smoke extends Zei.GameObject {
    
   static void add(Zei.Vector2 position) {
     Smoke smoke = new Smoke(position);
-    Zei.GameObject.add(smoke);
   }
   
   void update() {

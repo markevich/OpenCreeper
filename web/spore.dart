@@ -14,7 +14,6 @@ class Spore extends Zei.GameObject {
    
   static void add(Zei.Vector2 position, Zei.Vector2 targetPosition) {
     Spore spore = new Spore(position, targetPosition);
-    Zei.GameObject.add(spore);
   }
   
   void update() {

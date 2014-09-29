@@ -15,7 +15,6 @@ class Emitter extends Zei.GameObject {
   
   static Emitter add(Zei.Vector2 position, int strength) {
     Emitter emitter = new Emitter(position, strength);
-    Zei.GameObject.add(emitter);
     return emitter;
   }
    

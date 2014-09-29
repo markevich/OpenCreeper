@@ -13,7 +13,6 @@ class Shell extends Zei.GameObject {
   
   static Shell add(Zei.Vector2 position, Zei.Vector2 targetPosition) {
     Shell shell = new Shell(position, targetPosition);
-    Zei.GameObject.add(shell);
     return shell;
   }
   

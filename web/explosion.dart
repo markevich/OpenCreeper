@@ -9,7 +9,6 @@ class Explosion extends Zei.GameObject {
   
   static void add(Zei.Vector2 position) {
     Explosion explosion = new Explosion(position);
-    Zei.GameObject.add(explosion);
   }
   
   void update() {
