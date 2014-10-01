@@ -50,9 +50,7 @@ class World extends Zei.GameObject {
       Zei.randomInt(4, size.y - 5, game.seed + 1));
 
     game.scroller.scroll = randomPosition;
-    for (var renderer in game.zoomableRenderers) {
-      Zei.renderer[renderer].updatePosition(new Zei.Vector2(game.scroller.scroll.x * Tile.size, game.scroller.scroll.y * Tile.size));
-    }
+    Zei.renderer["main"].updatePosition(new Zei.Vector2(game.scroller.scroll.x * Tile.size, game.scroller.scroll.y * Tile.size));
 
     Building building = Building.add(randomPosition, "base");
     makeFlatSurface(building.position, 9);

@@ -29,9 +29,7 @@ class Scroller extends Zei.GameObject {
     else if (scroll.y > game.world.size.y) scroll.y = game.world.size.y;
 
     if (mouseScrolling.x != 0 || mouseScrolling.y != 0 || keyScrolling.x != 0 || keyScrolling.y != 0) {
-      for (var renderer in game.zoomableRenderers) {
-        Zei.renderer[renderer].updatePosition(new Zei.Vector2(scroll.x * Tile.size, scroll.y * Tile.size));
-      }
+      Zei.renderer["main"].updatePosition(new Zei.Vector2(scroll.x * Tile.size, scroll.y * Tile.size));
       game.world.copyTiles();
       game.world.drawCollection();
       World.creeperDirty = true;

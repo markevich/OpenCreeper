@@ -10,6 +10,7 @@ class Renderer {
   Mouse mouse;
   bool redraw = false;
   bool autodraw = true;
+  bool zoomable = false;
   static List<Renderer> renderers = new List();
 
   Renderer(this.view, width, height) {
@@ -23,11 +24,12 @@ class Renderer {
   /**
    * Creates a renderer with a [name], [width], [height] and optionally adds it to a [container] in the DOM
    */
-  static Renderer create(String name, int width, int height, {container: null, autodraw: true}) {
+  static Renderer create(String name, int width, int height, {container: null, autodraw: true, zoomable: false}) {
     renderer[name] = new Renderer(new CanvasElement(), width, height);
     if (container != null)
       querySelector(container).children.add(renderer[name].view);
     renderer[name].autodraw = autodraw;
+    renderer[name].zoomable = zoomable;
     renderer[name].updateRect(width, height);
 
           
@@ -46,6 +48,17 @@ class Renderer {
             v.layers[i].displayObjects[j].stopAnimation();
           }
         }
+      }
+    });
+  }
+  
+  /**
+   * Apply a [zoom] value to all zoomable renderers.
+   */
+  static void setZoom(num zoom) {
+    renderer.forEach((k, v) {
+      if (v.zoomable) {
+        v.updateZoom(zoom);
       }
     });
   }

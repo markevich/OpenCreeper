@@ -7,7 +7,6 @@ class Game {
   bool paused = false, won = false;
   World world;
   UserInterface ui;
-  List zoomableRenderers;
   Zei.Mouse mouse;
   Scroller scroller;
   Timer resizeTimer;
@@ -43,7 +42,7 @@ class Game {
     int width = window.innerWidth;
     int height = window.innerHeight;
     
-    var main = Zei.Renderer.create("main", width, height, container: "body");
+    var main = Zei.Renderer.create("main", width, height, container: "body", zoomable: true);
     main.view.style.zIndex = "1";   
     main.enableMouse();     
     main.setLayers(["terraform", "targetsymbol", "connectionborder", "connection", "building", "selectedcircle", "buildinginfo", "sporetower", "emitter", "projectile", "buildinggun", "packet",
@@ -51,10 +50,7 @@ class Game {
     
     mouse = main.mouse;
     mouse.setCursor("url('images/Normal.cur') 2 2, pointer");
-                  
-    // renderes affected when zooming
-    zoomableRenderers = ["main", "collection"];
-     
+                      
     var music = new AudioElement("sounds/music.ogg");
     music.loop = true;
     music.volume = 0.25;
@@ -167,9 +163,7 @@ class Game {
       zoom += .2;
       zoom = double.parse(zoom.toStringAsFixed(2));
       
-      for (var renderer in zoomableRenderers) {
-        Zei.renderer[renderer].updateZoom(zoom);
-      }
+      Zei.Renderer.setZoom(zoom);
       world.copyTiles();
       world.drawCollection();
       World.creeperDirty = true;
@@ -180,9 +174,8 @@ class Game {
     if (zoom > .4) {
       zoom -= .2;
       zoom = double.parse(zoom.toStringAsFixed(2));
-      for (var renderer in zoomableRenderers) {
-        Zei.renderer[renderer].updateZoom(zoom);
-      }
+      
+      Zei.Renderer.setZoom(zoom);
       world.copyTiles();
       world.drawCollection();
       World.creeperDirty = true;
