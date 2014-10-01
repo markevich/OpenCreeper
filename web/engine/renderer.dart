@@ -21,7 +21,7 @@ class Renderer {
     this.autodraw = autodraw;
     renderers.add(this);
   }
-  
+
   /**
    * Creates a renderer with a [name], [width], [height] and optionally adds it to a [container] in the DOM
    */
@@ -33,10 +33,10 @@ class Renderer {
     renderer[name].zoomable = zoomable;
     renderer[name].updateRect(width, height);
 
-          
+
     return renderer[name];
   }
-  
+
   /**
    * Sets the relative position of the mouse relative to each renderer].
    */
@@ -52,11 +52,11 @@ class Renderer {
       }
     });
   }
-   
+
   static void clearDisplayObjects() {
     renderer.forEach((k, v) => v.removeAllDisplayObjects());
   }
-  
+
   static void stopAnimations() {
     renderer.forEach((k, v) {
       for (int i = 0; i < v.layers.length; i++) {
@@ -68,7 +68,7 @@ class Renderer {
       }
     });
   }
-  
+
   /**
    * Apply a [zoom] value to all zoomable renderers.
    */
@@ -79,7 +79,7 @@ class Renderer {
       }
     });
   }
-  
+
   static void startAnimations() {
     renderer.forEach((k, v) {
       for (int i = 0; i < v.layers.length; i++) {
@@ -100,12 +100,12 @@ class Renderer {
       context.clearRect(0, 0, view.width, view.height);
     }
   }
-   
+
   // FIXME: doesn't seem to work atm
   void disableImageSmoothing() {
     context.imageSmoothingEnabled = false;
   }
-   
+
   /**
    * Updates the boundaries of the renderer (eg. after resizing the window)
    */
@@ -117,15 +117,15 @@ class Renderer {
     bottom = view.offset.top + view.offset.height;
     right = view.offset.left + view.offset.width;
   }
-  
+
   void updateZoom(double zoom) {
     this.zoom = zoom;
   }
-  
+
   void updatePosition(Vector2 position) {
     this.position = position;
   }
-  
+
   /**
    * Sets the layers, first layers in the list are drawn first later
    */
@@ -138,10 +138,10 @@ class Renderer {
   void addDisplayObject(DisplayObject displayObject) {
     for (Layer layer in layers) {
       if (layer.name == displayObject.layer)
-        layer.displayObjects.add(displayObject);      
+        layer.displayObjects.add(displayObject);
     }
   }
-  
+
   void removeDisplayObject(DisplayObject displayObject) {
     for (Layer layer in layers) {
       if (layer.name == displayObject.layer) {
@@ -151,19 +151,19 @@ class Renderer {
       }
     }
   }
-  
+
   void removeAllDisplayObjects() {
     for (int i = 0; i < layers.length; i++) {
       layers[i].displayObjects.clear();
     }
   }
-  
+
   void switchLayer(DisplayObject displayObject, String layer) {
     removeDisplayObject(displayObject);
     displayObject.layer = layer;
     addDisplayObject(displayObject);
   }
-  
+
   /**
    * Checks if a [displayObject] is within the renderer view. Returns true or false.
    */
@@ -172,52 +172,53 @@ class Renderer {
                                        this.position.y - (view.height / zoom / 2),
                                        view.width / zoom,
                                        view.height / zoom);
-  
-    if (displayObject is Sprite) {     
+
+    if (displayObject is Sprite) {
       Rectangle object = new Rectangle(displayObject.position.x - (displayObject.size.x / 2),
                                        displayObject.position.y - (displayObject.size.y / 2),
                                        displayObject.size.x,
-                                       displayObject.size.y);        
-      return renderer.intersects(object);       
-    } else if (displayObject is Rect) {    
+                                       displayObject.size.y);
+      return renderer.intersects(object);
+    } else if (displayObject is Rect) {
       Rectangle object = new Rectangle(displayObject.position.x - (displayObject.size.x / 2),
                                        displayObject.position.y - (displayObject.size.y / 2),
                                        displayObject.size.x,
-                                       displayObject.size.y);       
-      return renderer.intersects(object); 
-    } else if (displayObject is Circle) {    
-      Vector2 size = new Vector2(displayObject.radius * displayObject.scale, displayObject.radius * displayObject.scale);     
+                                       displayObject.size.y);
+      return renderer.intersects(object);
+    } else if (displayObject is Circle) {
+      Vector2 size = new Vector2(displayObject.radius * displayObject.scale, displayObject.radius * displayObject.scale);
       Rectangle object = new Rectangle(displayObject.position.x - (size.x / 2),
                                        displayObject.position.y - (size.y / 2),
                                        size.x,
-                                       size.y);          
+                                       size.y);
       return renderer.intersects(object);
-    } else if (displayObject is Line) {   
-      // FIXME: a line might be partially visible although neither start nor end are visible
+    } else if (displayObject is Line) {
       return (renderer.containsPoint(new Point(displayObject.from.x, displayObject.from.y)) ||
-              renderer.containsPoint(new Point(displayObject.to.x, displayObject.to.y)));
-    } else if (displayObject is Text) {   
+              renderer.containsPoint(new Point(displayObject.to.x, displayObject.to.y)) ||
+              LiangBarsky(renderer.left, renderer.left + renderer.width, renderer.top, renderer.top + renderer.height,
+                         displayObject.from.x, displayObject.from.y, displayObject.to.x, displayObject.to.y));
+    } else if (displayObject is Text) {
       context.font = "${displayObject.size * zoom}${displayObject.sizeUnit} ${displayObject.font}";
-      context.textAlign = displayObject.align; 
+      context.textAlign = displayObject.align;
       context.textBaseline = displayObject.verticalAlign;
       var width = context.measureText(displayObject.text).width;
-      
+
       Rectangle object = new Rectangle(displayObject.position.x - width,
                                        displayObject.position.y - displayObject.size,
                                        width * 2,
-                                       width * 2);  
-      return renderer.intersects(object);   
-    } 
-    
+                                       width * 2);
+      return renderer.intersects(object);
+    }
+
     return false;
   }
-  
+
   Vector2 relativePosition(Vector2 vector) {
    return new Vector2(
        view.width / 2 + (vector.x - position.x) * zoom,
        view.height / 2 + (vector.y - position.y) * zoom);
   }
-  
+
   void draw() {
     for (var layer in layers) {
       for (var displayObject in layer.displayObjects) {
@@ -359,25 +360,25 @@ class Renderer {
                 }
               }
             }
-            
+
             // render text
             else if (displayObject is Text) {
               Vector2 relativePos = relativePosition(displayObject.position);
               context.font = "${displayObject.size * zoom}${displayObject.sizeUnit} ${displayObject.font}";
-              context.textAlign = displayObject.align; 
+              context.textAlign = displayObject.align;
               context.textBaseline = displayObject.verticalAlign;
-             
+
               if (displayObject.rotation != 0) {
                 context.save();
                 context.translate(relativePos.x, relativePos.y);
                 context.rotate(degToRad(displayObject.rotation));
-                if (displayObject.strokeColor != null) {    
+                if (displayObject.strokeColor != null) {
                   context.strokeStyle = displayObject.strokeColor.rgba;
-                  context.strokeText(displayObject.text, 0, 0); 
+                  context.strokeText(displayObject.text, 0, 0);
                 }
                 if (displayObject.fillColor != null) { // FIXME: fillColor not working?
                   context.fillStyle = displayObject.fillColor.rgba;
-                  context.fillText(displayObject.text, 0, 0); 
+                  context.fillText(displayObject.text, 0, 0);
                 }
                 context.restore();
               } else {
@@ -388,7 +389,7 @@ class Renderer {
                 if (displayObject.fillColor != null) {
                   context.fillStyle = displayObject.fillColor.rgba;
                   context.fillText(displayObject.text, relativePos.x, relativePos.y);
-                }               
+                }
               }
             }
 
@@ -420,6 +421,6 @@ class Renderer {
 class Layer {
   String name;
   List<DisplayObject> displayObjects = new List();
-  
+
   Layer(this.name);
 }

@@ -183,3 +183,33 @@ num degToRad(num angle) {
 Vector2 convertToVector(num angle) {
   return new Vector2(cos(degToRad(angle)), sin(degToRad(angle)));
 }
+
+// thx to http://www.skytopia.com/project/articles/compsci/clipping.html
+bool LiangBarsky (num edgeLeft, num edgeRight, num edgeBottom, num edgeTop,
+                  num x0src, num y0src, num x1src, num y1src) {
+
+  num t0 = 0.0;
+  num t1 = 1.0;
+  num xdelta = x1src-x0src;
+  num ydelta = y1src-y0src;
+  num p,q,r;
+
+  for(int edge=0; edge<4; edge++) {   // Traverse through left, right, bottom, top edges.
+    if (edge==0) {  p = -xdelta;    q = -(edgeLeft-x0src);  }
+    if (edge==1) {  p = xdelta;     q =  (edgeRight-x0src); }
+    if (edge==2) {  p = -ydelta;    q = -(edgeBottom-y0src);}
+    if (edge==3) {  p = ydelta;     q =  (edgeTop-y0src);   }
+    r = q/p;
+    if(p==0 && q<0) return false;   // (parallel line outside)
+
+    if(p<0) {
+      if(r>t1) return false;
+      else if(r>t0) t0=r;
+    } else if(p>0) {
+      if(r<t0) return false;
+      else if(r<t1) t1=r;
+    }
+  }
+
+  return true;
+}
