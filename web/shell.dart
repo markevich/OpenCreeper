@@ -43,7 +43,7 @@ class Shell extends Zei.GameObject {
 
       Zei.Vector2 targetPositionTiled = Tile.position(targetPosition);
       Explosion.add(targetPosition);
-      Zei.Audio.play("explosion", targetPosition, game.scroller.scroll, game.zoom);
+      Zei.Audio.play("explosion", targetPosition, game.scroller.scroll, game.world.zoom);
 
       for (int i = -4; i <= 4; i++) {
         for (int j = -4; j <= 4; j++) {

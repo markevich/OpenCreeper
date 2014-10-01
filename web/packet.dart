@@ -70,7 +70,7 @@ class Packet extends Zei.GameObject {
                 target.cannon.alpha = 1.0;
               if (target.type == "collector") {
                 target.updateCollection("add");
-                Zei.Audio.play("energy", target.position, game.scroller.scroll, game.zoom);
+                Zei.Audio.play("energy", target.position, game.scroller.scroll, game.world.zoom);
               }
               if (target.type == "storage")
                 Building.base.maxEnergy += 20;

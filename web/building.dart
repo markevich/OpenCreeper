@@ -237,7 +237,7 @@ class Building extends Zei.GameObject {
     // only explode building when it has been built
     if (building.built) {
       Explosion.add(building.position);
-      Zei.Audio.play("explosion", building.position, game.scroller.scroll, game.zoom);
+      Zei.Audio.play("explosion", building.position, game.scroller.scroll, game.world.zoom);
     }
 
     if (building.type == "base") {
@@ -954,7 +954,7 @@ class Building extends Zei.GameObject {
             energy -= 1;
             operating = true;
             Projectile.add(position, new Zei.Vector2(weaponTargetPosition.x * Tile.size + Tile.size / 2, weaponTargetPosition.y * Tile.size + Tile.size / 2), targetAngle);
-            Zei.Audio.play("laser", position, game.scroller.scroll, game.zoom);
+            Zei.Audio.play("laser", position, game.scroller.scroll, game.world.zoom);
           }
         }
       }
@@ -979,7 +979,7 @@ class Building extends Zei.GameObject {
             }
           }
           if (target != null) {
-            Zei.Audio.play("shot", position, game.scroller.scroll, game.zoom);
+            Zei.Audio.play("shot", position, game.scroller.scroll, game.world.zoom);
             Shell.add(position, new Zei.Vector2(target.x * Tile.size + Tile.size / 2, target.y * Tile.size + Tile.size / 2));
             energy -= 1;
           }

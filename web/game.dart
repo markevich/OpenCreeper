@@ -1,17 +1,15 @@
 part of creeper;
 
 class Game {
-  int seed, speed = 1;
-  double zoom = 1.0;
+  int seed, speed;
   String mode;
-  bool paused = false, won = false;
+  bool paused, won, friendly;
   World world;
   UserInterface ui;
   Zei.Mouse mouse;
   Scroller scroller;
   Timer resizeTimer;
   bool debug = true;
-  bool friendly;
   
   Game() {
     Zei.init(TPS: 60, debug: false);
@@ -56,8 +54,6 @@ class Game {
     music.onCanPlay.listen((event) => music.play()); // TODO: find out why this is not working
      
     reset();
-    world.drawTiles();
-    world.copyTiles();
     
     window.onResize.listen((event) => onResize(event));
     
@@ -83,11 +79,9 @@ class Game {
     Zei.renderer["gui"].top = Zei.renderer["gui"].view.offsetTop;
     Zei.renderer["gui"].left = Zei.renderer["gui"].view.offsetLeft;
 
-    if (game != null) {
-      game.world.copyTiles();
-      game.world.drawCollection();
-      game.world.drawCreeper();
-    }
+    world.copyTiles();
+    world.drawCollection();
+    world.drawCreeper();
   }
 
   void reset() {
@@ -95,11 +89,14 @@ class Game {
     
     mode = "DEFAULT";
     speed = 1;
+    paused = false;
     won = false;
 
     scroller = new Scroller();
     world = new World(seed);
     world.create();
+    world.drawTiles();
+    world.copyTiles();
           
     // create UI
     ui = new UserInterface();
@@ -126,21 +123,7 @@ class Game {
     querySelector('#lose').style.display = 'none';
     Zei.stop();
     reset();
-    world.drawTiles();
-    world.copyTiles();
     Zei.run();
-  }
-
-  void toggleTerraform() {
-    if (mode == "TERRAFORM") {
-      mode = "DEFAULT";
-      querySelector("#terraform").attributes['value'] = "Terraform Off";
-      world.tfNumber.visible = false;
-    } else {
-      mode = "TERRAFORM";
-      querySelector("#terraform").attributes['value'] = "Terraform On";
-      world.tfNumber.visible = true;
-    }
   }
 
   void faster() {
@@ -156,29 +139,5 @@ class Game {
       ui.updateElement("speed");
     }
   }
-
-  void zoomIn() {
-    if (zoom < 1.6) {
-      zoom += .2;
-      zoom = double.parse(zoom.toStringAsFixed(2));
-      
-      Zei.Renderer.setZoom(zoom);
-      world.copyTiles();
-      world.drawCollection();
-      World.creeperDirty = true;
-    }
-  }
-
-  void zoomOut() {
-    if (zoom > .4) {
-      zoom -= .2;
-      zoom = double.parse(zoom.toStringAsFixed(2));
-      
-      Zei.Renderer.setZoom(zoom);
-      world.copyTiles();
-      world.drawCollection();
-      World.creeperDirty = true;
-    }
-  }
-
+  
 }
