@@ -8,12 +8,12 @@ class Sporetower extends Zei.GameObject {
     sprite = Zei.Sprite.create("main", "sporetower", Zei.images["sporetower"], position, 48, 48, anchor: new Zei.Vector2(0.5, 0.5));
     reset();
   }
-   
+
   static Sporetower add(Zei.Vector2 position) {
     Sporetower sporetower = new Sporetower(position);
     return sporetower;
   }
-  
+
   void update() {
     if (!game.paused) {
       sporeCounter -= 1;
@@ -41,15 +41,15 @@ class Sporetower extends Zei.GameObject {
     } while (!target.built);
     Spore.add(sprite.position, target.sprite.position);
   }
-  
-  
-  static bool intersect(Rectangle rectangle) { 
+
+
+  static bool intersect(Rectangle rectangle) {
     for (var sporetower in Zei.GameObject.gameObjects) {
       if (sporetower is Sporetower) {
         Rectangle sporetowerRect = new Rectangle(sporetower.sprite.position.x - 3 * Tile.size / 2,
                                                  sporetower.sprite.position.y - 3 * Tile.size / 2,
                                                  3 * Tile.size - 1,
-                                                 3 * Tile.size - 1);     
+                                                 3 * Tile.size - 1);
         if (rectangle.intersects(sporetowerRect)) {
           return true;
         }
@@ -57,8 +57,8 @@ class Sporetower extends Zei.GameObject {
     }
     return false;
   }
-  
+
   void onMouseEvent(evt) {}
-  
-  void onKeyEvent(evt) {}
+
+  void onKeyEvent(evt, String type) {}
 }

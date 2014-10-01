@@ -12,7 +12,7 @@ class Packet extends Zei.GameObject {
     sprite = Zei.Sprite.create("main", "packet", Zei.images["packet_" + type], currentTarget.position, 16, 16, visible: false, anchor: new Zei.Vector2(0.5, 0.5));
     this.active = false;
   }
-     
+
   void update() {
     if (!game.paused) {
       if (flagRemove) {
@@ -23,7 +23,7 @@ class Packet extends Zei.GameObject {
         move();
     }
   }
-  
+
   static void removeWithTarget(building) {
     for (var packet in Zei.GameObject.gameObjects) {
       if (packet is Packet) {
@@ -44,12 +44,12 @@ class Packet extends Zei.GameObject {
     this.active = true;
     sprite.visible = true;
   }
-  
-  void move() {  
+
+  void move() {
     sprite.position += ((currentTarget.position - sprite.position).normalize() * Packet.baseSpeed * game.speed * velocityMultiplier).clamp(currentTarget.position - sprite.position);
 
     if (sprite.position == currentTarget.position) {
-      
+
       // if the final node was reached deliver and remove
       if (currentTarget == target) {
         flagRemove = true;
@@ -77,7 +77,7 @@ class Packet extends Zei.GameObject {
               if (target.type == "speed")
                 Packet.baseSpeed *= 1.01;
               if (target.type == "bomber") {
-                target.ship = Ship.add(target.position, "bombership", "Bomber", target);           
+                target.ship = Ship.add(target.position, "bombership", "Bomber", target);
               }
             }
           }
@@ -135,8 +135,8 @@ class Packet extends Zei.GameObject {
       return false;
     }
   }
-  
+
   void onMouseEvent(evt) {}
-  
-  void onKeyEvent(evt) {}
+
+  void onKeyEvent(evt, String type) {}
 }

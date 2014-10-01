@@ -10,12 +10,12 @@ class Shell extends Zei.GameObject {
   Shell(position, this.targetPosition) {
     sprite = Zei.Sprite.create("main", "shell", Zei.images["shell"], position, 16, 16, anchor: new Zei.Vector2(0.5, 0.5));
   }
-  
+
   static Shell add(Zei.Vector2 position, Zei.Vector2 targetPosition) {
     Shell shell = new Shell(position, targetPosition);
     return shell;
   }
-  
+
   void update() {
     if (!game.paused) {
       if (flagRemove) {
@@ -47,13 +47,13 @@ class Shell extends Zei.GameObject {
 
       for (int i = -4; i <= 4; i++) {
         for (int j = -4; j <= 4; j++) {
-          
+
           Zei.Vector2 tilePosition = targetPositionTiled + new Zei.Vector2(i, j);
-          
+
           if (game.world.contains(tilePosition)) {
             if ((tilePosition * Tile.size + new Zei.Vector2(8, 8)).distanceTo(targetPosition) <= Tile.size * 4) {
               Tile tile = game.world.getTile(tilePosition * Tile.size);
-              
+
               tile.creep -= 10;
               tile.creep = Zei.clamp(tile.creep, 0, 1000);
               World.creeperDirty = true;
@@ -64,8 +64,8 @@ class Shell extends Zei.GameObject {
 
     }
   }
-  
+
   void onMouseEvent(evt) {}
-  
-  void onKeyEvent(evt) {}
+
+  void onKeyEvent(evt, String type) {}
 }

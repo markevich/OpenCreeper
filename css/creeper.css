@@ -98,4 +98,5 @@ input, select {
     top: 100px;
     left: 50%;
     display: none;
+    z-index: 5;
 }

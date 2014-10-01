@@ -9,11 +9,11 @@ class Projectile extends Zei.GameObject {
   Projectile(position, this.targetPosition, rotation) {
     sprite = Zei.Sprite.create("main", "projectile", Zei.images["projectile"], position, 16, 16, anchor: new Zei.Vector2(0.5, 0.5), rotation: rotation);
   }
-  
+
   static void add(Zei.Vector2 position, Zei.Vector2 targetPosition, num rotation) {
     Projectile projectile = new Projectile(position, targetPosition, rotation);
   }
-   
+
   void update() {
     if (!game.paused) {
       if (flagRemove) {
@@ -34,7 +34,7 @@ class Projectile extends Zei.GameObject {
       flagRemove = true;
 
       Smoke.add(targetPosition);
-      
+
       Zei.Vector2 targetPositionTiled = Tile.position(targetPosition);
       for (int i = -1; i <= 1; i++) {
         for (int j = -1; j <= 1; j++) {
@@ -53,8 +53,8 @@ class Projectile extends Zei.GameObject {
       }
     }
   }
-  
+
   void onMouseEvent(evt) {}
-  
-  void onKeyEvent(evt) {}
+
+  void onKeyEvent(evt, String type) {}
 }

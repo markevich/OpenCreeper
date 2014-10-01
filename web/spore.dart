@@ -8,14 +8,14 @@ class Spore extends Zei.GameObject {
   Zei.Sprite sprite;
   static final int baseSpeed = 1;
 
-  Spore(position, this.targetPosition) {   
+  Spore(position, this.targetPosition) {
     sprite = Zei.Sprite.create("main", "spore", Zei.images["spore"], position, 32, 32, anchor: new Zei.Vector2(0.5, 0.5));
   }
-   
+
   static void add(Zei.Vector2 position, Zei.Vector2 targetPosition) {
     Spore spore = new Spore(position, targetPosition);
   }
-  
+
   void update() {
     if (!game.paused) {
       if (flagRemove) {
@@ -26,13 +26,13 @@ class Spore extends Zei.GameObject {
         move();
     }
   }
-  
-  static void damage(Building building) {  
+
+  static void damage(Building building) {
     // find spore in range
     //for (var spore in Zei.GameObject.gameObjects) {
     for (var i = Zei.GameObject.gameObjects.length - 1; i >= 0; i--) {
       var spore = Zei.GameObject.gameObjects[i];
-      if (spore is Spore) {      
+      if (spore is Spore) {
         if (building.sprite.position.distanceTo(spore.sprite.position) <= building.radius * Tile.size) {
           building.weaponTargetPosition = spore.sprite.position;
           building.beamLineInner.to = spore.sprite.position;
@@ -70,12 +70,12 @@ class Spore extends Zei.GameObject {
 
       for (int i = -2; i <= 2; i++) {
         for (int j = -2; j <= 2; j++) {
-          
+
           Zei.Vector2 tilePosition = targetPositionTiled + new Zei.Vector2(i, j);
-          
+
           if (game.world.contains(tilePosition)) {
             if ((tilePosition * Tile.size + new Zei.Vector2(8, 8)).distanceTo(targetPosition) <= Tile.size * 2) {
-              Tile tile = game.world.getTile(tilePosition * Tile.size);             
+              Tile tile = game.world.getTile(tilePosition * Tile.size);
               tile.creep += .5;
             }
           }
@@ -84,8 +84,8 @@ class Spore extends Zei.GameObject {
       World.creeperDirty = true;
     }
   }
-  
+
   void onMouseEvent(evt) {}
-  
-  void onKeyEvent(evt) {}
+
+  void onKeyEvent(evt, String type) {}
 }

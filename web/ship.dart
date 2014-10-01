@@ -18,23 +18,23 @@ class Ship extends Zei.GameObject {
     targetSymbol = Zei.Sprite.create("main", "targetsymbol", Zei.images["targetcursor"], position, 48, 48, visible: false, anchor: new Zei.Vector2(0.5, 0.5), alpha: 0.5);
     energyRect = Zei.Rect.create("main", "energybar", new Zei.Vector2(position.x - 22, position.y - 20), new Zei.Vector2(44 / maxEnergy * energy, 3), 1, new Zei.Color.red(), null);
   }
-  
+
   static void init() {
     targetCursor = Zei.Sprite.create("main", "targetsymbol", Zei.images["targetcursor"], new Zei.Vector2.empty(), 48, 48, visible: false, anchor: new Zei.Vector2(0.5, 0.5)); // create target cursor used when a ship is selected
   }
-   
+
   static Ship add(Zei.Vector2 position, String imageID, String type, Building home) {
     Ship ship = new Ship(position, imageID, type, home);
     return ship;
   }
-  
+
   void update() {
     if (!game.paused) {
       move();
     }
     hovered = sprite.isHovered();
   }
-  
+
   static void select() {
     // select a ship if hovered
     for (var ship in Zei.GameObject.gameObjects) {
@@ -47,7 +47,7 @@ class Ship extends Zei.GameObject {
       }
     }
   }
-  
+
   static void deselect() {
     for (var ship in Zei.GameObject.gameObjects) {
       if (ship is Ship) {
@@ -57,13 +57,13 @@ class Ship extends Zei.GameObject {
       targetCursor.visible = false;
     }
   }
-  
+
   void turnToTarget() {
     double angleToTarget = sprite.position.angleTo(targetPosition);
 
     num shipRotation = 1.5;
     num absoluteDelta = (angleToTarget - sprite.rotation).abs();
-  
+
     shipRotation = Zei.clamp(shipRotation, 0, absoluteDelta);
 
     if (absoluteDelta <= 180) // facing target
@@ -80,28 +80,28 @@ class Ship extends Zei.GameObject {
     if (sprite.rotation > 180)
       sprite.rotation -= 360;
     if (sprite.rotation < -180)
-      sprite.rotation += 360; 
+      sprite.rotation += 360;
   }
 
   void calculateSpeed() {
     velocity = Zei.convertToVector(sprite.rotation) * Ship.baseSpeed * game.speed;
   }
-  
+
   static void control(Zei.Vector2 position) {
     position = position * Tile.size;
     position += new Zei.Vector2(8, 8);
-    
+
     select();
-    
+
     for (var ship in Zei.GameObject.gameObjects) {
       if (ship is Ship) {
-           
+
         // control if selected
         if (ship.selected) {
           game.mode = "SHIP_SELECTED";
-    
+
           if (ship.status == "IDLE") {
-            if (position != ship.home.position) {         
+            if (position != ship.home.position) {
               // leave home
               // get energy from home
               int delta = ship.maxEnergy - ship.energy;
@@ -117,8 +117,8 @@ class Ship extends Zei.GameObject {
               ship.status = "RISING";
             }
           }
-          
-          if (ship.status == "ATTACKING" || ship.status == "RETURNING") {      
+
+          if (ship.status == "ATTACKING" || ship.status == "RETURNING") {
             if (position == ship.home.position) {
               // return home
               ship.targetPosition = position;
@@ -131,16 +131,16 @@ class Ship extends Zei.GameObject {
               ship.status = "ATTACKING";
             }
           }
-    
+
         }
       }
     }
   }
 
-  void move() { 
+  void move() {
     // update energy rect
     energyRect.size = new Zei.Vector2(44 / maxEnergy * energy, 3);
-    
+
     if (status == "ATTACKING" || status == "RETURNING") {
       trailCounter++;
       if (trailCounter == 10) {
@@ -160,7 +160,7 @@ class Ship extends Zei.GameObject {
         status = "ATTACKING";
       }
     }
-    
+
     else if (status == "FALLING") {
       if (flightCounter > 0) {
         flightCounter--;
@@ -176,13 +176,13 @@ class Ship extends Zei.GameObject {
         energyRect.scale = new Zei.Vector2(1.0, 1.0);
       }
     }
-    
+
     else if (status == "ATTACKING") {
       weaponCounter++;
 
       turnToTarget();
       calculateSpeed();
-      
+
       sprite.position += velocity;
       selectedCircle.position += velocity;
       energyRect.position += velocity;
@@ -221,7 +221,7 @@ class Ship extends Zei.GameObject {
         }
       }
     }
-    
+
     else if (status == "RETURNING") {
       turnToTarget();
       calculateSpeed();
@@ -238,12 +238,12 @@ class Ship extends Zei.GameObject {
 
     targetSymbol.visible = ((status == "ATTACKING" || status == "RISING") && selected);
   }
-  
+
   void onMouseEvent(evt) {
     if (evt.type == "dblclick") {
       Ship.select();
     }
   }
-  
-  void onKeyEvent(evt) {}
+
+  void onKeyEvent(evt, String type) {}
 }

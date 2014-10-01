@@ -3,17 +3,17 @@ part of zei;
 abstract class GameObject {
   // only active game objects will be processed by the update loop
   bool active = true;
-  
+
   update();
   onMouseEvent(evt);
-  onKeyEvent(evt);
-  
+  onKeyEvent(evt, String type);
+
   static List<GameObject> gameObjects = new List<GameObject>();
-  
+
   GameObject() {
     add(this);
   }
-  
+
   /**
    * Adds a game object.
    */
@@ -24,7 +24,7 @@ abstract class GameObject {
       print("# GameObjects: ${gameObjects.length}");
     }
   }
-  
+
   /**
    * Removes a game object.
    */
@@ -35,7 +35,7 @@ abstract class GameObject {
       print("# GameObjects: ${gameObjects.length}");
     }
   }
-  
+
   /**
    * Updates all game objects based on their update() implementations.
    */
@@ -45,7 +45,7 @@ abstract class GameObject {
         gameObjects[i].update();
     }
   }
-  
+
   /**
    * Clears all game objects.
    */

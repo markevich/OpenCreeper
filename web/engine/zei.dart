@@ -24,18 +24,23 @@ Mouse mouse;
 void init({int TPS: 60, bool debug: false}) {
   TPS = TPS;
   debug = debug;
-  
+
   // disable context menu
   document.onContextMenu.listen((event) => event.preventDefault());
-  
+
   document
-        ..onKeyDown.listen((event) => onKeyEvent(event))
-        ..onKeyUp.listen((event) => onKeyEvent(event));
+        ..onKeyDown.listen((event) => onKeyEvent(event, "down"))
+        ..onKeyUp.listen((event) => onKeyEvent(event, "up"));
 }
 
-void enableMouse() {
+/**
+ * Enables the mouse
+ */
+void enableMouse([String cursor]) {
   mouse = new Mouse();
-  
+  if (cursor != null)
+    mouse.setCursor(cursor);
+
   document
     ..onMouseMove.listen((event) => onMouseEvent(event))
     ..onMouseEnter.listen((event) => onMouseEvent(event))
@@ -47,9 +52,9 @@ void enableMouse() {
     ..onMouseUp.listen((event) => onMouseEvent(event));
 }
 
-void onKeyEvent(KeyboardEvent evt) {
+void onKeyEvent(KeyboardEvent evt, String type) {
   for (int i = 0; i < GameObject.gameObjects.length; i++) {
-    GameObject.gameObjects[i].onKeyEvent(evt);
+    GameObject.gameObjects[i].onKeyEvent(evt, type);
   }
 }
 
@@ -57,7 +62,7 @@ void onMouseEvent(MouseEvent evt) {
   if (evt.type == "mousemove") {
     mouse.update(evt);
   }
-  
+
   for (int i = 0; i < GameObject.gameObjects.length; i++) {
     GameObject.gameObjects[i].onMouseEvent(evt);
   }
@@ -85,7 +90,7 @@ void update() {
  * Main drawing function which instructs all Renderers.
  * Is called by requestAnimationFrame every frame.
  */
-void draw(num _) {  
+void draw(num _) {
   for (Renderer renderer in Renderer.renderers) {
     if (renderer.autodraw) {
       renderer.clear();
@@ -102,6 +107,9 @@ void clear() {
   GameObject.clear();
   //Audio.clear();
   Renderer.clearDisplayObjects();
+  for (Renderer renderer in Renderer.renderers) {
+    renderer.clear();
+  }
 }
 
 /**
@@ -111,7 +119,7 @@ void clear() {
  */
 Future loadImages(List filenames) {
   var completer = new Completer();
-   
+
   int loadedImages = 0;
 
   filenames.forEach((filename) {
@@ -122,7 +130,7 @@ Future loadImages(List filenames) {
       }
     });
   });
-  return completer.future; 
+  return completer.future;
 }
 
 /**
@@ -171,7 +179,7 @@ num degToRad(num angle) {
 
 /**
  * Converts an [angle] (in degrees) to a Vector2 representation
- */ 
+ */
 Vector2 convertToVector(num angle) {
   return new Vector2(cos(degToRad(angle)), sin(degToRad(angle)));
 }
