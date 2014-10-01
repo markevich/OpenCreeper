@@ -81,10 +81,10 @@ class Rect extends DisplayObject {
   
   bool isHovered() {
     Vector2 relativePosition = renderer[rendererName].relativePosition(this.position);
-    return (renderer[rendererName].mouse.position.x >= relativePosition.x - this.size.x * this.scale.x * this.anchor.x * renderer[rendererName].zoom &&
-            renderer[rendererName].mouse.position.x <= relativePosition.x - this.size.x * this.scale.x * this.anchor.x * renderer[rendererName].zoom + this.size.x * this.scale.x * renderer[rendererName].zoom &&
-            renderer[rendererName].mouse.position.y >= relativePosition.y - this.size.y * this.scale.y * this.anchor.y * renderer[rendererName].zoom &&
-            renderer[rendererName].mouse.position.y <= relativePosition.y - this.size.y * this.scale.y * this.anchor.y * renderer[rendererName].zoom + this.size.y * this.scale.y * renderer[rendererName].zoom);
+    return (renderer[rendererName].relativeMousePosition.x >= relativePosition.x - this.size.x * this.scale.x * this.anchor.x * renderer[rendererName].zoom &&
+            renderer[rendererName].relativeMousePosition.x <= relativePosition.x - this.size.x * this.scale.x * this.anchor.x * renderer[rendererName].zoom + this.size.x * this.scale.x * renderer[rendererName].zoom &&
+            renderer[rendererName].relativeMousePosition.y >= relativePosition.y - this.size.y * this.scale.y * this.anchor.y * renderer[rendererName].zoom &&
+            renderer[rendererName].relativeMousePosition.y <= relativePosition.y - this.size.y * this.scale.y * this.anchor.y * renderer[rendererName].zoom + this.size.y * this.scale.y * renderer[rendererName].zoom);
   }
 }
 
@@ -125,7 +125,7 @@ class Circle extends DisplayObject {
   
   bool isHovered() {
     Vector2 relativePosition = renderer[rendererName].relativePosition(this.position);
-    return (renderer[rendererName].mouse.position.distanceTo(relativePosition) <= this.radius * renderer[rendererName].zoom);
+    return (renderer[rendererName].relativeMousePosition.distanceTo(relativePosition) <= this.radius * renderer[rendererName].zoom);
   }
 }
 
@@ -212,9 +212,9 @@ class Sprite extends DisplayObject {
   
   bool isHovered() {
     Vector2 relativePosition = renderer[rendererName].relativePosition(this.position);
-    return (renderer[rendererName].mouse.position.x >= relativePosition.x - this.size.x * this.scale.x * this.anchor.x * renderer[rendererName].zoom &&
-            renderer[rendererName].mouse.position.x <= relativePosition.x - this.size.x * this.scale.x * this.anchor.x * renderer[rendererName].zoom + this.size.x * this.scale.x * renderer[rendererName].zoom &&
-            renderer[rendererName].mouse.position.y >= relativePosition.y - this.size.y * this.scale.y * this.anchor.y * renderer[rendererName].zoom &&
-            renderer[rendererName].mouse.position.y <= relativePosition.y - this.size.y * this.scale.y * this.anchor.y * renderer[rendererName].zoom + this.size.y * this.scale.y * renderer[rendererName].zoom);
+    return (renderer[rendererName].relativeMousePosition.x >= relativePosition.x - this.size.x * this.scale.x * this.anchor.x * renderer[rendererName].zoom &&
+            renderer[rendererName].relativeMousePosition.x <= relativePosition.x - this.size.x * this.scale.x * this.anchor.x * renderer[rendererName].zoom + this.size.x * this.scale.x * renderer[rendererName].zoom &&
+            renderer[rendererName].relativeMousePosition.y >= relativePosition.y - this.size.y * this.scale.y * this.anchor.y * renderer[rendererName].zoom &&
+            renderer[rendererName].relativeMousePosition.y <= relativePosition.y - this.size.y * this.scale.y * this.anchor.y * renderer[rendererName].zoom + this.size.y * this.scale.y * renderer[rendererName].zoom);
   }
 }

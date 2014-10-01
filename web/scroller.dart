@@ -12,11 +12,11 @@ class Scroller extends Zei.GameObject {
   void update() {
     mouseScrolling = new Zei.Vector2.empty();
     
-    if (game.mouse.position.x == 0) mouseScrolling.x = -1;
-      else if (game.mouse.position.x == game.mouse.renderer.view.width - 1) mouseScrolling.x = 1;   
+    if (Zei.mouse.position.x == 0) mouseScrolling.x = -1;
+      else if (Zei.mouse.position.x == Zei.renderer["main"].view.width - 1) mouseScrolling.x = 1;   
     
-    if (game.mouse.position.y == 0) mouseScrolling.y = -1;
-      else if (game.mouse.position.y == game.mouse.renderer.view.height - 1) mouseScrolling.y = 1;
+    if (Zei.mouse.position.y == 0) mouseScrolling.y = -1;
+      else if (Zei.mouse.position.y == Zei.renderer["main"].view.height - 1) mouseScrolling.y = 1;
     
     // scroll left or right   
     scroll.x += mouseScrolling.x + keyScrolling.x;

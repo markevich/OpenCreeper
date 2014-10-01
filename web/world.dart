@@ -652,15 +652,15 @@ class World extends Zei.GameObject {
   
   // recalculate ghosts (semi-transparent placeholders when placing a new building)
   void updateGhosts() {
-    if (!game.ui.hovered && UISymbol.activeSymbol != null) {
+    if (!game.ui.renderer.isHovered && UISymbol.activeSymbol != null) {
     //if (game.hoveredTile != game.oldHoveredTile) {
                
       clearGhosts();
            
       // calculate multiple ghosts when dragging
-      if (game.mouse.dragStart != null) {
+      if (Zei.mouse.dragStart != null) {
         
-        Zei.Vector2 start = game.mouse.dragStart;
+        Zei.Vector2 start = Zei.mouse.dragStart;
         Zei.Vector2 end = game.world.hoveredTile;
         Zei.Vector2 delta = end - start;
         num distance = start.distanceTo(end);
@@ -688,7 +688,7 @@ class World extends Zei.GameObject {
           ghosts.add(end);
         }
       } else { // single ghost at cursor position
-        //if (game.mouse.overCanvas) {
+        //if (Zei.mouse.overCanvas) {
           if (contains(game.world.hoveredTile)) {
             ghosts.add(game.world.hoveredTile);
           }
@@ -766,17 +766,16 @@ class World extends Zei.GameObject {
   
   void onMouseEvent(evt) {
     if (evt.type == "mousemove") {
-      game.mouse.update(evt);
         
       if (game != null) {
         game.world.oldHoveredTile = game.world.hoveredTile;
         game.world.hoveredTile = new Zei.Vector2(
-              ((game.mouse.position.x - game.mouse.renderer.view.width / 2) / (Tile.size * game.zoom)).floor() + game.scroller.scroll.x,
-              ((game.mouse.position.y - game.mouse.renderer.view.height / 2) / (Tile.size * game.zoom)).floor() + game.scroller.scroll.y);
+              ((Zei.mouse.position.x - Zei.renderer["main"].view.width / 2) / (Tile.size * game.zoom)).floor() + game.scroller.scroll.x,
+              ((Zei.mouse.position.y - Zei.renderer["main"].view.height / 2) / (Tile.size * game.zoom)).floor() + game.scroller.scroll.y);
       }
       
       // flag for terraforming
-      if (evt.which == 1 /*game.mouse.buttonPressed == 1*/) {
+      if (evt.which == 1 /*Zei.mouse.buttonPressed == 1*/) {
         if (game.mode == "TERRAFORM") { 
           if (game.world.contains(game.world.hoveredTile)) {
             
@@ -796,10 +795,10 @@ class World extends Zei.GameObject {
       }
     }
     else if (evt.type == "mouseenter") {
-      //game.mouse.overCanvas = true;
+      //Zei.mouse.overCanvas = true;
     }
     else if (evt.type == "mouseleave") {
-      //game.mouse.overCanvas = false;
+      //Zei.mouse.overCanvas = false;
     }
     else if (evt.type == "mousewheel") {
       if (evt.deltaY > 0) {
@@ -813,12 +812,12 @@ class World extends Zei.GameObject {
       evt.preventDefault();
     }
     else if (evt.type == "mousedown") {
-      game.mouse.buttonPressed = evt.which;
+      Zei.mouse.buttonPressed = evt.which;
         
       if (evt.which == 1) {   
         
-        if (game.mouse.dragStart == null) {
-          game.mouse.dragStart = game.world.hoveredTile;
+        if (Zei.mouse.dragStart == null) {
+          Zei.mouse.dragStart = game.world.hoveredTile;
         }  
         
         // flag for terraforming 
@@ -841,14 +840,14 @@ class World extends Zei.GameObject {
       }
     }
     else if (evt.type == "mouseup") {
-      game.mouse.buttonPressed = 0;
+      Zei.mouse.buttonPressed = 0;
         
       if (evt.which == 1) {
         Ship.control(game.world.hoveredTile);
         Building.reposition(game.world.hoveredTile);
         Building.select();
   
-        game.mouse.dragStart = null;
+        Zei.mouse.dragStart = null;
   
         // when there is an active symbol place building
         if (UISymbol.activeSymbol != null) {
@@ -878,10 +877,7 @@ class World extends Zei.GameObject {
     }
   }
   
-  void onKeyEvent(evt) {
-    // select uisymbol
-    UISymbol.select(evt);
-    
+  void onKeyEvent(evt) {  
     // increase game speed
     if (evt.keyCode == KeyCode.F1) {
       game.faster();
@@ -912,7 +908,7 @@ class World extends Zei.GameObject {
       UISymbol.deselect();
       Building.deselect();
       Ship.deselect();
-      game.mouse.showCursor();
+      Zei.mouse.showCursor();
     }
     
     // DEBUG: add explosion

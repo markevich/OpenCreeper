@@ -43,13 +43,12 @@ class Game {
     int height = window.innerHeight;
     
     var main = Zei.Renderer.create("main", width, height, container: "body", zoomable: true);
-    main.view.style.zIndex = "1";   
-    main.enableMouse();     
+    main.view.style.zIndex = "1";      
     main.setLayers(["terraform", "targetsymbol", "connectionborder", "connection", "building", "selectedcircle", "buildinginfo", "sporetower", "emitter", "projectile", "buildinggun", "packet",
                     "shield", "explosion", "smoke", "buildingflying", "buildinginfoflying", "ship", "shell", "spore", "buildinggunflying", "energybar"]);
     
-    mouse = main.mouse;
-    mouse.setCursor("url('images/Normal.cur') 2 2, pointer");
+    Zei.enableMouse(); 
+    Zei.mouse.setCursor("url('images/Normal.cur') 2 2, pointer");
                       
     var music = new AudioElement("sounds/music.ogg");
     music.loop = true;

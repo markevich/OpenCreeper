@@ -33,7 +33,7 @@ class UISymbol {
   static void reset() {
     activeSymbol = null;
     UISymbol.deselect();
-    game.mouse.showCursor();
+    Zei.mouse.showCursor();
   }
   
   static UISymbol add(Zei.Vector2 position, Building template, int keyCode) {
@@ -42,29 +42,54 @@ class UISymbol {
     return symbol;
   }
   
-  static void checkHovered(evt) {
-    Point mousePosition = new Point((evt.client.x - Zei.renderer["gui"].view.getBoundingClientRect().left),
-                                     evt.client.y - Zei.renderer["gui"].view.getBoundingClientRect().top);
+  static void checkHovered(Zei.Renderer renderer) {
+    Point mousePosition = new Point(renderer.relativeMousePosition.x, renderer.relativeMousePosition.y);
     for (int i = 0; i < symbols.length; i++) {
       symbols[i].hovered = symbols[i].rectangle.containsPoint(mousePosition);
-    }   
+
+      // only change color when not currently active
+      if (!symbols[i].active) {
+        if (symbols[i].hovered) {         
+          symbols[i].backgroundRect.fillColor = new Zei.Color(34, 51, 34);
+        } else {       
+          symbols[i].backgroundRect.fillColor = new Zei.Color(68, 85, 68);
+        }
+      }   
+    }
   }
   
   // stupid name
   static void dehover() {
     for (int i = 0; i < symbols.length; i++) {
-      symbols[i].hovered = false;
+      if (!symbols[i].active) {
+        symbols[i].hovered = false;
+        symbols[i].backgroundRect.fillColor = new Zei.Color(68, 85, 68);
+      }
     }
   }
   
-  static void select(evt) {
+  static void keySelect(evt) {
     for (int i = 0; i < symbols.length; i++) {
       symbols[i].active = false;
+      symbols[i].backgroundRect.fillColor = new Zei.Color(68, 85, 68);
       if (evt.keyCode == symbols[i].keyCode) {
         activeSymbol = symbols[i];
         symbols[i].active = true;
         symbols[i].backgroundRect.fillColor = new Zei.Color(102, 153, 102);
-        game.mouse.hideCursor();
+        Zei.mouse.hideCursor();
+      }
+    }
+  }
+  
+  static void mouseSelect() {
+    for (int i = 0; i < symbols.length; i++) {
+      symbols[i].active = false;
+      symbols[i].backgroundRect.fillColor = new Zei.Color(68, 85, 68);
+      if (symbols[i].hovered) {
+        activeSymbol = symbols[i];
+        symbols[i].active = true;
+        symbols[i].backgroundRect.fillColor = new Zei.Color(102, 153, 102);
+        Zei.mouse.hideCursor();
       }
     }
   }
@@ -75,23 +100,6 @@ class UISymbol {
       symbols[i].backgroundRect.fillColor = new Zei.Color(68, 85, 68);
     }
     activeSymbol = null;
-  }
-
-  static void setActive() {
-    for (int i = 0; i < symbols.length; i++) {
-      if (symbols[i].hovered) {
-        activeSymbol = symbols[i];
-        symbols[i].active = true;
-        symbols[i].backgroundRect.fillColor = new Zei.Color(34, 51, 34);
-      } else {
-        symbols[i].active = false;
-        symbols[i].backgroundRect.fillColor = new Zei.Color(68, 85, 68);
-      }
-    }
-    
-    if (activeSymbol != null) {
-      game.mouse.hideCursor();
-    }
   }
 
 }

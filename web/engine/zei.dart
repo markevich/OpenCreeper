@@ -19,6 +19,7 @@ Timer running;
 Map<String, Renderer> renderer = new Map();
 Map<String, ImageElement> images = new Map();
 bool debug = false;
+Mouse mouse;
 
 void init({int TPS: 60, bool debug: false}) {
   TPS = TPS;
@@ -30,6 +31,10 @@ void init({int TPS: 60, bool debug: false}) {
   document
         ..onKeyDown.listen((event) => onKeyEvent(event))
         ..onKeyUp.listen((event) => onKeyEvent(event));
+}
+
+void enableMouse() {
+  mouse = new Mouse();
   
   document
     ..onMouseMove.listen((event) => onMouseEvent(event))
@@ -49,6 +54,10 @@ void onKeyEvent(KeyboardEvent evt) {
 }
 
 void onMouseEvent(MouseEvent evt) {
+  if (evt.type == "mousemove") {
+    mouse.update(evt);
+  }
+  
   for (int i = 0; i < GameObject.gameObjects.length; i++) {
     GameObject.gameObjects[i].onMouseEvent(evt);
   }
@@ -68,6 +77,7 @@ void stop() {
  * Main update function
  */
 void update() {
+  Renderer.setRelativeMousePosition();
   GameObject.updateAll();
 }
 

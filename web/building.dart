@@ -424,7 +424,7 @@ class Building extends Zei.GameObject {
         if (building.built && building.selected && building.canMove) {
           // check if it can be placed
           if (building.canBePlaced(position)) {
-            game.mouse.showCursor();
+            Zei.mouse.showCursor();
             building.operating = false;
             building.rotating = false;
             building.weaponTargetPosition = null;

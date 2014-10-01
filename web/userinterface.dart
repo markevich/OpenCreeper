@@ -5,7 +5,7 @@ class UserInterface extends Zei.GameObject {
   Zei.Rect tileHeight, creeperHeight;
   Zei.Text totalCreeper;
   Stopwatch stopwatch = new Stopwatch();
-  bool hovered = false;
+  //bool hovered = false;
   Zei.Vector2 mousePosition = new Zei.Vector2.empty();
   
   UserInterface() {
@@ -99,33 +99,22 @@ class UserInterface extends Zei.GameObject {
    
   void onMouseEvent(evt) {
     if (evt.type == "mousemove") {
-      mousePosition = new Zei.Vector2(
-        (evt.client.x - renderer.view.getBoundingClientRect().left).toInt(),
-        (evt.client.y - renderer.view.getBoundingClientRect().top).toInt());
-      
-      if (mousePosition.x >= 0 && mousePosition.x <= 780 && mousePosition.y >= 0 && mousePosition.y <= 110) {
-        hovered = true;
-      } else {
-        hovered = false;
-      }
-      UISymbol.checkHovered(evt);
-    }
-    else if (evt.type == "mouseenter") {
-      hovered = true;
-    }
-    else if (evt.type == "mouseleave") {
-      hovered = false;
-      UISymbol.dehover();
+      if (renderer.isHovered)
+        UISymbol.checkHovered(renderer);
+      else
+        UISymbol.dehover();
     }
     else if (evt.type == "click") {
-      if (hovered) {
+      if (renderer.isHovered) {
         Building.deselect();
         Ship.deselect();
-        UISymbol.setActive();
+        UISymbol.mouseSelect();
         Zei.Audio.play("click");
       }
     }
   }
   
-  void onKeyEvent(evt) {}
+  void onKeyEvent(evt) {
+    UISymbol.keySelect(evt);
+  }
 }

@@ -7,11 +7,12 @@ class Renderer {
   double zoom = 1.0;
   Vector2 position = new Vector2.empty();
   List<Layer> layers = new List();
-  Mouse mouse;
   bool redraw = false;
   bool autodraw = true;
   bool zoomable = false;
   static List<Renderer> renderers = new List();
+  Vector2 relativeMousePosition = new Vector2.empty();
+  bool isHovered = false;
 
   Renderer(this.view, width, height) {
     updateRect(width, height);
@@ -34,6 +35,22 @@ class Renderer {
 
           
     return renderer[name];
+  }
+  
+  /**
+   * Sets the relative position of the mouse relative to each renderer].
+   */
+  static void setRelativeMousePosition() {
+    renderer.forEach((k, v) {
+      v.relativeMousePosition = new Vector2((mouse.position.x - v.view.getBoundingClientRect().left).toInt(),
+                                            (mouse.position.y - v.view.getBoundingClientRect().top).toInt());
+      if (v.relativeMousePosition.x >= 0 && v.relativeMousePosition.x < v.view.offset.width &&
+          v.relativeMousePosition.y >= 0 && v.relativeMousePosition.y < v.view.offset.height) {
+        v.isHovered = true;
+      } else {
+        v.isHovered = false;
+      }
+    });
   }
    
   static void clearDisplayObjects() {
@@ -83,11 +100,7 @@ class Renderer {
       context.clearRect(0, 0, view.width, view.height);
     }
   }
-  
-  void enableMouse() {
-    this.mouse = new Mouse(this);
-  }
-  
+   
   // FIXME: doesn't seem to work atm
   void disableImageSmoothing() {
     context.imageSmoothingEnabled = false;
