@@ -3,7 +3,7 @@ part of creeper;
 class Ship extends Zei.GameObject {
   Zei.Vector2 velocity = new Zei.Vector2(0, 0), targetPosition = new Zei.Vector2(0, 0);
   String type, status = "IDLE"; // ATTACKING, RETURNING, RISING, FALLING
-  bool flagRemove = false, hovered = false, selected = false;
+  bool hovered = false, selected = false;
   int maxEnergy = 15, energy = 0, trailCounter = 0, weaponCounter = 0, flightCounter = 0;
   Building home;
   Zei.Sprite sprite, targetSymbol;
@@ -194,7 +194,7 @@ class Ship extends Zei.GameObject {
 
           Zei.Vector2 targetPositionTiled = Tile.position(targetPosition);
           Explosion.add(targetPosition);
-          Zei.Audio.play("explosion", targetPosition, game.scroller.scroll, game.world.zoom);
+          Zei.Audio.play("explosion", targetPosition);
 
           for (int i = -3; i <= 3; i++) {
             for (int j = -3; j <= 3; j++) {

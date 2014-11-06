@@ -2,7 +2,6 @@ part of creeper;
 
 class Packet extends Zei.GameObject {
   String type;
-  bool flagRemove = false;
   num velocityMultiplier = 1;
   Building target, currentTarget;
   Zei.Sprite sprite;
@@ -70,7 +69,7 @@ class Packet extends Zei.GameObject {
                 target.cannon.alpha = 1.0;
               if (target.type == "collector") {
                 target.updateCollection("add");
-                Zei.Audio.play("energy", target.position, game.scroller.scroll, game.world.zoom);
+                Zei.Audio.play("energy", target.position);
               }
               if (target.type == "storage")
                 Building.base.maxEnergy += 20;

@@ -2,7 +2,6 @@ part of creeper;
 
 class Shell extends Zei.GameObject {
   Zei.Vector2 targetPosition;
-  bool flagRemove = false;
   int trailCounter = 0;
   Zei.Sprite sprite;
   static final num baseSpeed = 1.5;
@@ -43,7 +42,7 @@ class Shell extends Zei.GameObject {
 
       Zei.Vector2 targetPositionTiled = Tile.position(targetPosition);
       Explosion.add(targetPosition);
-      Zei.Audio.play("explosion", targetPosition, game.scroller.scroll, game.world.zoom);
+      Zei.Audio.play("explosion", targetPosition);
 
       for (int i = -4; i <= 4; i++) {
         for (int j = -4; j <= 4; j++) {

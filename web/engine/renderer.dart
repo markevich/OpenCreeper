@@ -13,6 +13,7 @@ class Renderer {
   static List<Renderer> renderers = new List();
   Vector2 relativeMousePosition = new Vector2.empty();
   bool isHovered = false;
+  Scroller scroller;
 
   Renderer(this.view, width, height) {
     updateRect(width, height);

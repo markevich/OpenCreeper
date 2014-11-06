@@ -23,7 +23,6 @@ part 'explosion.dart';
 part 'connection.dart';
 part 'userinterface.dart';
 part 'uisymbol.dart';
-part 'scroller.dart';
 
 Game game;
 

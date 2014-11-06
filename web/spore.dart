@@ -2,7 +2,6 @@ part of creeper;
 
 class Spore extends Zei.GameObject {
   Zei.Vector2 targetPosition;
-  bool flagRemove = false;
   num health = 500;
   int trailCounter = 0;
   Zei.Sprite sprite;
@@ -44,7 +43,7 @@ class Spore extends Zei.GameObject {
           spore.health -= 2;
           if (spore.health <= 0) {
             spore.flagRemove = true;
-            Zei.Audio.play("explosion", Tile.position(spore.sprite.position), game.scroller.scroll, game.world.zoom);
+            Zei.Audio.play("explosion", Tile.position(spore.sprite.position));
             Explosion.add(spore.sprite.position);
           }
         }
@@ -66,7 +65,7 @@ class Spore extends Zei.GameObject {
       // if the target is reached explode and remove
       flagRemove = true;
       Zei.Vector2 targetPositionTiled = Tile.position(targetPosition);
-      Zei.Audio.play("explosion", targetPosition, game.scroller.scroll, game.world.zoom);
+      Zei.Audio.play("explosion", targetPosition);
 
       for (int i = -2; i <= 2; i++) {
         for (int j = -2; j <= 2; j++) {

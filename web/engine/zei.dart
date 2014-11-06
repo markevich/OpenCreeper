@@ -12,6 +12,8 @@ part 'route.dart';
 part 'gameobject.dart';
 part 'color.dart';
 part 'audio.dart';
+part 'scroller.dart';
+part 'zoomer.dart';
 
 num animationRequest;
 int TPS = 60; // ticks per second
@@ -20,6 +22,8 @@ Map<String, Renderer> renderer = new Map();
 Map<String, ImageElement> images = new Map();
 bool debug = false;
 Mouse mouse;
+Scroller scroller;
+Zoomer zoomer;
 
 void init({int TPS: 60, bool debug: false}) {
   TPS = TPS;
@@ -31,6 +35,20 @@ void init({int TPS: 60, bool debug: false}) {
   document
         ..onKeyDown.listen((event) => onKeyEvent(event, "down"))
         ..onKeyUp.listen((event) => onKeyEvent(event, "up"));
+}
+
+/**
+ * Enables the scroller
+ */
+void enableScroller(Renderer renderer, int scrollSize) {
+  scroller = new Scroller(renderer, scrollSize);
+}
+
+/**
+ * Enables the zoomer
+ */
+void enableZoomer(double zoom, double min, double max) {
+  zoomer = new Zoomer(zoom, min, max);
 }
 
 /**
@@ -53,12 +71,20 @@ void enableMouse([String cursor]) {
 }
 
 void onKeyEvent(KeyboardEvent evt, String type) {
+  if (scroller != null) {
+    scroller.onKeyEvent(evt, type);
+  }
+
   for (int i = 0; i < GameObject.gameObjects.length; i++) {
     GameObject.gameObjects[i].onKeyEvent(evt, type);
   }
 }
 
 void onMouseEvent(MouseEvent evt) {
+  if (zoomer != null) {
+    zoomer.onMouseEvent(evt);
+  }
+
   if (evt.type == "mousemove") {
     mouse.update(evt);
   }
@@ -83,6 +109,12 @@ void stop() {
  */
 void update() {
   Renderer.setRelativeMousePosition();
+  if (zoomer != null) {
+    zoomer.update();
+  }
+  if (scroller != null) {
+    scroller.update();
+  }
   GameObject.updateAll();
 }
 
@@ -158,7 +190,7 @@ int randomInt(int from, int to, [int seed]) {
 /**
  * Returns a random double in the range [from] to [to], optionally with a [seed].
  */
-int randomDouble(double from, double to, [int seed]) {
+double randomDouble(double from, double to, [int seed]) {
     var random = new Random(seed);
     return (random.nextDouble() * (to - from) + from);
   }

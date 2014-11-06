@@ -7,7 +7,6 @@ class Game {
   World world;
   UserInterface ui;
   Zei.Mouse mouse;
-  Scroller scroller;
   Timer resizeTimer;
   bool debug = true;
 
@@ -44,6 +43,8 @@ class Game {
                     "shield", "explosion", "smoke", "buildingflying", "buildinginfoflying", "ship", "shell", "spore", "buildinggunflying", "energybar"]);
 
     Zei.enableMouse("url('images/Normal.cur') 2 2, pointer");
+    Zei.enableScroller(Zei.renderer["main"], Tile.size);
+    Zei.enableZoomer(1.0, 0.4, 2.0);
 
     var music = new AudioElement("sounds/music.ogg");
     music.loop = true;
@@ -61,24 +62,21 @@ class Game {
     // delay the resizing to avoid it being called multiple times
     if (resizeTimer != null)
       resizeTimer.cancel();
-    resizeTimer = new Timer(new Duration(milliseconds: 250), doneResizing);
-  }
 
-  void doneResizing() {
-    var width = window.innerWidth;
-    var height = window.innerHeight;
+    resizeTimer = new Timer(new Duration(milliseconds: 250), () {
+      var width = window.innerWidth;
+      var height = window.innerHeight;
 
-    Zei.renderer["main"].updateRect(width, height);
-    Zei.renderer["levelfinal"].updateRect(width, height);
-    Zei.renderer["collection"].updateRect(width, height);
-    Zei.renderer["creeper"].updateRect(width, height);
+      Zei.renderer["main"].updateRect(width, height);
+      Zei.renderer["levelfinal"].updateRect(width, height);
+      Zei.renderer["collection"].updateRect(width, height);
+      Zei.renderer["creeper"].updateRect(width, height);
+      Zei.renderer["gui"].updateRect(Zei.renderer["gui"].view.width, Zei.renderer["gui"].view.height);
 
-    Zei.renderer["gui"].top = Zei.renderer["gui"].view.offsetTop;
-    Zei.renderer["gui"].left = Zei.renderer["gui"].view.offsetLeft;
-
-    world.copyTiles();
-    world.drawCollection();
-    world.drawCreeper();
+      world.copyTiles();
+      world.drawCollection();
+      world.drawCreeper();
+    });
   }
 
   void reset() {
@@ -89,7 +87,6 @@ class Game {
     paused = false;
     won = false;
 
-    scroller = new Scroller();
     world = new World(seed);
     world.create();
     world.drawTiles();

@@ -2,7 +2,6 @@ part of creeper;
 
 class Projectile extends Zei.GameObject {
   Zei.Vector2 targetPosition;
-  bool flagRemove = false;
   Zei.Sprite sprite;
   static num baseSpeed = 7;
 

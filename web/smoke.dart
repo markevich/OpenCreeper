@@ -14,6 +14,7 @@ class Smoke extends Zei.GameObject {
   void update() {
     if (sprite.frame == 36) {
       Zei.renderer["main"].removeDisplayObject(sprite);
+      flagRemove = true;
       Zei.GameObject.remove(this);
     }
   }

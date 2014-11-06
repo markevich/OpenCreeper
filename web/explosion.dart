@@ -14,6 +14,7 @@ class Explosion extends Zei.GameObject {
   void update() {
     if (sprite.frame == 44) {
       Zei.renderer["main"].removeDisplayObject(sprite);
+      flagRemove = true;
       Zei.GameObject.remove(this);
     }
   }

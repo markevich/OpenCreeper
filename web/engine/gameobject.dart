@@ -3,6 +3,7 @@ part of zei;
 abstract class GameObject {
   // only active game objects will be processed by the update loop
   bool active = true;
+  bool flagRemove = false;
 
   update();
   onMouseEvent(evt);
@@ -40,10 +41,12 @@ abstract class GameObject {
    * Updates all game objects based on their update() implementations.
    */
   static void updateAll() {
+    // find a way to update zoomer and scroller first
     for (int i = gameObjects.length - 1; i >= 0; i--) {
       if (gameObjects[i].active)
         gameObjects[i].update();
     }
+
   }
 
   /**

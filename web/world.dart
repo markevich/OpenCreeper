@@ -10,7 +10,7 @@ class World extends Zei.GameObject {
   List<Zei.Vector2> ghosts = new List<Zei.Vector2>();
   List<Zei.DisplayObject> ghostDisplayObjects = new List<Zei.DisplayObject>();
   Zei.Vector2 oldHoveredTile = new Zei.Vector2.empty(), hoveredTile = new Zei.Vector2.empty();
-  double zoom = 1.0;
+  //double zoom = 1.0;
 
   World(int seed) {
     size = new Zei.Vector2(Zei.randomInt(64, 127, seed), Zei.randomInt(64, 127, seed));
@@ -50,8 +50,10 @@ class World extends Zei.GameObject {
       Zei.randomInt(4, size.x - 5, game.seed + 1),
       Zei.randomInt(4, size.y - 5, game.seed + 1));
 
-    game.scroller.scroll = randomPosition;
-    Zei.renderer["main"].updatePosition(new Zei.Vector2(game.scroller.scroll.x * Tile.size, game.scroller.scroll.y * Tile.size));
+    if (Zei.scroller != null) {
+      Zei.scroller.setPosition(randomPosition);
+      Zei.scroller.max = size;
+    }
 
     Building building = Building.add(randomPosition, "base");
     makeFlatSurface(building.position, 9);
@@ -135,6 +137,12 @@ class World extends Zei.GameObject {
   }
 
   void update() {
+    if (Zei.scroller.hasChanged || Zei.zoomer.hasChanged) {
+      copyTiles();
+      drawCollection();
+      creeperDirty = true;
+    }
+
     if (!game.paused) {
       // update creeper
       creeperCounter += 1 * game.speed;
@@ -493,27 +501,27 @@ class World extends Zei.GameObject {
 
     var targetLeft = 0;
     var targetTop = 0;
-    var sourceLeft = game.scroller.scroll.x * Tile.size - Zei.renderer["main"].view.width / 2 / game.world.zoom;
-    var sourceTop = game.scroller.scroll.y * Tile.size - Zei.renderer["main"].view.height / 2 / game.world.zoom;
+    var sourceLeft = Zei.scroller.position.x * Tile.size - Zei.renderer["main"].view.width / 2 / Zei.zoomer.zoom;
+    var sourceTop = Zei.scroller.position.y * Tile.size - Zei.renderer["main"].view.height / 2 / Zei.zoomer.zoom;
     if (sourceLeft < 0) {
-      targetLeft = -sourceLeft * game.world.zoom;
+      targetLeft = -sourceLeft * Zei.zoomer.zoom;
       sourceLeft = 0;
     }
     if (sourceTop < 0) {
-      targetTop = -sourceTop * game.world.zoom;
+      targetTop = -sourceTop * Zei.zoomer.zoom;
       sourceTop = 0;
     }
 
     var targetWidth = Zei.renderer["main"].view.width;
     var targetHeight = Zei.renderer["main"].view.height;
-    var sourceWidth = Zei.renderer["main"].view.width / game.world.zoom;
-    var sourceHeight = Zei.renderer["main"].view.height / game.world.zoom;
+    var sourceWidth = Zei.renderer["main"].view.width / Zei.zoomer.zoom;
+    var sourceHeight = Zei.renderer["main"].view.height / Zei.zoomer.zoom;
     if (sourceLeft + sourceWidth > size.x * Tile.size) {
-      targetWidth -= (sourceLeft + sourceWidth - size.x * Tile.size) * game.world.zoom;
+      targetWidth -= (sourceLeft + sourceWidth - size.x * Tile.size) * Zei.zoomer.zoom;
       sourceWidth = size.x * Tile.size - sourceLeft;
     }
     if (sourceTop + sourceHeight > size.y * Tile.size) {
-      targetHeight -= (sourceTop + sourceHeight - size.y * Tile.size) * game.world.zoom;
+      targetHeight -= (sourceTop + sourceHeight - size.y * Tile.size) * Zei.zoomer.zoom;
       sourceHeight = size.y * Tile.size - sourceTop;
     }
     Zei.renderer["levelfinal"].context.drawImageScaledFromSource(Zei.renderer["levelbuffer"].view, sourceLeft, sourceTop, sourceWidth, sourceHeight, targetLeft, targetTop, targetWidth, targetHeight);
@@ -526,13 +534,13 @@ class World extends Zei.GameObject {
     Zei.renderer["collection"].clear();
 
 
-    int timesX = (Zei.renderer["collection"].view.width / 2 / Tile.size / game.world.zoom).ceil();
-    int timesY = (Zei.renderer["collection"].view.height / 2 / Tile.size / game.world.zoom).ceil();
+    int timesX = (Zei.renderer["collection"].view.width / 2 / Tile.size / Zei.zoomer.zoom).ceil();
+    int timesY = (Zei.renderer["collection"].view.height / 2 / Tile.size / Zei.zoomer.zoom).ceil();
 
     for (int i = -timesX; i <= timesX; i++) {
       for (int j = -timesY; j <= timesY; j++) {
 
-        Zei.Vector2 position = new Zei.Vector2(i + game.scroller.scroll.x, j + game.scroller.scroll.y);
+        Zei.Vector2 position = new Zei.Vector2(i + Zei.scroller.position.x, j + Zei.scroller.position.y);
 
         if (contains(position)) {
           if (tiles[position.x][position.y].collector != null) {
@@ -559,7 +567,10 @@ class World extends Zei.GameObject {
               right = tiles[position.x + 1][position.y].collector != null ? 1 : 0;
 
             int index = (8 * down) + (4 * left) + (2 * up) + right;
-            Zei.renderer["collection"].context.drawImageScaledFromSource(Zei.images["mask"], index * (Tile.size + 6) + 3, (Tile.size + 6) + 3, Tile.size, Tile.size, Zei.renderer["main"].view.width / 2 + i * Tile.size * game.world.zoom, Zei.renderer["main"].view.height / 2 + j * Tile.size * game.world.zoom, Tile.size * game.world.zoom, Tile.size * game.world.zoom);
+            Zei.renderer["collection"].context.drawImageScaledFromSource(Zei.images["mask"], index * (Tile.size + 6) + 3, (Tile.size + 6) + 3, Tile.size, Tile.size,
+                                                                         Zei.renderer["main"].view.width / 2 + i * Tile.size * Zei.zoomer.zoom,
+                                                                         Zei.renderer["main"].view.height / 2 + j * Tile.size * Zei.zoomer.zoom,
+                                                                         Tile.size * Zei.zoomer.zoom, Tile.size * Zei.zoomer.zoom);
 
             Zei.renderer["collection"].context.restore();
           }
@@ -572,13 +583,13 @@ class World extends Zei.GameObject {
   void drawCreeper() {
     Zei.renderer["creeper"].clear();
 
-    int timesX = (Zei.renderer["creeper"].view.width / 2 / Tile.size / game.world.zoom).ceil();
-    int timesY = (Zei.renderer["creeper"].view.height / 2 / Tile.size / game.world.zoom).ceil();
+    int timesX = (Zei.renderer["creeper"].view.width / 2 / Tile.size / Zei.zoomer.zoom).ceil();
+    int timesY = (Zei.renderer["creeper"].view.height / 2 / Tile.size / Zei.zoomer.zoom).ceil();
 
     for (int i = -timesX; i <= timesX; i++) {
       for (int j = -timesY; j <= timesY; j++) {
 
-        Zei.Vector2 position = new Zei.Vector2(i + game.scroller.scroll.x, j + game.scroller.scroll.y);
+        Zei.Vector2 position = new Zei.Vector2(i + Zei.scroller.position.x, j + Zei.scroller.position.y);
 
         if (contains(position)) {
 
@@ -608,7 +619,10 @@ class World extends Zei.GameObject {
                 right = 1;
 
               int index = (8 * down) + (4 * left) + (2 * up) + right;
-              Zei.renderer["creeper"].context.drawImageScaledFromSource(Zei.images["creeper"], index * Tile.size, 0, Tile.size, Tile.size, Zei.renderer["main"].view.width / 2 + i * Tile.size * game.world.zoom, Zei.renderer["main"].view.height / 2 + j * Tile.size * game.world.zoom, Tile.size * game.world.zoom, Tile.size * game.world.zoom);
+              Zei.renderer["creeper"].context.drawImageScaledFromSource(Zei.images["creeper"], index * Tile.size, 0, Tile.size, Tile.size,
+                                                                        Zei.renderer["main"].view.width / 2 + i * Tile.size * Zei.zoomer.zoom,
+                                                                        Zei.renderer["main"].view.height / 2 + j * Tile.size * Zei.zoomer.zoom,
+                                                                        Tile.size * Zei.zoomer.zoom, Tile.size * Zei.zoomer.zoom);
               continue;
             }
 
@@ -635,7 +649,10 @@ class World extends Zei.GameObject {
 
               int index = (8 * down) + (4 * left) + (2 * up) + right;
               if (index != 0)
-                Zei.renderer["creeper"].context.drawImageScaledFromSource(Zei.images["creeper"], index * Tile.size, 0, Tile.size, Tile.size, Zei.renderer["main"].view.width / 2 + i * Tile.size * game.world.zoom, Zei.renderer["main"].view.height / 2 + j * Tile.size * game.world.zoom, Tile.size * game.world.zoom, Tile.size * game.world.zoom);
+                Zei.renderer["creeper"].context.drawImageScaledFromSource(Zei.images["creeper"], index * Tile.size, 0, Tile.size, Tile.size,
+                                                                          Zei.renderer["main"].view.width / 2 + i * Tile.size * Zei.zoomer.zoom,
+                                                                          Zei.renderer["main"].view.height / 2 + j * Tile.size * Zei.zoomer.zoom,
+                                                                          Tile.size * Zei.zoomer.zoom, Tile.size * Zei.zoomer.zoom);
             }
           }
         }
@@ -774,8 +791,8 @@ class World extends Zei.GameObject {
         if (game != null) {
           game.world.oldHoveredTile = game.world.hoveredTile;
           game.world.hoveredTile = new Zei.Vector2(
-                ((Zei.mouse.position.x - Zei.renderer["main"].view.width / 2) / (Tile.size * game.world.zoom)).floor() + game.scroller.scroll.x,
-                ((Zei.mouse.position.y - Zei.renderer["main"].view.height / 2) / (Tile.size * game.world.zoom)).floor() + game.scroller.scroll.y);
+                ((Zei.mouse.position.x - Zei.renderer["main"].view.width / 2) / (Tile.size * Zei.zoomer.zoom)).floor() + Zei.scroller.position.x,
+                ((Zei.mouse.position.y - Zei.renderer["main"].view.height / 2) / (Tile.size * Zei.zoomer.zoom)).floor() + Zei.scroller.position.y);
         }
 
         // flag for terraforming
@@ -807,10 +824,10 @@ class World extends Zei.GameObject {
       else if (evt.type == "mousewheel") {
         if (evt.deltaY > 0) {
           //scroll down
-          doZoom(-.2);
+          //doZoom(-.2);
         } else {
           //scroll up
-          doZoom(.2);
+          //doZoom(.2);
         }
         //prevent page fom scrolling
         evt.preventDefault();
@@ -882,7 +899,7 @@ class World extends Zei.GameObject {
     }
   }
 
-  void doZoom(zoomAmount) {
+  /*void doZoom(zoomAmount) {
     zoom = Zei.clamp(zoom += zoomAmount, .4, 1.6);
     zoom = double.parse(zoom.toStringAsFixed(2));
 
@@ -890,7 +907,7 @@ class World extends Zei.GameObject {
     copyTiles();
     drawCollection();
     drawCreeper();
-  }
+  }*/
 
   void toggleTerraform() {
     if (game.mode == "TERRAFORM") {
@@ -942,7 +959,7 @@ class World extends Zei.GameObject {
       // DEBUG: add explosion
       if (evt.keyCode == KeyCode.V) {
         Explosion.add(new Zei.Vector2(game.world.hoveredTile.x * Tile.size + 8, game.world.hoveredTile.y * Tile.size + 8));
-        Zei.Audio.play("explosion", game.world.hoveredTile * Tile.size, game.scroller.scroll, game.world.zoom);
+        Zei.Audio.play("explosion", game.world.hoveredTile * Tile.size);
       }
 
       // DEBUG: lower terrain
