@@ -4,7 +4,7 @@
 
 ## How to play
 
-Open Creeper can be played right here: http://alexanderzeillinger.github.com/OpenCreeper/
+Open Creeper can be played [right here](https://dcfd330e58e6277323528068d3853818b002f1ba.googledrive.com/host/0B9_P3vD74EEvWVdOUWQxRlE5RzA/index.htm) using Dartium.
 
 ## About
 
