@@ -340,14 +340,14 @@ class Building extends Zei.GameObject {
       checkReposition();
 
       // take damage
-      damageCounter += 1 * game.speed;
+      damageCounter += 1;
       if (damageCounter > 10) {
         damageCounter -= 10;
         takeDamage();
       }
 
       // collect energy
-      collectCounter += 1 * game.speed;
+      collectCounter += 1;
       if (collectCounter > 25) {
         collectCounter -= 25;
         collectEnergy();
@@ -518,7 +518,7 @@ class Building extends Zei.GameObject {
   void move() {
     if (status == "RISING") {
       if (flightCounter < 25) {
-        flightCounter += 1 * game.speed;
+        flightCounter += 1;
         scale = scale * 1.01;
         updateDisplayObjects();
       }
@@ -537,7 +537,7 @@ class Building extends Zei.GameObject {
 
     else if (status == "FALLING") {
       if (flightCounter > 0) {
-        flightCounter -= 1 * game.speed;
+        flightCounter -= 1;
         scale = scale / 1.01;
         updateDisplayObjects();
       }
@@ -560,7 +560,7 @@ class Building extends Zei.GameObject {
 
     if (status == "MOVING") {
       if (moveTargetPosition.x != position.x || moveTargetPosition.y != position.y) {
-        position += ((moveTargetPosition - position).normalize() * Building.baseVelocity * game.speed).clamp(moveTargetPosition - position);
+        position += ((moveTargetPosition - position).normalize() * Building.baseVelocity).clamp(moveTargetPosition - position);
         if (energyBar != null) {
           energyBar.position = position - new Zei.Vector2(size * Tile.size / 2 - 2, size * Tile.size / 2 - 4);
         }
@@ -634,7 +634,7 @@ class Building extends Zei.GameObject {
 
   void requestPacket() {
     if (enabled && status == "IDLE" && type != "base") {
-      requestCounter += 1 * game.speed;
+      requestCounter += 1;
       if (requestCounter >= 50) {
         // request health
         num healthAndRequestDelta = maxHealth - health - healthRequests;
@@ -790,7 +790,7 @@ class Building extends Zei.GameObject {
     operating = false;
     if (built && needsEnergy && enabled && status == "IDLE") {
 
-      energyCounter += 1 * game.speed;
+      energyCounter += 1;
 
       if (type == "analyzer") {
         Emitter.find(this);

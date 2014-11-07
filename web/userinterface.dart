@@ -9,7 +9,7 @@ class UserInterface extends Zei.GameObject {
   Zei.Vector2 mousePosition = new Zei.Vector2.empty();
 
   UserInterface() {
-    renderer = Zei.Renderer.create("gui", 780, 110, container: "#gui");
+    renderer = Zei.Renderer.create("gui", 780, 110, container: "#gui", fixedSize: true);
     renderer.setLayers(["default"]);
     renderer.updatePosition(new Zei.Vector2(390, 55));
 
@@ -78,7 +78,7 @@ class UserInterface extends Zei.GameObject {
           text = "Energy: ${Building.base.energy.toString()}/${Building.base.maxEnergy.toString()}";
         break;
       case 'speed':
-        text = "Speed: ${game.speed.toString()}x";
+        text = "Speed: ${Zei.speed.toString()}x";
         break;
       default:
         text = "";

@@ -20,7 +20,7 @@ class Emitter extends Zei.GameObject {
 
   void update() {
     if (!game.paused) {
-      counter += 1 * game.speed;
+      counter += 1;
 
       if (counter >= 25) {
         counter -= 25;

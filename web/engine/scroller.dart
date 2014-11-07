@@ -2,14 +2,12 @@ part of zei;
 
 class Scroller {
   Renderer renderer;
-  Vector2 position, mouseScrolling, keyScrolling, min, max;
+  Vector2 position, mouseScrolling, keyScrolling, min = new Vector2.empty(), max = new Vector2.empty();
   bool hasChanged = false;
   int scrollSize = 1;
 
-  Scroller(this.renderer, this.scrollSize) {
+  Scroller(this.renderer, this.scrollSize, this.min, this.max) {
     position = new Vector2.empty();
-    min = new Vector2.empty();
-    max = new Vector2.empty();
     mouseScrolling = new Vector2.empty();
     keyScrolling = new Vector2.empty();
   }
@@ -33,8 +31,8 @@ class Scroller {
     }
 
     if (mouseScrolling.x != 0 || mouseScrolling.y != 0 || keyScrolling.x != 0 || keyScrolling.y != 0) {
-      position.x = clamp(position.x += mouseScrolling.x + keyScrolling.x, min.x, max.x);
-      position.y = clamp(position.y += mouseScrolling.y + keyScrolling.y, min.y, max.y);
+      position.x = clamp(position.x += (mouseScrolling.x + keyScrolling.x), min.x, max.x);
+      position.y = clamp(position.y += (mouseScrolling.y + keyScrolling.y), min.y, max.y);
       hasChanged = true;
 
       setPosition(position);

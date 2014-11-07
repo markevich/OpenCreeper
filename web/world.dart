@@ -29,9 +29,9 @@ class World extends Zei.GameObject {
     int height = window.innerHeight;
 
     for (int i = 0; i < 10; i++) {
-      Zei.Renderer.create("level$i", 128 * Tile.size, 128 * Tile.size, autodraw: false);
+      Zei.Renderer.create("level$i", 128 * Tile.size, 128 * Tile.size, autodraw: false, reactOnResize: false);
     }
-    Zei.Renderer.create("levelbuffer", 128 * Tile.size, 128 * Tile.size, autodraw: false);
+    Zei.Renderer.create("levelbuffer", 128 * Tile.size, 128 * Tile.size, autodraw: false, reactOnResize: false);
     Zei.Renderer.create("levelfinal", width, height, container: "body", autodraw: false);
 
     Zei.Renderer.create("collection", width, height, container: "body", autodraw: false);
@@ -136,16 +136,17 @@ class World extends Zei.GameObject {
     return tiles[position.x ~/ Tile.size][position.y ~/ Tile.size];
   }
 
-  void update() {
-    if (Zei.scroller.hasChanged || Zei.zoomer.hasChanged) {
+  void update() {   
+    if (Zei.scroller.hasChanged || Zei.zoomer.hasChanged || Zei.hasResized) {
       copyTiles();
       drawCollection();
       creeperDirty = true;
+      Zei.hasResized = false; // dirty hack for now
     }
 
     if (!game.paused) {
       // update creeper
-      creeperCounter += 1 * game.speed;
+      creeperCounter += 1;
       if (creeperCounter >= 25) {
         creeperCounter -= 25;
         creeperDirty = true;
@@ -924,14 +925,20 @@ class World extends Zei.GameObject {
   void onKeyEvent(evt, String type) {
     if (type == "up") {
       // increase game speed
-      if (evt.keyCode == KeyCode.F1) {
-        game.faster();
+      if (evt.keyCode == KeyCode.NUM_PLUS) {
+        if (Zei.speed < 4) {
+          Zei.setSpeed(Zei.speed * 2);
+          game.ui.updateElement("speed");
+        }
         evt.preventDefault();
       }
 
       // decrease game speed
-      if (evt.keyCode == KeyCode.F2) {
-        game.slower();
+      if (evt.keyCode == KeyCode.NUM_MINUS) {
+        if (Zei.speed > .5) {
+          Zei.setSpeed(Zei.speed / 2);
+          game.ui.updateElement("speed");
+        }
         evt.preventDefault();
       }
 

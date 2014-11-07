@@ -17,10 +17,13 @@ part 'zoomer.dart';
 
 num animationRequest;
 int TPS = 60; // ticks per second
+double speed = 1.0;
 Timer running;
+Timer resizeTimer;
 Map<String, Renderer> renderer = new Map();
 Map<String, ImageElement> images = new Map();
 bool debug = false;
+bool hasResized = false;
 Mouse mouse;
 Scroller scroller;
 Zoomer zoomer;
@@ -35,13 +38,40 @@ void init({int TPS: 60, bool debug: false}) {
   document
         ..onKeyDown.listen((event) => onKeyEvent(event, "down"))
         ..onKeyUp.listen((event) => onKeyEvent(event, "up"));
+  
+  window.onResize.listen((event) => onResize(event));
+}
+
+/**
+ * Handles renderer when resizing the window
+ */
+void onResize(evt) {
+  // delay the resizing to avoid it being called multiple times
+  if (resizeTimer != null)
+    resizeTimer.cancel();
+
+  resizeTimer = new Timer(new Duration(milliseconds: 250), () {
+    hasResized = true;
+    var width = window.innerWidth;
+    var height = window.innerHeight;
+    
+    for (Renderer renderer in Renderer.renderers) {
+      if (renderer.reactOnResize) {
+        if (renderer.fixedSize) {
+          renderer.updateRect(renderer.view.width, renderer.view.height);
+        } else {
+          renderer.updateRect(width, height);
+        }
+      }
+    }
+  });
 }
 
 /**
  * Enables the scroller
  */
-void enableScroller(Renderer renderer, int scrollSize) {
-  scroller = new Scroller(renderer, scrollSize);
+void enableScroller(Renderer renderer, int scrollSize, Vector2 min, Vector2 max) {
+  scroller = new Scroller(renderer, scrollSize, min, max);
 }
 
 /**
@@ -95,13 +125,19 @@ void onMouseEvent(MouseEvent evt) {
 }
 
 void run() {
-  running = new Timer.periodic(new Duration(milliseconds: (1000 / TPS).floor()), (Timer timer) => update());
+  running = new Timer.periodic(new Duration(milliseconds: (1000 / TPS / speed).floor()), (Timer timer) => update());
   animationRequest = window.requestAnimationFrame(draw);
 }
 
 void stop() {
   running.cancel();
   window.cancelAnimationFrame(animationRequest);
+}
+
+void setSpeed(s) {
+  speed = s;
+  stop();
+  run();
 }
 
 /**
@@ -136,6 +172,7 @@ void draw(num _) {
  * Clear engine of all game objects and display objects.
  */
 void clear() {
+  speed = 1.0;
   GameObject.clear();
   //Audio.clear();
   Renderer.clearDisplayObjects();

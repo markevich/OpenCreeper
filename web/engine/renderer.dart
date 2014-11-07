@@ -10,6 +10,8 @@ class Renderer {
   bool redraw = false;
   bool autodraw = true;
   bool zoomable = false;
+  bool reactOnResize = true; // whether to update boundaries when the browser window is resized
+  bool fixedSize = false; // whether to update the size when updating the boundaries
   static List<Renderer> renderers = new List();
   Vector2 relativeMousePosition = new Vector2.empty();
   bool isHovered = false;
@@ -26,12 +28,14 @@ class Renderer {
   /**
    * Creates a renderer with a [name], [width], [height] and optionally adds it to a [container] in the DOM
    */
-  static Renderer create(String name, int width, int height, {container: null, autodraw: true, zoomable: false}) {
+  static Renderer create(String name, int width, int height, {container: null, autodraw: true, zoomable: false, reactOnResize: true, fixedSize: false}) {
     renderer[name] = new Renderer(new CanvasElement(), width, height);
     if (container != null)
       querySelector(container).children.add(renderer[name].view);
     renderer[name].autodraw = autodraw;
     renderer[name].zoomable = zoomable;
+    renderer[name].reactOnResize = reactOnResize;
+    renderer[name].fixedSize = fixedSize;
     renderer[name].updateRect(width, height);
 
 

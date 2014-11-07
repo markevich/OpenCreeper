@@ -34,7 +34,7 @@ class Shell extends Zei.GameObject {
     }
 
     sprite.rotate(20);
-    sprite.position += ((targetPosition - sprite.position).normalize() * Shell.baseSpeed * game.speed).clamp(targetPosition - sprite.position);
+    sprite.position += ((targetPosition - sprite.position).normalize() * Shell.baseSpeed).clamp(targetPosition - sprite.position);
 
     // if the target is reached explode and remove
     if (sprite.position == targetPosition) {

@@ -10,17 +10,13 @@ class Ship extends Zei.GameObject {
   Zei.Circle selectedCircle;
   Zei.Rect energyRect;
   static final int baseSpeed = 1;
-  static Zei.Sprite targetCursor;
+  static Zei.Sprite targetCursor = Zei.Sprite.create("main", "targetsymbol", Zei.images["targetcursor"], new Zei.Vector2.empty(), 48, 48, visible: false, anchor: new Zei.Vector2(0.5, 0.5)); // create target cursor used when a ship is selected;
 
   Ship(position, imageID, this.type, this.home) {
     sprite = Zei.Sprite.create("main", "ship", Zei.images[imageID], position, 48, 48, anchor: new Zei.Vector2(0.5, 0.5));
     selectedCircle = Zei.Circle.create("main", "selectedcircle", position, 24, 2, null, new Zei.Color.white(), visible: false);
     targetSymbol = Zei.Sprite.create("main", "targetsymbol", Zei.images["targetcursor"], position, 48, 48, visible: false, anchor: new Zei.Vector2(0.5, 0.5), alpha: 0.5);
     energyRect = Zei.Rect.create("main", "energybar", new Zei.Vector2(position.x - 22, position.y - 20), new Zei.Vector2(44 / maxEnergy * energy, 3), 1, new Zei.Color.red(), null);
-  }
-
-  static void init() {
-    targetCursor = Zei.Sprite.create("main", "targetsymbol", Zei.images["targetcursor"], new Zei.Vector2.empty(), 48, 48, visible: false, anchor: new Zei.Vector2(0.5, 0.5)); // create target cursor used when a ship is selected
   }
 
   static Ship add(Zei.Vector2 position, String imageID, String type, Building home) {
@@ -84,7 +80,7 @@ class Ship extends Zei.GameObject {
   }
 
   void calculateSpeed() {
-    velocity = Zei.convertToVector(sprite.rotation) * Ship.baseSpeed * game.speed;
+    velocity = Zei.convertToVector(sprite.rotation) * Ship.baseSpeed;
   }
 
   static void control(Zei.Vector2 position) {

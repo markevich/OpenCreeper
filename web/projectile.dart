@@ -26,7 +26,7 @@ class Projectile extends Zei.GameObject {
   }
 
   void move() {
-    sprite.position += ((targetPosition - sprite.position).normalize() * Projectile.baseSpeed * game.speed).clamp(targetPosition - sprite.position);
+    sprite.position += ((targetPosition - sprite.position).normalize() * Projectile.baseSpeed).clamp(targetPosition - sprite.position);
 
     if (sprite.position == targetPosition) {
       // if the target is reached smoke and remove
@@ -41,7 +41,7 @@ class Projectile extends Zei.GameObject {
           Zei.Vector2 tilePosition = targetPositionTiled + new Zei.Vector2(i, j);
 
           if (game.world.contains(tilePosition)) {
-            if ((tilePosition * Tile.size + new Zei.Vector2(8, 8)).distanceTo(targetPosition) <= Tile.size * 4) {
+            if ((tilePosition * Tile.size + new Zei.Vector2(8, 8)).distanceTo(targetPosition) <= Tile.size * 1) {
               Tile tile = game.world.getTile(tilePosition * Tile.size);
               tile.creep -= 1;
               tile.creep = Zei.clamp(tile.creep, 0, 1000);
