@@ -179,14 +179,14 @@ class Renderer {
                                        view.height / zoom);
 
     if (displayObject is Sprite) {
-      Rectangle object = new Rectangle(displayObject.position.x - (displayObject.size.x / 2),
-                                       displayObject.position.y - (displayObject.size.y / 2),
+      Rectangle object = new Rectangle(displayObject.position.x - (displayObject.size.x * displayObject.anchor.x * displayObject.scale.x / 2),
+                                       displayObject.position.y - (displayObject.size.y * displayObject.anchor.y * displayObject.scale.y / 2),
                                        displayObject.size.x,
                                        displayObject.size.y);
       return renderer.intersects(object);
     } else if (displayObject is Rect) {
-      Rectangle object = new Rectangle(displayObject.position.x - (displayObject.size.x / 2),
-                                       displayObject.position.y - (displayObject.size.y / 2),
+      Rectangle object = new Rectangle(displayObject.position.x - (displayObject.size.x * displayObject.anchor.x * displayObject.scale.x / 2),
+                                       displayObject.position.y - (displayObject.size.y * displayObject.anchor.y * displayObject.scale.y / 2),
                                        displayObject.size.x,
                                        displayObject.size.y);
       return renderer.intersects(object);
